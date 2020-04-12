@@ -1,10 +1,17 @@
-package\_template package
-=========================
+twinpy package
+==============
+
+Subpackages
+-----------
+
+.. toctree::
+
+   twinpy.structure
 
 Module contents
 ---------------
 
-.. automodule:: package_template
+.. automodule:: twinpy
    :members:
    :special-members:
    :private-members:

@@ -2,10 +2,10 @@
     :width: 250px
     :align: center
 
-The package-template plugin for `AiiDA`_
+The twinpy plugin for `AiiDA`_
 =====================================================
 
-``package-template`` is available at http://github.com/kei0822kei/package-template
+``twinpy`` is available at http://github.com/kei0822kei/twinpy
 
 
 .. toctree::
@@ -13,7 +13,7 @@ The package-template plugin for `AiiDA`_
 
    user_guide/index
    developer_guide/index
-   API documentation <apidoc/package_template>
+   API documentation <apidoc/twinpy>
 
 If you use this plugin for your research, please cite the following work:
 
@@ -26,9 +26,9 @@ If you use AiiDA for your research, please cite the following work:
   for computational science*, Comp. Mat. Sci 111, 218-230 (2016);
   https://doi.org/10.1016/j.commatsci.2015.09.013; http://www.aiida.net.
 
-``package-template`` is released under the MIT license. 
+``twinpy`` is released under the MIT license. 
 
-Please contact mizokami.keiyu.46u@st.kyoto-u.ac.jp for information concerning ``package-template`` and the `AiiDA mailing list <http://www.aiida.net/mailing-list/>`_ for questions concerning ``aiida``.
+Pease contact mizokami.keiyu.46u@st.kyoto-u.ac.jp for information concerning ``twinpy`` and the `AiiDA mailing list <http://www.aiida.net/mailing-list/>`_ for questions concerning ``aiida``.
 
 
 Indices and tables

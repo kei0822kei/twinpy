@@ -16,6 +16,7 @@
     "reentry_register": true,
     "install_requires": [
         "six",
+        "numpy",
         "voluptuous"
     ],
     "extras_require": {

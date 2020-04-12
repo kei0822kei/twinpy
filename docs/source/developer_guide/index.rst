@@ -31,7 +31,7 @@ If you ever need to skip these pre-commit hooks, just use::
 Continuous integration
 ++++++++++++++++++++++
 
-``package-template`` comes with a ``.github`` folder that contains continuous integration tests on every commit using `GitHub Actions <https://github.com/features/actions>`_. It will:
+``twinpy`` comes with a ``.github`` folder that contains continuous integration tests on every commit using `GitHub Actions <https://github.com/features/actions>`_. It will:
 
 #. run all tests for the ``django`` ORM
 #. build the documentation
@@ -40,10 +40,10 @@ Continuous integration
 Online documentation
 ++++++++++++++++++++
 
-The documentation of ``package-template``
+The documentation of ``twinpy``
 is ready for `ReadTheDocs <https://readthedocs.org/>`_:
 
-Simply add the ``package-template`` repository on your RTD profile, preferably using ``package-template`` as the project name - that's it!
+Simply add the ``twinpy`` repository on your RTD profile, preferably using ``twinpy`` as the project name - that's it!
 
 
 PyPI release
@@ -58,7 +58,7 @@ Just register for an account and::
 
 After this, you (and everyone else) should be able to::
 
-    pip install package-template
+    pip install twinpy
 
 You can also enable *automatic* deployment of git tags to the python package index:
 simply generate a `PyPI API token <https://pypi.org/help/#apitoken>`_ for your PyPI account and add it as a secret to your GitHub repository under the name ``pypi_token`` (Go to Settings -> Secrets).

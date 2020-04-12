@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Sphinx configuration for pkg-template
+# Sphinx configuration for twinpy
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -15,7 +15,7 @@
 import os
 import sys
 import time
-import pkg_template
+import twinpy
 
 # from aiida.manage.configuration import load_documentation_profile
 
@@ -73,7 +73,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'pkg-template'
+project = u'twinpy'
 copyright_first_year = "2020"
 copyright_owners = "kei0822kei"
 
@@ -89,7 +89,7 @@ copyright = u'{}, {}. All rights reserved'.format(copyright_year_string,
 # built documents.
 #
 # The full version, including alpha/beta/rc tags.
-release = pkg_template.__version__
+release = twinpy.__version__
 # The short X.Y version.
 version = '.'.join(release.split('.')[:2])
 
@@ -214,7 +214,7 @@ html_show_sourcelink = False
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
 # base URL from which the finished HTML is served.
-html_use_opensearch = 'http://pkg-template.readthedocs.io'
+html_use_opensearch = 'http://twinpy.readthedocs.io'
 
 # This is the file name suffix for HTML files (e.g. ".xhtml").
 #html_file_suffix = None
@@ -234,7 +234,7 @@ html_search_language = 'en'
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'pkg-template-doc'
+htmlhelp_basename = 'twinpy-doc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -290,7 +290,7 @@ def run_apidoc(_):
     source_dir = os.path.abspath(os.path.dirname(__file__))
     apidoc_dir = os.path.join(source_dir, 'apidoc')
     package_dir = os.path.join(source_dir, os.pardir, os.pardir,
-                               'package_template')
+                               'twinpy')
 
     # In #1139, they suggest the route below, but this ended up
     # calling sphinx-build, not sphinx-apidoc

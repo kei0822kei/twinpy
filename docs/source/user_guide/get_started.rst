@@ -10,15 +10,15 @@ Installation
 
 Use the following commands to install the plugin::
 
-    git clone https://github.com/kei0822kei/package-template .
-    cd package-template
+    git clone https://github.com/kei0822kei/twinpy .
+    cd twinpy
     pip install -e .  # also installs aiida, if missing (but not postgres)
     #pip install -e .[pre-commit,testing] # install extras for more features
     verdi quicksetup  # better to set up a new profile
     verdi calculation plugins  # should now show your calclulation plugins
 
-Then use ``verdi code setup`` with the ``package_template`` input plugin
-to set up an AiiDA code for package-template.
+Then use ``verdi code setup`` with the ``twinpy`` input plugin
+to set up an AiiDA code for twinpy.
 
 Usage
 +++++
@@ -30,10 +30,10 @@ A quick demo of how to submit a calculation::
     verdi run test_submit.py        # submit test calculation
     verdi calculation list -a  # check status of calculation
 
-If you have already set up your own package_template code using
+If you have already set up your own twinpy code using
 ``verdi code setup``, you may want to try the following command::
 
-    package_template-submit  # uses package_template.cli
+    twinpy-submit  # uses twinpy.cli
 
 Available calculations
 ++++++++++++++++++++++
