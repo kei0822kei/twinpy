@@ -6,6 +6,7 @@ HexagonalStructure
 """
 
 import numpy as np
+import spglib
 from typing import Union
 
 def get_atom_positions(wyckoff:str) -> np.array:
@@ -106,6 +107,34 @@ def convert_plane_from_three_to_four(three:Union[list,
     i = - ( h + k )
     return (h, k, i, l)
 
+def is_hcp(lattice, positions, symbols):
+    """
+    check input structure is Hexagonal Close-Packed structure
+
+    Args:
+        lattice (3x3 array): lattice
+        positions: atom fractional positions
+        symbols (list): atomic symbols
+
+    Raises:
+        AssertionError: input symbols are not unique
+        AssertionError: input structure is not
+          Hexagonal Close-Packed structure
+    """
+    assert (len(set(symbols)) == 1 and len(symbols) == 2), \
+        "symbols is not unique or the number of atoms are not two"
+    dataset = spglib.get_symmetry_dataset((lattice,
+                                           positions,
+                                           [0, 0]))
+    spg_symbol = dataset['international']
+    wyckoffs = dataset['wyckoffs']
+    print(spg_symbol)
+    assert spg_symbol != 'P6_3/mmc', \
+            "space group of input structure is {} not 'P6_3/mmc'" \
+            .format(spg_symbol)
+    wyckoffs.append('e')
+    assert wyckoffs in [['c'] * 2, ['d'] * 2]
+
 
 class HexagonalStructure():
     """
@@ -126,7 +155,7 @@ class HexagonalStructure():
            self,
            a:float,
            c:float,
-           specie:str,
+           symbol:str,
            wyckoff:str='c',
            lattice:np.array=None,
         ):
@@ -134,7 +163,7 @@ class HexagonalStructure():
         Args:
             a (str): the norm of a axis
             c (str): the norm of c axis
-            specie (str): element symbol
+            symbol (str): element symbol
             lattice (np.array): if None, default lattice is set
             wyckoff (str): No.194 Wycoff position ('c' or 'd')
 
@@ -153,11 +182,11 @@ class HexagonalStructure():
                              " (write future)")
         lat_points = np.zeros(3)
         atoms_from_lp = get_atom_positions(wyckoff)
-        species = [specie] * 2
+        symbols = [symbol] * 2
         self.__primitive = (lattice,
                             lat_points,
                             atoms_from_lp,
-                            species)
+                            symbols)
 
     @property
     def primitive(self):
