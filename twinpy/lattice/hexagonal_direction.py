@@ -2,16 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-various hexagonal properties
+hexagonal direction
 """
 
 import numpy as np
-from copy import deepcopy
-from pymatgen.core.lattice import Lattice
+from .lattice import Lattice
 
 def convert_direction_from_four_to_three(four:Union[list,
                                                     np.array,
-                                                    tuple]) -> tuple:
+                                                    tuple]) -> np.array:
     """
     convert direction from four to three
 
@@ -23,7 +22,7 @@ def convert_direction_from_four_to_three(four:Union[list,
         AssertionError: u + v + t != 0
 
     Returns:
-        tuple: three indices
+        array: three indices
     """
     assert len(four) == 4, "the length of input list is not four"
     u, v, t, w  = four
@@ -31,11 +30,11 @@ def convert_direction_from_four_to_three(four:Union[list,
     U = u - t
     V = v - t
     W = w
-    return (U, V, W)
+    return np.array([U, V, W])
 
 def convert_direction_from_three_to_four(three:Union[list,
                                                      np.array,
-                                                     tuple]) -> tuple:
+                                                     tuple]) -> array:
     """
     convert direction from three to four
 
@@ -46,7 +45,7 @@ def convert_direction_from_three_to_four(three:Union[list,
         AssertionError: len(four) != 3
 
     Returns:
-        tuple: four indices
+        array: four indices
     """
     assert len(three) == 3, "the length of input list is not three"
     U, V, W  = three
@@ -54,7 +53,7 @@ def convert_direction_from_three_to_four(three:Union[list,
     v = ( 2 * V - U ) / 3
     t = - ( u + v )
     w = W
-    return (u, v, t, w)
+    return np.array([u, v, t, w])
 
 
 class HexagonalDirection():
@@ -82,17 +81,18 @@ class HexagonalDirection():
             three: direction indice (three)
             four: direction indice (four)
         """
-        self.__lattice = lattice
-        self.three = three
-        self.four = four
-        self.reset_indices(self.three, self.four)
+        super().__init__(lattice=lattice)
+        self._three = three
+        self._four = four
+        self.reset_indices(self._three, self._four)
 
     @property
-    def lattice(self):
-        return __lattice
+    def three(self):
+        return self._three
 
-    def get_lattice(self):
-        return self.lattice
+    @property
+    def four(self):
+        return self._four
 
     def reset_indices(self,
                       three:Union[list,np.array,tuple]=None,
@@ -117,18 +117,8 @@ class HexagonalDirection():
         else:
             raise ValueError("both 'three' and 'four' are not None")
 
-        self.three = np.array(three)
-        self.four = np.array(four)
-
-    def inverse(self):
-        """
-        reset inverse indice
-
-        Note:
-            attribute 'three' and 'four' are overwritted
-        """
-        self.three = (-1) * self.three
-        self.four = (-1) * self.four
+        self._three = np.array(three)
+        self._four = np.array(four)
 
     def get_cartesian(self, normalize:bool=False) -> np.array:
         """
@@ -140,7 +130,8 @@ class HexagonalDirection():
         Returns:
             np.array: direction with the cartesian coordinate
         """
-        cart_coords = self.lattice.get_cartesian_coords(self.three)
+        cart_coords = np.dot(self.lattice.T,
+                             self.three.reshape([3,1])).reshape(3)
         if normalize:
             return cart_coords / np.linalg.norm(cart_coords)
         else:

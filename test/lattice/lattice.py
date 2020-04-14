@@ -37,6 +37,24 @@ class TestLattice(unittest.TestCase):
     def test_is_hexagonal_lattice(self):
         is_hexagonal_lattice(self.hexagonal.lattice)
 
+    def test_reciprocal_lattice(self):
+        """
+        check reciprocal lattice
+        """
+        expected = np.diag([1/self.a, 1/self.b, 1/self.c])
+        actual = self.orthogonal.reciprocal_lattice
+        np.testing.assert_allclose(expected, actual)
+
+        expected = np.array([[np.sqrt(3)/2, 0.5,      0.     ],
+                            [      0.     , 1. ,      0.     ],
+                            [      0.     , 0. , np.sqrt(3)/2]]) \
+                       * np.array([[self.a*self.c,
+                                    self.a*self.c,
+                                    self.a**2]]) \
+                             / self.hexagonal.volume
+        actual = self.hexagonal.reciprocal_lattice
+        np.testing.assert_allclose(expected, actual)
+
     def test_metric(self):
         """
         check metric

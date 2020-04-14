@@ -2,16 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-various hexagonal properties
+hexagonal plane
 """
 
 import numpy as np
-from copy import deepcopy
 from .lattice import Lattice
 
 def convert_plane_from_four_to_three(four:Union[list,
                                                 np.array,
-                                                tuple]) -> tuple:
+                                                tuple]) -> np.array:
     """
     convert plane from four to three
 
@@ -19,7 +18,7 @@ def convert_plane_from_four_to_three(four:Union[list,
         four: four indices of hexagonal plane
 
     Returns:
-        tuple: three indices
+        array: three indices
     """
     assert len(four) == 4, "the length of input list is not four"
     h, k, i, l = four
@@ -31,7 +30,7 @@ def convert_plane_from_four_to_three(four:Union[list,
 
 def convert_plane_from_three_to_four(three:Union[list,
                                                  np.array,
-                                                 tuple]) -> tuple:
+                                                 tuple]) -> np.array:
     """
     convert plane from three to four
 
@@ -39,7 +38,7 @@ def convert_plane_from_three_to_four(three:Union[list,
         three: three indices of hexagonal plane
 
     Returns:
-        tuple: four indices
+        array: four indices
     """
     assert len(three) == 3, "the length of input list is not three"
     h, k, l = three
@@ -108,18 +107,6 @@ class HexagonalPlane(Lattice):
 
         self._three = np.array(three)
         self._four = np.array(four)
-
-    def inverse(self):
-        """
-        reset inverse indice
-
-        Note:
-            attribute 'three' and 'four' are overwritted
-        """
-        three = (-1) * self._three
-        self._four = self.reset_indices(three=three)
-
-
 
 
 

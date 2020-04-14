@@ -49,6 +49,9 @@ class Lattice():
         self._volume = None
         self._set_volume()
 
+        self._reciprocal_lattice = None
+        self._set_reciprocal_lattice()
+
         self._norms = None
         self._set_norms()
 
@@ -68,26 +71,6 @@ class Lattice():
         return self._lattice
 
     @property
-    def metric(self):
-        """
-        metric
-        """
-        return self._metric
-
-    def _set_metric(self):
-        norms = self._norms
-        coss = self._cos_angles
-        metric = np.zeros([3,3])
-        for i in range(3):
-            for j in range(3):
-                if i == j:
-                    metric[i,j] = norms[i]**2
-                else:
-                    k = 3 - (i + j)
-                    metric[i,j] = norms[i] * norms[j] * coss[k]
-        self._metric = metric
-
-    @property
     def volume(self):
         """
         volume
@@ -96,8 +79,24 @@ class Lattice():
 
     def _set_volume(self):
         self._volume = np.dot(np.cross(self._lattice[0],
-                                        self._lattice[1]),
-                                 self._lattice[2])
+                                       self._lattice[1]),
+                              self._lattice[2])
+
+    @property
+    def reciprocal_lattice(self):
+        """
+        reciprocal lattice WITHOUT 2*pi
+        """
+        return self._reciprocal_lattice
+
+    def _set_reciprocal_lattice(self):
+        recip_bases = []
+        for i in range(3):
+            j = (i + 1) % 3
+            k = (i + 2) % 3
+            recip_bases.append(
+                np.cross(self._lattice[j], self._lattice[k]) / self._volume)
+        self._reciprocal_lattice = np.array(recip_bases)
 
     @property
     def norms(self):
@@ -136,6 +135,26 @@ class Lattice():
             angles.append(np.arccos((cos_angle)) * 180 / np.pi)
         self._cos_angles = tuple(cos_angles)
         self._angles = tuple(angles)
+
+    @property
+    def metric(self):
+        """
+        metric
+        """
+        return self._metric
+
+    def _set_metric(self):
+        metric = np.zeros([3,3])
+        for i in range(3):
+            for j in range(3):
+                if i == j:
+                    metric[i,j] = self._norms[i]**2
+                else:
+                    k = 3 - (i + j)
+                    metric[i,j] = self._norms[i] \
+                                    * self._norms[j] \
+                                        * self._cos_angles[k]
+        self._metric = metric
 
     def dot(self,
             frac_coord_first:np.array,
