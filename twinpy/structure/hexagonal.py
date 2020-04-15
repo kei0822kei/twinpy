@@ -7,6 +7,8 @@ HexagonalStructure
 
 import numpy as np
 import spglib
+from phonopy.structure.atoms import PhonopyAtoms
+from phonopy.structure.cells import Primitive, Supercell
 from typing import Union
 from twinpy.common.utils import get_ratio
 from twinpy.properties.hexagonal import get_atom_positions
@@ -98,10 +100,11 @@ class HexagonalStructure():
                            lat_points,
                            atoms_from_lp,
                            symbols)
-        self._hexagonal_lattice = Lattice(lattice)
+        self._symbol = symbol
         self._wyckoff = wyckoff
+        self._hexagonal_lattice = Lattice(lattice)
         self._indices = None
-        self._parent_matrix = None
+        self._parent_matrix = np.eye(3)
         self._shear_strain_funcion = None
         self._shear_strain_ratio = 0.
 
@@ -109,6 +112,20 @@ class HexagonalStructure():
         if self._parent_matrix is None:
             raise RuntimeError("parent_matrix is not set"
                                "run set_parent first")
+
+    @property
+    def symbol(self):
+        """
+        symbol
+        """
+        return self._symbol
+
+    @property
+    def wyckoff(self):
+        """
+        wyckoff position
+        """
+        return self._wyckoff
 
     @property
     def hexagonal(self):
@@ -137,13 +154,6 @@ class HexagonalStructure():
         parent matrix
         """
         return self._parent_matrix
-
-    @property
-    def wyckoff(self):
-        """
-        wyckoff position
-        """
-        return self._wyckoff
 
     @property
     def shear_strain_function(self):
@@ -188,3 +198,17 @@ class HexagonalStructure():
             set attribute 'shear_strain_ratio'
         """
         self._shear_strain_ratio = ratio
+
+    def get_structure(self, style='tuple', is_primitive=False):
+        """
+        get structure
+
+        Args:
+            style (str): determine the structure style,
+              choose from 'tuple'
+        """
+        unitcell = PhonopyAtoms(symbols=['X'],
+                        cell=self._hexagonal_lattice.lattice,
+                        scaled_positions=[[0., 0., 0.]])
+        super_lattice = Supercell(unitcell=unitcell,
+                                  supercell_matrix=self._parent_matrix)
