@@ -15,16 +15,17 @@ def float2frac(var, accuracy=3, denominator=10):
 
     Args:
         var (float): input value
-        accuracy (int): threshold of whether two values are the same of not
-            In the case of 'accuracy=3', check the third decimal place.
-        denominator (int): if 'denominator=10',
-            check from 1/2 to 12/13
+        accuracy (int): threshold of whether two values are the same of not, \
+                        In the case of 'accuracy=3', \
+                        check the third decimal place.
+        denominator (int): if 'denominator=10', \
+                           check from 1/2 to 12/13
 
     Returns:
         dict: description
 
     Raises:
-        ValueError("could not find fractional representation of input 'var')
+        ValueError: could not find fractional representation of input 'var'
 
     Examples:
         >>> float2frac(-1.333333, 3)
@@ -83,7 +84,7 @@ def get_ratio(nums:list,
 
     Raises:
         ValueError: could not find multiply number
-          for making input number integer
+                    for making input number integer
 
     Examples:
         >>> get_ratio([ 1.33333, 5, 7.5])

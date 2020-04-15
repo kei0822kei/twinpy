@@ -6,6 +6,9 @@ Subpackages
 
 .. toctree::
 
+   twinpy.common
+   twinpy.lattice
+   twinpy.properties
    twinpy.structure
 
 Module contents

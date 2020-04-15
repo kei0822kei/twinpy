@@ -38,26 +38,30 @@ if not os.environ.get('READTHEDOCS', None):
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = '1.5'
+needs_sphinx = '2.4.4'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.viewcode',
-    'sphinxcontrib.contentui',
-    # 'aiida.sphinxext',
+    'sphinx.ext.intersphinx',  # link to other projecas
+    'sphinxcontrib.contentui',  # content html
+    'sphinx.ext.autodoc',    # read doc automatically
+    'sphinx.ext.mathjax',    # math support
+    'sphinx.ext.viewcode',   # go to class and def to search the docstring
+    'sphinx.ext.napoleon',   # to read various kinds of style of docstring
+    'sphinx.ext.todo',
 ]
+
+# ignore WARNING: py:class reference target not found: type
+
+napoleon_google_docstring = True
 
 intersphinx_mapping = {
     'python': ('https://docs.python.org/2.7', None),
     # 'aiida': ('http://aiida-core.readthedocs.io/en/latest/', None),
 }
 
-nitpick_ignore = [('py:obj', 'module')]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -412,4 +416,7 @@ nitpick_ignore = [
     ('py:obj', 'float'),
     ('py:obj', 'bool'),
     ('py:obj', 'Mapping'),
+    ('py:class', 'list'),
+    ('py:class', 'np.array'),
+    ('py:class', 'function'),
 ]

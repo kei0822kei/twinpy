@@ -12,7 +12,7 @@ def check_hexagonal_lattice(lattice):
     check input lattice is hexagonal lattice
 
     Args:
-        lattice (3x3 numpy array): lattice
+        lattice (np.array): lattice
 
     Raises:
         AssertionError: the angles are not (90, 90, 120)
@@ -54,7 +54,7 @@ class Lattice():
     def __init__(self, lattice:np.array):
         """
         Args:
-            lattice (3x3 numpy array): lattice
+            lattice (np.array): lattice
 
         Raises:
             AssertionError: input lattice is not 3x3 numpy array
@@ -180,8 +180,8 @@ class Lattice():
         inner product of frac_coord1 and frac_coord2
 
         Args:
-            frac_coord_first (numpy array): frac coord
-            frac_coord_second (numpy array): frac coord
+            frac_coord_first (np.array): frac coord
+            frac_coord_second (np.array): frac coord
         """
         first = frac_coord_first.reshape(3,1)
         second = frac_coord_second.reshape(3,1)

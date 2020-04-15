@@ -18,7 +18,7 @@ def check_supported_twinmode(twinmode):
 
     Args:
         twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
-        (which are supported)
+                        (which are supported)
 
     Raises:
         AssertionError: input twinmode is not supported
@@ -32,7 +32,7 @@ def get_shear_strain_function(twinmode:str) -> 'function':
 
     Args:
         twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
-            (which are supported)
+                        (which are supported)
 
     Returns:
         function: function which returns shear strain
@@ -61,10 +61,10 @@ def get_twin_indices(twinmode:str,
     twinmode must be '10-11', '10-12', '11-21' or '11-22'
 
     Args:
-        this is used when K1 plane is choosed
-        twinmode (str): currently supported
-        '10-11', '10-12', '11-22' and '11-21'
+        twinmode (str): currently supported \
+                        '10-11', '10-12', '11-22' and '11-21'
         lattice: lattice
+        wyckoff: wyckoff letter, 'c' or 'd'
 
     Returns:
         dict: twin indices

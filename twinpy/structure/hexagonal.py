@@ -21,14 +21,14 @@ def is_hcp(lattice, positions, symbols):
     check input structure is Hexagonal Close-Packed structure
 
     Args:
-        lattice (3x3 array): lattice
+        lattice (np.array): lattice
         positions: atom fractional positions
         symbols (list): atomic symbols
 
     Raises:
         AssertionError: input symbols are not unique
         AssertionError: input structure is not
-          Hexagonal Close-Packed structure
+                        Hexagonal Close-Packed structure
     """
     assert (len(set(symbols)) == 1 and len(symbols) == 2), \
         "symbols is not unique or the number of atoms are not two"
@@ -52,16 +52,6 @@ def _get_supercell_matrix(indices):
 class HexagonalStructure():
     """
     deals with hexagonal close-packed structure
-
-       .. attribute:: att1
-
-          Optional comment string.
-
-
-       .. attribute:: att2
-
-          Optional comment string.
-
     """
 
     def __init__(

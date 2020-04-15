@@ -23,7 +23,7 @@ def convert_direction_from_four_to_three(four:Union[list,
         AssertionError: u + v + t != 0
 
     Returns:
-        array: three indices
+        np.array: three indices
     """
     assert len(four) == 4, "the length of input list is not four"
     u, v, t, w  = four
@@ -46,7 +46,7 @@ def convert_direction_from_three_to_four(three:Union[list,
         AssertionError: len(four) != 3
 
     Returns:
-        array: four indices
+        np.array: four indices
     """
     assert len(three) == 3, "the length of input list is not three"
     U, V, W  = three
@@ -69,10 +69,12 @@ class HexagonalDirection(Lattice):
            four:Union[list,np.array,tuple]=None,
        ):
         """
+        deals with hexagonal direction
+
         Args:
-            lattice (3x3 array): lattice
-            three: direction indice (three)
-            four: direction indice (four)
+            lattice: lattice.
+            three: direction indice (three).
+            four: direction indice (four).
         """
         super().__init__(lattice=lattice)
         # super().__init__()

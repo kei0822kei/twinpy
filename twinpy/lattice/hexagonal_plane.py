@@ -20,7 +20,7 @@ def convert_plane_from_four_to_three(four:Union[list,
         four: four indices of hexagonal plane
 
     Returns:
-        array: three indices
+        np.array: three indices
     """
     assert len(four) == 4, "the length of input list is not four"
     h, k, i, l = four
@@ -40,7 +40,7 @@ def convert_plane_from_three_to_four(three:Union[list,
         three: three indices of hexagonal plane
 
     Returns:
-        array: four indices
+        np.array: four indices
     """
     assert len(three) == 3, "the length of input list is not three"
     h, k, l = three
@@ -61,7 +61,7 @@ class HexagonalPlane(Lattice):
        ):
         """
         Args:
-            lattice (3x3 array): lattice
+            lattice (np.array): lattice
             three: plane indice (three)
             four: plane indice (four)
         """
@@ -135,7 +135,7 @@ class HexagonalPlane(Lattice):
         get dicstance from plane
 
         Args:
-            frac_coords (array): fractional coorinates
+            frac_coords (np.array): fractional coorinates
 
         Returns:
             float: distance
