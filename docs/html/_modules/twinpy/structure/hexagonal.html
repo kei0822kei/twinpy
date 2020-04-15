@@ -1,0 +1,402 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.structure.hexagonal &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script src="../../../_static/contentui.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within twinpy 0.0.1 documentation"
+          href="../../../_static/opensearch.xml"/>
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_guide/index.html">Developer guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.structure.hexagonal</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.structure.hexagonal</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">HexagonalStructure</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">spglib</span>
+<span class="kn">from</span> <span class="nn">phonopy.structure.atoms</span> <span class="kn">import</span> <span class="n">PhonopyAtoms</span>
+<span class="kn">from</span> <span class="nn">phonopy.structure.cells</span> <span class="kn">import</span> <span class="n">Primitive</span><span class="p">,</span> <span class="n">Supercell</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">twinpy.common.utils</span> <span class="kn">import</span> <span class="n">get_ratio</span>
+<span class="kn">from</span> <span class="nn">twinpy.properties.hexagonal</span> <span class="kn">import</span> <span class="n">get_atom_positions</span>
+<span class="kn">from</span> <span class="nn">twinpy.properties.twinmode</span> <span class="kn">import</span> <span class="p">(</span><span class="n">get_shear_strain_function</span><span class="p">,</span>
+                                        <span class="n">get_twin_indices</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">twinpy.lattice.lattice</span> <span class="kn">import</span> <span class="n">Lattice</span>
+
+<div class="viewcode-block" id="is_hcp"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.is_hcp">[docs]</a><span class="k">def</span> <span class="nf">is_hcp</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">symbols</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    check input structure is Hexagonal Close-Packed structure</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lattice (np.array): lattice</span>
+<span class="sd">        positions: atom fractional positions</span>
+<span class="sd">        symbols (list): atomic symbols</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: input symbols are not unique</span>
+<span class="sd">        AssertionError: input structure is not</span>
+<span class="sd">                        Hexagonal Close-Packed structure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">symbols</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">symbols</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">),</span> \
+        <span class="s2">&quot;symbols is not unique or the number of atoms are not two&quot;</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">spglib</span><span class="o">.</span><span class="n">get_symmetry_dataset</span><span class="p">((</span><span class="n">lattice</span><span class="p">,</span>
+                                           <span class="n">positions</span><span class="p">,</span>
+                                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+    <span class="n">spg_symbol</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;international&#39;</span><span class="p">]</span>
+    <span class="n">wyckoffs</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;wyckoffs&#39;</span><span class="p">]</span>
+    <span class="k">assert</span> <span class="n">spg_symbol</span> <span class="o">!=</span> <span class="s1">&#39;P6_3/mmc&#39;</span><span class="p">,</span> \
+            <span class="s2">&quot;space group of input structure is </span><span class="si">{}</span><span class="s2"> not &#39;P6_3/mmc&#39;&quot;</span> \
+            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">spg_symbol</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">wyckoffs</span> <span class="ow">in</span> <span class="p">[[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="_get_supercell_matrix"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal._get_supercell_matrix">[docs]</a><span class="k">def</span> <span class="nf">_get_supercell_matrix</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
+    <span class="n">tf1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">get_ratio</span><span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">))</span>
+    <span class="n">tf2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">get_ratio</span><span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">))</span>
+    <span class="n">tf3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">get_ratio</span><span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">))</span>
+    <span class="n">supercell_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">tf1</span><span class="p">,</span> <span class="n">tf2</span><span class="p">,</span> <span class="n">tf3</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">return</span> <span class="n">supercell_matrix</span></div>
+
+<div class="viewcode-block" id="HexagonalStructure"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure">[docs]</a><span class="k">class</span> <span class="nc">HexagonalStructure</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    deals with hexagonal close-packed structure</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="HexagonalStructure.__init__"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+           <span class="bp">self</span><span class="p">,</span>
+           <span class="n">a</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+           <span class="n">c</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+           <span class="n">symbol</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
+           <span class="n">wyckoff</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">,</span>
+           <span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            a (str): the norm of a axis</span>
+<span class="sd">            c (str): the norm of c axis</span>
+<span class="sd">            symbol (str): element symbol</span>
+<span class="sd">            lattice (np.array): if None, default lattice is set</span>
+<span class="sd">            wyckoff (str): No.194 Wycoff position (&#39;c&#39; or &#39;d&#39;)</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: either a or c is negative value</span>
+<span class="sd">            AssertionError: wyckoff is not &#39;c&#39; and &#39;d&#39;</span>
+<span class="sd">            ValueError: lattice is not None (future fix)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">,</span> <span class="s2">&quot;input &#39;a&#39; and &#39;c&#39; must be positive value&quot;</span>
+        <span class="k">if</span> <span class="n">lattice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.</span><span class="p">,</span>           <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                                <span class="p">[</span>  <span class="mf">0.</span><span class="p">,</span>           <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;lattice option is currently invalid&quot;</span>
+                             <span class="s2">&quot; (write future)&quot;</span><span class="p">)</span>
+        <span class="n">lat_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">atoms_from_lp</span> <span class="o">=</span> <span class="n">get_atom_positions</span><span class="p">(</span><span class="n">wyckoff</span><span class="p">)</span>
+        <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal</span> <span class="o">=</span> <span class="p">(</span><span class="n">lattice</span><span class="p">,</span>
+                           <span class="n">lat_points</span><span class="p">,</span>
+                           <span class="n">atoms_from_lp</span><span class="p">,</span>
+                           <span class="n">symbols</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span> <span class="o">=</span> <span class="n">symbol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wyckoff</span> <span class="o">=</span> <span class="n">wyckoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span> <span class="o">=</span> <span class="n">Lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_funcion</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span> <span class="o">=</span> <span class="mf">0.</span></div>
+
+<div class="viewcode-block" id="HexagonalStructure._parent_not_set"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure._parent_not_set">[docs]</a>    <span class="k">def</span> <span class="nf">_parent_not_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;parent_matrix is not set&quot;</span>
+                               <span class="s2">&quot;run set_parent first&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        symbol</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">wyckoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        wyckoff position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wyckoff</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hexagonal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        hexagonal structure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hexagonal_lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        hexagonal lattice</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        indices of twinmode</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">parent_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        parent matrix</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shear_strain_function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        shear shear strain function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_funcion</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shear_strain_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        shear shear strain ratio</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span>
+
+<div class="viewcode-block" id="HexagonalStructure.set_parent"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.set_parent">[docs]</a>    <span class="k">def</span> <span class="nf">set_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">twinmode</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        set parent</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            twinmode (str): twinmode</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            set attribute &#39;indices&#39;</span>
+<span class="sd">            set attribute &#39;parent_matrix&#39;</span>
+<span class="sd">            set attribute &#39;shear_function&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="n">get_twin_indices</span><span class="p">(</span><span class="n">twinmode</span><span class="o">=</span><span class="n">twinmode</span><span class="p">,</span>
+                                         <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span><span class="p">,</span>
+                                         <span class="n">wyckoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_wyckoff</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span> <span class="o">=</span> <span class="n">_get_supercell_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_funcion</span> <span class="o">=</span> <span class="n">get_shear_strain_function</span><span class="p">(</span><span class="n">twinmode</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HexagonalStructure.add_shear"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.add_shear">[docs]</a>    <span class="k">def</span> <span class="nf">add_shear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ratio</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        add shear to parent structure</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ratio (float): the ratio of shear value</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            set attribute &#39;shear_strain_ratio&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span> <span class="o">=</span> <span class="n">ratio</span></div>
+
+<div class="viewcode-block" id="HexagonalStructure.get_structure"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.get_structure">[docs]</a>    <span class="k">def</span> <span class="nf">get_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;tuple&#39;</span><span class="p">,</span> <span class="n">is_primitive</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get structure</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            style (str): determine the structure style,</span>
+<span class="sd">              choose from &#39;tuple&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">unitcell</span> <span class="o">=</span> <span class="n">PhonopyAtoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">],</span>
+                        <span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
+                        <span class="n">scaled_positions</span><span class="o">=</span><span class="p">[[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
+        <span class="n">super_lattice</span> <span class="o">=</span> <span class="n">Supercell</span><span class="p">(</span><span class="n">unitcell</span><span class="o">=</span><span class="n">unitcell</span><span class="p">,</span>
+                                  <span class="n">supercell_matrix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
