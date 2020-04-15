@@ -11,6 +11,7 @@ branches:
 
 language: python - "3.6"
 
+
 # before_install will simply setup a conda enviroment for installing python packages, if you
 # have project dependencies it's usually recommended to go this route
 # before_install:
