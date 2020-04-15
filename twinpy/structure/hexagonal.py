@@ -8,104 +8,11 @@ HexagonalStructure
 import numpy as np
 import spglib
 from typing import Union
-
-def get_atom_positions(wyckoff:str) -> np.array:
-    """
-    get atom positions in Hexagonal Close-Packed
-
-    Args:
-        wyckoff (str): wyckoff letter, choose 'c' or 'd'
-
-    Returns:
-        np.array: atom positions
-    """
-    assert wyckoff in ['c', 'd'], "wyckoff must be 'c' or 'd'"
-    if wyckoff == 'c':
-        atom_positions = \
-            np.array([[ 1/3, -1/3,  1/4],
-                      [-1/3,  1/3, -1/4]])  # No.194, wyckoff 'c'
-    else:
-        atom_positions = \
-            np.array([[ 1/3, -1/3, -1/4],
-                      [-1/3,  1/3,  1/4]])  # No.194, wyckoff 'd'
-    return atom_positions
-
-def convert_direction_from_four_to_three(four:Union[list,
-                                                    np.array,
-                                                    tuple]) -> tuple:
-    """
-    convert direction from four to three
-
-    Args:
-        four: four indices of hexagonal direction
-
-    Returns:
-        tuple: three indices
-    """
-    assert len(four) == 4, "the length of input list is not four"
-    u, v, t, w  = four
-    np.testing.allclose(u+v+t, err_msg="u+v+t is not equal to 0")
-    U = u - t
-    V = v - t
-    W = w
-    return (U, V, W)
-
-def convert_direction_from_three_to_four(three:Union[list,
-                                                     np.array,
-                                                     tuple]) -> tuple:
-    """
-    convert direction from three to four
-
-    Args:
-        three: three indices of hexagonal direction
-
-    Returns:
-        tuple: four indices
-    """
-    assert len(three) == 3, "the length of input list is not three"
-    U, V, W  = three
-    u = ( 2 * U - V ) / 3
-    v = ( 2 * V - U ) / 3
-    t = - ( u + v )
-    w = W
-    return (u, v, t, w)
-
-def convert_plane_from_four_to_three(four:Union[list,
-                                                np.array,
-                                                tuple]) -> tuple:
-    """
-    convert plane from four to three
-
-    Args:
-        four: four indices of hexagonal plane
-
-    Returns:
-        tuple: three indices
-    """
-    assert len(four) == 4, "the length of input list is not four"
-    h, k, i, l = four
-    np.testing.allclose(h+k+i, err_msg="h+k+i is not equal to 0")
-    H = h
-    K = k
-    L = l
-    return (H, K, L)
-
-def convert_plane_from_three_to_four(three:Union[list,
-                                                 np.array,
-                                                 tuple]) -> tuple:
-    """
-    convert plane from three to four
-
-    Args:
-        three: three indices of hexagonal plane
-
-    Returns:
-        tuple: four indices
-    """
-    assert len(three) == 3, "the length of input list is not three"
-    h, k, l = three
-    i = - ( h + k )
-    return (h, k, i, l)
+from twinpy.common.utils import get_ratio
+from twinpy.properties.hexagonal import get_atom_positions
+from twinpy.properties.twinmode import (get_shear_strain_function,
+                                        get_twin_indices)
+from twinpy.lattice.lattice import Lattice
 
 def is_hcp(lattice, positions, symbols):
     """
@@ -128,13 +35,17 @@ def is_hcp(lattice, positions, symbols):
                                            [0, 0]))
     spg_symbol = dataset['international']
     wyckoffs = dataset['wyckoffs']
-    print(spg_symbol)
     assert spg_symbol != 'P6_3/mmc', \
             "space group of input structure is {} not 'P6_3/mmc'" \
             .format(spg_symbol)
-    wyckoffs.append('e')
     assert wyckoffs in [['c'] * 2, ['d'] * 2]
 
+def _get_supercell_matrix(indices):
+    tf1 = np.array(get_ratio(indices['m'].three))
+    tf2 = np.array(get_ratio(indices['eta1'].three))
+    tf3 = np.array(get_ratio(indices['eta2'].three))
+    supercell_matrix = np.vstack([tf1, tf2, tf3]).T
+    return supercell_matrix
 
 class HexagonalStructure():
     """
@@ -183,70 +94,97 @@ class HexagonalStructure():
         lat_points = np.zeros(3)
         atoms_from_lp = get_atom_positions(wyckoff)
         symbols = [symbol] * 2
-        self.__primitive = (lattice,
-                            lat_points,
-                            atoms_from_lp,
-                            symbols)
+        self._hexagonal = (lattice,
+                           lat_points,
+                           atoms_from_lp,
+                           symbols)
+        self._hexagonal_lattice = Lattice(lattice)
+        self._wyckoff = wyckoff
+        self._indices = None
+        self._parent_matrix = None
+        self._shear_strain_funcion = None
+        self._shear_strain_ratio = 0.
+
+    def _parent_not_set(self):
+        if self._parent_matrix is None:
+            raise RuntimeError("parent_matrix is not set"
+                               "run set_parent first")
 
     @property
-    def primitive(self):
+    def hexagonal(self):
         """
         hexagonal structure
         """
-        return self.__primitive
+        return self._hexagonal
 
-    def convert_direction_from_four_to_three(self, four:Union[list,
-                                                              np.array,
-                                                              tuple]) -> tuple:
+    @property
+    def hexagonal_lattice(self):
         """
-        convert direction from four to three
+        hexagonal lattice
+        """
+        return self._hexagonal_lattice
+
+    @property
+    def indices(self):
+        """
+        indices of twinmode
+        """
+        return self._indices
+
+    @property
+    def parent_matrix(self):
+        """
+        parent matrix
+        """
+        return self._parent_matrix
+
+    @property
+    def wyckoff(self):
+        """
+        wyckoff position
+        """
+        return self._wyckoff
+
+    @property
+    def shear_strain_function(self):
+        """
+        shear shear strain function
+        """
+        return self._shear_strain_funcion
+
+    @property
+    def shear_strain_ratio(self):
+        """
+        shear shear strain ratio
+        """
+        return self._shear_strain_ratio
+
+    def set_parent(self, twinmode:str):
+        """
+        set parent
 
         Args:
-            four: four indices of hexagonal direction
+            twinmode (str): twinmode
 
-        Returns:
-            tuple: three indices
+        Note:
+            set attribute 'indices'
+            set attribute 'parent_matrix'
+            set attribute 'shear_function'
         """
-        return convert_direction_from_three_to_four(four)
+        self._indices = get_twin_indices(twinmode=twinmode,
+                                         lattice=self._hexagonal_lattice,
+                                         wyckoff=self._wyckoff)
+        self._parent_matrix = _get_supercell_matrix(self._indices)
+        self._shear_strain_funcion = get_shear_strain_function(twinmode)
 
-    def convert_direction_from_three_to_four(self, three:Union[list,
-                                                               np.array,
-                                                               tuple]) -> tuple:
+    def add_shear(self, ratio):
         """
-        convert direction from three to four
+        add shear to parent structure
 
         Args:
-            three: three indices of hexagonal direction
+            ratio (float): the ratio of shear value
 
-        Returns:
-            tuple: four indices
+        Note:
+            set attribute 'shear_strain_ratio'
         """
-        return convert_direction_from_three_to_four(three)
-
-    def convert_plane_from_four_to_three(self, four:Union[list,
-                                                          np.array,
-                                                          tuple]) -> tuple:
-        """
-        convert plane from four to three
-
-        Args:
-            four: four indices of hexagonal plane
-
-        Returns:
-            tuple: three indices
-        """
-        return convert_plane_from_four_to_three
-
-    def convert_plane_from_three_to_four(self, three:Union[list,
-                                                           np.array,
-                                                           tuple]) -> tuple:
-        """
-        convert plane from three to four
-
-        Args:
-            three: three indices of hexagonal plane
-
-        Returns:
-            tuple: four indices
-        """
-        return convert_plane_from_three_to_four(three)
+        self._shear_strain_ratio = ratio

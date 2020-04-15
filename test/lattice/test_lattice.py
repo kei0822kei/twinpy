@@ -7,7 +7,7 @@ test twinpy/lattice/lattice.py
 
 import unittest
 import numpy as np
-from twinpy.lattice.lattice import (is_hexagonal_lattice,
+from twinpy.lattice.lattice import (check_hexagonal_lattice,
                                     Lattice)
 
 class TestLattice(unittest.TestCase):
@@ -34,8 +34,8 @@ class TestLattice(unittest.TestCase):
         lattice = np.eye(3) * np.array([[a,b,c]]).T
         return lattice
 
-    def test_is_hexagonal_lattice(self):
-        is_hexagonal_lattice(self.hexagonal.lattice)
+    def test_check_hexagonal_lattice(self):
+        check_hexagonal_lattice(self.hexagonal.lattice)
 
     def test_reciprocal_lattice(self):
         """

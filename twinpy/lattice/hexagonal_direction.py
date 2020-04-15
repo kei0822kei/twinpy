@@ -6,6 +6,7 @@ hexagonal direction
 """
 
 import numpy as np
+from typing import Union
 from .lattice import Lattice
 
 def convert_direction_from_four_to_three(four:Union[list,
@@ -26,7 +27,7 @@ def convert_direction_from_four_to_three(four:Union[list,
     """
     assert len(four) == 4, "the length of input list is not four"
     u, v, t, w  = four
-    np.testing.allclose(u+v+t, err_msg="u+v+t is not equal to 0")
+    assert (u + v + t) == 0, "u+v+t is not equal to 0"
     U = u - t
     V = v - t
     W = w
@@ -34,7 +35,7 @@ def convert_direction_from_four_to_three(four:Union[list,
 
 def convert_direction_from_three_to_four(three:Union[list,
                                                      np.array,
-                                                     tuple]) -> array:
+                                                     tuple]) -> np.array:
     """
     convert direction from three to four
 
@@ -56,24 +57,16 @@ def convert_direction_from_three_to_four(three:Union[list,
     return np.array([u, v, t, w])
 
 
-class HexagonalDirection():
+class HexagonalDirection(Lattice):
     """
     deals with hexagonal direction
-
-       .. attribute:: three
-
-          direct indice (three)
-
-       .. attribute:: four
-
-          direct indice (four)
     """
 
     def __init__(
            self,
-           lattice:Lattice,
-           three:'list or np.array'=None,
-           four:'list or np.array'=None,
+           lattice:np.array,
+           three:Union[list,np.array,tuple]=None,
+           four:Union[list,np.array,tuple]=None,
        ):
         """
         Args:
@@ -82,6 +75,7 @@ class HexagonalDirection():
             four: direction indice (four)
         """
         super().__init__(lattice=lattice)
+        # super().__init__()
         self._three = three
         self._four = four
         self.reset_indices(self._three, self._four)
@@ -119,6 +113,12 @@ class HexagonalDirection():
 
         self._three = np.array(three)
         self._four = np.array(four)
+
+    def inverse(self):
+        """
+        set inversed plane ex. (10-12) => (-101-2)
+        """
+        self.reset_indices(three=self.three*(-1))
 
     def get_cartesian(self, normalize:bool=False) -> np.array:
         """

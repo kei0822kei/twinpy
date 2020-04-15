@@ -6,7 +6,9 @@ hexagonal plane
 """
 
 import numpy as np
+from typing import Union
 from .lattice import Lattice
+from .hexagonal_direction import HexagonalDirection
 
 def convert_plane_from_four_to_three(four:Union[list,
                                                 np.array,
@@ -22,7 +24,7 @@ def convert_plane_from_four_to_three(four:Union[list,
     """
     assert len(four) == 4, "the length of input list is not four"
     h, k, i, l = four
-    np.testing.allclose(h+k+i, err_msg="h+k+i is not equal to 0")
+    assert (h+k+i) == 0, "h+k+i is not equal to 0"
     H = h
     K = k
     L = l
@@ -108,7 +110,11 @@ class HexagonalPlane(Lattice):
         self._three = np.array(three)
         self._four = np.array(four)
 
-
+    def inverse(self):
+        """
+        set inversed plane ex. (10-12) => (-101-2)
+        """
+        self.reset_indices(three=self.three*(-1))
 
     def get_direction_normal_to_plane(self) -> HexagonalDirection:
         """
@@ -117,10 +123,10 @@ class HexagonalPlane(Lattice):
         Returns:
             HexagonalDirection: direction normal to plane
         """
-        tf_matrix = self.lattice.matrix.T
-        res_tf_matrix = self.lattice.reciprocal_lattice.matrix.T
+        tf_matrix = self.lattice.T
+        res_tf_matrix = self.reciprocal_lattice.T
         direction = np.dot(np.linalg.inv(tf_matrix),
-                np.dot(res_tf_matrix, self.__three.reshape([3,1]))).reshape(3)
+                np.dot(res_tf_matrix, self.three.reshape([3,1]))).reshape(3)
         return HexagonalDirection(lattice=self.lattice,
                                   three=direction)
 
@@ -129,68 +135,70 @@ class HexagonalPlane(Lattice):
         get dicstance from plane
 
         Args:
-            frac_coords ((3,) numpy array): fractional coorinates
+            frac_coords (array): fractional coorinates
 
         Returns:
             float: distance
         """
         frac_coord = frac_coord.reshape(1,3)
         k = self.get_direction_normal_to_plane()
-        k_cart = np.dot(self.lattice.matrix.T, k.three.reshape(1,3).T).T
+        k_cart = np.dot(self.lattice.T, k.three.reshape(1,3).T).T
         d = abs(np.dot(k_cart / np.linalg.norm(k_cart),
-                       np.dot(self.lattice.matrix.T, frac_coord.T))[0,0])
+                       np.dot(self.lattice.T, frac_coord.T))[0,0])
         return d
 
-    def get_equivalent_plane(self, unique=True, get_recp_operation=False):
-        """
-        get equivelent plane
 
-        Args:
-            unique (bool): if True,
-              only get planes whose l > 0 where plane(hkil)
-            get_operation (bool): whether get corresponding operations
 
-        Returns:
-            list: case get_operation=False, equivelent planes
-            tuple: case get_operation=True, equivelent planes and
-              corresponding operations
+    # def get_equivalent_plane(self, unique=True, get_recp_operation=False):
+    #     """
+    #     get equivelent plane
 
-        Note:
-            P6/mmm has 24 point group operations, but half of them
-            becomes duplicated and they are automatically removed.
+    #     Args:
+    #         unique (bool): if True,
+    #           only get planes whose l > 0 where plane(hkil)
+    #         get_operation (bool): whether get corresponding operations
 
-        Todo:
-            If point group operation of reciprocal_lattice is used,
-            error occurs because their rotations matrix is different
-            from direct ones, but I do not understand deeply about this.
+    #     Returns:
+    #         list: case get_operation=False, equivelent planes
+    #         tuple: case get_operation=True, equivelent planes and
+    #           corresponding operations
 
-            And also error occurs if K1 indices is used,
-            probably it is necessary to use indices of k1
+    #     Note:
+    #         P6/mmm has 24 point group operations, but half of them
+    #         becomes duplicated and they are automatically removed.
 
-            How to calculate get_recp_symmetry_operation ?
-            How to transform recp symmetry operation to real space ?
-        """
-        operations = self.lattice.get_recp_symmetry_operation()
-        threes = []
-        planes_recp_operations = []
-        for operation in operations:
-            three = np.dot(
-                operation.rotation_matrix, self.__three).T.astype(int).tolist()
-            if unique:
-                if three[2] < 0:
-                    continue
-            if three not in threes:
-                threes.append(three)
-                if get_recp_operation:
-                    planes_recp_operations.append(operation)
+    #     Todo:
+    #         If point group operation of reciprocal_lattice is used,
+    #         error occurs because their rotations matrix is different
+    #         from direct ones, but I do not understand deeply about this.
 
-        planes = []
-        for equivelent in threes:
-            plane = deepcopy(self)
-            plane.reset_indices(three=equivelent)
-            planes.append(plane)
+    #         And also error occurs if K1 indices is used,
+    #         probably it is necessary to use indices of k1
 
-        if get_recp_operation:
-            return (planes, planes_recp_operations)
-        else:
-            return planes
+    #         How to calculate get_recp_symmetry_operation ?
+    #         How to transform recp symmetry operation to real space ?
+    #     """
+    #     operations = self.lattice.get_recp_symmetry_operation()
+    #     threes = []
+    #     planes_recp_operations = []
+    #     for operation in operations:
+    #         three = np.dot(
+    #             operation.rotation_matrix, self.__three).T.astype(int).tolist()
+    #         if unique:
+    #             if three[2] < 0:
+    #                 continue
+    #         if three not in threes:
+    #             threes.append(three)
+    #             if get_recp_operation:
+    #                 planes_recp_operations.append(operation)
+
+    #     planes = []
+    #     for equivelent in threes:
+    #         plane = deepcopy(self)
+    #         plane.reset_indices(three=equivelent)
+    #         planes.append(plane)
+
+    #     if get_recp_operation:
+    #         return (planes, planes_recp_operations)
+    #     else:
+    #         return planes

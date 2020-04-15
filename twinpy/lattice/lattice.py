@@ -7,7 +7,7 @@ Lattice class
 
 import numpy as np
 
-def is_hexagonal_lattice(lattice):
+def check_hexagonal_lattice(lattice):
     """
     check input lattice is hexagonal lattice
 
@@ -26,6 +26,23 @@ def is_hexagonal_lattice(lattice):
             err_msg="angles of lattice was {}, which is not hexagonal". \
                     format(actual),
             )
+
+def create_hexagonal_lattice(a:float, c:float):
+    """
+    create hexagonal lattice
+
+    Args:
+        a (float): norm of a axis
+        c (float): norm of c axis
+
+    Returns:
+        Lattice: lattice object
+    """
+    lattice = np.array([[  1.,           0., 0.],
+                        [-0.5, np.sqrt(3)/2, 0.],
+                        [  0.,           0., 1.]]) \
+                       * np.array([[a,a,c]]).T
+    return lattice
 
 
 class Lattice():
@@ -171,3 +188,14 @@ class Lattice():
         return float(np.dot(np.dot(frac_coord_first.T,
                                    self.metric),
                             frac_coord_second))
+
+    def is_hexagonal_lattice(self):
+        """
+        check lattice is hexagonal
+        """
+        try:
+            check_hexagonal_lattice(self.lattice)
+            flag = True
+        except AssertionError:
+            flag = False
+        return flag
