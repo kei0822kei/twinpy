@@ -44,6 +44,7 @@ class TestHexagonalStructure(unittest.TestCase):
                     symbol=self.symbol,
                     wyckoff='c',
                     lattice=np.array([1,1,1]))
+            raise RuntimeError("unexpectedly passed fail case!")
         except ValueError:
             pass
         try:
@@ -52,6 +53,7 @@ class TestHexagonalStructure(unittest.TestCase):
                     c=self.c,
                     symbol=self.symbol,
                     wyckoff='a')
+            raise RuntimeError("unexpectedly passed fail case!")
         except AssertionError:
             pass
         try:
@@ -60,13 +62,14 @@ class TestHexagonalStructure(unittest.TestCase):
                     c=4.,
                     symbol=self.symbol,
                     wyckoff='c')
+            raise RuntimeError("unexpectedly passed fail case!")
         except AssertionError:
             pass
         try:
-            failcase_4 = structure.primitive
-            is_hcp(failcase_4[0],
-                   failcase_4[2],
+            is_hcp(structure.hexagonal_lattice.lattice,
+                   structure.atoms_from_lattice_points,
                    ['Ti', 'Mg'])
+            raise RuntimeError("unexpectedly passed fail case!")
         except AssertionError:
             pass
 

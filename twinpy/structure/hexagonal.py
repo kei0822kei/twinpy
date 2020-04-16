@@ -15,6 +15,7 @@ from twinpy.properties.hexagonal import get_atom_positions
 from twinpy.properties.twinmode import (get_shear_strain_function,
                                         get_twin_indices)
 from twinpy.lattice.lattice import Lattice
+from twinpy.lattice.hexagonal_plane import HexagonalPlane
 
 def is_hcp(lattice, positions, symbols):
     """
@@ -37,7 +38,7 @@ def is_hcp(lattice, positions, symbols):
                                            [0, 0]))
     spg_symbol = dataset['international']
     wyckoffs = dataset['wyckoffs']
-    assert spg_symbol != 'P6_3/mmc', \
+    assert spg_symbol == 'P6_3/mmc', \
             "space group of input structure is {} not 'P6_3/mmc'" \
             .format(spg_symbol)
     assert wyckoffs in [['c'] * 2, ['d'] * 2]
@@ -83,25 +84,31 @@ class HexagonalStructure():
         else:
             raise ValueError("lattice option is currently invalid"
                              " (write future)")
-        lat_points = np.zeros(3)
         atoms_from_lp = get_atom_positions(wyckoff)
         symbols = [symbol] * 2
-        self._hexagonal = (lattice,
-                           lat_points,
-                           atoms_from_lp,
-                           symbols)
+        self._r = c / a
         self._symbol = symbol
         self._wyckoff = wyckoff
+        self._atoms_from_lattice_points = \
+                get_atom_positions(wyckoff=self._wyckoff)
         self._hexagonal_lattice = Lattice(lattice)
         self._indices = None
         self._parent_matrix = np.eye(3)
         self._shear_strain_funcion = None
         self._shear_strain_ratio = 0.
+        self._build = None
 
     def _parent_not_set(self):
         if self._parent_matrix is None:
             raise RuntimeError("parent_matrix is not set"
                                "run set_parent first")
+
+    @property
+    def r(self):
+        """
+        r ( = c / a )
+        """
+        return self._r
 
     @property
     def symbol(self):
@@ -118,11 +125,11 @@ class HexagonalStructure():
         return self._wyckoff
 
     @property
-    def hexagonal(self):
+    def atoms_from_lattice_points(self):
         """
-        hexagonal structure
+        atoms from lattice points
         """
-        return self._hexagonal
+        return self._atoms_from_lattice_points
 
     @property
     def hexagonal_lattice(self):
@@ -159,6 +166,25 @@ class HexagonalStructure():
         """
         return self._shear_strain_ratio
 
+    @property
+    def build(self):
+        """
+        build structure
+        """
+        return self._build
+
+    def _get_shear_matrix(self):
+        plane = HexagonalPlane(lattice=self._hexagonal_lattice.lattice,
+                               four=self._indices['K1'].four)
+        d = plane.get_distance_from_plane(self._indices['eta2'].three)
+        gamma = self._shear_strain_funcion(self._r)
+        norm_eta1 = plane.get_cartesian(self._indices['eta1'].three)
+        s = gamma * d / norm_eta1
+
+        shear_matrix = np.eye(3)
+        shear_matrix[1,2] = self._shear_strain_ratio * s
+        return shear_matrix
+
     def set_parent(self, twinmode:str):
         """
         set parent
@@ -177,9 +203,9 @@ class HexagonalStructure():
         self._parent_matrix = _get_supercell_matrix(self._indices)
         self._shear_strain_funcion = get_shear_strain_function(twinmode)
 
-    def add_shear(self, ratio):
+    def set_shear_ratio(self, ratio):
         """
-        add shear to parent structure
+        set shear ratio
 
         Args:
             ratio (float): the ratio of shear value
@@ -189,16 +215,31 @@ class HexagonalStructure():
         """
         self._shear_strain_ratio = ratio
 
-    def get_structure(self, style='tuple', is_primitive=False):
+    def build(self, is_primitive=False):
         """
-        get structure
+        build structure
 
         Args:
             style (str): determine the structure style,
               choose from 'tuple'
         """
+        lattice_points = np.array([[0.,0.,0.]])
         unitcell = PhonopyAtoms(symbols=['X'],
                         cell=self._hexagonal_lattice.lattice,
-                        scaled_positions=[[0., 0., 0.]])
-        super_lattice = Supercell(unitcell=unitcell,
-                                  supercell_matrix=self._parent_matrix)
+                        scaled_positions=lattice_points)
+
+        if is_primitive:
+            shear_matrix = self._get_shear_matrix()
+            shear_lattice = \
+                    np.dot(self._hexagonal_lattice.lattice.T,
+                           np.dot(self._parent_matrix,
+                                  np.dot(shear_matrix,
+                                         np.linalg.inv(self._parent_matrix))))
+            self._build = (shear_lattice,
+                           lattice_points,
+                           self._atoms_from_lattice_points,
+                           self._symbol)
+        else:
+            # super_lattice = Supercell(unitcell=unitcell,
+            #                           supercell_matrix=self._parent_matrix)
+            raise ValueError("future write is the case of 'is_primitive=False'")

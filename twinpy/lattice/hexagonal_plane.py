@@ -135,7 +135,7 @@ class HexagonalPlane(Lattice):
         get dicstance from plane
 
         Args:
-            frac_coords (np.array): fractional coorinates
+            frac_coord (np.array): fractional coorinate
 
         Returns:
             float: distance
@@ -146,6 +146,21 @@ class HexagonalPlane(Lattice):
         d = abs(np.dot(k_cart / np.linalg.norm(k_cart),
                        np.dot(self.lattice.T, frac_coord.T))[0,0])
         return d
+
+    def get_cartesian(self, frac_coord) -> np.array:
+        """
+        get cartesian coordinate of the input frac_coord
+
+        Args:
+            frac_coord (np.array): fractional coorinate
+
+        Returns:
+            np.array: cartesian coorinate
+        """
+        frac_coord = frac_coord.reshape(1,3)
+        cart_coord = np.dot(self._lattice.T, frac_coord).reshape(3)
+        return cart_coord
+
 
 
 
