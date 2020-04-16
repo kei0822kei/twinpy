@@ -1,0 +1,643 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>structure &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script src="../_static/contentui.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within twinpy 0.0.1 documentation"
+          href="../_static/opensearch.xml"/>
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Developer guide" href="../developer_guide/index.html" />
+    <link rel="prev" title="properties" href="properties.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Definitions</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="lattice.html">lattice</a></li>
+<li class="toctree-l2"><a class="reference internal" href="properties.html">properties</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">structure</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#hexagonal-structure">Hexagonal Structure</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#set-parent">set parent</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#future-edited">FUTURE EDITED</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#get-sheared-structure">get_sheared_structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#get-twin-structure">get_twin_structure</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#hexagonaltwinboundary">HexagonalTwinBoundary</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#init">__init__</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">get_sheared_structure</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Definitions</a> &raquo;</li>
+        
+      <li>structure</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="structure">
+<h1>structure<a class="headerlink" href="#structure" title="Permalink to this headline">¶</a></h1>
+<p>In this page, some formulations are provided used in structure.py file.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#hexagonal-structure" id="id2">Hexagonal Structure</a></p>
+<ul>
+<li><p><a class="reference internal" href="#set-parent" id="id3">set parent</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#future-edited" id="id4">FUTURE EDITED</a></p>
+<ul>
+<li><p><a class="reference internal" href="#get-sheared-structure" id="id5">get_sheared_structure</a></p></li>
+<li><p><a class="reference internal" href="#get-twin-structure" id="id6">get_twin_structure</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#hexagonaltwinboundary" id="id7">HexagonalTwinBoundary</a></p>
+<ul>
+<li><p><a class="reference internal" href="#init" id="id8">__init__</a></p></li>
+<li><p><a class="reference internal" href="#id1" id="id9">get_sheared_structure</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="hexagonal-structure">
+<h2><a class="toc-backref" href="#id2">Hexagonal Structure</a><a class="headerlink" href="#hexagonal-structure" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="set-parent">
+<h3><a class="toc-backref" href="#id3">set parent</a><a class="headerlink" href="#set-parent" title="Permalink to this headline">¶</a></h3>
+<p>Parent lattice can be defined by specifying twin mode.
+By this, the following properties are determined.</p>
+<ol class="arabic simple">
+<li><p>twin indices</p></li>
+<li><p>shear strain functoin <span class="math notranslate nohighlight">\(\gamma(r)\)</span></p></li>
+<li><p>parent matrix</p></li>
+</ol>
+</div>
+</div>
+<div class="section" id="future-edited">
+<h2><a class="toc-backref" href="#id4">FUTURE EDITED</a><a class="headerlink" href="#future-edited" title="Permalink to this headline">¶</a></h2>
+<p>First, supercell matrix <span class="math notranslate nohighlight">\(\boldsymbol{M}\)</span> is constructed as bellow</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{m}^{p},
+ \boldsymbol{\eta}^{p}_1,
+ \boldsymbol{\eta}^{p}_2]
+=
+[\boldsymbol{a}_1,
+ \boldsymbol{a}_2,
+ \boldsymbol{c}]
+\boldsymbol{M}.\]</div>
+<p>where <span class="math notranslate nohighlight">\(\boldsymbol{m}^{p}\)</span>,
+<span class="math notranslate nohighlight">\(\boldsymbol{\eta}^{p}_1\)</span> and
+<span class="math notranslate nohighlight">\(\boldsymbol{\eta}^{p}_2\)</span> are
+a little bit different from the ones in ‘get_twin_indices’ in twinmode.py
+because they are rescaled to be the vectors whose element are all integer.
+Therefore, every element of supercell matrix
+<span class="math notranslate nohighlight">\(\boldsymbol{M}\)</span> is integer.
+In this step, the positions of the lattice points
+in the original hexagonal lattice <span class="math notranslate nohighlight">\(\boldsymbol{X}^{p}_{lat}\)</span> and
+the relative positions of the atoms from each lattice point
+<span class="math notranslate nohighlight">\(\boldsymbol{X}^{p}_{atm}\)</span> are defined in
+<span class="math notranslate nohighlight">\([\boldsymbol{m}^{p}, \boldsymbol{\eta}^{p}_1, \boldsymbol{\eta}^{p}_2]\)</span> basis
+where</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{a}_1,
+ \boldsymbol{a}_2,
+ \boldsymbol{c}]
+\boldsymbol{X}_{atm}
+=
+[\boldsymbol{m}^{p},
+ \boldsymbol{\eta}^{p}_1,
+ \boldsymbol{\eta}^{p}_2]
+\boldsymbol{X}^{p}_{atm}
+=
+[\boldsymbol{a}_1,
+ \boldsymbol{a}_2,
+ \boldsymbol{c}]
+\boldsymbol{M} \boldsymbol{X}^{p}_{atm}\]</div>
+<p>so</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{X}^{p}_{atm} = \boldsymbol{M}^{-1} \boldsymbol{X}_{atm}\]</div>
+<p>In the next step, the cartesian basis vectors from
+<span class="math notranslate nohighlight">\([\boldsymbol{e}_x, \boldsymbol{e}_y, \boldsymbol{e}_z]\)</span> to
+<span class="math notranslate nohighlight">\([\boldsymbol{e}_{\boldsymbol{m}^{p}},
+\boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+\boldsymbol{e}_{\boldsymbol{k}^{p}_1}]\)</span>
+where
+<span class="math notranslate nohighlight">\(\boldsymbol{e}_{\boldsymbol{m}^{p}}
+= \frac{\boldsymbol{m}^{p}}{|\boldsymbol{m}^{p}|}\)</span>
+<span class="math notranslate nohighlight">\(\boldsymbol{e}_{\boldsymbol{\eta}^{p}_1}
+= \frac{\boldsymbol{\eta}^{p}_1}{|\boldsymbol{\eta}^{p}_1|}\)</span>
+<span class="math notranslate nohighlight">\(\boldsymbol{e}_{\boldsymbol{k}^{p}_1}
+= \frac{\boldsymbol{k}_1}{|\boldsymbol{k}_1|}\)</span>.
+In this step, rotation matrix <span class="math notranslate nohighlight">\(\boldsymbol{R}\)</span> is defined</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+=
+[\boldsymbol{e}_x, \boldsymbol{e}_y, \boldsymbol{e}_z]
+\boldsymbol{R}\]</div>
+<p><span class="math notranslate nohighlight">\(\boldsymbol{R}\)</span> is orthogonal matrix.</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{R}^{-1} = \boldsymbol{R}^{T}\]</div>
+<p>If the number vectors <span class="math notranslate nohighlight">\(\boldsymbol{X}_{0}\)</span> are transformed to
+<span class="math notranslate nohighlight">\(\boldsymbol{X}^{p}_{0}\)</span> by this operation, the following relations hold.</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{e}_x, \boldsymbol{e}_y, \boldsymbol{e}_z]
+\boldsymbol{X}_{0}
+=
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{X}^{p}_{0}
+=
+[\boldsymbol{e}_x, \boldsymbol{e}_y, \boldsymbol{e}_z]
+\boldsymbol{R} \boldsymbol{X}^{p}_{0}\]</div>
+<p>so</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{X}^{p}_{0}
+=
+\boldsymbol{R}^{-1} \boldsymbol{X}_{0}
+=
+\boldsymbol{R}^{T} \boldsymbol{X}_{0}\]</div>
+<p>Be careful if you use <cite>def pymatgen.core.structure.Structure.apply_operation</cite>,
+<strong>its input rotation matrix is</strong> <span class="math notranslate nohighlight">\(\boldsymbol{R}^{T}\)</span>,
+<strong>NOT</strong> <span class="math notranslate nohighlight">\(\boldsymbol{R}\)</span>.</p>
+<p>In the last step, parent lattice <span class="math notranslate nohighlight">\(\boldsymbol{L}_p\)</span> is defined as</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{m}^{p},
+ \boldsymbol{\eta}^{p}_1,
+ \boldsymbol{\eta}^{p}_2]
+=
+[\boldsymbol{a}_1, \boldsymbol{a}_2, \boldsymbol{c}]
+\boldsymbol{M}
+=
+[\boldsymbol{e}_x, \boldsymbol{e}_y, \boldsymbol{e}_z]
+\boldsymbol{H} \boldsymbol{M}
+=
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{R}^{-1} \boldsymbol{H} \boldsymbol{M}
+\equiv
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{L}_p\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{L}^p = \boldsymbol{R}^{-1} \boldsymbol{H} \boldsymbol{M}.\]</div>
+<p>The coordinates of each points in
+<span class="math notranslate nohighlight">\([\boldsymbol{m}^{p}, \boldsymbol{\eta}^{p}_1, \boldsymbol{\eta}^{p}_2]\)</span>
+basis such as <span class="math notranslate nohighlight">\(\boldsymbol{X}^{p}_{lat}\)</span> and
+<span class="math notranslate nohighlight">\(\boldsymbol{X}^{p}_{atm}\)</span>
+<strong>DOES NOT</strong> be affected by this transformation.</p>
+<p><strong>HOWEVER</strong>, <span class="math notranslate nohighlight">\(\boldsymbol{X}^{p}_{atm}\)</span> may have to revise
+because two rigid atoms must be the nearest atoms from the specified
+<span class="math notranslate nohighlight">\(\boldsymbol{K}_1\)</span> plane. In the case you choose ‘c’ wyckoff letter,
+this revising (probably) always occur.</p>
+<div class="section" id="get-sheared-structure">
+<h3><a class="toc-backref" href="#id5">get_sheared_structure</a><a class="headerlink" href="#get-sheared-structure" title="Permalink to this headline">¶</a></h3>
+<p>When the shear ratio is <span class="math notranslate nohighlight">\(\boldsymbol{r}\)</span>,
+the basis vectors of sheared structure are given as</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{m}^{s},
+ \boldsymbol{\eta}^{s}_1,
+ \boldsymbol{\eta}^{s}_2]
+=
+[\boldsymbol{m}^{p},
+ \boldsymbol{\eta}^{p}_1,
+ \boldsymbol{\eta}^{p}_2 + \boldsymbol{d}]\]</div>
+<p>where <span class="math notranslate nohighlight">\(\boldsymbol{d}\)</span> is given as</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{d}
+=
+r |\gamma(\boldsymbol{r})|
+(\boldsymbol{\eta}^{p}_2 \cdot \boldsymbol{e}_{\boldsymbol{k}^{p}_1})
+\boldsymbol{e}_{\boldsymbol{\eta}^{p}_1}
+=
+r s \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1}\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[s
+=
+|\gamma(\boldsymbol{r})|
+(\boldsymbol{\eta}^{p}_2 \cdot \boldsymbol{e}_{\boldsymbol{k}^{p}_1}).\]</div>
+<p>Therefore, sheared lattice <span class="math notranslate nohighlight">\(\boldsymbol{L}_s\)</span> is given as</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{m}^{s},
+ \boldsymbol{\eta}^{s}_1,
+ \boldsymbol{\eta}^{s}_2]
+=
+[\boldsymbol{m}^{p},
+ \boldsymbol{\eta}^{p}_1,
+ \boldsymbol{\eta}^{p}_2 + r s \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1}]
+=
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{L}^s\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{L}^s = \boldsymbol{L}^p + r \boldsymbol{S}\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\boldsymbol{S}
+=
+\begin{pmatrix}
+ 0 &amp; 0 &amp; 0 \\
+ 0 &amp; 0 &amp; s \\
+ 0 &amp; 0 &amp; 0 \\
+\end{pmatrix}.\end{split}\]</div>
+</div>
+<div class="section" id="get-twin-structure">
+<h3><a class="toc-backref" href="#id6">get_twin_structure</a><a class="headerlink" href="#get-twin-structure" title="Permalink to this headline">¶</a></h3>
+<p>The operation from parent lattice to twin lattice
+<span class="math notranslate nohighlight">\(\boldsymbol{W}^{t}\)</span> is defineda as</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{X}^{p}_{0}
+\longrightarrow
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{X}^{t}_{0}.\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{X}^{t}_{0} = \boldsymbol{W}^{t} \boldsymbol{X}^{p}_{0}.\]</div>
+<p>In twin type <span class="math notranslate nohighlight">\(\rm{I}\)</span>,
+rotation matrix <span class="math notranslate nohighlight">\(\boldsymbol{W}^{t}\)</span>
+is given as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\boldsymbol{W}^{t}
+=
+\begin{pmatrix}
+ 1 &amp; 0 &amp; 0 \\
+ 0 &amp; 1 &amp; 0 \\
+ 0 &amp; 0 &amp; -1 \\
+\end{pmatrix}.\end{split}\]</div>
+<p>In twin type <span class="math notranslate nohighlight">\(\rm{I\hspace{-1pt}I}\)</span>,
+rotation matrix <span class="math notranslate nohighlight">\(\boldsymbol{W}^t\)</span>
+is given as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\boldsymbol{W}^{t}
+=
+\begin{pmatrix}
+ -1 &amp; 0 &amp; 0 \\
+ 0 &amp; 1 &amp; 0 \\
+ 0 &amp; 0 &amp; -1 \\
+\end{pmatrix}.\end{split}\]</div>
+<p>In both type, the following equation hold.</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{W}^{t,-1} = \boldsymbol{W}^{t,T} = \boldsymbol{W}\]</div>
+<p>The relation between parent lattice <span class="math notranslate nohighlight">\(\boldsymbol{L}^{p}\)</span>
+and twin lattice <span class="math notranslate nohighlight">\(\boldsymbol{L}^{t}\)</span> is</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{m}^{p},
+ \boldsymbol{\eta}^{p}_1,
+ \boldsymbol{\eta}^{p}_2]
+=
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{L}^{p}
+\longrightarrow
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{W}^{t}
+\boldsymbol{L}^{p}
+\equiv
+[\boldsymbol{m}^{t},
+ \boldsymbol{\eta}^{t}_1,
+ \boldsymbol{\eta}^{t}_2]\]</div>
+<p>so</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{m}^{t},
+ \boldsymbol{\eta}^{t}_1,
+ \boldsymbol{\eta}^{t}_2]
+=
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{L}^{t}\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{L}^{t}
+=
+\boldsymbol{W}^{t}
+\boldsymbol{L}^{p}.\]</div>
+<p>By this transformation, number vectors in the basis of
+parent vectors <span class="math notranslate nohighlight">\(\boldsymbol{X}^{p}\)</span> (including
+<span class="math notranslate nohighlight">\(\boldsymbol{X}^{p}_{lat}\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{X}^{p}_{atm}\)</span>)
+are not affected.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}[\boldsymbol{m}^{p},
+ \boldsymbol{\eta}^{p}_1,
+ \boldsymbol{\eta}^{p}_2]
+\boldsymbol{X}^{p}
+&amp;=
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{L}^{p}
+\boldsymbol{X}^{p} \\
+&amp;\longrightarrow
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{W}^{t}
+\boldsymbol{L}^{p}
+\boldsymbol{X}^{p} \\
+&amp;=
+[\boldsymbol{m}^{t},
+ \boldsymbol{\eta}^{t}_1,
+ \boldsymbol{\eta}^{t}_2]
+\boldsymbol{L}^{p,-1}
+\boldsymbol{W}^{t,-1}
+\boldsymbol{W}^{t}
+\boldsymbol{L}^{p}
+\boldsymbol{X}^{p} \\
+&amp;=
+[\boldsymbol{m}^{t},
+ \boldsymbol{\eta}^{t}_1,
+ \boldsymbol{\eta}^{t}_2]
+\boldsymbol{X}^{p}
+\equiv
+[\boldsymbol{m}^{t},
+ \boldsymbol{\eta}^{t}_1,
+ \boldsymbol{\eta}^{t}_2]
+\boldsymbol{X}^{t}\end{split}\]</div>
+<p>so number vectors in the basis of
+twin vectors <span class="math notranslate nohighlight">\(\boldsymbol{X}^{t}\)</span> (including
+<span class="math notranslate nohighlight">\(\boldsymbol{X}^{t}_{lat}\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{X}^{t}_{atm}\)</span>)</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{X}^{t} = \boldsymbol{X}^{p}\]</div>
+</div>
+</div>
+<div class="section" id="hexagonaltwinboundary">
+<h2><a class="toc-backref" href="#id7">HexagonalTwinBoundary</a><a class="headerlink" href="#hexagonaltwinboundary" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="init">
+<h3><a class="toc-backref" href="#id8">__init__</a><a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h3>
+<p>To create ‘HexagonalTwinBoundary’ object, you have to specify
+the norm of a and c axis and its specie as a hexagonal metal
+information. Moreover, twinmode, twintype, dimension and
+x- y- shift respectively. If you set dimension equal ‘[1,1,2]’
+and x-shift equal ‘1/2’, then parent and twin structures with
+its supecell as [1,1,2] and fix all the parent lattice point to
+-1/4 from its original points and fix all the twin lattice point to
+1/4 from its original points. Then, dichromatic lattice
+<span class="math notranslate nohighlight">\(\boldsymbol{L}^{d}\)</span> is created.</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{m}^{d},
+ \boldsymbol{\eta}^{d}_1,
+ \boldsymbol{k}^{d}_1]
+=
+[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+ \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+ \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+\boldsymbol{L}^{d}\]</div>
+<p>In the case ‘dim=[1,1,1]’, dichromatic lattice
+<span class="math notranslate nohighlight">\(\boldsymbol{L}^{d}\)</span> becomes</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\boldsymbol{L}^{d}
+=
+\boldsymbol{L}^{s}(r=0.5)
+\begin{pmatrix}
+ 1 &amp; 0 &amp; 0 \\
+ 0 &amp; 1 &amp; 0 \\
+ 0 &amp; 0 &amp; 2 \\
+\end{pmatrix}.\end{split}\]</div>
+<p>After this, number vectors <span class="math notranslate nohighlight">\(\boldsymbol{X}^{p,t}\)</span>
+in the bases both parent and twin
+are transformed into the dichromatic lattice frame.</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{L}^{p,t} \boldsymbol{X}^{p,t}
+=
+\boldsymbol{L}^{d} \boldsymbol{X}^{d}\]</div>
+<p>so</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{X}^{d}
+=
+\boldsymbol{L}^{d -1} \boldsymbol{L}^{p,t} \boldsymbol{X}^{p,t}\]</div>
+</div>
+<div class="section" id="id1">
+<h3><a class="toc-backref" href="#id9">get_sheared_structure</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>The twin boundary structure can be sheared by this function.
+Input ‘gamma’ represents shear strain (<span class="math notranslate nohighlight">\(\gamma'\)</span>).
+dichromatic lattice are sheared as</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{L}^{d, s} = \boldsymbol{L}^{d} + \boldsymbol{S}\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\boldsymbol{S}
+=
+\begin{pmatrix}
+ 0 &amp; 0 &amp; 0 \\
+ 0 &amp; 0 &amp; s' \\
+ 0 &amp; 0 &amp; 0 \\
+\end{pmatrix}.\end{split}\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[s'
+=
+\gamma' |\boldsymbol{k}^{d}_1|\]</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../developer_guide/index.html" class="btn btn-neutral float-right" title="Developer guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="properties.html" class="btn btn-neutral float-left" title="properties" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
