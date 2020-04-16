@@ -22,6 +22,113 @@ By this, the following properties are determined.
 #. shear strain functoin :math:`\gamma(r)`
 #. parent matrix
 
+where parent matrix :math:`\boldsymbol{M}` is constructed as bellow
+
+.. math::
+
+   [\boldsymbol{m}^{p},
+    \boldsymbol{\eta}^{p}_1,
+    \boldsymbol{\eta}^{p}_2]
+   =
+   [\boldsymbol{a}_1,
+    \boldsymbol{a}_2,
+    \boldsymbol{c}]
+   \boldsymbol{M}.
+
+where :math:`\boldsymbol{m}^{p}`,
+:math:`\boldsymbol{\eta}^{p}_1` and
+:math:`\boldsymbol{\eta}^{p}_2` are
+a little bit different from the ones in 'get_twin_indices' in twinmode.py
+because they are rescaled to be the vectors whose element are all integer.
+Therefore, every element of supercell matrix
+:math:`\boldsymbol{M}` is integer. The fractional points :math:`\boldsymbol{X}`
+is transformed to :math:`\boldsymbol{X}^{p}` as
+
+.. math::
+
+   \boldsymbol{X}^{p} = \boldsymbol{M}^{-1} \boldsymbol{X}.
+
+
+shear structure
+---------------
+
+Shear structure here means the structure which is sheared from parent to
+twin structure. Let the bases of shear and twin structure is defined as
+:math:`[\boldsymbol{m}^{s}, \boldsymbol{\eta}^{s}_{1},
+\boldsymbol{\eta}^{s}_{2}]`
+and
+:math:`[\boldsymbol{m}^{t}, \boldsymbol{\eta}^{t}_{1},
+\boldsymbol{\eta}^{t}_{2}]`
+then
+
+.. math::
+
+   [\boldsymbol{m}^{s},
+    \boldsymbol{\eta}^{s}_{1},
+    \boldsymbol{\eta}^{s}_{2}]
+   =
+   [\boldsymbol{m}^{p},
+    \boldsymbol{\eta}^{p}_{1},
+    \boldsymbol{\eta}^{p}_{2}]
+   \boldsymbol{S}
+
+where
+
+.. math::
+
+   \boldsymbol{S}
+   =
+   \begin{pmatrix}
+    1 & 0 & 0 \\
+    0 & 1 & \alpha s \\
+    0 & 0 & 1 \\
+   \end{pmatrix}
+
+where :math:`\alpha` is shear ratio.
+
+The shear value :math:`s` is determined as below.
+From the figure, shear vector from parent to twin
+:math:`s \boldsymbol{\eta}^{p}_{1}` is
+
+.. math::
+
+   s \boldsymbol{\eta}^{p}_{1}
+   =
+   \frac{\gamma d}{|\boldsymbol{\eta}^{p}_{1}|}
+   \boldsymbol{\eta}^{p}_{1}
+
+so
+
+.. math::
+
+   s = \frac{\gamma d}{|\boldsymbol{\eta}^{p}_{1}|}
+
+where :math:`d` is the distance of the point :math:`\boldsymbol{\eta}^{p}_{2}`
+from :math:`\boldsymbol{K}_2` plane.
+The bases of twin structure :math:`[\boldsymbol{m}^{t},
+\boldsymbol{\eta}^{t}_{1}, \boldsymbol{\eta}^{t}_{2}]`
+corresponds to :math:`\alpha=1`.
+
+The fractional positions are unfixed during this transformation
+from parent structure to shear and twin structure.
+
+Let the bases of the primitive structure of the shear and twin structure
+as
+:math:`[\boldsymbol{a}^{s}_{1}, \boldsymbol{a}^{s}_{2}, \boldsymbol{c}^{s}]`
+and
+:math:`[\boldsymbol{a}^{t}_{1}, \boldsymbol{a}^{t}_{2}, \boldsymbol{c}^{t}]`
+can be written as
+
+.. math::
+
+   [\boldsymbol{a}^{s}_{1}, \boldsymbol{a}^{s}_{2}, \boldsymbol{c}^{s}]
+   =
+   [\boldsymbol{a}_1,
+    \boldsymbol{a}_2,
+    \boldsymbol{c}] \boldsymbol{M} \boldsymbol{S} \boldsymbol{M}^{-1}.
+
+
+
 
 FUTURE EDITED
 =============

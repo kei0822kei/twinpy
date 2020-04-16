@@ -98,6 +98,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">structure</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#hexagonal-structure">Hexagonal Structure</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#set-parent">set parent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#shear-structure">shear structure</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#future-edited">FUTURE EDITED</a><ul>
@@ -188,18 +189,19 @@
 <li><p><a class="reference internal" href="#hexagonal-structure" id="id2">Hexagonal Structure</a></p>
 <ul>
 <li><p><a class="reference internal" href="#set-parent" id="id3">set parent</a></p></li>
+<li><p><a class="reference internal" href="#shear-structure" id="id4">shear structure</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#future-edited" id="id4">FUTURE EDITED</a></p>
+<li><p><a class="reference internal" href="#future-edited" id="id5">FUTURE EDITED</a></p>
 <ul>
-<li><p><a class="reference internal" href="#get-sheared-structure" id="id5">get_sheared_structure</a></p></li>
-<li><p><a class="reference internal" href="#get-twin-structure" id="id6">get_twin_structure</a></p></li>
+<li><p><a class="reference internal" href="#get-sheared-structure" id="id6">get_sheared_structure</a></p></li>
+<li><p><a class="reference internal" href="#get-twin-structure" id="id7">get_twin_structure</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#hexagonaltwinboundary" id="id7">HexagonalTwinBoundary</a></p>
+<li><p><a class="reference internal" href="#hexagonaltwinboundary" id="id8">HexagonalTwinBoundary</a></p>
 <ul>
-<li><p><a class="reference internal" href="#init" id="id8">__init__</a></p></li>
-<li><p><a class="reference internal" href="#id1" id="id9">get_sheared_structure</a></p></li>
+<li><p><a class="reference internal" href="#init" id="id9">__init__</a></p></li>
+<li><p><a class="reference internal" href="#id1" id="id10">get_sheared_structure</a></p></li>
 </ul>
 </li>
 </ul>
@@ -215,10 +217,90 @@ By this, the following properties are determined.</p>
 <li><p>shear strain functoin <span class="math notranslate nohighlight">\(\gamma(r)\)</span></p></li>
 <li><p>parent matrix</p></li>
 </ol>
+<p>where parent matrix <span class="math notranslate nohighlight">\(\boldsymbol{M}\)</span> is constructed as bellow</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{m}^{p},
+ \boldsymbol{\eta}^{p}_1,
+ \boldsymbol{\eta}^{p}_2]
+=
+[\boldsymbol{a}_1,
+ \boldsymbol{a}_2,
+ \boldsymbol{c}]
+\boldsymbol{M}.\]</div>
+<p>where <span class="math notranslate nohighlight">\(\boldsymbol{m}^{p}\)</span>,
+<span class="math notranslate nohighlight">\(\boldsymbol{\eta}^{p}_1\)</span> and
+<span class="math notranslate nohighlight">\(\boldsymbol{\eta}^{p}_2\)</span> are
+a little bit different from the ones in ‘get_twin_indices’ in twinmode.py
+because they are rescaled to be the vectors whose element are all integer.
+Therefore, every element of supercell matrix
+<span class="math notranslate nohighlight">\(\boldsymbol{M}\)</span> is integer. The fractional points <span class="math notranslate nohighlight">\(\boldsymbol{X}\)</span>
+is transformed to <span class="math notranslate nohighlight">\(\boldsymbol{X}^{p}\)</span> as</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{X}^{p} = \boldsymbol{M}^{-1} \boldsymbol{X}.\]</div>
+</div>
+<div class="section" id="shear-structure">
+<h3><a class="toc-backref" href="#id4">shear structure</a><a class="headerlink" href="#shear-structure" title="Permalink to this headline">¶</a></h3>
+<p>Shear structure here means the structure which is sheared from parent to
+twin structure. Let the bases of shear and twin structure is defined as
+<span class="math notranslate nohighlight">\([\boldsymbol{m}^{s}, \boldsymbol{\eta}^{s}_{1},
+\boldsymbol{\eta}^{s}_{2}]\)</span>
+and
+<span class="math notranslate nohighlight">\([\boldsymbol{m}^{t}, \boldsymbol{\eta}^{t}_{1},
+\boldsymbol{\eta}^{t}_{2}]\)</span>
+then</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{m}^{s},
+ \boldsymbol{\eta}^{s}_{1},
+ \boldsymbol{\eta}^{s}_{2}]
+=
+[\boldsymbol{m}^{p},
+ \boldsymbol{\eta}^{p}_{1},
+ \boldsymbol{\eta}^{p}_{2}]
+\boldsymbol{S}\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\boldsymbol{S}
+=
+\begin{pmatrix}
+ 1 &amp; 0 &amp; 0 \\
+ 0 &amp; 1 &amp; \alpha s \\
+ 0 &amp; 0 &amp; 1 \\
+\end{pmatrix}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\alpha\)</span> is shear ratio.</p>
+<p>The shear value <span class="math notranslate nohighlight">\(s\)</span> is determined as below.
+From the figure, shear vector from parent to twin
+<span class="math notranslate nohighlight">\(s \boldsymbol{\eta}^{p}_{1}\)</span> is</p>
+<div class="math notranslate nohighlight">
+\[s \boldsymbol{\eta}^{p}_{1}
+=
+\frac{\gamma d}{|\boldsymbol{\eta}^{p}_{1}|}
+\boldsymbol{\eta}^{p}_{1}\]</div>
+<p>so</p>
+<div class="math notranslate nohighlight">
+\[s = \frac{\gamma d}{|\boldsymbol{\eta}^{p}_{1}|}\]</div>
+<p>where <span class="math notranslate nohighlight">\(d\)</span> is the distance of the point <span class="math notranslate nohighlight">\(\boldsymbol{\eta}^{p}_{2}\)</span>
+from <span class="math notranslate nohighlight">\(\boldsymbol{K}_2\)</span> plane.
+The bases of twin structure <span class="math notranslate nohighlight">\([\boldsymbol{m}^{t},
+\boldsymbol{\eta}^{t}_{1}, \boldsymbol{\eta}^{t}_{2}]\)</span>
+corresponds to <span class="math notranslate nohighlight">\(\alpha=1\)</span>.</p>
+<p>The fractional positions are unfixed during this transformation
+from parent structure to shear and twin structure.</p>
+<p>Let the bases of the primitive structure of the shear and twin structure
+as
+<span class="math notranslate nohighlight">\([\boldsymbol{a}^{s}_{1}, \boldsymbol{a}^{s}_{2}, \boldsymbol{c}^{s}]\)</span>
+and
+<span class="math notranslate nohighlight">\([\boldsymbol{a}^{t}_{1}, \boldsymbol{a}^{t}_{2}, \boldsymbol{c}^{t}]\)</span>
+can be written as</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{a}^{s}_{1}, \boldsymbol{a}^{s}_{2}, \boldsymbol{c}^{s}]
+=
+[\boldsymbol{a}_1,
+ \boldsymbol{a}_2,
+ \boldsymbol{c}] \boldsymbol{M} \boldsymbol{S} \boldsymbol{M}^{-1}.\]</div>
 </div>
 </div>
 <div class="section" id="future-edited">
-<h2><a class="toc-backref" href="#id4">FUTURE EDITED</a><a class="headerlink" href="#future-edited" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">FUTURE EDITED</a><a class="headerlink" href="#future-edited" title="Permalink to this headline">¶</a></h2>
 <p>First, supercell matrix <span class="math notranslate nohighlight">\(\boldsymbol{M}\)</span> is constructed as bellow</p>
 <div class="math notranslate nohighlight">
 \[[\boldsymbol{m}^{p},
@@ -340,7 +422,7 @@ because two rigid atoms must be the nearest atoms from the specified
 <span class="math notranslate nohighlight">\(\boldsymbol{K}_1\)</span> plane. In the case you choose ‘c’ wyckoff letter,
 this revising (probably) always occur.</p>
 <div class="section" id="get-sheared-structure">
-<h3><a class="toc-backref" href="#id5">get_sheared_structure</a><a class="headerlink" href="#get-sheared-structure" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id6">get_sheared_structure</a><a class="headerlink" href="#get-sheared-structure" title="Permalink to this headline">¶</a></h3>
 <p>When the shear ratio is <span class="math notranslate nohighlight">\(\boldsymbol{r}\)</span>,
 the basis vectors of sheared structure are given as</p>
 <div class="math notranslate nohighlight">
@@ -394,7 +476,7 @@ r s \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1}\]</div>
 \end{pmatrix}.\end{split}\]</div>
 </div>
 <div class="section" id="get-twin-structure">
-<h3><a class="toc-backref" href="#id6">get_twin_structure</a><a class="headerlink" href="#get-twin-structure" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id7">get_twin_structure</a><a class="headerlink" href="#get-twin-structure" title="Permalink to this headline">¶</a></h3>
 <p>The operation from parent lattice to twin lattice
 <span class="math notranslate nohighlight">\(\boldsymbol{W}^{t}\)</span> is defineda as</p>
 <div class="math notranslate nohighlight">
@@ -521,9 +603,9 @@ twin vectors <span class="math notranslate nohighlight">\(\boldsymbol{X}^{t}\)</
 </div>
 </div>
 <div class="section" id="hexagonaltwinboundary">
-<h2><a class="toc-backref" href="#id7">HexagonalTwinBoundary</a><a class="headerlink" href="#hexagonaltwinboundary" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id8">HexagonalTwinBoundary</a><a class="headerlink" href="#hexagonaltwinboundary" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="init">
-<h3><a class="toc-backref" href="#id8">__init__</a><a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id9">__init__</a><a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h3>
 <p>To create ‘HexagonalTwinBoundary’ object, you have to specify
 the norm of a and c axis and its specie as a hexagonal metal
 information. Moreover, twinmode, twintype, dimension and
@@ -567,7 +649,7 @@ are transformed into the dichromatic lattice frame.</p>
 \boldsymbol{L}^{d -1} \boldsymbol{L}^{p,t} \boldsymbol{X}^{p,t}\]</div>
 </div>
 <div class="section" id="id1">
-<h3><a class="toc-backref" href="#id9">get_sheared_structure</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id10">get_sheared_structure</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>The twin boundary structure can be sheared by this function.
 Input ‘gamma’ represents shear strain (<span class="math notranslate nohighlight">\(\gamma'\)</span>).
 dichromatic lattice are sheared as</p>
