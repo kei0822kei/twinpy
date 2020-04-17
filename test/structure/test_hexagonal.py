@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-test twinpy/structure.py
+""" test twinpy/structure.py
 """
 
 import unittest
 import numpy as np
+from twinpy.lattice.lattice import Lattice
 from twinpy.structure.hexagonal import (is_hcp,
                                         HexagonalStructure)
 
@@ -17,6 +17,7 @@ class TestHexagonalStructure(unittest.TestCase):
         self.c = 4.65
         self.symbol = 'Ti'
         self.wyckoffs = ['c', 'd']
+        self.twinmodes = ['10-12', '10-11', '11-21', '11-22']
 
     def tearDown(self):
         pass
@@ -72,6 +73,22 @@ class TestHexagonalStructure(unittest.TestCase):
             raise RuntimeError("unexpectedly passed fail case!")
         except AssertionError:
             pass
+
+    def test_run(self):
+        structure = HexagonalStructure(
+                a=self.a,
+                c=self.c,
+                symbol=self.symbol,
+                wyckoff=self.wyckoffs[0])
+        for twinmode in self.twinmodes:
+            structure.set_parent(twinmode)
+            structure.set_shear_ratio(1.)
+            structure.run(is_primitive=True)
+            output_lattice = Lattice(structure.output_structure[0])
+            # np.testing.assert_allclose(np.array([90., 90., 90.]),
+            #                            output_lattice.angles,
+            #                            err_msg=twinmode)
+            structure.get_poscar(filename="/home/mizo/"+twinmode+".poscar")
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestHexagonalStructure)

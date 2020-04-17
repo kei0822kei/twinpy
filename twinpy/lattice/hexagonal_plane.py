@@ -142,9 +142,10 @@ class HexagonalPlane(Lattice):
         """
         frac_coord = frac_coord.reshape(1,3)
         k = self.get_direction_normal_to_plane()
-        k_cart = np.dot(self.lattice.T, k.three.reshape(1,3).T).T
-        d = abs(np.dot(k_cart / np.linalg.norm(k_cart),
-                       np.dot(self.lattice.T, frac_coord.T))[0,0])
+        k_cart = np.dot(self.lattice.T, k.three.reshape(1,3).T).reshape(3)
+        e_k_cart = k_cart / np.linalg.norm(k_cart)
+        x_cart = np.dot(self.lattice.T, frac_coord.T).reshape(3)
+        d = np.dot(e_k_cart, x_cart)
         return d
 
     def get_cartesian(self, frac_coord) -> np.array:
@@ -158,7 +159,7 @@ class HexagonalPlane(Lattice):
             np.array: cartesian coorinate
         """
         frac_coord = frac_coord.reshape(1,3)
-        cart_coord = np.dot(self._lattice.T, frac_coord).reshape(3)
+        cart_coord = np.dot(self._lattice.T, frac_coord.T).reshape(3)
         return cart_coord
 
 

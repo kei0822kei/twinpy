@@ -41,16 +41,16 @@ def get_shear_strain_function(twinmode:str) -> 'function':
     check_supported_twinmode(twinmode)
     if twinmode == '10-12':
         func = lambda r: \
-                ( (r**2-3) / (r*np.sqrt(3)) )
+                (r**2-3) / (r*np.sqrt(3))
     elif twinmode == '10-11':
         func = lambda r: \
-                ( (4*r**2-9) / 4*r*np.sqrt(3) )
+                (4*r**2-9) / (4*r*np.sqrt(3))
     elif twinmode == '11-22':
         func = lambda r: \
-                ( (2*(r**2-2)) / 3*r )
+                (2*(r**2-2)) / (3*r)
     elif twinmode == '11-21':
         func = lambda r: \
-                ( 1 / r )
+                1 / r
     return func
 
 def get_twin_indices(twinmode:str,

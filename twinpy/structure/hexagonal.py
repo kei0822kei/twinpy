@@ -16,6 +16,7 @@ from twinpy.properties.twinmode import (get_shear_strain_function,
                                         get_twin_indices)
 from twinpy.lattice.lattice import Lattice
 from twinpy.lattice.hexagonal_plane import HexagonalPlane
+from twinpy.file_io import write_poscar
 
 def is_hcp(lattice, positions, symbols):
     """
@@ -96,7 +97,7 @@ class HexagonalStructure():
         self._parent_matrix = np.eye(3)
         self._shear_strain_funcion = None
         self._shear_strain_ratio = 0.
-        self._build = None
+        self._output_structure = None
 
     def _parent_not_set(self):
         if self._parent_matrix is None:
@@ -167,20 +168,19 @@ class HexagonalStructure():
         return self._shear_strain_ratio
 
     @property
-    def build(self):
+    def output_structure(self):
         """
-        build structure
+        built structure
         """
-        return self._build
+        return self._output_structure
 
     def _get_shear_matrix(self):
         plane = HexagonalPlane(lattice=self._hexagonal_lattice.lattice,
                                four=self._indices['K1'].four)
         d = plane.get_distance_from_plane(self._indices['eta2'].three)
         gamma = self._shear_strain_funcion(self._r)
-        norm_eta1 = plane.get_cartesian(self._indices['eta1'].three)
-        s = gamma * d / norm_eta1
-
+        norm_eta1 = np.linalg.norm(plane.get_cartesian(self._indices['eta1'].three))
+        s = abs(gamma) * d / norm_eta1
         shear_matrix = np.eye(3)
         shear_matrix[1,2] = self._shear_strain_ratio * s
         return shear_matrix
@@ -215,31 +215,61 @@ class HexagonalStructure():
         """
         self._shear_strain_ratio = ratio
 
-    def build(self, is_primitive=False):
+    def run(self, is_primitive=False):
         """
         build structure
 
         Args:
-            style (str): determine the structure style,
+            is_primitive (bool): if True, primitive structure is build
               choose from 'tuple'
-        """
-        lattice_points = np.array([[0.,0.,0.]])
-        unitcell = PhonopyAtoms(symbols=['X'],
-                        cell=self._hexagonal_lattice.lattice,
-                        scaled_positions=lattice_points)
 
+        Note:
+            the structure built is set self.output_structure
+        """
+        shear_matrix = self._get_shear_matrix()
         if is_primitive:
-            shear_matrix = self._get_shear_matrix()
+            lattice_points = np.array([[0.,0.,0.]])
+            atoms_from_lattice_points = self.atoms_from_lattice_points.copy()
             shear_lattice = \
-                    np.dot(self._hexagonal_lattice.lattice.T,
-                           np.dot(self._parent_matrix,
-                                  np.dot(shear_matrix,
-                                         np.linalg.inv(self._parent_matrix))))
-            self._build = (shear_lattice,
-                           lattice_points,
-                           self._atoms_from_lattice_points,
-                           self._symbol)
+                np.dot(self._hexagonal_lattice.lattice.T,
+                       np.dot(self._parent_matrix,
+                              np.dot(shear_matrix,
+                                     np.linalg.inv(self._parent_matrix)))).T
         else:
-            # super_lattice = Supercell(unitcell=unitcell,
-            #                           supercell_matrix=self._parent_matrix)
-            raise ValueError("future write is the case of 'is_primitive=False'")
+            unitcell = PhonopyAtoms(symbols=['H'],
+                            cell=self._hexagonal_lattice.lattice,
+                            scaled_positions=np.array([[0.,0.,0]]),
+                            )
+            super_lattice = Supercell(unitcell=unitcell,
+                                      supercell_matrix=self._parent_matrix)
+            shear_lattice = \
+                np.dot(self._hexagonal_lattice.lattice.T,
+                       np.dot(self._parent_matrix,
+                              shear_matrix)).T
+            lattice_points = super_lattice.scaled_positions
+            atoms_from_lattice_points = np.dot(
+                    np.linalg.inv(self._parent_matrix),
+                    self._atoms_from_lattice_points.T,
+                    ).T
+        symbols = [self._symbol] * len(lattice_points) \
+                                 * len(self._atoms_from_lattice_points)
+        self._output_structure = (shear_lattice,
+                                  lattice_points,
+                                  atoms_from_lattice_points,
+                                  symbols)
+
+    def get_poscar(self, filename:str='POSCAR'):
+        """
+        get poscar
+
+        Args:
+            filename (str): output filename
+        """
+        frac_coords = []
+        for lattice_point in self._output_structure[1]:
+            atoms = lattice_point + self._output_structure[2]
+            frac_coords.extend(atoms.tolist())
+        write_poscar(lattice=self.output_structure[0],
+                     frac_coords=np.array(frac_coords),
+                     symbols=self._output_structure[3],
+                     filename=filename)
