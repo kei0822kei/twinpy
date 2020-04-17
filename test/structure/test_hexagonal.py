@@ -8,6 +8,7 @@ import unittest
 import numpy as np
 from twinpy.lattice.lattice import Lattice
 from twinpy.structure.hexagonal import (is_hcp,
+                                        get_hexagonal_structure_from_a_c,
                                         HexagonalStructure)
 
 class TestHexagonalStructure(unittest.TestCase):
@@ -33,23 +34,23 @@ class TestHexagonalStructure(unittest.TestCase):
             - failcase_4: not hcp
         """
         for wyckoff in self.wyckoffs:
-            structure = HexagonalStructure(
+            structure = get_hexagonal_structure_from_a_c(
                     a=self.a,
                     c=self.c,
                     symbol=self.symbol,
                     wyckoff=wyckoff)
+        # try:
+        #     failcase_1 = get_hexagonal_structure_from_a_c(
+        #             a=self.a,
+        #             c=self.c,
+        #             symbol=self.symbol,
+        #             wyckoff='c',
+        #             lattice=np.array([1,1,1]))
+        #     raise RuntimeError("unexpectedly passed fail case!")
+        # except ValueError:
+        #     pass
         try:
-            failcase_1 = HexagonalStructure(
-                    a=self.a,
-                    c=self.c,
-                    symbol=self.symbol,
-                    wyckoff='c',
-                    lattice=np.array([1,1,1]))
-            raise RuntimeError("unexpectedly passed fail case!")
-        except ValueError:
-            pass
-        try:
-            failcase_2 = HexagonalStructure(
+            failcase_2 = get_hexagonal_structure_from_a_c(
                     a=self.a,
                     c=self.c,
                     symbol=self.symbol,
@@ -58,7 +59,7 @@ class TestHexagonalStructure(unittest.TestCase):
         except AssertionError:
             pass
         try:
-            failcase_3 = HexagonalStructure(
+            failcase_3 = get_hexagonal_structure_from_a_c(
                     a=-3.,
                     c=4.,
                     symbol=self.symbol,
@@ -67,15 +68,15 @@ class TestHexagonalStructure(unittest.TestCase):
         except AssertionError:
             pass
         try:
-            is_hcp(structure.hexagonal_lattice.lattice,
-                   structure.atoms_from_lattice_points,
-                   ['Ti', 'Mg'])
+            is_hcp(lattice=structure.hexagonal_lattice.lattice,
+                   scaled_positions=structure.atoms_from_lattice_points,
+                   symbols=['Ti', 'Mg'])
             raise RuntimeError("unexpectedly passed fail case!")
         except AssertionError:
             pass
 
     def test_run(self):
-        structure = HexagonalStructure(
+        structure = get_hexagonal_structure_from_a_c(
                 a=self.a,
                 c=self.c,
                 symbol=self.symbol,

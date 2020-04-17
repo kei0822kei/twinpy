@@ -9,7 +9,7 @@ import numpy as np
 import spglib
 from phonopy.structure.atoms import PhonopyAtoms
 from phonopy.structure.cells import Primitive, Supercell
-from typing import Union
+from typing import Sequence, Union
 from twinpy.common.utils import get_ratio
 from twinpy.properties.hexagonal import get_atom_positions
 from twinpy.properties.twinmode import (get_shear_strain_function,
@@ -18,24 +18,38 @@ from twinpy.lattice.lattice import Lattice
 from twinpy.lattice.hexagonal_plane import HexagonalPlane
 from twinpy.file_io import write_poscar
 
-def is_hcp(lattice, positions, symbols):
+def is_hcp(lattice:np.array,
+           symbols:Sequence[str],
+           positions:np.array=None,
+           scaled_positions:np.array=None,
+           get_wyckoff:bool=False):
     """
     check input structure is Hexagonal Close-Packed structure
 
     Args:
         lattice (np.array): lattice
-        positions: atom fractional positions
-        symbols (list): atomic symbols
+        symbols: atomic symbols
+        positions (np.array): atom cartesian positions
+        scaled_positions (np.array): atom fractional positions
+        get_wyckoff (bool): if True, return wyckoff letter, which is 'c' or 'd'
 
     Raises:
+        AssertionError: both positions and scaled_positions are specified
         AssertionError: input symbols are not unique
         AssertionError: input structure is not
                         Hexagonal Close-Packed structure
     """
+    if positions is not None and scaled_positions is not None:
+        raise AssertionError("both positions and scaled_positions "
+                             "are specified")
+
     assert (len(set(symbols)) == 1 and len(symbols) == 2), \
         "symbols is not unique or the number of atoms are not two"
+
+    if positions is not None:
+        scaled_positions = np.dot(np.linalg.inv(lattice.T), positions.T).T
     dataset = spglib.get_symmetry_dataset((lattice,
-                                           positions,
+                                           scaled_positions,
                                            [0, 0]))
     spg_symbol = dataset['international']
     wyckoffs = dataset['wyckoffs']
@@ -43,6 +57,33 @@ def is_hcp(lattice, positions, symbols):
             "space group of input structure is {} not 'P6_3/mmc'" \
             .format(spg_symbol)
     assert wyckoffs in [['c'] * 2, ['d'] * 2]
+    if get_wyckoff:
+        return wyckoffs[0]
+
+def get_hexagonal_structure_from_a_c(a:float,
+                                     c:float,
+                                     symbol:str=None,
+                                     wyckoff:str='c'):
+    """
+    get HexagonalStructure class object from a and c axes
+
+    Args:
+        a (str): the norm of a axis
+        c (str): the norm of c axis
+        symbol (str): element symbol
+        wyckoff (str): No.194 Wycoff position ('c' or 'd')
+
+    Raises:
+        AssertionError: either a or c is negative value
+    """
+    assert a > 0. and c > 0., "input 'a' and 'c' must be positive value"
+    lattice = np.array([[  1.,           0., 0.],
+                        [-0.5, np.sqrt(3)/2, 0.],
+                        [  0.,           0., 1.]]) * np.array([a,a,c])
+    return HexagonalStructure(lattice=lattice,
+                              symbol=symbol,
+                              wyckoff=wyckoff)
+
 
 def _get_supercell_matrix(indices):
     tf1 = np.array(get_ratio(indices['m'].three))
@@ -58,36 +99,29 @@ class HexagonalStructure():
 
     def __init__(
            self,
-           a:float,
-           c:float,
+           lattice:np.array,
            symbol:str,
            wyckoff:str='c',
-           lattice:np.array=None,
         ):
         """
         Args:
-            a (str): the norm of a axis
-            c (str): the norm of c axis
+            lattice (np.array): lattice
             symbol (str): element symbol
-            lattice (np.array): if None, default lattice is set
             wyckoff (str): No.194 Wycoff position ('c' or 'd')
 
         Raises:
-            AssertionError: either a or c is negative value
             AssertionError: wyckoff is not 'c' and 'd'
             ValueError: lattice is not None (future fix)
         """
-        assert a > 0. and c > 0., "input 'a' and 'c' must be positive value"
-        if lattice is None:
-            lattice = np.array([[  1.,           0., 0.],
-                                [-0.5, np.sqrt(3)/2, 0.],
-                                [  0.,           0., 1.]]) * np.array([a,a,c])
-        else:
-            raise ValueError("lattice option is currently invalid"
-                             " (write future)")
+        norms = np.linalg.norm(lattice, axis=1)
         atoms_from_lp = get_atom_positions(wyckoff)
         symbols = [symbol] * 2
-        self._r = c / a
+        is_hcp(lattice=lattice,
+               scaled_positions=atoms_from_lp,
+               symbols=symbols)
+        self._a = norms[0]
+        self._c = norms[2]
+        self._r = self._c / self._a
         self._symbol = symbol
         self._wyckoff = wyckoff
         self._atoms_from_lattice_points = \
