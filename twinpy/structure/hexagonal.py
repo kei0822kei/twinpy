@@ -9,6 +9,7 @@ import numpy as np
 import spglib
 from phonopy.structure.atoms import PhonopyAtoms
 from phonopy.structure.cells import Primitive, Supercell
+from pymatgen.core.structure import Structure
 from typing import Sequence, Union
 from twinpy.common.utils import get_ratio
 from twinpy.properties.hexagonal import get_atom_positions
@@ -59,6 +60,43 @@ def is_hcp(lattice:np.array,
     assert wyckoffs in [['c'] * 2, ['d'] * 2]
     if get_wyckoff:
         return wyckoffs[0]
+
+def get_atom_positions_from_lattice_points(lattice_points:np.array,
+                                           atoms_from_lp:np.array):
+    """
+    get atom positions from lattice points
+
+    Args:
+        lattice_points (np.array): lattice points
+        atoms_from_lp (np.array): atoms from lattice_points
+
+    Returns:
+        np.array: atom positions
+    """
+    scaled_positions = []
+    for lattice_point in lattice_points:
+        atoms = lattice_point + atoms_from_lp
+        scaled_positions.extend(atoms.tolist())
+    return np.array(scaled_positions)
+
+def get_hexagonal_structure_from_pymatgen(pmgstructure):
+    """
+    get HexagonalStructure object from pyamtgen structure
+
+    Args:
+        pmgstructure: pymatgen structure object
+    """
+    lattice = pmgstructure.lattice.matrix
+    scaled_positions = pmgstructure.frac_coords
+    symbols = [ specie.value for specie in pmgstructure.species ]
+    wyckoff = is_hcp(lattice=lattice,
+                     scaled_positions=scaled_positions,
+                     symbols=symbols,
+                     get_wyckoff=True)
+    return HexagonalStructure(lattice=lattice,
+                              symbol=symbols[0],
+                              wyckoff=wyckoff)
+
 
 def get_hexagonal_structure_from_a_c(a:float,
                                      c:float,
@@ -131,7 +169,10 @@ class HexagonalStructure():
         self._parent_matrix = np.eye(3)
         self._shear_strain_funcion = None
         self._shear_strain_ratio = 0.
-        self._output_structure = None
+        self._output_structure = (lattice,
+                                  np.array([0.,0.,0.]),
+                                  self._atoms_from_lattice_points,
+                                  [self._symbol] * 2)
 
     def _parent_not_set(self):
         if self._parent_matrix is None:
@@ -292,6 +333,17 @@ class HexagonalStructure():
                                   atoms_from_lattice_points,
                                   symbols)
 
+    def get_pymatgen_structure(self):
+        """
+        get pymatgen structure
+        """
+        scaled_positions = get_atom_positions_from_lattice_points(
+                self._output_structure[1],
+                self._output_structure[2])
+        return Structure(lattice=self._hexagonal_lattice.lattice,
+                         coords=scaled_positions,
+                         species=[self._symbol] * len(scaled_positions))
+
     def get_poscar(self, filename:str='POSCAR'):
         """
         get poscar
@@ -299,11 +351,10 @@ class HexagonalStructure():
         Args:
             filename (str): output filename
         """
-        frac_coords = []
-        for lattice_point in self._output_structure[1]:
-            atoms = lattice_point + self._output_structure[2]
-            frac_coords.extend(atoms.tolist())
+        scaled_positions = get_atom_positions_from_lattice_points(
+                self._output_structure[1],
+                self._output_structure[2])
         write_poscar(lattice=self.output_structure[0],
-                     frac_coords=np.array(frac_coords),
+                     scaled_positions=np.array(scaled_positions),
                      symbols=self._output_structure[3],
                      filename=filename)
