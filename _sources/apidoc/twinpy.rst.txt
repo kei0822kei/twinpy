@@ -11,6 +11,20 @@ Subpackages
    twinpy.properties
    twinpy.structure
 
+Submodules
+----------
+
+twinpy.file\_io module
+----------------------
+
+.. automodule:: twinpy.file_io
+   :members:
+   :special-members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
+
 Module contents
 ---------------
 

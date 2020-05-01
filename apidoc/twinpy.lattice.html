@@ -99,6 +99,7 @@
 <li class="toctree-l3"><a class="reference internal" href="twinpy.common.html">twinpy.common package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">twinpy.lattice package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.lattice.brillouin">twinpy.lattice.brillouin module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.lattice.hexagonal_direction">twinpy.lattice.hexagonal_direction module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.lattice.hexagonal_plane">twinpy.lattice.hexagonal_plane module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.lattice.lattice">twinpy.lattice.lattice module</a></li>
@@ -109,6 +110,8 @@
 <li class="toctree-l3"><a class="reference internal" href="twinpy.structure.html">twinpy.structure package</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy.file_io">twinpy.file_io module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy">Module contents</a></li>
 </ul>
 </li>
@@ -180,6 +183,15 @@
 <h1>twinpy.lattice package<a class="headerlink" href="#twinpy-lattice-package" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-twinpy.lattice.brillouin">
+<span id="twinpy-lattice-brillouin-module"></span><h2>twinpy.lattice.brillouin module<a class="headerlink" href="#module-twinpy.lattice.brillouin" title="Permalink to this headline">¶</a></h2>
+<p>brillouin zone</p>
+<dl class="function">
+<dt id="twinpy.lattice.brillouin.get_labels_for_twin">
+<code class="sig-prename descclassname">twinpy.lattice.brillouin.</code><code class="sig-name descname">get_labels_for_twin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/brillouin.html#get_labels_for_twin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.brillouin.get_labels_for_twin" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 <div class="section" id="module-twinpy.lattice.hexagonal_direction">
 <span id="twinpy-lattice-hexagonal-direction-module"></span><h2>twinpy.lattice.hexagonal_direction module<a class="headerlink" href="#module-twinpy.lattice.hexagonal_direction" title="Permalink to this headline">¶</a></h2>
@@ -340,6 +352,23 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane.get_cartesian">
+<code class="sig-name descname">get_cartesian</code><span class="sig-paren">(</span><em class="sig-param">frac_coord</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#HexagonalPlane.get_cartesian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane.get_cartesian" title="Permalink to this definition">¶</a></dt>
+<dd><p>get cartesian coordinate of the input frac_coord</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>frac_coord</strong> (<em>np.array</em>) – fractional coorinate</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>cartesian coorinate</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane.get_direction_normal_to_plane">
 <code class="sig-name descname">get_direction_normal_to_plane</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; twinpy.lattice.hexagonal_direction.HexagonalDirection<a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#HexagonalPlane.get_direction_normal_to_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane.get_direction_normal_to_plane" title="Permalink to this definition">¶</a></dt>
 <dd><p>get direction normal to input plane</p>
@@ -359,7 +388,7 @@
 <dd><p>get dicstance from plane</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>frac_coords</strong> (<em>np.array</em>) – fractional coorinates</p>
+<dd class="field-odd"><p><strong>frac_coord</strong> (<em>np.array</em>) – fractional coorinate</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>distance</p>

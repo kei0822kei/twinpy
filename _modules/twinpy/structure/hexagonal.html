@@ -167,38 +167,119 @@
 <span class="kn">import</span> <span class="nn">spglib</span>
 <span class="kn">from</span> <span class="nn">phonopy.structure.atoms</span> <span class="kn">import</span> <span class="n">PhonopyAtoms</span>
 <span class="kn">from</span> <span class="nn">phonopy.structure.cells</span> <span class="kn">import</span> <span class="n">Primitive</span><span class="p">,</span> <span class="n">Supercell</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">pymatgen.core.structure</span> <span class="kn">import</span> <span class="n">Structure</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">from</span> <span class="nn">twinpy.common.utils</span> <span class="kn">import</span> <span class="n">get_ratio</span>
 <span class="kn">from</span> <span class="nn">twinpy.properties.hexagonal</span> <span class="kn">import</span> <span class="n">get_atom_positions</span>
 <span class="kn">from</span> <span class="nn">twinpy.properties.twinmode</span> <span class="kn">import</span> <span class="p">(</span><span class="n">get_shear_strain_function</span><span class="p">,</span>
                                         <span class="n">get_twin_indices</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">twinpy.lattice.lattice</span> <span class="kn">import</span> <span class="n">Lattice</span>
+<span class="kn">from</span> <span class="nn">twinpy.lattice.hexagonal_plane</span> <span class="kn">import</span> <span class="n">HexagonalPlane</span>
+<span class="kn">from</span> <span class="nn">twinpy.file_io</span> <span class="kn">import</span> <span class="n">write_poscar</span>
 
-<div class="viewcode-block" id="is_hcp"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.is_hcp">[docs]</a><span class="k">def</span> <span class="nf">is_hcp</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">symbols</span><span class="p">):</span>
+<div class="viewcode-block" id="is_hcp"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.is_hcp">[docs]</a><span class="k">def</span> <span class="nf">is_hcp</span><span class="p">(</span><span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+           <span class="n">symbols</span><span class="p">:</span><span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+           <span class="n">positions</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">scaled_positions</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">get_wyckoff</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    check input structure is Hexagonal Close-Packed structure</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        lattice (np.array): lattice</span>
-<span class="sd">        positions: atom fractional positions</span>
-<span class="sd">        symbols (list): atomic symbols</span>
+<span class="sd">        symbols: atomic symbols</span>
+<span class="sd">        positions (np.array): atom cartesian positions</span>
+<span class="sd">        scaled_positions (np.array): atom fractional positions</span>
+<span class="sd">        get_wyckoff (bool): if True, return wyckoff letter, which is &#39;c&#39; or &#39;d&#39;</span>
 
 <span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: both positions and scaled_positions are specified</span>
 <span class="sd">        AssertionError: input symbols are not unique</span>
 <span class="sd">        AssertionError: input structure is not</span>
 <span class="sd">                        Hexagonal Close-Packed structure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">positions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">scaled_positions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;both positions and scaled_positions &quot;</span>
+                             <span class="s2">&quot;are specified&quot;</span><span class="p">)</span>
+
     <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">symbols</span><span class="p">))</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">symbols</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">),</span> \
         <span class="s2">&quot;symbols is not unique or the number of atoms are not two&quot;</span>
+
+    <span class="k">if</span> <span class="n">positions</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">scaled_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">positions</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
     <span class="n">dataset</span> <span class="o">=</span> <span class="n">spglib</span><span class="o">.</span><span class="n">get_symmetry_dataset</span><span class="p">((</span><span class="n">lattice</span><span class="p">,</span>
-                                           <span class="n">positions</span><span class="p">,</span>
+                                           <span class="n">scaled_positions</span><span class="p">,</span>
                                            <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
     <span class="n">spg_symbol</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;international&#39;</span><span class="p">]</span>
     <span class="n">wyckoffs</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;wyckoffs&#39;</span><span class="p">]</span>
-    <span class="k">assert</span> <span class="n">spg_symbol</span> <span class="o">!=</span> <span class="s1">&#39;P6_3/mmc&#39;</span><span class="p">,</span> \
+    <span class="k">assert</span> <span class="n">spg_symbol</span> <span class="o">==</span> <span class="s1">&#39;P6_3/mmc&#39;</span><span class="p">,</span> \
             <span class="s2">&quot;space group of input structure is </span><span class="si">{}</span><span class="s2"> not &#39;P6_3/mmc&#39;&quot;</span> \
             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">spg_symbol</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">wyckoffs</span> <span class="ow">in</span> <span class="p">[[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span></div>
+    <span class="k">assert</span> <span class="n">wyckoffs</span> <span class="ow">in</span> <span class="p">[[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">get_wyckoff</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">wyckoffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="get_atom_positions_from_lattice_points"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.get_atom_positions_from_lattice_points">[docs]</a><span class="k">def</span> <span class="nf">get_atom_positions_from_lattice_points</span><span class="p">(</span><span class="n">lattice_points</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                                           <span class="n">atoms_from_lp</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get atom positions from lattice points</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lattice_points (np.array): lattice points</span>
+<span class="sd">        atoms_from_lp (np.array): atoms from lattice_points</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array: atom positions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">scaled_positions</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">lattice_point</span> <span class="ow">in</span> <span class="n">lattice_points</span><span class="p">:</span>
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">lattice_point</span> <span class="o">+</span> <span class="n">atoms_from_lp</span>
+        <span class="n">scaled_positions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scaled_positions</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="get_hexagonal_structure_from_pymatgen"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.get_hexagonal_structure_from_pymatgen">[docs]</a><span class="k">def</span> <span class="nf">get_hexagonal_structure_from_pymatgen</span><span class="p">(</span><span class="n">pmgstructure</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get HexagonalStructure object from pyamtgen structure</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pmgstructure: pymatgen structure object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">pmgstructure</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">matrix</span>
+    <span class="n">scaled_positions</span> <span class="o">=</span> <span class="n">pmgstructure</span><span class="o">.</span><span class="n">frac_coords</span>
+    <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span> <span class="n">specie</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">specie</span> <span class="ow">in</span> <span class="n">pmgstructure</span><span class="o">.</span><span class="n">species</span> <span class="p">]</span>
+    <span class="n">wyckoff</span> <span class="o">=</span> <span class="n">is_hcp</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+                     <span class="n">scaled_positions</span><span class="o">=</span><span class="n">scaled_positions</span><span class="p">,</span>
+                     <span class="n">symbols</span><span class="o">=</span><span class="n">symbols</span><span class="p">,</span>
+                     <span class="n">get_wyckoff</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">HexagonalStructure</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+                              <span class="n">symbol</span><span class="o">=</span><span class="n">symbols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                              <span class="n">wyckoff</span><span class="o">=</span><span class="n">wyckoff</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_hexagonal_structure_from_a_c"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.get_hexagonal_structure_from_a_c">[docs]</a><span class="k">def</span> <span class="nf">get_hexagonal_structure_from_a_c</span><span class="p">(</span><span class="n">a</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+                                     <span class="n">c</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+                                     <span class="n">symbol</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                     <span class="n">wyckoff</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get HexagonalStructure class object from a and c axes</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a (str): the norm of a axis</span>
+<span class="sd">        c (str): the norm of c axis</span>
+<span class="sd">        symbol (str): element symbol</span>
+<span class="sd">        wyckoff (str): No.194 Wycoff position (&#39;c&#39; or &#39;d&#39;)</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: either a or c is negative value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">,</span> <span class="s2">&quot;input &#39;a&#39; and &#39;c&#39; must be positive value&quot;</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.</span><span class="p">,</span>           <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                        <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                        <span class="p">[</span>  <span class="mf">0.</span><span class="p">,</span>           <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">HexagonalStructure</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+                              <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span>
+                              <span class="n">wyckoff</span><span class="o">=</span><span class="n">wyckoff</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="_get_supercell_matrix"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal._get_supercell_matrix">[docs]</a><span class="k">def</span> <span class="nf">_get_supercell_matrix</span><span class="p">(</span><span class="n">indices</span><span class="p">):</span>
     <span class="n">tf1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">get_ratio</span><span class="p">(</span><span class="n">indices</span><span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">))</span>
@@ -214,52 +295,54 @@
 
 <div class="viewcode-block" id="HexagonalStructure.__init__"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
            <span class="bp">self</span><span class="p">,</span>
-           <span class="n">a</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
-           <span class="n">c</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+           <span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
            <span class="n">symbol</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
            <span class="n">wyckoff</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">,</span>
-           <span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
-<span class="sd">            a (str): the norm of a axis</span>
-<span class="sd">            c (str): the norm of c axis</span>
+<span class="sd">            lattice (np.array): lattice</span>
 <span class="sd">            symbol (str): element symbol</span>
-<span class="sd">            lattice (np.array): if None, default lattice is set</span>
 <span class="sd">            wyckoff (str): No.194 Wycoff position (&#39;c&#39; or &#39;d&#39;)</span>
 
 <span class="sd">        Raises:</span>
-<span class="sd">            AssertionError: either a or c is negative value</span>
 <span class="sd">            AssertionError: wyckoff is not &#39;c&#39; and &#39;d&#39;</span>
 <span class="sd">            ValueError: lattice is not None (future fix)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">,</span> <span class="s2">&quot;input &#39;a&#39; and &#39;c&#39; must be positive value&quot;</span>
-        <span class="k">if</span> <span class="n">lattice</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.</span><span class="p">,</span>           <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
-                                <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
-                                <span class="p">[</span>  <span class="mf">0.</span><span class="p">,</span>           <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;lattice option is currently invalid&quot;</span>
-                             <span class="s2">&quot; (write future)&quot;</span><span class="p">)</span>
-        <span class="n">lat_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">norms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">atoms_from_lp</span> <span class="o">=</span> <span class="n">get_atom_positions</span><span class="p">(</span><span class="n">wyckoff</span><span class="p">)</span>
         <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal</span> <span class="o">=</span> <span class="p">(</span><span class="n">lattice</span><span class="p">,</span>
-                           <span class="n">lat_points</span><span class="p">,</span>
-                           <span class="n">atoms_from_lp</span><span class="p">,</span>
-                           <span class="n">symbols</span><span class="p">)</span>
+        <span class="n">is_hcp</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+               <span class="n">scaled_positions</span><span class="o">=</span><span class="n">atoms_from_lp</span><span class="p">,</span>
+               <span class="n">symbols</span><span class="o">=</span><span class="n">symbols</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_a</span> <span class="o">=</span> <span class="n">norms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_c</span> <span class="o">=</span> <span class="n">norms</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_c</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_a</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span> <span class="o">=</span> <span class="n">symbol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_wyckoff</span> <span class="o">=</span> <span class="n">wyckoff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_atoms_from_lattice_points</span> <span class="o">=</span> \
+                <span class="n">get_atom_positions</span><span class="p">(</span><span class="n">wyckoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_wyckoff</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span> <span class="o">=</span> <span class="n">Lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_funcion</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span> <span class="o">=</span> <span class="mf">0.</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_structure</span> <span class="o">=</span> <span class="p">(</span><span class="n">lattice</span><span class="p">,</span>
+                                  <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">]),</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">_atoms_from_lattice_points</span><span class="p">,</span>
+                                  <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HexagonalStructure._parent_not_set"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure._parent_not_set">[docs]</a>    <span class="k">def</span> <span class="nf">_parent_not_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;parent_matrix is not set&quot;</span>
                                <span class="s2">&quot;run set_parent first&quot;</span><span class="p">)</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">r</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        r ( = c / a )</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -276,11 +359,11 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wyckoff</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">hexagonal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">atoms_from_lattice_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        hexagonal structure</span>
+<span class="sd">        atoms from lattice points</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_atoms_from_lattice_points</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">hexagonal_lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -317,6 +400,24 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span>
 
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">output_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        built structure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_structure</span>
+
+<div class="viewcode-block" id="HexagonalStructure._get_shear_matrix"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure._get_shear_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">_get_shear_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">plane</span> <span class="o">=</span> <span class="n">HexagonalPlane</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
+                               <span class="n">four</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;K1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">four</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">plane</span><span class="o">.</span><span class="n">get_distance_from_plane</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">)</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_funcion</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_r</span><span class="p">)</span>
+        <span class="n">norm_eta1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">plane</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">))</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> <span class="n">d</span> <span class="o">/</span> <span class="n">norm_eta1</span>
+        <span class="n">shear_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">shear_matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span> <span class="o">*</span> <span class="n">s</span>
+        <span class="k">return</span> <span class="n">shear_matrix</span></div>
+
 <div class="viewcode-block" id="HexagonalStructure.set_parent"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.set_parent">[docs]</a>    <span class="k">def</span> <span class="nf">set_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">twinmode</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        set parent</span>
@@ -335,9 +436,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span> <span class="o">=</span> <span class="n">_get_supercell_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_funcion</span> <span class="o">=</span> <span class="n">get_shear_strain_function</span><span class="p">(</span><span class="n">twinmode</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="HexagonalStructure.add_shear"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.add_shear">[docs]</a>    <span class="k">def</span> <span class="nf">add_shear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ratio</span><span class="p">):</span>
+<div class="viewcode-block" id="HexagonalStructure.set_shear_ratio"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.set_shear_ratio">[docs]</a>    <span class="k">def</span> <span class="nf">set_shear_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ratio</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        add shear to parent structure</span>
+<span class="sd">        set shear ratio</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            ratio (float): the ratio of shear value</span>
@@ -347,19 +448,74 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span> <span class="o">=</span> <span class="n">ratio</span></div>
 
-<div class="viewcode-block" id="HexagonalStructure.get_structure"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.get_structure">[docs]</a>    <span class="k">def</span> <span class="nf">get_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s1">&#39;tuple&#39;</span><span class="p">,</span> <span class="n">is_primitive</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="HexagonalStructure.run"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_primitive</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        get structure</span>
+<span class="sd">        build structure</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            style (str): determine the structure style,</span>
+<span class="sd">            is_primitive (bool): if True, primitive structure is build</span>
 <span class="sd">              choose from &#39;tuple&#39;</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            the structure built is set self.output_structure</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">unitcell</span> <span class="o">=</span> <span class="n">PhonopyAtoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;X&#39;</span><span class="p">],</span>
-                        <span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
-                        <span class="n">scaled_positions</span><span class="o">=</span><span class="p">[[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">]])</span>
-        <span class="n">super_lattice</span> <span class="o">=</span> <span class="n">Supercell</span><span class="p">(</span><span class="n">unitcell</span><span class="o">=</span><span class="n">unitcell</span><span class="p">,</span>
-                                  <span class="n">supercell_matrix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span><span class="p">)</span></div></div>
+        <span class="n">shear_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_shear_matrix</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">is_primitive</span><span class="p">:</span>
+            <span class="n">lattice_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">]])</span>
+            <span class="n">atoms_from_lattice_points</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">atoms_from_lattice_points</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">shear_lattice</span> <span class="o">=</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                       <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span><span class="p">,</span>
+                              <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">shear_matrix</span><span class="p">,</span>
+                                     <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span><span class="p">))))</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">unitcell</span> <span class="o">=</span> <span class="n">PhonopyAtoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">],</span>
+                            <span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
+                            <span class="n">scaled_positions</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mi">0</span><span class="p">]]),</span>
+                            <span class="p">)</span>
+            <span class="n">super_lattice</span> <span class="o">=</span> <span class="n">Supercell</span><span class="p">(</span><span class="n">unitcell</span><span class="o">=</span><span class="n">unitcell</span><span class="p">,</span>
+                                      <span class="n">supercell_matrix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span><span class="p">)</span>
+            <span class="n">shear_lattice</span> <span class="o">=</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                       <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span><span class="p">,</span>
+                              <span class="n">shear_matrix</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">lattice_points</span> <span class="o">=</span> <span class="n">super_lattice</span><span class="o">.</span><span class="n">scaled_positions</span>
+            <span class="n">atoms_from_lattice_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_parent_matrix</span><span class="p">),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_atoms_from_lattice_points</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                    <span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">lattice_points</span><span class="p">)</span> \
+                                 <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atoms_from_lattice_points</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_structure</span> <span class="o">=</span> <span class="p">(</span><span class="n">shear_lattice</span><span class="p">,</span>
+                                  <span class="n">lattice_points</span><span class="p">,</span>
+                                  <span class="n">atoms_from_lattice_points</span><span class="p">,</span>
+                                  <span class="n">symbols</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HexagonalStructure.get_pymatgen_structure"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.get_pymatgen_structure">[docs]</a>    <span class="k">def</span> <span class="nf">get_pymatgen_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get pymatgen structure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">scaled_positions</span> <span class="o">=</span> <span class="n">get_atom_positions_from_lattice_points</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_output_structure</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_output_structure</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">Structure</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_hexagonal_lattice</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
+                         <span class="n">coords</span><span class="o">=</span><span class="n">scaled_positions</span><span class="p">,</span>
+                         <span class="n">species</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">scaled_positions</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="HexagonalStructure.get_poscar"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.hexagonal.HexagonalStructure.get_poscar">[docs]</a>    <span class="k">def</span> <span class="nf">get_poscar</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;POSCAR&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get poscar</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str): output filename</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">scaled_positions</span> <span class="o">=</span> <span class="n">get_atom_positions_from_lattice_points</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_output_structure</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_output_structure</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">write_poscar</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">output_structure</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                     <span class="n">scaled_positions</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">scaled_positions</span><span class="p">),</span>
+                     <span class="n">symbols</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_structure</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                     <span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">)</span></div></div>
 </pre></div>
 
            </div>

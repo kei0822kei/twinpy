@@ -293,17 +293,33 @@
 <span class="sd">        get dicstance from plane</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            frac_coords (np.array): fractional coorinates</span>
+<span class="sd">            frac_coord (np.array): fractional coorinate</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            float: distance</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">frac_coord</span> <span class="o">=</span> <span class="n">frac_coord</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
         <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_direction_normal_to_plane</span><span class="p">()</span>
-        <span class="n">k_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">three</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">k_cart</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">k_cart</span><span class="p">),</span>
-                       <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">frac_coord</span><span class="o">.</span><span class="n">T</span><span class="p">))[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">d</span></div></div>
+        <span class="n">k_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">three</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">e_k_cart</span> <span class="o">=</span> <span class="n">k_cart</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">k_cart</span><span class="p">)</span>
+        <span class="n">x_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">frac_coord</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">e_k_cart</span><span class="p">,</span> <span class="n">x_cart</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span></div>
+
+<div class="viewcode-block" id="HexagonalPlane.get_cartesian"><a class="viewcode-back" href="../../../apidoc/twinpy.lattice.html#twinpy.lattice.hexagonal_plane.HexagonalPlane.get_cartesian">[docs]</a>    <span class="k">def</span> <span class="nf">get_cartesian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frac_coord</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get cartesian coordinate of the input frac_coord</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            frac_coord (np.array): fractional coorinate</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: cartesian coorinate</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">frac_coord</span> <span class="o">=</span> <span class="n">frac_coord</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">cart_coord</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">frac_coord</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cart_coord</span></div></div>
+
 
 
 

@@ -4,6 +4,16 @@ twinpy.lattice package
 Submodules
 ----------
 
+twinpy.lattice.brillouin module
+-------------------------------
+
+.. automodule:: twinpy.lattice.brillouin
+   :members:
+   :special-members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
 twinpy.lattice.hexagonal\_direction module
 ------------------------------------------
 

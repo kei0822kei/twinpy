@@ -99,6 +99,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#hexagonal-structure">Hexagonal Structure</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#set-parent">set parent</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#shear-structure">shear structure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deformation-gradient-tensor">deformation gradient tensor</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#future-edited">FUTURE EDITED</a><ul>
@@ -190,18 +191,19 @@
 <ul>
 <li><p><a class="reference internal" href="#set-parent" id="id3">set parent</a></p></li>
 <li><p><a class="reference internal" href="#shear-structure" id="id4">shear structure</a></p></li>
+<li><p><a class="reference internal" href="#deformation-gradient-tensor" id="id5">deformation gradient tensor</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#future-edited" id="id5">FUTURE EDITED</a></p>
+<li><p><a class="reference internal" href="#future-edited" id="id6">FUTURE EDITED</a></p>
 <ul>
-<li><p><a class="reference internal" href="#get-sheared-structure" id="id6">get_sheared_structure</a></p></li>
-<li><p><a class="reference internal" href="#get-twin-structure" id="id7">get_twin_structure</a></p></li>
+<li><p><a class="reference internal" href="#get-sheared-structure" id="id7">get_sheared_structure</a></p></li>
+<li><p><a class="reference internal" href="#get-twin-structure" id="id8">get_twin_structure</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#hexagonaltwinboundary" id="id8">HexagonalTwinBoundary</a></p>
+<li><p><a class="reference internal" href="#hexagonaltwinboundary" id="id9">HexagonalTwinBoundary</a></p>
 <ul>
-<li><p><a class="reference internal" href="#init" id="id9">__init__</a></p></li>
-<li><p><a class="reference internal" href="#id1" id="id10">get_sheared_structure</a></p></li>
+<li><p><a class="reference internal" href="#init" id="id10">__init__</a></p></li>
+<li><p><a class="reference internal" href="#id1" id="id11">get_sheared_structure</a></p></li>
 </ul>
 </li>
 </ul>
@@ -273,11 +275,11 @@ From the figure, shear vector from parent to twin
 <div class="math notranslate nohighlight">
 \[s \boldsymbol{\eta}^{p}_{1}
 =
-\frac{\gamma d}{|\boldsymbol{\eta}^{p}_{1}|}
+\frac{|\gamma| d}{|\boldsymbol{\eta}^{p}_{1}|}
 \boldsymbol{\eta}^{p}_{1}\]</div>
 <p>so</p>
 <div class="math notranslate nohighlight">
-\[s = \frac{\gamma d}{|\boldsymbol{\eta}^{p}_{1}|}\]</div>
+\[s = \frac{|\gamma| d}{|\boldsymbol{\eta}^{p}_{1}|}\]</div>
 <p>where <span class="math notranslate nohighlight">\(d\)</span> is the distance of the point <span class="math notranslate nohighlight">\(\boldsymbol{\eta}^{p}_{2}\)</span>
 from <span class="math notranslate nohighlight">\(\boldsymbol{K}_2\)</span> plane.
 The bases of twin structure <span class="math notranslate nohighlight">\([\boldsymbol{m}^{t},
@@ -298,9 +300,59 @@ can be written as</p>
  \boldsymbol{a}_2,
  \boldsymbol{c}] \boldsymbol{M} \boldsymbol{S} \boldsymbol{M}^{-1}.\]</div>
 </div>
+<div class="section" id="deformation-gradient-tensor">
+<h3><a class="toc-backref" href="#id5">deformation gradient tensor</a><a class="headerlink" href="#deformation-gradient-tensor" title="Permalink to this headline">¶</a></h3>
+<p>In the provious section, shear structure is introduced. Now, we can
+hold deformation gradient tensor from this shear. In general, deformation
+gradient tensor can be defined as</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{F}
+=
+\frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
+=
+\frac{\partial (\boldsymbol{x} + \boldsymbol{u})}{\partial \boldsymbol{X}}
+=
+\boldsymbol{I} + \frac{\partial \boldsymbol{u}}{\boldsymbol{X}}.\]</div>
+<p>Shear strain corresponds to <span class="math notranslate nohighlight">\(\frac{\partial \boldsymbol{u}}{\boldsymbol{X}}\)</span>
+However, note this equation is on the basis of cartesian coordinate.
+So we have to consider the matrix <span class="math notranslate nohighlight">\(S\)</span> on the same coordinate as</p>
+<div class="math notranslate nohighlight">
+\[[\boldsymbol{e}_{x}, \boldsymbol{e}_{y}, \boldsymbol{e}_{z}]
+\boldsymbol{X}_{0}
+=
+[\boldsymbol{m}^{p},
+ \boldsymbol{\eta}^{p}_{1},
+ \boldsymbol{\eta}^{p}_{2}]
+\boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}\]</div>
+<div class="math notranslate nohighlight">
+\[\rightarrow
+[\boldsymbol{m}^{s},
+ \boldsymbol{\eta}^{s}_{1},
+ \boldsymbol{\eta}^{s}_{2}]
+\boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}
+=
+[\boldsymbol{e}_{x}, \boldsymbol{e}_{y}, \boldsymbol{e}_{z}]
+\boldsymbol{H} \boldsymbol{M} \boldsymbol{S}
+\boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}.\]</div>
+<p>So deformation gradient tensor can be defined as</p>
+<div class="math notranslate nohighlight">
+\[\boldsymbol{F}
+=
+\boldsymbol{I} +
+\boldsymbol{H} \boldsymbol{M} \boldsymbol{S}
+\boldsymbol{M}^{-1} \boldsymbol{H}^{-1}\]</div>
+<p>and let material stretch tensor as <span class="math notranslate nohighlight">\(\boldsymbol{U}\)</span>
+, spatial stretch tensor as <span class="math notranslate nohighlight">\(\boldsymbol{V}\)</span>
+, rotaion as <span class="math notranslate nohighlight">\(\boldsymbol{R}\)</span>
+, right Cauchy-Green tensor as <span class="math notranslate nohighlight">\(\boldsymbol{C}\)</span>
+, left Cauchy-Green tensor as <span class="math notranslate nohighlight">\(\boldsymbol{b}\)</span>
+then</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\boldsymbol{C} = \boldsymbol{U}^2 = \boldsymbol{F}^{T} \boldsymbol{F}\\\boldsymbol{b} = \boldsymbol{V}^2 = \boldsymbol{F} \boldsymbol{F}^{T}\end{aligned}\end{align} \]</div>
+</div>
 </div>
 <div class="section" id="future-edited">
-<h2><a class="toc-backref" href="#id5">FUTURE EDITED</a><a class="headerlink" href="#future-edited" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id6">FUTURE EDITED</a><a class="headerlink" href="#future-edited" title="Permalink to this headline">¶</a></h2>
 <p>First, supercell matrix <span class="math notranslate nohighlight">\(\boldsymbol{M}\)</span> is constructed as bellow</p>
 <div class="math notranslate nohighlight">
 \[[\boldsymbol{m}^{p},
@@ -422,7 +474,7 @@ because two rigid atoms must be the nearest atoms from the specified
 <span class="math notranslate nohighlight">\(\boldsymbol{K}_1\)</span> plane. In the case you choose ‘c’ wyckoff letter,
 this revising (probably) always occur.</p>
 <div class="section" id="get-sheared-structure">
-<h3><a class="toc-backref" href="#id6">get_sheared_structure</a><a class="headerlink" href="#get-sheared-structure" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id7">get_sheared_structure</a><a class="headerlink" href="#get-sheared-structure" title="Permalink to this headline">¶</a></h3>
 <p>When the shear ratio is <span class="math notranslate nohighlight">\(\boldsymbol{r}\)</span>,
 the basis vectors of sheared structure are given as</p>
 <div class="math notranslate nohighlight">
@@ -476,7 +528,7 @@ r s \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1}\]</div>
 \end{pmatrix}.\end{split}\]</div>
 </div>
 <div class="section" id="get-twin-structure">
-<h3><a class="toc-backref" href="#id7">get_twin_structure</a><a class="headerlink" href="#get-twin-structure" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id8">get_twin_structure</a><a class="headerlink" href="#get-twin-structure" title="Permalink to this headline">¶</a></h3>
 <p>The operation from parent lattice to twin lattice
 <span class="math notranslate nohighlight">\(\boldsymbol{W}^{t}\)</span> is defineda as</p>
 <div class="math notranslate nohighlight">
@@ -603,9 +655,9 @@ twin vectors <span class="math notranslate nohighlight">\(\boldsymbol{X}^{t}\)</
 </div>
 </div>
 <div class="section" id="hexagonaltwinboundary">
-<h2><a class="toc-backref" href="#id8">HexagonalTwinBoundary</a><a class="headerlink" href="#hexagonaltwinboundary" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id9">HexagonalTwinBoundary</a><a class="headerlink" href="#hexagonaltwinboundary" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="init">
-<h3><a class="toc-backref" href="#id9">__init__</a><a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id10">__init__</a><a class="headerlink" href="#init" title="Permalink to this headline">¶</a></h3>
 <p>To create ‘HexagonalTwinBoundary’ object, you have to specify
 the norm of a and c axis and its specie as a hexagonal metal
 information. Moreover, twinmode, twintype, dimension and
@@ -649,7 +701,7 @@ are transformed into the dichromatic lattice frame.</p>
 \boldsymbol{L}^{d -1} \boldsymbol{L}^{p,t} \boldsymbol{X}^{p,t}\]</div>
 </div>
 <div class="section" id="id1">
-<h3><a class="toc-backref" href="#id10">get_sheared_structure</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id11">get_sheared_structure</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>The twin boundary structure can be sheared by this function.
 Input ‘gamma’ represents shear strain (<span class="math notranslate nohighlight">\(\gamma'\)</span>).
 dichromatic lattice are sheared as</p>

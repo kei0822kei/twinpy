@@ -102,6 +102,8 @@
 <li class="toctree-l3"><a class="reference internal" href="twinpy.structure.html">twinpy.structure package</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-twinpy.file_io">twinpy.file_io module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-twinpy">Module contents</a></li>
 </ul>
 </li>
@@ -181,6 +183,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="twinpy.lattice.html">twinpy.lattice package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.lattice.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.lattice.html#module-twinpy.lattice.brillouin">twinpy.lattice.brillouin module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.lattice.html#module-twinpy.lattice.hexagonal_direction">twinpy.lattice.hexagonal_direction module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.lattice.html#module-twinpy.lattice.hexagonal_plane">twinpy.lattice.hexagonal_plane module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.lattice.html#module-twinpy.lattice.lattice">twinpy.lattice.lattice module</a></li>
@@ -202,6 +205,31 @@
 </li>
 </ul>
 </div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-twinpy.file_io">
+<span id="twinpy-file-io-module"></span><h2>twinpy.file_io module<a class="headerlink" href="#module-twinpy.file_io" title="Permalink to this headline">¶</a></h2>
+<p>make structures</p>
+<dl class="function">
+<dt id="twinpy.file_io.write_poscar">
+<code class="sig-prename descclassname">twinpy.file_io.</code><code class="sig-name descname">write_poscar</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array, frac_coords: numpy.array, symbols: Sequence[str], filename: str = 'POSCAR'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/file_io.html#write_poscar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.file_io.write_poscar" title="Permalink to this definition">¶</a></dt>
+<dd><p>write out structure to file
+In this function, structure is not fixed
+even if its lattice basis is left handed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lattice</strong> (<em>np.array</em>) – lattice, 3x3 numpy array</p></li>
+<li><p><strong>frac_coords</strong> (<em>np.array</em>) – fractional coordinates</p></li>
+<li><p><strong>symbols</strong> – list of symbols</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – poscar filename</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="module-twinpy">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-twinpy" title="Permalink to this headline">¶</a></h2>
