@@ -6,6 +6,7 @@ HexagonalStructure
 """
 
 import numpy as np
+from scipy.linalg import sqrtm
 import spglib
 from phonopy.structure.atoms import PhonopyAtoms
 from phonopy.structure.cells import Primitive, Supercell
@@ -250,15 +251,19 @@ class HexagonalStructure():
         return self._output_structure
 
     def _get_shear_matrix(self):
+        s = self._get_shear_value()
+        shear_matrix = np.eye(3)
+        shear_matrix[1,2] = self._shear_strain_ratio * s
+        return shear_matrix
+
+    def _get_shear_value(self):
         plane = HexagonalPlane(lattice=self._hexagonal_lattice.lattice,
                                four=self._indices['K1'].four)
         d = plane.get_distance_from_plane(self._indices['eta2'].three)
         gamma = self._shear_strain_funcion(self._r)
         norm_eta1 = np.linalg.norm(plane.get_cartesian(self._indices['eta1'].three))
         s = abs(gamma) * d / norm_eta1
-        shear_matrix = np.eye(3)
-        shear_matrix[1,2] = self._shear_strain_ratio * s
-        return shear_matrix
+        return s
 
     def set_parent(self, twinmode:str):
         """
@@ -289,6 +294,53 @@ class HexagonalStructure():
             set attribute 'shear_strain_ratio'
         """
         self._shear_strain_ratio = ratio
+
+    def get_shear_properties(self) -> dict:
+        """
+        get various properties related to shear
+
+        Note:
+            key variable:
+              - shear value (s)
+              - shear ratio (alpha)
+              - strain matrix (S)
+              - deformation gradient tensor (F)
+              - right Cauchy-Green tensor (C)
+              - left Cauchy-Green tensor (b)
+              - matrial stretch tensor (U)
+              - spatial stretch tensor (V)
+              - rotation (R)
+            for more detail and definition, see documentation
+        """
+        H = self.hexagonal_lattice.lattice.T
+        M = self._parent_matrix
+        S = self._get_shear_matrix()
+        F = np.eye(3) + \
+            np.dot(H,
+                   np.dot(M,
+                          np.dot(S,
+                                 np.dot(np.linalg.inv(M),
+                                        np.linalg.inv(H)))))
+        s = _get_shear_value()
+        alpha = self._shear_strain_ratio
+        C = np.dot(F.T, F)
+        b = np.dot(F, F.T)
+        U = sqrtm(C)
+        V = sqrtm(b)
+        R = np.dot(F, np.linalg.inv(U))
+        R_ = np.dot(np.linalg.inv(V), F)
+        np.testing.assert_allclose(R, R_)
+        return {
+                 'shear_value': s,
+                 'shear_ratio': alpha,
+                 'strain_matrix': S,
+                 'deformation_gradient_tensor': F,
+                 'material_stretch_tensor': U,
+                 'spatial_stretch_tensor': V,
+                 'right_Cauchy': C,
+                 'left_Cauchy': b,
+                 'rotation':R,
+               }
 
     def run(self, is_primitive=False):
         """
