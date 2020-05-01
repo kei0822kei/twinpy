@@ -94,14 +94,14 @@ From the figure, shear vector from parent to twin
 
    s \boldsymbol{\eta}^{p}_{1}
    =
-   \frac{\gamma d}{|\boldsymbol{\eta}^{p}_{1}|}
+   \frac{|\gamma| d}{|\boldsymbol{\eta}^{p}_{1}|}
    \boldsymbol{\eta}^{p}_{1}
 
 so
 
 .. math::
 
-   s = \frac{\gamma d}{|\boldsymbol{\eta}^{p}_{1}|}
+   s = \frac{|\gamma| d}{|\boldsymbol{\eta}^{p}_{1}|}
 
 where :math:`d` is the distance of the point :math:`\boldsymbol{\eta}^{p}_{2}`
 from :math:`\boldsymbol{K}_2` plane.
