@@ -128,6 +128,74 @@ can be written as
     \boldsymbol{c}] \boldsymbol{M} \boldsymbol{S} \boldsymbol{M}^{-1}.
 
 
+deformation gradient tensor
+---------------------------
+
+In the provious section, shear structure is introduced. Now, we can
+hold deformation gradient tensor from this shear. In general, deformation
+gradient tensor can be defined as
+
+.. math::
+
+   \boldsymbol{F}
+   =
+   \frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
+   =
+   \frac{\partial (\boldsymbol{X} + \boldsymbol{u})}{\partial \boldsymbol{X}}
+   =
+   \boldsymbol{I} + \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}.
+
+Shear strain corresponds to :math:`\frac{\partial \boldsymbol{u}}{\boldsymbol{X}}`
+However, note this equation is on the basis of cartesian coordinate.
+So we have to consider the matrix :math:`S` on the same coordinate as
+
+.. math::
+
+   [\boldsymbol{e}_{x}, \boldsymbol{e}_{y}, \boldsymbol{e}_{z}]
+   \boldsymbol{X}_{0}
+   =
+   [\boldsymbol{m}^{p},
+    \boldsymbol{\eta}^{p}_{1},
+    \boldsymbol{\eta}^{p}_{2}]
+   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}
+
+.. math::
+
+   \rightarrow
+   [\boldsymbol{m}^{s},
+    \boldsymbol{\eta}^{s}_{1},
+    \boldsymbol{\eta}^{s}_{2}]
+   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}
+   =
+   [\boldsymbol{e}_{x}, \boldsymbol{e}_{y}, \boldsymbol{e}_{z}]
+   \boldsymbol{H} \boldsymbol{M} \boldsymbol{S}
+   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}.
+
+So deformation gradient tensor can be defined as
+
+.. math::
+
+   \boldsymbol{F}
+   =
+   \boldsymbol{I} +
+   \boldsymbol{H} \boldsymbol{M} \boldsymbol{S}
+   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1}
+
+and let material stretch tensor as :math:`\boldsymbol{U}`
+, spatial stretch tensor as :math:`\boldsymbol{V}`
+, rotaion as :math:`\boldsymbol{R}`
+, right Cauchy-Green tensor as :math:`\boldsymbol{C}`
+, left Cauchy-Green tensor as :math:`\boldsymbol{b}`
+then
+
+.. math::
+
+   \boldsymbol{C} = \boldsymbol{U}^2 = \boldsymbol{F}^{T} \boldsymbol{F}
+
+   \boldsymbol{b} = \boldsymbol{V}^2 = \boldsymbol{F} \boldsymbol{F}^{T}
+
+
+
 
 
 FUTURE EDITED
