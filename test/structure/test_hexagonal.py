@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-test twinpy/structure.py
+""" test twinpy/structure.py
 """
 
 import unittest
 import numpy as np
+from twinpy.lattice.lattice import Lattice
 from twinpy.structure.hexagonal import (is_hcp,
+                                        get_hexagonal_structure_from_a_c,
                                         HexagonalStructure)
 
 class TestHexagonalStructure(unittest.TestCase):
@@ -17,6 +18,7 @@ class TestHexagonalStructure(unittest.TestCase):
         self.c = 4.65
         self.symbol = 'Ti'
         self.wyckoffs = ['c', 'd']
+        self.twinmodes = ['10-12', '10-11', '11-21', '11-22']
 
     def tearDown(self):
         pass
@@ -32,43 +34,62 @@ class TestHexagonalStructure(unittest.TestCase):
             - failcase_4: not hcp
         """
         for wyckoff in self.wyckoffs:
-            structure = HexagonalStructure(
+            structure = get_hexagonal_structure_from_a_c(
                     a=self.a,
                     c=self.c,
                     symbol=self.symbol,
                     wyckoff=wyckoff)
+        # try:
+        #     failcase_1 = get_hexagonal_structure_from_a_c(
+        #             a=self.a,
+        #             c=self.c,
+        #             symbol=self.symbol,
+        #             wyckoff='c',
+        #             lattice=np.array([1,1,1]))
+        #     raise RuntimeError("unexpectedly passed fail case!")
+        # except ValueError:
+        #     pass
         try:
-            failcase_1 = HexagonalStructure(
-                    a=self.a,
-                    c=self.c,
-                    symbol=self.symbol,
-                    wyckoff='c',
-                    lattice=np.array([1,1,1]))
-        except ValueError:
-            pass
-        try:
-            failcase_2 = HexagonalStructure(
+            failcase_2 = get_hexagonal_structure_from_a_c(
                     a=self.a,
                     c=self.c,
                     symbol=self.symbol,
                     wyckoff='a')
+            raise RuntimeError("unexpectedly passed fail case!")
         except AssertionError:
             pass
         try:
-            failcase_3 = HexagonalStructure(
+            failcase_3 = get_hexagonal_structure_from_a_c(
                     a=-3.,
                     c=4.,
                     symbol=self.symbol,
                     wyckoff='c')
+            raise RuntimeError("unexpectedly passed fail case!")
         except AssertionError:
             pass
         try:
-            failcase_4 = structure.primitive
-            is_hcp(failcase_4[0],
-                   failcase_4[2],
-                   ['Ti', 'Mg'])
+            is_hcp(lattice=structure.hexagonal_lattice.lattice,
+                   scaled_positions=structure.atoms_from_lattice_points,
+                   symbols=['Ti', 'Mg'])
+            raise RuntimeError("unexpectedly passed fail case!")
         except AssertionError:
             pass
+
+    def test_run(self):
+        structure = get_hexagonal_structure_from_a_c(
+                a=self.a,
+                c=self.c,
+                symbol=self.symbol,
+                wyckoff=self.wyckoffs[0])
+        for twinmode in self.twinmodes:
+            structure.set_parent(twinmode)
+            structure.set_shear_ratio(1.)
+            structure.run(is_primitive=True)
+            output_lattice = Lattice(structure.output_structure[0])
+            # np.testing.assert_allclose(np.array([90., 90., 90.]),
+            #                            output_lattice.angles,
+            #                            err_msg=twinmode)
+            structure.get_poscar(filename="/home/mizo/"+twinmode+".poscar")
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestHexagonalStructure)
