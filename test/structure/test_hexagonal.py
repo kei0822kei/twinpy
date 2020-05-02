@@ -75,6 +75,18 @@ class TestHexagonalStructure(unittest.TestCase):
         except AssertionError:
             pass
 
+    def test_get_shear_properties(self):
+        structure = get_hexagonal_structure_from_a_c(
+                a=self.a,
+                c=self.c,
+                symbol=self.symbol,
+                wyckoff=self.wyckoffs[0])
+        structure.set_parent(twinmode=self.twinmodes[0])
+        structure.set_shear_ratio(0.6)
+        from pprint import pprint
+        pprint(structure.get_shear_properties())
+        rotation = structure.get_shear_properties()['rotation']
+
     def test_run(self):
         structure = get_hexagonal_structure_from_a_c(
                 a=self.a,
