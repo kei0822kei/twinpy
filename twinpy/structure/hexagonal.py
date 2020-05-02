@@ -378,46 +378,6 @@ class HexagonalStructure():
                  'rotation':R,
                }
 
-    def _get_twinboundary_structure(self):
-        if self._twintype == 1:
-            W = np.array([[1, 0, 0],
-                          [0, 1, 0],
-                          [0, 0,-1]])
-        elif self._twintype == 2:
-            W = np.array([[1, 0, 0],
-                          [0, 1, 0],
-                          [0, 0,-1]])
-        else:
-            raise ValueError("twin type is neather 1 nor 2")
-
-        shear_structure = self._get_shear_structure(is_primitive=False,
-                                                    ratio=0.)
-        M = shear_structure['lattice'].T
-        lattice_points = shear_structure['lattice_points']
-        lattice_points = np.vstack((lattice_points, np.array([[0.,0.,1.]])))
-        X_p_cart = np.dot(M, lattice_points.T)
-        R = np.array(
-                self._indices['m'].get_cartesian(normalize=True),
-                self._indices['eta1'].get_cartesian(normalize=True),
-                self._indices['k1'].get_cartesian(normalize=True),
-                ).T
-        X_t_cart = np.dot(R,
-                          np.dot(W,
-                                 np.dot(np.linalg.inv(R),
-                                        X_p_cart)))
-        tb_c = np.dot(X_t_cart.T[-1] - X_p_cart.T[-1])
-        tb_lattice = np.array([shear_structure['lattice'][0],
-                               shear_structure['lattice'][1],
-                               tb_c])
-        white_lp = np.dot(np.linalg.inv(tb_lattice.T), X_p_cart).T % 1
-        black_lp = np.dot(np.linalg.inv(tb_lattice.T), X_t_cart).T % 1
-        symbols = [self._symbol] * len(np.vstack((white_lp, black_lp))) \
-                                 * len(self._atoms_from_lattice_points)
-        return {'lattice': tb_lattice,
-                'lattice_points': np.vstack((white_lp, black_lp)),
-                'atoms_from_lattice_points': self._atoms_from_lattice_points,
-                'symbols': symbols}
-
     def run(self, is_primitive=False):
         """
         build structure
@@ -464,6 +424,49 @@ class HexagonalStructure():
                     'atoms_from_lattice_points': atoms_from_lattice_points,
                     'symbols': symbols}
 
+        def _get_twinboundary_structure():
+            if self._twintype == 1:
+                W = np.array([[1, 0, 0],
+                              [0, 1, 0],
+                              [0, 0,-1]])
+            elif self._twintype == 2:
+                W = np.array([[1, 0, 0],
+                              [0, 1, 0],
+                              [0, 0,-1]])
+            else:
+                raise ValueError("twin type is neather 1 nor 2")
+
+            shear_structure = _get_shear_structure(is_primitive=False,
+                                                   ratio=0.)
+            M = shear_structure['lattice'].T
+            lattice_points = shear_structure['lattice_points']
+            additional_points = \
+                    lattice_points[np.isclose(lattice_points[:,2], 0)] + \
+                        np.array([0.,0.,1.])
+            lattice_points = np.vstack((lattice_points, additional_points))
+            X_p_cart = np.dot(M, lattice_points.T)
+            R = np.array([
+                    self._indices['m'].get_cartesian(normalize=True),
+                    self._indices['eta1'].get_cartesian(normalize=True),
+                    self._indices['k1'].get_cartesian(normalize=True),
+                    ]).T
+            X_t_cart = np.dot(R,
+                              np.dot(W,
+                                     np.dot(np.linalg.inv(R),
+                                            X_p_cart)))
+            tb_c = X_t_cart.T[-1] - X_p_cart.T[-1]
+            tb_lattice = np.array([shear_structure['lattice'][0],
+                                   shear_structure['lattice'][1],
+                                   tb_c])
+            white_lp = np.dot(np.linalg.inv(tb_lattice.T), X_p_cart).T % 1
+            black_lp = np.dot(np.linalg.inv(tb_lattice.T), X_t_cart).T % 1
+            symbols = [self._symbol] * len(np.vstack((white_lp, black_lp))) \
+                                     * len(self._atoms_from_lattice_points)
+            return {'lattice': tb_lattice,
+                    'lattice_points': np.vstack((white_lp, black_lp)),
+                    'atoms_from_lattice_points': self._atoms_from_lattice_points,
+                    'symbols': symbols}
+
         if self._twintype is None:
             self.output_structure = \
                     _get_shear_structure(is_primitive=is_primitive,
@@ -471,7 +474,7 @@ class HexagonalStructure():
                                          )
         else:
             self.output_structure = \
-                    self._get_twinboundary_structure(self)
+                    _get_twinboundary_structure()
 
     def get_pymatgen_structure(self):
         """
@@ -484,19 +487,24 @@ class HexagonalStructure():
                          coords=scaled_positions,
                          species=[self._symbol] * len(scaled_positions))
 
-    def get_poscar(self, filename:str='POSCAR'):
+    def get_poscar(self, filename:str='POSCAR', get_lattice=False):
         """
         get poscar
 
         Args:
             filename (str): output filename
         """
-        scaled_positions = get_atom_positions_from_lattice_points(
-                self._output_structure['lattice_points'],
-                self._output_structure['atoms_from_lattice_points'])
+        if get_lattice:
+            scaled_positions = self._output_structure['lattice_points']
+            symbols = ['H'] * len(scaled_positions)
+        else:
+            scaled_positions = get_atom_positions_from_lattice_points(
+                    self._output_structure['lattice_points'],
+                    self._output_structure['atoms_from_lattice_points'])
+            symbols = self._output_structure['symbols']
         write_poscar(lattice=self.output_structure['lattice'],
                      scaled_positions=np.array(scaled_positions),
-                     symbols=self._output_structure['symbols'],
+                     symbols=symbols,
                      filename=filename)
 
 def _get_lattice_points_from_supercell(lattice, dim) -> np.array:
@@ -526,9 +534,9 @@ def _reshape_dimension(dim):
     Raises:
         ValueError: input dim is not (3,) and (3,3) array
     """
-    if np.array(dim) == (3,3):
+    if np.array(dim).shape == (3,3):
         dim_matrix =np.array(dim)
-    elif np.array(dim) == (3,):
+    elif np.array(dim).shape == (3,):
         dim_matrix = np.diag(dim)
     else:
         raise ValueError("input dim is not (3,) and (3,3) array")
