@@ -100,7 +100,7 @@ class TestHexagonalStructure(unittest.TestCase):
             structure.set_parent(twinmode)
             structure.set_shear_ratio(1.)
             structure.run(is_primitive=True)
-            output_lattice = Lattice(structure.output_structure[0])
+            output_lattice = Lattice(structure.output_structure['lattice'])
             # np.testing.assert_allclose(np.array([90., 90., 90.]),
             #                            output_lattice.angles,
             #                            err_msg=twinmode)
