@@ -81,11 +81,14 @@ class TestHexagonalStructure(unittest.TestCase):
                 c=self.c,
                 symbol=self.symbol,
                 wyckoff=self.wyckoffs[0])
-        structure.set_parent(twinmode=self.twinmodes[0])
-        structure.set_shear_ratio(0.6)
-        from pprint import pprint
-        pprint(structure.get_shear_properties())
-        rotation = structure.get_shear_properties()['rotation']
+        for twinmode in self.twinmodes:
+            structure.set_parent(twinmode=twinmode)
+            structure.set_shear_ratio(0.6)
+            rotation = structure.get_shear_properties()['rotation']
+            np.testing.assert_allclose(np.linalg.norm(rotation, axis=0),
+                                       np.array([1,1,1]))
+            np.testing.assert_allclose(np.linalg.norm(rotation, axis=1),
+                                       np.array([1,1,1]))
 
     def test_run(self):
         structure = get_hexagonal_structure_from_a_c(

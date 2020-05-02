@@ -330,10 +330,6 @@ class HexagonalStructure():
         R = np.dot(F, np.linalg.inv(U))
         R_ = np.dot(np.linalg.inv(V), F)
         np.testing.assert_allclose(R, R_)
-        np.testing.assert_allclose(np.linalg.norm(R, axis=0),
-                                   np.array([1,1,1]))
-        np.testing.assert_allclose(np.linalg.norm(R, axis=1),
-                                   np.array([1,1,1]))
         return {
                  'shear_value': s,
                  'shear_ratio': alpha,
@@ -407,10 +403,10 @@ class HexagonalStructure():
         Args:
             filename (str): output filename
         """
-        frac_coords = get_atom_positions_from_lattice_points(
+        scaled_positions = get_atom_positions_from_lattice_points(
                 self._output_structure[1],
                 self._output_structure[2])
         write_poscar(lattice=self.output_structure[0],
-                     frac_coords=np.array(frac_coords),
+                     scaled_positions=np.array(scaled_positions),
                      symbols=self._output_structure[3],
                      filename=filename)
