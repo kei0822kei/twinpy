@@ -168,6 +168,7 @@ class HexagonalStructure():
         self._dim = np.ones(3, dtype=int)
         self._xshift = 0.
         self._yshift = 0.
+        self._is_primitive = False
         self._twintype = None
         self._parent_matrix = np.eye(3)
         self._shear_strain_funcion = None
@@ -259,6 +260,19 @@ class HexagonalStructure():
         setter of x shift
         """
         self._yshift = yshift
+
+    @property
+    def is_primitive(self):
+        """
+        x shift
+        """
+        return self._is_primitive
+
+    def set_is_primitive(self, bl):
+        """
+        setter of x shift
+        """
+        self._is_primitive = bl
 
     @property
     def twintype(self):
@@ -408,13 +422,9 @@ class HexagonalStructure():
                  'rotation':R,
                }
 
-    def run(self, is_primitive=False):
+    def run(self):
         """
         build structure
-
-        Args:
-            is_primitive (bool): if True, primitive structure is build
-              choose from 'tuple'
 
         Note:
             the structure built is set self.output_structure
@@ -542,7 +552,7 @@ class HexagonalStructure():
 
         if self._twintype is None:
             self.output_structure = \
-                    _get_shear_structure(is_primitive=is_primitive,
+                    _get_shear_structure(is_primitive=self._is_primitive,
                                          ratio=self._shear_strain_ratio
                                          )
         else:
