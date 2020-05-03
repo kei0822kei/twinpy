@@ -166,6 +166,8 @@ class HexagonalStructure():
         self._hexagonal_lattice = Lattice(lattice)
         self._indices = None
         self._dim = np.ones(3, dtype=int)
+        self._xshift = 0.
+        self._yshift = 0.
         self._twintype = None
         self._parent_matrix = np.eye(3)
         self._shear_strain_funcion = None
@@ -231,6 +233,32 @@ class HexagonalStructure():
         dimension
         """
         return self._dim
+
+    @property
+    def xshift(self):
+        """
+        x shift
+        """
+        return self._xshift
+
+    def set_xshift(self, xshift):
+        """
+        setter of x shift
+        """
+        self._xshift = xshift
+
+    @property
+    def yshift(self):
+        """
+        x shift
+        """
+        return self._yshift
+
+    def set_yshift(self, yshift):
+        """
+        setter of x shift
+        """
+        self._yshift = yshift
 
     @property
     def twintype(self):
@@ -394,7 +422,9 @@ class HexagonalStructure():
         def _get_shear_structure(is_primitive, ratio):
             shear_matrix = self._get_shear_matrix(ratio)
             if is_primitive:
-                lattice_points = np.array([[0.,0.,0.]])
+                np.testing.assert_allclose(self._dim, np.ones(3),
+                        "self.dim has changed where is_primitive True")
+                lattice_points = np.array([[self._xshift,self._yshift,0.]])
                 atoms_from_lattice_points = self.atoms_from_lattice_points.copy()
                 shear_lattice = \
                     np.dot(self._hexagonal_lattice.lattice.T,
@@ -402,21 +432,22 @@ class HexagonalStructure():
                                   np.dot(shear_matrix,
                                          np.linalg.inv(self._parent_matrix)))).T
             else:
+                supercell_matrix = self._parent_matrix * self._dim
                 unitcell = PhonopyAtoms(symbols=['H'],
                                 cell=self._hexagonal_lattice.lattice,
-                                scaled_positions=np.array([[0.,0.,0]]),
+                                scaled_positions=np.array([[self._xshift,self._yshift,0]]),
                                 )
                 super_lattice = Supercell(unitcell=unitcell,
-                                          supercell_matrix=self._parent_matrix)
+                                          supercell_matrix=supercell_matrix)
                 lattice_points = _get_lattice_points_from_supercell(
                         lattice=self._hexagonal_lattice.lattice,
-                        dim=self._parent_matrix)
+                        dim=supercell_matrix)
                 shear_lattice = \
                     np.dot(self._hexagonal_lattice.lattice.T,
-                           np.dot(self._parent_matrix,
+                           np.dot(supercell_matrix,
                                   shear_matrix)).T
                 atoms_from_lattice_points = np.dot(
-                        np.linalg.inv(self._parent_matrix),
+                        np.linalg.inv(supercell_matrix),
                         self._atoms_from_lattice_points.T,
                         ).T
             symbols = [self._symbol] * len(lattice_points) \
@@ -472,12 +503,14 @@ class HexagonalStructure():
             # lattice points
             white_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_p_cart.T).T % 1
             black_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_t_cart.T).T % 1
-            grey_ix  = [ bl1 or bl2 for bl1, bl2 in \
+            grey_ix  = [ bl1 or bl2 or bl3 for bl1, bl2, bl3 in \
                              zip(np.isclose(white_lp[:,2], 0),
-                                 np.isclose(white_lp[:,2], 0.5)) ]
-            grey_ix_ = [ bl1 or bl2 for bl1, bl2 in \
+                                 np.isclose(white_lp[:,2], 0.5),
+                                 np.isclose(white_lp[:,2], 1)) ]
+            grey_ix_ = [ bl1 or bl2 or bl3 for bl1, bl2, bl3 in \
                              zip(np.isclose(black_lp[:,2], 0),
-                                 np.isclose(black_lp[:,2], 0.5)) ]
+                                 np.isclose(black_lp[:,2], 0.5),
+                                 np.isclose(black_lp[:,2], 1)) ]
             assert grey_ix == grey_ix_, "some unexpected error occured, check script"
             grey_lp = white_lp[grey_ix]
             white_lp = white_lp[[ not bl for bl in grey_ix ]]
@@ -492,8 +525,12 @@ class HexagonalStructure():
                                      * len(self._atoms_from_lattice_points)
             return {'lattice': tb_lattice,
                     'lattice_points': {
-                         'white': white_lp,
-                         'black': black_lp,
+                         'white': white_lp + np.array([self._xshift/(self._dim[0]*2),
+                                                       self._yshift/(self._dim[1]*2),
+                                                       0.]),
+                         'black': black_lp + np.array([-self._xshift/(self._dim[0]*2),
+                                                       -self._yshift/(self._dim[1]*2),
+                                                       0.]),
                          'grey': grey_lp,
                                       },
                     'atoms_from_lattice_points': {

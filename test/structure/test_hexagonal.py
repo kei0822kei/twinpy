@@ -99,6 +99,7 @@ class TestHexagonalStructure(unittest.TestCase):
         for twinmode in self.twinmodes:
             structure.set_parent(twinmode)
             structure.set_shear_ratio(0.)
+            structure.set_dimension(np.array([2,1,2]))
             structure.run(is_primitive=False)
             output_lattice = Lattice(structure.output_structure['lattice'])
             # np.testing.assert_allclose(np.array([90., 90., 90.]),
@@ -112,14 +113,16 @@ class TestHexagonalStructure(unittest.TestCase):
                 c=self.c,
                 symbol=self.symbol,
                 wyckoff=self.wyckoffs[0])
-        # for twinmode in self.twinmodes:
-        for twinmode in ['10-11']:
+        for twinmode in self.twinmodes:
             structure.set_parent(twinmode)
+            # structure.set_dimension(np.array([2,1,2]))
+            # structure.set_yshift(0.5)
             structure.set_twintype(twintype=1)
             structure.run()
             output_lattice = Lattice(structure.output_structure['lattice'])
-            # structure.get_poscar(filename="/home/mizo/tb"+twinmode+".poscar", get_lattice=False)
-            structure.get_poscar(filename="/home/mizo/tb"+twinmode+".poscar", get_lattice=True)
+            # structure.get_poscar(filename="/home/mizo/tb"+twinmode+".poscar", get_lattice=True)
+            # structure.get_poscar(filename="/home/mizo/tb"+twinmode+"_shift.poscar", get_lattice=False)
+            structure.get_poscar(filename="/home/mizo/tb"+twinmode+".poscar", get_lattice=False)
 
 if __name__ == '__main__':
     suite = unittest.TestLoader().loadTestsFromTestCase(TestHexagonalStructure)
