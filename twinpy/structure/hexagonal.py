@@ -172,8 +172,10 @@ class HexagonalStructure():
         self._shear_strain_ratio = 0.
         self._output_structure = \
                 {'lattice': lattice,
-                 'lattice_points': np.array([0.,0.,0.]),
-                 'atoms_from_lattice_points': self._atoms_from_lattice_points,
+                 'lattice_points': {
+                     'white': np.array([0.,0.,0.])},
+                 'atoms_from_lattice_points': {
+                     'white': self._atoms_from_lattice_points},
                  'symbols': [self._symbol] * 2}
 
     def _parent_not_set(self):
@@ -420,8 +422,10 @@ class HexagonalStructure():
             symbols = [self._symbol] * len(lattice_points) \
                                      * len(self._atoms_from_lattice_points)
             return {'lattice': shear_lattice,
-                    'lattice_points': lattice_points,
-                    'atoms_from_lattice_points': atoms_from_lattice_points,
+                    'lattice_points': {
+                        'white': lattice_points},
+                    'atoms_from_lattice_points': {
+                        'white': atoms_from_lattice_points},
                     'symbols': symbols}
 
         def _get_twinboundary_structure():
@@ -439,32 +443,64 @@ class HexagonalStructure():
             shear_structure = _get_shear_structure(is_primitive=False,
                                                    ratio=0.)
             M = shear_structure['lattice'].T
-            lattice_points = shear_structure['lattice_points']
+            lattice_points = shear_structure['lattice_points']['white']
             additional_points = \
                     lattice_points[np.isclose(lattice_points[:,2], 0)] + \
                         np.array([0.,0.,1.])
             lattice_points = np.vstack((lattice_points, additional_points))
-            X_p_cart = np.dot(M, lattice_points.T)
+            lp_p_cart = np.dot(M, lattice_points.T).T
+            atoms_p_cart = \
+                    np.dot(M, shear_structure['atoms_from_lattice_points']['white'].T).T
             R = np.array([
                     self._indices['m'].get_cartesian(normalize=True),
                     self._indices['eta1'].get_cartesian(normalize=True),
                     self._indices['k1'].get_cartesian(normalize=True),
                     ]).T
-            X_t_cart = np.dot(R,
+            lp_t_cart = np.dot(R,
                               np.dot(W,
                                      np.dot(np.linalg.inv(R),
-                                            X_p_cart)))
-            tb_c = X_t_cart.T[-1] - X_p_cart.T[-1]
+                                            lp_p_cart.T))).T
+            atoms_t_cart = np.dot(R,
+                                  np.dot(W,
+                                         np.dot(np.linalg.inv(R),
+                                                atoms_p_cart.T))).T
+            tb_c = lp_p_cart[-1] - lp_t_cart[-1]
             tb_lattice = np.array([shear_structure['lattice'][0],
                                    shear_structure['lattice'][1],
                                    tb_c])
-            white_lp = np.dot(np.linalg.inv(tb_lattice.T), X_p_cart).T % 1
-            black_lp = np.dot(np.linalg.inv(tb_lattice.T), X_t_cart).T % 1
-            symbols = [self._symbol] * len(np.vstack((white_lp, black_lp))) \
+
+            # lattice points
+            white_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_p_cart.T).T % 1
+            black_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_t_cart.T).T % 1
+            grey_ix  = [ bl1 or bl2 for bl1, bl2 in \
+                             zip(np.isclose(white_lp[:,2], 0),
+                                 np.isclose(white_lp[:,2], 0.5)) ]
+            grey_ix_ = [ bl1 or bl2 for bl1, bl2 in \
+                             zip(np.isclose(black_lp[:,2], 0),
+                                 np.isclose(black_lp[:,2], 0.5)) ]
+            assert grey_ix == grey_ix_, "some unexpected error occured, check script"
+            grey_lp = white_lp[grey_ix]
+            white_lp = white_lp[[ not bl for bl in grey_ix ]]
+            black_lp = black_lp[[ not bl for bl in grey_ix ]]
+
+            # atoms from lattice points
+            white_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_p_cart.T).T
+            black_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_t_cart.T).T
+            grey_atoms = (white_atoms + black_atoms) / 2
+
+            symbols = [self._symbol] * (len(white_lp)+len(black_lp)+len(grey_lp)) \
                                      * len(self._atoms_from_lattice_points)
             return {'lattice': tb_lattice,
-                    'lattice_points': np.vstack((white_lp, black_lp)),
-                    'atoms_from_lattice_points': self._atoms_from_lattice_points,
+                    'lattice_points': {
+                         'white': white_lp,
+                         'black': black_lp,
+                         'grey': grey_lp,
+                                      },
+                    'atoms_from_lattice_points': {
+                         'white': white_atoms,
+                         'black': black_atoms,
+                         'grey': grey_atoms,
+                                                 },
                     'symbols': symbols}
 
         if self._twintype is None:
@@ -476,16 +512,35 @@ class HexagonalStructure():
             self.output_structure = \
                     _get_twinboundary_structure()
 
-    def get_pymatgen_structure(self):
+    def _get_structure_for_export(self, get_lattice=False):
+        _dummy = {'white': 'H', 'black': 'He', 'grey': 'Li'}
+        scaled_positions = []
+        if get_lattice:
+            symbols = []
+            for color in self._output_structure['lattice_points']:
+                posi = self._output_structure['lattice_points'][color]
+                sym = [_dummy[color]] * len(posi)
+                scaled_positions.extend(posi.tolist())
+                symbols.extend(sym)
+        else:
+            for color in self._output_structure['lattice_points']:
+                posi = get_atom_positions_from_lattice_points(
+                        self._output_structure['lattice_points'][color],
+                        self._output_structure['atoms_from_lattice_points'][color])
+                scaled_positions.extend(posi.tolist())
+            symbols = self._output_structure['symbols']
+        return (self._output_structure['lattice'],
+                scaled_positions,
+                symbols)
+
+    def get_pymatgen_structure(self, get_lattice=False):
         """
         get pymatgen structure
         """
-        scaled_positions = get_atom_positions_from_lattice_points(
-                self._output_structure['lattice_points'],
-                self._output_structure['atoms_from_lattice_points'])
-        return Structure(lattice=self._hexagonal_lattice.lattice,
-                         coords=scaled_positions,
-                         species=[self._symbol] * len(scaled_positions))
+        cell = self._get_structure_for_export(get_lattice)
+        return Structure(lattice=cell[0],
+                         coords=cell[1],
+                         species=cell[2])
 
     def get_poscar(self, filename:str='POSCAR', get_lattice=False):
         """
@@ -494,17 +549,10 @@ class HexagonalStructure():
         Args:
             filename (str): output filename
         """
-        if get_lattice:
-            scaled_positions = self._output_structure['lattice_points']
-            symbols = ['H'] * len(scaled_positions)
-        else:
-            scaled_positions = get_atom_positions_from_lattice_points(
-                    self._output_structure['lattice_points'],
-                    self._output_structure['atoms_from_lattice_points'])
-            symbols = self._output_structure['symbols']
-        write_poscar(lattice=self.output_structure['lattice'],
-                     scaled_positions=np.array(scaled_positions),
-                     symbols=symbols,
+        cell = self._get_structure_for_export(get_lattice)
+        write_poscar(lattice=cell[0],
+                     scaled_positions=cell[1],
+                     symbols=cell[2],
                      filename=filename)
 
 def _get_lattice_points_from_supercell(lattice, dim) -> np.array:
