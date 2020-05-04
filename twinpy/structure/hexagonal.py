@@ -433,7 +433,7 @@ class HexagonalStructure():
             shear_matrix = self._get_shear_matrix(ratio)
             if is_primitive:
                 np.testing.assert_allclose(self._dim, np.ones(3),
-                        "self.dim has changed where is_primitive True")
+                        err_msg="self.dim has changed where is_primitive True")
                 lattice_points = np.array([[self._xshift,self._yshift,0.]])
                 atoms_from_lattice_points = self.atoms_from_lattice_points.copy()
                 shear_lattice = \
@@ -559,7 +559,7 @@ class HexagonalStructure():
             self.output_structure = \
                     _get_twinboundary_structure()
 
-    def _get_structure_for_export(self, get_lattice=False):
+    def get_structure_for_export(self, get_lattice=False):
         _dummy = {'white': 'H', 'black': 'He', 'grey': 'Li'}
         scaled_positions = []
         if get_lattice:
@@ -577,14 +577,14 @@ class HexagonalStructure():
                 scaled_positions.extend(posi.tolist())
             symbols = self._output_structure['symbols']
         return (self._output_structure['lattice'],
-                scaled_positions,
+                np.array(scaled_positions),
                 symbols)
 
     def get_pymatgen_structure(self, get_lattice=False):
         """
         get pymatgen structure
         """
-        cell = self._get_structure_for_export(get_lattice)
+        cell = self.get_structure_for_export(get_lattice)
         return Structure(lattice=cell[0],
                          coords=cell[1],
                          species=cell[2])
@@ -596,7 +596,7 @@ class HexagonalStructure():
         Args:
             filename (str): output filename
         """
-        cell = self._get_structure_for_export(get_lattice)
+        cell = self.get_structure_for_export(get_lattice)
         write_poscar(lattice=cell[0],
                      scaled_positions=cell[1],
                      symbols=cell[2],
