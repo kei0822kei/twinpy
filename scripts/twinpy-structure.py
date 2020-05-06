@@ -30,6 +30,8 @@ def get_argparse():
         help="x shift")
     parser.add_argument('--yshift', type=float, default=0.,
         help="y shift")
+    parser.add_argument('--dim', type=str, default='1 1 1',
+        help="dimension")
     parser.add_argument('-c', '--posfile', default=None,
         help="POSCAR file")
     parser.add_argument('--get_poscar', action='store_true',
@@ -50,6 +52,7 @@ def main(
          is_primitive,
          xshift,
          yshift,
+         dim,
          posfile,
          get_poscar,
          get_lattice,
@@ -70,6 +73,7 @@ def main(
     structure.set_shear_ratio(ratio)
     structure.set_xshift(xshift)
     structure.set_yshift(yshift)
+    structure.set_dimension(dim)
     structure.set_is_primitive(is_primitive)
     structure.run()
     if get_poscar:
@@ -95,6 +99,7 @@ def main(
 
 if __name__ == '__main__':
     args = get_argparse()
+    dimension = list(map(int, args.dim.split()))
     main(
          ratio=args.ratio,
          twinmode=args.twinmode,
@@ -102,6 +107,7 @@ if __name__ == '__main__':
          is_primitive=args.is_primitive,
          xshift=args.xshift,
          yshift=args.yshift,
+         dim=dimension,
          posfile=args.posfile,
          get_poscar=args.get_poscar,
          get_lattice=args.get_lattice,
