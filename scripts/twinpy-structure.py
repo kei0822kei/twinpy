@@ -69,7 +69,8 @@ def main(
         pmgstructure = poscar.structure
         structure = get_hexagonal_structure_from_pymatgen(pmgstructure)
     structure.set_parent(twinmode)
-    structure.set_twintype(twintype)
+    if twintype is not None:
+        structure.set_twintype(twintype)
     structure.set_shear_ratio(ratio)
     structure.set_xshift(xshift)
     structure.set_yshift(yshift)
