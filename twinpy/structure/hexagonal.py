@@ -477,7 +477,7 @@ class HexagonalStructure():
                         'white': atoms_from_lattice_points},
                     'symbols': symbols}
 
-        def _get_twinboundary_structure(dichromatic=False):
+        def _get_twinboundary_structure(dichromatic=False, make_tb_flat=True):
             """
             currently dichromaitc=True is broken, because I do not understand
             how to set grey lattice points and atoms
@@ -540,20 +540,13 @@ class HexagonalStructure():
                 assert grey_ix == grey_ix_, "some unexpected error occured, check script"
                 grey_lp = white_lp[grey_ix]
 
-            else:
-                grey_ix  = [ bl2 for bl2 in np.isclose(white_lp[:,2], 0.5) ]
-                grey_ix_ = [ bl1 or bl3 for bl1, bl3 in \
-                                 zip(np.isclose(black_lp[:,2], 0),
-                                     np.isclose(black_lp[:,2], 1)) ]
+                white_lp = white_lp[[ not bl for bl in grey_ix ]]
+                black_lp = black_lp[[ not bl for bl in grey_ix_ ]]
 
-            white_lp = white_lp[[ not bl for bl in grey_ix ]]
-            black_lp = black_lp[[ not bl for bl in grey_ix_ ]]
+                # atoms from lattice points
+                white_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_p_cart.T).T
+                black_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_t_cart.T).T
 
-            # atoms from lattice points
-            white_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_p_cart.T).T
-            black_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_t_cart.T).T
-
-            if dichromatic:
                 grey_atoms = (white_atoms + black_atoms) / 2
                 symbols = [self._symbol] * (len(white_lp)+len(black_lp)+len(grey_lp)) \
                                          * len(self._atoms_from_lattice_points)
@@ -573,7 +566,72 @@ class HexagonalStructure():
                              'grey': grey_atoms,
                                                      },
                         'symbols': symbols}
+
+
+            elif make_tb_flat:
+                black_tb_ix  = [ bl2 for bl2 in np.isclose(white_lp[:,2], 0.5) ]
+                white_tb_ix = [ bl1 or bl3 for bl1, bl3 in \
+                                zip(np.isclose(black_lp[:,2], 0),
+                                    np.isclose(black_lp[:,2], 1)) ]
+
+                white_tb_lp = white_lp[white_tb_ix]
+                black_tb_lp = black_lp[black_tb_ix]
+                w_ix  = [ bl1 or bl2 or bl3 for bl1, bl2, bl3 in \
+                                 zip(np.isclose(white_lp[:,2], 0),
+                                     np.isclose(white_lp[:,2], 0.5),
+                                     np.isclose(white_lp[:,2], 1)) ]
+                b_ix  = [ bl1 or bl2 or bl3 for bl1, bl2, bl3 in \
+                                 zip(np.isclose(black_lp[:,2], 0),
+                                     np.isclose(black_lp[:,2], 0.5),
+                                     np.isclose(black_lp[:,2], 1)) ]
+                white_lp = white_lp[[ not bl for bl in w_ix ]]
+                black_lp = black_lp[[ not bl for bl in b_ix ]]
+
+                # atoms from lattice points
+                white_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_p_cart.T).T
+                black_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_t_cart.T).T
+                atms = len(white_atoms)
+                white_tb_atoms = np.hstack((white_atoms[:,:2], np.zeros(atms).reshape(atms,1)))
+                black_tb_atoms = np.hstack((black_atoms[:,:2], np.zeros(atms).reshape(atms,1)))
+
+                symbols = [self._symbol] * (len(white_lp)+len(black_lp)+len(white_tb_lp)+len(black_tb_lp)) \
+                                         * len(self._atoms_from_lattice_points)
+                return {'lattice': tb_lattice,
+                        'lattice_points': {
+                             'white': white_lp + np.array([self._xshift/(self._dim[0]*2),
+                                                           self._yshift/(self._dim[1]*2),
+                                                           0.]),
+                             'white_tb': white_tb_lp + np.array([self._xshift/(self._dim[0]*2),
+                                                                 self._yshift/(self._dim[1]*2),
+                                                                 0.]),
+                             'black': black_lp + np.array([-self._xshift/(self._dim[0]*2),
+                                                           -self._yshift/(self._dim[1]*2),
+                                                           0.]),
+                             'black_tb': black_tb_lp + np.array([-self._xshift/(self._dim[0]*2),
+                                                                 -self._yshift/(self._dim[1]*2),
+                                                                 0.]),
+                                          },
+                        'atoms_from_lattice_points': {
+                             'white': white_atoms,
+                             'white_tb': white_tb_atoms,
+                             'black': black_atoms,
+                             'black_tb': black_tb_atoms,
+                                                     },
+                        'symbols': symbols}
+
             else:
+                grey_ix  = [ bl2 for bl2 in np.isclose(white_lp[:,2], 0.5) ]
+                grey_ix_ = [ bl1 or bl3 for bl1, bl3 in \
+                                 zip(np.isclose(black_lp[:,2], 0),
+                                     np.isclose(black_lp[:,2], 1)) ]
+
+                white_lp = white_lp[[ not bl for bl in grey_ix ]]
+                black_lp = black_lp[[ not bl for bl in grey_ix_ ]]
+
+                # atoms from lattice points
+                white_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_p_cart.T).T
+                black_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_t_cart.T).T
+
                 symbols = [self._symbol] * (len(white_lp)+len(black_lp)) \
                                          * len(self._atoms_from_lattice_points)
                 return {'lattice': tb_lattice,
@@ -602,7 +660,7 @@ class HexagonalStructure():
         self._natoms = len(self.output_structure['symbols'])
 
     def get_structure_for_export(self, get_lattice=False):
-        _dummy = {'white': 'H', 'black': 'He', 'grey': 'Li'}
+        _dummy = {'white': 'H', 'white_tb': 'H', 'black': 'He', 'black_tb': 'He', 'grey': 'Li'}
         scaled_positions = []
         if get_lattice:
             symbols = []
