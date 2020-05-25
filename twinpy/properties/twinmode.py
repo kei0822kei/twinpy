@@ -220,7 +220,7 @@ def get_twin_indices(twinmode:str,
             dots = [ lattice.dot(trial_m.three,
                                  indices[direction].three)
                         for direction in normal_directions ]
-            if np.allclose(np.array(dots), np.zeros(4)):
+            if np.allclose(np.array(dots), np.zeros(4), atol=1e-4):
                 flag = 0
                 break
         if flag == 1:
