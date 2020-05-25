@@ -194,8 +194,8 @@ then
 
    \boldsymbol{b} = \boldsymbol{V}^2 = \boldsymbol{F} \boldsymbol{F}^{T}
 
-
-
+   \boldsymbol{R} = \boldsymbol{F} \boldsymbol{U}^{-1}
+                  = \boldsymbol{V}^{-1} \boldsymbol{F}
 
 
 FUTURE EDITED
