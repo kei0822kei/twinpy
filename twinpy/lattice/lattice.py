@@ -199,3 +199,10 @@ class Lattice():
         except AssertionError:
             flag = False
         return flag
+
+    def get_abc(self):
+        """
+        get norms of each axis
+        """
+        abc = tuple(np.linalg.norm(lattice, axis=1))
+        return abc
