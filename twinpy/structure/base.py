@@ -184,6 +184,7 @@ class _BaseStructure():
         is_hcp(lattice=lattice,
                scaled_positions=atoms_from_lp,
                symbols=symbols)
+        self._hcp_lattice = Lattice(lattice)
         self._a, _, self._c = lattice.get_abc()
         self._r = self._c / self._a
         self._symbol = symbol
@@ -194,6 +195,8 @@ class _BaseStructure():
         self._natoms = 2
         self._twinmode = None
         self._indices = None
+        self._xshift = 0.
+        self._yshift = 0.
         self._output_structure = \
                 {'lattice': lattice,
                  'lattice_points': {
@@ -208,6 +211,13 @@ class _BaseStructure():
         r ( = c / a )
         """
         return self._r
+
+    @property
+    def hcp_lattice(self):
+        """
+        base HCP lattice
+        """
+        return self._hcp_lattice
 
     @property
     def symbol(self):
@@ -238,6 +248,32 @@ class _BaseStructure():
         return self._hexagonal_lattice
 
     @property
+    def xshift(self):
+        """
+        x shift
+        """
+        return self._xshift
+
+    def set_xshift(self, xshift):
+        """
+        setter of x shift
+        """
+        self._xshift = xshift
+
+    @property
+    def yshift(self):
+        """
+        x shift
+        """
+        return self._yshift
+
+    def set_yshift(self, yshift):
+        """
+        setter of x shift
+        """
+        self._yshift = yshift
+
+    @property
     def natoms(self):
         """
         number of atoms
@@ -265,7 +301,7 @@ class _BaseStructure():
         """
         return self._output_structure
 
-    def set_output_structure(self, structure):
+    def _set_output_structure(self, structure):
         """
         setter of output_structure
         """

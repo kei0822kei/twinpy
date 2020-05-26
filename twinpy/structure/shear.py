@@ -18,8 +18,39 @@ from twinpy.properties.twinmode import TwinIndices
 from twinpy.lattice.lattice import Lattice
 from twinpy.lattice.hexagonal_plane import HexagonalPlane
 from twinpy.file_io import write_poscar
-from twinpy.structure.hexagonal import (get_lattice_points_from_supercell,
-                                        _StructureBase)
+from twinpy.structure.base import (get_lattice_points_from_supercell,
+                                   _StructureBase)
+
+def get_shear(lattice:np.array,
+              symbol:str,
+              twinmode:str,
+              wyckoff:str='c',
+              xshift:float=0.,
+              yshift:float=0.,
+              dim:np.array=np.ones(3, dtype='intc'),
+              ratio:float=0.):
+    """
+    set shear structure object
+
+    Args:
+        lattice (np.array): lattice
+        symbol (str): element symbol
+        wyckoff (str): No.194 Wycoff position ('c' or 'd')
+        xshift (float): x shift
+        yshift (float): y shift
+        dim (3, numpy array): dimension
+        ratio (float): shear strain ratio
+    """
+    shear = ShearStructure(lattice=lattice,
+                           symbol=symbol,
+                           wyckoff=wyckoff)
+    shear.set_parent(twinmode)
+    shear.set_xshift(xshift)
+    shear.set_yshift(yshift)
+    shear.set_dim(dim)
+    shear.shear_strain_ratio(ratio)
+    shear.run()
+    return shear
 
 class ShearStructure(_StructureBase):
     """
@@ -42,8 +73,6 @@ class ShearStructure(_StructureBase):
                          symbol=symbol,
                          wyckoff=wyckoff)
         self._dim = np.ones(3, dtype=int)
-        self._xshift = 0.
-        self._yshift = 0.
         self._shear_strain_ratio = 0.
 
     @property
@@ -66,37 +95,11 @@ class ShearStructure(_StructureBase):
         """
         return self._shear_strain_ratio
 
-    def set_shear_ratio(self, ratio):
+    def set_shear_strain_ratio(self, ratio):
         """
         set shear ratio
         """
         self._shear_strain_ratio = ratio
-
-    @property
-    def xshift(self):
-        """
-        x shift
-        """
-        return self._xshift
-
-    def set_xshift(self, xshift):
-        """
-        setter of x shift
-        """
-        self._xshift = xshift
-
-    @property
-    def yshift(self):
-        """
-        x shift
-        """
-        return self._yshift
-
-    def set_yshift(self, yshift):
-        """
-        setter of x shift
-        """
-        self._yshift = yshift
 
     def get_shear_value(self):
         """
@@ -200,5 +203,5 @@ class ShearStructure(_StructureBase):
                      'atoms_from_lattice_points': {
                          'white': atoms_from_lattice_points},
                      'symbols': symbols}
-        self.set_output_structure(structure)
+        self._set_output_structure(structure)
         self._natoms = len(self._output_structure['symbols'])
