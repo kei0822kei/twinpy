@@ -327,8 +327,6 @@ class _BaseStructure():
     def get_structure_for_export(self, get_lattice=False):
         _dummy = {'white': 'H', 'white_tb': 'H',
                   'black': 'He', 'black_tb': 'He', 'grey': 'Li'}
-        assert self._output_structure is not None, \
-                "output structure is not set"
         scaled_positions = []
         if get_lattice:
             symbols = []
@@ -371,3 +369,47 @@ class _BaseStructure():
                      scaled_positions=scaled_positions,
                      symbols=symbols,
                      filename=filename)
+
+    def get_phonopy_structure(self, structure_type:str='base', symprec:float=1e-5):
+        """
+        return phonopy structure
+
+        Args:
+            structure_type (str): 'base', 'primitive' or 'conventional'
+            symprec (float): used when searching conventional unitcell
+        """
+        if structure_type not in ['base', 'primitive', 'conventional']:
+            msg = "structure_type must be 'base', 'primitive' or 'conventional'"
+            raise RuntimeError(msg)
+
+        lattice, scaled_positions, symbols = \
+            self.get_structure_for_export(get_lattice=False)
+
+        bravais = PhonopyAtoms(
+                      cell=lattice,
+                      scaled_positions=scaled_positions,
+                      symbols=symbols)
+        if structure_type == 'base':
+            return bravais
+
+        else:
+            from spglib import refine_cell
+            conv_lattice, conv_scaled_positions, conv_symbols = \
+                    refine_cell(cell=(lattice, scaled_positions, symbols),
+                                symprec=symprec)
+            if structure_type == 'conventional':
+                return PhonopyAtoms(cell=conv_lattice,
+                                     scaled_positions=conv_scaled_positions,
+                                     symbols=conv_symbols)
+            else:
+                from phonopy.structure.cells import (guess_primitive_matrix,
+                                                     get_primitive)
+                conv_bravais = (conv_lattice,
+                                conv_scaled_positions,
+                                conv_symbols)
+                trans_mat = guess_primitive_matrix(conv_bravais,
+                                                   symprec=symprec)
+                primitive = get_primitive(conv_bravais,
+                                          trans_mat,
+                                          symprec=symprec)
+                return primitive
