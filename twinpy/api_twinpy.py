@@ -25,6 +25,7 @@ class Twinpy():
     def __init__(
            self,
            lattice:np.array,
+           twinmode:str,
            symbol:str,
            wyckoff:str='c',
         ):
@@ -33,6 +34,7 @@ class Twinpy():
 
         Args:
             lattice (np.array): lattice
+            twinmode (str): twinmode
             symbol (str): element symbol
             wyckoff (str): No.194 Wycoff position ('c' or 'd')
 
@@ -41,6 +43,7 @@ class Twinpy():
             ValueError: lattice is not None (future fix)
         """
         self._hcp_matrix = lattice
+        self._twinmode = twinmode
         self._symbol = symbol
         self._wyckoff = wyckoff
         self._shear = None
@@ -68,25 +71,26 @@ class Twinpy():
         return self.shear
 
     def set_shear(self,
-                  twinmode,
                   xshift=0.,
                   yshift=0.,
                   dim=np.ones(3, dtype='intc'),
-                  ratio=0.):
+                  shear_strain_ratio=0.):
         """
         set shear structure object
 
         Args:
+            xshift (float): x shift
+            yshift (float): y shift
             dim (3, numpy array): dimension
-            ratio (float): shear strain ratio
+            shear_strain_ratio (float): shear strain ratio
         """
         self._shear = get_shear(lattice=self._hcp_matrix,
-                                twinmode=twinmode,
+                                twinmode=self._twinmode,
                                 wyckoff=self._wyckoff,
                                 xshift=xshift,
                                 yshift=yshift,
                                 dim=dim,
-                                ratio=ratio)
+                                shear_strain_ratio=shear_strain_ratio)
 
     def write_shear_lattice(self, filename:str='shear_lattice.poscar'):
         """

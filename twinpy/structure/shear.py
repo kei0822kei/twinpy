@@ -28,7 +28,7 @@ def get_shear(lattice:np.array,
               xshift:float=0.,
               yshift:float=0.,
               dim:np.array=np.ones(3, dtype='intc'),
-              ratio:float=0.):
+              shear_strain_ratio:float=0.):
     """
     set shear structure object
 
@@ -39,17 +39,16 @@ def get_shear(lattice:np.array,
         xshift (float): x shift
         yshift (float): y shift
         dim (3, numpy array): dimension
-        ratio (float): shear strain ratio
+        shear_strain_ratio (float): shear strain ratio
     """
     shear = ShearStructure(lattice=lattice,
                            symbol=symbol,
                            wyckoff=wyckoff)
     shear.set_parent(twinmode)
-    shear.set_xshift(xshift)
-    shear.set_yshift(yshift)
-    shear.set_dim(dim)
-    shear.shear_strain_ratio(ratio)
-    shear.run()
+    shear.run(shear_strain_ratio=shear_strain_ratio,
+              dim=dim,
+              xshift=xshift,
+              yshift=yshift)
     return shear
 
 class ShearStructure(_BaseStructure):
