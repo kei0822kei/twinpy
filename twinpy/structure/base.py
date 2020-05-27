@@ -247,11 +247,11 @@ class _BaseStructure():
         """
         return self._output_structure
 
-    def _set_output_structure(self, structure):
+    def get_output_stucture(self):
         """
-        setter of output_structure
+        get output structure
         """
-        self._output_structure = structure
+        return self.output_structure
 
     def set_parent(self, twinmode:str):
         """

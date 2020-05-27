@@ -84,7 +84,7 @@ class ShearStructure(_BaseStructure):
     @property
     def shear_strain_ratio(self):
         """
-        shear shear strain ratio
+        shear strain ratio
         """
         return self._shear_strain_ratio
 
