@@ -79,48 +79,6 @@ def get_atom_positions_from_lattice_points(lattice_points:np.array,
         scaled_positions.extend(atoms.tolist())
     return np.array(scaled_positions)
 
-# def get_hexagonal_structure_from_pymatgen(pmgstructure):
-#     """
-#     get HexagonalStructure object from pyamtgen structure
-# 
-#     Args:
-#         pmgstructure: pymatgen structure object
-#     """
-#     lattice = pmgstructure.lattice.matrix
-#     scaled_positions = pmgstructure.frac_coords
-#     symbols = [ specie.value for specie in pmgstructure.species ]
-#     wyckoff = is_hcp(lattice=lattice,
-#                      scaled_positions=scaled_positions,
-#                      symbols=symbols,
-#                      get_wyckoff=True)
-#     return HexagonalStructure(lattice=lattice,
-#                               symbol=symbols[0],
-#                               wyckoff=wyckoff)
-# 
-# def get_hexagonal_structure_from_a_c(a:float,
-#                                      c:float,
-#                                      symbol:str=None,
-#                                      wyckoff:str='c'):
-#     """
-#     get HexagonalStructure class object from a and c axes
-# 
-#     Args:
-#         a (str): the norm of a axis
-#         c (str): the norm of c axis
-#         symbol (str): element symbol
-#         wyckoff (str): No.194 Wycoff position ('c' or 'd')
-# 
-#     Raises:
-#         AssertionError: either a or c is negative value
-#     """
-#     assert a > 0. and c > 0., "input 'a' and 'c' must be positive value"
-#     lattice = np.array([[  1.,           0., 0.],
-#                         [-0.5, np.sqrt(3)/2, 0.],
-#                         [  0.,           0., 1.]]) * np.array([a,a,c])
-#     return HexagonalStructure(lattice=lattice,
-#                               symbol=symbol,
-#                               wyckoff=wyckoff)
-
 def get_lattice_points_from_supercell(lattice, dim) -> np.array:
     """
     get lattice points from supercell
@@ -356,7 +314,7 @@ class _BaseStructure():
                          coords=scaled_positions,
                          species=species)
 
-    def get_poscar(self, filename:str='POSCAR', get_lattice=False):
+    def write_poscar(self, filename:str='POSCAR', get_lattice=False):
         """
         get poscar
 

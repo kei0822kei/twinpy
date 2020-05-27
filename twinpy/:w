@@ -53,14 +53,6 @@ class Twinpy():
         """
         return self._shear
 
-    def _shear_structure_is_not_set(self):
-        """
-        raise RuntimeError when shear structure is not set
-        """
-        if self._shear is None:
-            msg = "shear structure is not set, run please set shear"
-            raise RuntimeError(msg)
-
     def get_shear(self):
         """
         get shear structure object
@@ -95,23 +87,18 @@ class Twinpy():
         Args:
             filename (str): POSCAR filename
         """
-        self._shear_structure_is_not_set()
+        if self._shear is None:
+            msg = "shear structure is not set, run please set shear"
+            raise RuntimeError(msg)
         self._shear.write_poscar(filename=filename,
                                  get_lattice=True)
 
-    def get_shear_phonopy_structure(self,
-                                    structure_type:str='base',
-                                    symprec:float=1e-5):
+    def get_shear_phonopy_structure(self, structure_type='base'):
         """
-        return shear phonopy strucutre
+        return phonopy strucutre
 
         Args:
             structure_type (str): choose from 'base', 'conventional'
                                   and 'primitive'
-            symprec (float): use when shearching conventional unitcell
         """
-        self._shear_structure_is_not_set()
-        ph_structure = self._shear.get_phonopy_structure(
-                structure_type=structure_type,
-                symprec=symprec)
-        return ph_structure
+    
