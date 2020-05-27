@@ -160,7 +160,8 @@ class TwinIndices():
         self._lattice = lattice
         self._twinmode = twinmode
         self._wyckoff = wyckoff
-        self._indices_Yoo = _get_indices_Yoo(self._lattice, self._twinmode)
+        self._indices_Yoo = self._get_indices_Yoo(self._lattice.lattice,
+                                                  self._twinmode)
         self._indices = deepcopy(self._indices_Yoo)
         self._set_K1()
         self._set_k1_k2()
@@ -238,20 +239,20 @@ class TwinIndices():
         """
         arr = np.array([-1,-1,-1,1])
         atoms = get_atom_positions(self.wyckoff)
-        K1_1 = self.indices['K1']
+        K1_1 = self._indices['K1']
         K1_2 = deepcopy(K1_1)
-        K1_2.reset_self.indices(four=K1_2.four*arr)
+        K1_2.reset_indices(four=K1_2.four*arr)
         if K1_1.get_distance_from_plane(atoms[0]) > \
                K1_2.get_distance_from_plane(atoms[0]):
             for key in ['S', 'K1', 'K2', 'eta1', 'eta2']:
-                self.indices[key].reset_indices(four=self.indices[key].four*arr)
+                self._indices[key].reset_indices(four=self._indices[key].four*arr)
 
     def _set_k1_k2(self):
         """
         set k1 and k2
         """
-        self.indices['k1'] = self.indices['K1'].get_direction_normal_to_plane()
-        self.indices['k2'] = self.indices['K2'].get_direction_normal_to_plane()
+        self._indices['k1'] = self._indices['K1'].get_direction_normal_to_plane()
+        self._indices['k2'] = self._indices['K2'].get_direction_normal_to_plane()
 
     def _reset_indices(self):
         """
@@ -267,33 +268,33 @@ class TwinIndices():
             - check k2 is orthogonal to eta2
         """
         # reset eta2
-        if self.lattice.dot(self.indices['k1'].three,
-                            self.indices['eta2'].three) < 0:
-            self.indices['eta2'].inverse()
+        if self.lattice.dot(self._indices['k1'].three,
+                            self._indices['eta2'].three) < 0:
+            self._indices['eta2'].inverse()
 
         # reset eta1
-        if self.lattice.dot(self.indices['eta1'].three,
-                       self.indices['eta2'].three) > 0:
-            self.indices['eta1'].inverse()
+        if self.lattice.dot(self._indices['eta1'].three,
+                       self._indices['eta2'].three) > 0:
+            self._indices['eta1'].inverse()
 
         # reset K2
-        if self.lattice.dot(self.indices['eta1'].three,
-                       self.indices['k2'].three) < 0:
-            self.indices['K2'].inverse()
-            self.indices['k2'].inverse()
+        if self.lattice.dot(self._indices['eta1'].three,
+                       self._indices['k2'].three) < 0:
+            self._indices['K2'].inverse()
+            self._indices['k2'].inverse()
 
         # check k1 is orthogonal to eta1
         np.testing.assert_allclose(
-                actual=self.lattice.dot(self.indices['k1'].three,
-                                   self.indices['eta1'].three),
+                actual=self.lattice.dot(self._indices['k1'].three,
+                                   self._indices['eta1'].three),
                 desired=0,
                 atol=1e-6,
                 err_msg="k1 is not orthogonal to eta1")
 
         # check k2 is orthogonal to eta2
         np.testing.assert_allclose(
-                actual=self.lattice.dot(self.indices['k2'].three,
-                                   self.indices['eta2'].three),
+                actual=self.lattice.dot(self._indices['k2'].three,
+                                   self._indices['eta2'].three),
                 desired=0,
                 atol=1e-6,
                 err_msg="k2 is not orthogonal to eta2")
@@ -307,16 +308,18 @@ class TwinIndices():
             from six candidates
             ((hkil), (hikl), (khil), (kihl), (ihkl), (ikhl)).
         """
-        S_four = self.indices['S'].four
-        trial_S_fours = [ [S_four[i] for i in lst.append(3)]
-                          for lst in permutations((0,1,2)) ]
+        S_four = self._indices['S'].four
+        perms = map(list, permutations((0,1,2)))
+        trial_S_fours = [ [S_four[i] for i in lst+[3]]
+                          for lst in perms ]
         normal_directions = ['k1', 'k2', 'eta1', 'eta2']
         flag = 1
         for trial_S_four in trial_S_fours:
-            trial_S = HexagonalPlane(self.lattice, four=trial_S_four)
+            trial_S = HexagonalPlane(self.lattice.lattice,
+                                     four=np.array(trial_S_four, dtype='intc'))
             trial_m = trial_S.get_direction_normal_to_plane()
-            dots = [ lattice.dot(trial_m.three,
-                                 self.indices[direction].three)
+            dots = [ self.lattice.dot(trial_m.three,
+                                      self._indices[direction].three)
                      for direction in normal_directions ]
             if np.allclose(np.array(dots), np.zeros(4), atol=1e-4):
                 flag = 0
@@ -325,13 +328,13 @@ class TwinIndices():
             raise ValueError("could not find shear plane")
 
         triple_product = np.dot(trial_m.get_cartesian(),
-                                np.cross(indices['eta1'].get_cartesian(),
-                                         indices['eta2'].get_cartesian()))
+                                np.cross(self._indices['eta1'].get_cartesian(),
+                                         self._indices['eta2'].get_cartesian()))
         if triple_product < 0:
             trial_S.inverse()
             trial_m.inverse()
-        self.indices['S'] = trial_S
-        self.indices['m'] = trial_m
+        self._indices['S'] = trial_S
+        self._indices['m'] = trial_m
 
     def get_supercell_matrix_for_parent(self):
         """
@@ -340,9 +343,9 @@ class TwinIndices():
         Note:
             create lattice basis with integerized m, eta1 and eta2
         """
-        tf1 = np.array(get_ratio(indices['m'].three))
-        tf2 = np.array(get_ratio(indices['eta1'].three))
-        tf3 = np.array(get_ratio(indices['eta2'].three))
+        tf1 = np.array(get_ratio(self._indices['m'].three))
+        tf2 = np.array(get_ratio(self._indices['eta1'].three))
+        tf3 = np.array(get_ratio(self._indices['eta2'].three))
         supercell_matrix = np.vstack([tf1, tf2, tf3]).T
         return supercell_matrix
 

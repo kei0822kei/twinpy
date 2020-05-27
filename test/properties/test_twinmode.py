@@ -8,12 +8,13 @@ test twinpy/lattice/lattice.py
 import unittest
 import numpy as np
 from twinpy.lattice.lattice import Lattice, create_hexagonal_lattice
-from twinpy.properties.twinmode import get_twin_indices
+from twinpy.properties.twinmode import TwinIndices
 
 class TestLattice(unittest.TestCase):
 
     def setUp(self):
         self.a, self.c = 2., 4.
+        self.wyckoff = 'c'
         self.hexagonal = Lattice(create_hexagonal_lattice(a=self.a,
                                                           c=self.c))
         self.twinmodes = ['10-12']
@@ -23,10 +24,11 @@ class TestLattice(unittest.TestCase):
 
     def test_get_twin_indices(self):
         for twinmode in self.twinmodes:
-            indices = get_twin_indices(twinmode=twinmode,
-                                       lattice=self.hexagonal,
-                                       wyckoff='c')
-            print(indices['S'].four)
+            indices = TwinIndices(lattice=self.hexagonal,
+                                  twinmode=twinmode,
+                                  wyckoff=self.wyckoff)
+            twin_indices = indices.get_indices()
+            print(twin_indices['S'].four)
 
 
 if __name__ == '__main__':

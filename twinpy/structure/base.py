@@ -143,7 +143,7 @@ class _BaseStructure():
                scaled_positions=atoms_from_lp,
                symbols=symbols)
         self._hcp_lattice = Lattice(lattice)
-        self._a, _, self._c = lattice.get_abc()
+        self._a, _, self._c = self._hcp_lattice.get_abc()
         self._r = self._c / self._a
         self._symbol = symbol
         self._wyckoff = wyckoff
@@ -153,8 +153,8 @@ class _BaseStructure():
         self._natoms = 2
         self._twinmode = None
         self._indices = None
-        self._xshift = 0.
-        self._yshift = 0.
+        self._xshift = None
+        self._yshift = None
         self._output_structure = \
                 {'lattice': lattice,
                  'lattice_points': {
@@ -212,24 +212,12 @@ class _BaseStructure():
         """
         return self._xshift
 
-    def set_xshift(self, xshift):
-        """
-        setter of x shift
-        """
-        self._xshift = xshift
-
     @property
     def yshift(self):
         """
         x shift
         """
         return self._yshift
-
-    def set_yshift(self, yshift):
-        """
-        setter of x shift
-        """
-        self._yshift = yshift
 
     @property
     def natoms(self):
@@ -316,7 +304,7 @@ class _BaseStructure():
 
     def write_poscar(self, filename:str='POSCAR', get_lattice=False):
         """
-        get poscar
+        write poscar
 
         Args:
             filename (str): output filename
@@ -347,24 +335,23 @@ class _BaseStructure():
                       cell=lattice,
                       scaled_positions=scaled_positions,
                       symbols=symbols)
+        Z = bravais.get_atomic_numbers()
         if structure_type == 'base':
             return bravais
 
         else:
             from spglib import refine_cell
-            conv_lattice, conv_scaled_positions, conv_symbols = \
-                    refine_cell(cell=(lattice, scaled_positions, symbols),
+            conv_lattice, conv_scaled_positions, conv_Z = \
+                    refine_cell(cell=(lattice, scaled_positions, Z),
                                 symprec=symprec)
+            conv_bravais = PhonopyAtoms(cell=conv_lattice,
+                                        scaled_positions=conv_scaled_positions,
+                                        numbers=conv_Z)
             if structure_type == 'conventional':
-                return PhonopyAtoms(cell=conv_lattice,
-                                     scaled_positions=conv_scaled_positions,
-                                     symbols=conv_symbols)
+                return conv_bravais
             else:
                 from phonopy.structure.cells import (guess_primitive_matrix,
                                                      get_primitive)
-                conv_bravais = (conv_lattice,
-                                conv_scaled_positions,
-                                conv_symbols)
                 trans_mat = guess_primitive_matrix(conv_bravais,
                                                    symprec=symprec)
                 primitive = get_primitive(conv_bravais,

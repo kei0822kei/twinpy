@@ -224,5 +224,5 @@ class Lattice():
         """
         get norms of each axis
         """
-        abc = tuple(np.linalg.norm(lattice, axis=1))
+        abc = tuple(np.linalg.norm(self.lattice, axis=1))
         return abc

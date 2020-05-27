@@ -19,7 +19,7 @@ from twinpy.lattice.lattice import Lattice
 from twinpy.lattice.hexagonal_plane import HexagonalPlane
 from twinpy.file_io import write_poscar
 from twinpy.structure.base import (get_lattice_points_from_supercell,
-                                   _StructureBase)
+                                   _BaseStructure)
 
 def get_shear(lattice:np.array,
               symbol:str,
@@ -52,7 +52,7 @@ def get_shear(lattice:np.array,
     shear.run()
     return shear
 
-class ShearStructure(_StructureBase):
+class ShearStructure(_BaseStructure):
     """
     shear structure class
     """
@@ -72,8 +72,8 @@ class ShearStructure(_StructureBase):
         super().__init__(lattice=lattice,
                          symbol=symbol,
                          wyckoff=wyckoff)
-        self._dim = np.ones(3, dtype=int)
-        self._shear_strain_ratio = 0.
+        self._dim = None
+        self._shear_strain_ratio = None
 
     @property
     def dim(self):
@@ -81,12 +81,6 @@ class ShearStructure(_StructureBase):
         dimension
         """
         return self._dim
-
-    def set_dim(self, dim):
-        """
-        set dimension
-        """
-        self._dim = dim
 
     @property
     def shear_strain_ratio(self):
@@ -101,26 +95,33 @@ class ShearStructure(_StructureBase):
         """
         self._shear_strain_ratio = ratio
 
-    def get_shear_value(self):
+    def get_shear_value(self, ratio:float=1.):
         """
         get shear value
+
+        Args:
+            ratio (float): shear strain ratio
         """
+        shear_strain_function = self._indices.get_shear_strain_function()
         plane = HexagonalPlane(lattice=self._hexagonal_lattice.lattice,
-                               four=self._indices['K1'].four)
-        d = plane.get_distance_from_plane(self._indices['eta2'].three)
-        gamma = self._shear_strain_funcion(self._r)
+                               four=self._indices.indices['K1'].four)
+        d = plane.get_distance_from_plane(self._indices.indices['eta2'].three)
+        gamma = shear_strain_function(self._r)
         norm_eta1 = np.linalg.norm(
-                plane.get_cartesian(self._indices['eta1'].three))
-        s = gamma * d / norm_eta1
+                plane.get_cartesian(self._indices.indices['eta1'].three))
+        s = ratio * gamma * d / norm_eta1
         return s
 
-    def get_shear_matrix(self):
+    def get_shear_matrix(self, ratio:float=1.):
         """
         get shear matrix
+
+        Args:
+            ratio (float): shear strain ratio
         """
-        s = self.get_shear_value()
+        s = self.get_shear_value(ratio=ratio)
         shear_matrix = np.eye(3)
-        shear_matrix[1,2] = self._shear_strain_ratio * s
+        shear_matrix[1,2] = s
         return shear_matrix
 
     def get_shear_properties(self) -> dict:
@@ -142,7 +143,7 @@ class ShearStructure(_StructureBase):
         """
         H = self.hexagonal_lattice.lattice.T
         M = self._parent_matrix
-        S = self.get_shear_matrix(self._shear_strain_ratio)
+        S = self.get_shear_matrix()
         F = np.eye(3) + \
             np.dot(H,
                    np.dot(M,
@@ -170,18 +171,23 @@ class ShearStructure(_StructureBase):
                  'rotation':R,
                }
 
-    def run(self):
+    def run(self,
+            shear_strain_ratio,
+            dim=np.ones(3, dtype='intc'),
+            xshift=0.,
+            yshift=0.):
         """
         build structure
 
         Note:
             the built structure is set to self.output_structure
         """
-        shear_matrix = self.get_shear_matrix(self._shear_strain_ratio)
-        supercell_matrix = self._parent_matrix * self._dim
+        shear_matrix = self.get_shear_matrix(shear_strain_ratio)
+        parent_matrix = self._indices.get_supercell_matrix_for_parent()
+        supercell_matrix = parent_matrix * dim
         unit_lattice = PhonopyAtoms(symbols=['H'],
                 cell=self._hexagonal_lattice.lattice,
-                scaled_positions=np.array([[self._xshift,self._yshift,0]]))
+                scaled_positions=np.array([[xshift,yshift,0]]))
         super_lattice = Supercell(unitcell=unit_lattice,
                                   supercell_matrix=supercell_matrix)
         lattice_points = get_lattice_points_from_supercell(
@@ -205,3 +211,7 @@ class ShearStructure(_StructureBase):
                      'symbols': symbols}
         self._set_output_structure(structure)
         self._natoms = len(self._output_structure['symbols'])
+        self._shear_strain_ratio = shear_strain_ratio
+        self._dim = dim
+        self._xshift = xshift
+        self._yshift = yshift
