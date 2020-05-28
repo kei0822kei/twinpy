@@ -30,7 +30,7 @@ def get_twinboundary(lattice:np.array,
                      xshift:float=0.,
                      yshift:float=0.,
                      dim:np.array=np.ones(3, dtype='intc'),
-                     shear_tb_ratio:float=0.,
+                     shear_strain_ratio:float=0.,
                      make_tb_flat=True,
                      ):
     """
@@ -45,7 +45,7 @@ def get_twinboundary(lattice:np.array,
         xshift (float): x shift
         yshift (float): y shift
         dim (3, numpy array): dimension
-        shear_tb_ratio (float): shear twinboundary ratio
+        shear_strain_ratio (float): shear twinboundary ratio
         make_tb_flat (bool): whether make twin boundary flat
     """
     tb = TwinBoundaryStructure(lattice=lattice,
@@ -56,7 +56,7 @@ def get_twinboundary(lattice:np.array,
            twintype=twintype,
            xshift=xshift,
            yshift=yshift,
-           shear_tb_ratio=shear_tb_ratio,
+           shear_strain_ratio=shear_strain_ratio,
            make_tb_flat=make_tb_flat,
            )
     return tb
@@ -82,15 +82,15 @@ class TwinBoundaryStructure(_BaseStructure):
                          symbol=symbol,
                          wyckoff=wyckoff)
         self._dim = np.ones(3, dtype=int)
-        self._shear_tb_ratio = None
+        self._shear_strain_ratio = None
         self._twintype = None
 
     @property
-    def shear_tb_ratio(self):
+    def shear_strain_ratio(self):
         """
         shear twinboundary ratio
         """
-        return self._shear_tb_ratio
+        return self._shear_strain_ratio
 
     @property
     def twintype(self):
@@ -165,12 +165,13 @@ class TwinBoundaryStructure(_BaseStructure):
 
     def _get_shear_tb_lattice(self,
                               tb_lattice,
-                              shear_tb_ratio):
+                              shear_strain_ratio):
         """
         return shear twinboudnary lattice
         """
         lat = deepcopy(tb_lattice)
-        lat[2,1] += lat[1,1] * shear_tb_ratio
+        lat[2,1] += lat[2,2] * self._indices.get_shear_strain_function() \
+                             * shear_strain_ratio
         return lat
 
     def _get_twinboundary_structure(self,
@@ -183,14 +184,14 @@ class TwinBoundaryStructure(_BaseStructure):
                                     dim,
                                     xshift,
                                     yshift,
-                                    shear_tb_ratio):
+                                    shear_strain_ratio):
         """
         return twinbounadry structure
         """
         white_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_p_cart.T).T % 1
         black_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_t_cart.T).T % 1
         shear_tb_lat = self._get_shear_tb_lattice(tb_lattice,
-                                                  shear_tb_ratio)
+                                                  shear_strain_ratio)
 
         if make_tb_flat:
             black_tb_ix  = [ bl2 for bl2 in np.isclose(white_lp[:,2], 0.5) ]
@@ -279,7 +280,7 @@ class TwinBoundaryStructure(_BaseStructure):
             twintype=1,
             xshift=0.,
             yshift=0.,
-            shear_tb_ratio=0.,
+            shear_strain_ratio=0.,
             make_tb_flat=True):
         """
         build structure
@@ -319,10 +320,10 @@ class TwinBoundaryStructure(_BaseStructure):
                         dim=dim,
                         xshift=xshift,
                         yshift=yshift,
-                        shear_tb_ratio=shear_tb_ratio)
+                        shear_strain_ratio=shear_strain_ratio)
         self._natoms = len(self.output_structure['symbols'])
         self._dim = dim
         self._twintype = twintype
         self._xshift = xshift
         self._yshift = yshift
-        self._shear_tb_ratio = shear_tb_ratio
+        self._shear_strain_ratio = shear_strain_ratio

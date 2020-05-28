@@ -97,7 +97,7 @@ class Twinpy():
                          xshift:float=0.,
                          yshift:float=0.,
                          dim:np.array=np.ones(3, dtype='intc'),
-                         shear_tb_ratio:float=0.,
+                         shear_strain_ratio:float=0.,
                          make_tb_flat=True,
                          ):
         """
@@ -108,7 +108,7 @@ class Twinpy():
             xshift (float): x shift
             yshift (float): y shift
             dim (3, numpy array): dimension
-            shear_tb_ratio (float): shear twinboundary ratio
+            shear_strain_ratio (float): shear twinboundary ratio
             make_tb_flat (bool): whether make twin boundary flat
         """
         self._twinboundary = get_shear(lattice=self._hcp_matrix,
@@ -118,7 +118,7 @@ class Twinpy():
                                        xshift=xshift,
                                        yshift=yshift,
                                        dim=dim,
-                                       shear_tb_ratio=shear_tb_ratio,
+                                       shear_strain_ratio=shear_strain_ratio,
                                        make_tb_flat=make_tb_flat)
 
     def get_twinboundary(self):
