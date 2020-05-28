@@ -208,7 +208,7 @@ class ShearStructure(_BaseStructure):
                      'atoms_from_lattice_points': {
                          'white': atoms_from_lattice_points},
                      'symbols': symbols}
-        self._set_output_structure(structure)
+        self._output_structure = structure
         self._natoms = len(self._output_structure['symbols'])
         self._shear_strain_ratio = shear_strain_ratio
         self._dim = dim

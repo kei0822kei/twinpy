@@ -60,18 +60,21 @@ class TwinBoundaryStructure(_BaseStructure):
         """
         return self._twintype
 
-    def _get_dichromatic_operation(self):
+    def _get_dichromatic_operation(self, twintype):
         """
         get dichromatic operation
         """
-        if self._twintype == 1:
+        if twintype == 1:
             W = np.array([[ 1, 0, 0],
                           [ 0, 1, 0],
                           [ 0, 0,-1]])
-        elif self._twintype == 2:
+        elif twintype == 2:
             W = np.array([[-1, 0, 0],
                           [ 0, 1, 0],
                           [ 0, 0,-1]])
+        else:
+            msg = "twintype must be 1 or 2"
+            raise RuntimeError(msg)
         return W
 
     def _get_parent(self, zdim):
@@ -83,7 +86,7 @@ class TwinBoundaryStructure(_BaseStructure):
                                wyckoff=self._wyckoff)
         parent.set_parent(twinmode=self._twinmode)
         parent.run(shear_strain_ratio=0.,
-                  dim=(1,1,zdim))
+                   dim=(1,1,zdim))
         return parent
 
     def _get_parent_lattice_points_atoms(self, parent_output):
@@ -147,8 +150,8 @@ class TwinBoundaryStructure(_BaseStructure):
         """
         white_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_p_cart.T).T % 1
         black_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_t_cart.T).T % 1
-        shear_tb_lat = self._get_shear_(tb_lattice,
-                                        shear_tb_ratio)
+        shear_tb_lat = self._get_shear_tb_lattice(tb_lattice,
+                                                  shear_tb_ratio)
 
         if make_tb_flat:
             black_tb_ix  = [ bl2 for bl2 in np.isclose(white_lp[:,2], 0.5) ]
@@ -234,6 +237,7 @@ class TwinBoundaryStructure(_BaseStructure):
 
     def run(self,
             dim=np.ones(3, dtype='intc'),
+            twintype=1,
             xshift=0.,
             yshift=0.,
             shear_tb_ratio=0.,
@@ -248,11 +252,11 @@ class TwinBoundaryStructure(_BaseStructure):
         parent = self._get_parent(zdim=dim[2])
         lp_p_cart, atoms_p_cart = self._get_parent_lattice_points_atoms(
                         parent_output=parent.get_output_stucture())
-        W = self._get_dichromatic_operation()
+        W = self._get_dichromatic_operation(twintype=twintype)
         R = np.array([
-                self.indices['m'].get_cartesian(normalize=True),
-                self.indices['eta1'].get_cartesian(normalize=True),
-                self.indices['k1'].get_cartesian(normalize=True),
+                indices['m'].get_cartesian(normalize=True),
+                indices['eta1'].get_cartesian(normalize=True),
+                indices['k1'].get_cartesian(normalize=True),
                 ]).T
         lp_t_cart, atoms_t_cart = \
                 self._get_twin_lattice_points_atoms(
@@ -279,6 +283,7 @@ class TwinBoundaryStructure(_BaseStructure):
                         shear_tb_ratio=shear_tb_ratio)
         self._natoms = len(self.output_structure['symbols'])
         self._dim = dim
+        self._twintype = twintype
         self._xshift = xshift
         self._yshift = yshift
         self._shear_tb_ratio = shear_tb_ratio
