@@ -72,7 +72,6 @@ def main(
          ratio,
          twinmode,
          twintype,
-         is_primitive,
          xshift,
          yshift,
          dim,

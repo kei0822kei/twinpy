@@ -5,7 +5,8 @@
 API for twinpy
 """
 
-from twinpy.lattice import Lattice
+import numpy as np
+from twinpy.lattice.lattice import Lattice
 from twinpy.structure.shear import get_shear
 from twinpy.structure.twinboundary import get_twinboundary
 
@@ -73,6 +74,7 @@ class Twinpy():
         """
         self._shear = get_shear(lattice=self._hcp_matrix,
                                 twinmode=self._twinmode,
+                                symbol=self._symbol,
                                 wyckoff=self._wyckoff,
                                 xshift=xshift,
                                 yshift=yshift,
@@ -114,6 +116,7 @@ class Twinpy():
         self._twinboundary = get_shear(lattice=self._hcp_matrix,
                                        twinmode=self._twinmode,
                                        wyckoff=self._wyckoff,
+                                       symbol=self._symbol,
                                        twintype=twintype,
                                        xshift=xshift,
                                        yshift=yshift,
