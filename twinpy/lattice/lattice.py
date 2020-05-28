@@ -44,6 +44,26 @@ def create_hexagonal_lattice(a:float, c:float):
                        * np.array([[a,a,c]]).T
     return lattice
 
+def get_hexagonal_lattice_from_a_c(a:float,
+                                   c:float):
+    """
+    get hexagonal lattice from a and c axes
+
+    Args:
+        a (str): the norm of a axis
+        c (str): the norm of c axis
+
+    Returns:
+        np.array: hexagonal lattice
+
+    Raises:
+        AssertionError: either a or c is negative value
+    """
+    assert a > 0. and c > 0., "input 'a' and 'c' must be positive value"
+    lattice = np.array([[  1.,           0., 0.],
+                        [-0.5, np.sqrt(3)/2, 0.],
+                        [  0.,           0., 1.]]) * np.array([a,a,c])
+    return lattice
 
 class Lattice():
     """
@@ -199,3 +219,10 @@ class Lattice():
         except AssertionError:
             flag = False
         return flag
+
+    def get_abc(self):
+        """
+        get norms of each axis
+        """
+        abc = tuple(np.linalg.norm(self.lattice, axis=1))
+        return abc

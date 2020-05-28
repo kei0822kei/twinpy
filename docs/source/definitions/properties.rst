@@ -54,17 +54,17 @@ When :math:`r (= \frac{c}{a})` are given,
 in {10-12} twin,
 
 .. math::
-   \gamma = \frac{r^2-3}{r\sqrt{3}}
+   \gamma = \frac{|r^2-3|}{r\sqrt{3}}
 
 in {10-11} twin,
 
 .. math::
-   \gamma = \frac{4r^2-9}{4r\sqrt{3}}
+   \gamma = \frac{|4r^2-9|}{4r\sqrt{3}}
 
 in {11-22} twin,
 
 .. math::
-   \gamma = \frac{2(r^2-2)}{3r}
+   \gamma = \frac{2|r^2-2|}{3r}
 
 in {11-21} twin,
 
@@ -72,76 +72,49 @@ in {11-21} twin,
    \gamma = \frac{1}{r}.
 
 
-
-FUTURE EDITED
-=============
-
 twin indices
 ------------
 
-You can find customs how to set the four indices
-in the paper 'DEFORMATION TWINNING' by Christian (1995).
-Abstruct is as bellow:
-
-1. Vector :math:`\boldsymbol{m}` (, which is normal to shear plane),
-   :math:`\boldsymbol{\eta}_1` and :math:`\boldsymbol{\eta}_2`
-   form right hand system.
-2. The angle between :math:`\boldsymbol{\eta}_1`
-   and :math:`\boldsymbol{\eta}_2` are obtuse.
-3. The angle between :math:`\boldsymbol{\eta}_1`
-   and :math:`\boldsymbol{k}_2` are acute.
-4. The angle between :math:`\boldsymbol{\eta}_2`
-   and :math:`\boldsymbol{k}_1` are acute.
-
-In this algorithm, indices are set in order of:
-
-- :math:`\boldsymbol{k}_1`  set first
-- :math:`\boldsymbol{\eta}_2`  set using condition 4
-- :math:`\boldsymbol{\eta}_1`  set using condition 2
-- :math:`\boldsymbol{k}_2`  set using condition 3
-- :math:`\boldsymbol{m}`  set using condition 1.
-
-where :math:`\boldsymbol{k}_1`, :math:`\boldsymbol{k}_2`
-and :math:`\boldsymbol{m}` are normal to
-:math:`\boldsymbol{K}_1`, :math:`\boldsymbol{K}_2`
-and :math:`\boldsymbol{S}` plane.
-They all are positive direction toward each plane.
-
-
-algorothm
-^^^^^^^^^
-
-First, default indices are given which you can find in Yoo. 1981.
+You can find twin indices in the paper by [Yoo]_.
 
 ======================== ======================== =========================== =========================== ======================
 :math:`\boldsymbol{K}_1` :math:`\boldsymbol{K}_2` :math:`\boldsymbol{\eta}_1` :math:`\boldsymbol{\eta}_2` :math:`\boldsymbol{S}`
 ======================== ======================== =========================== =========================== ======================
-(1 0 -1 2)               ( 1 0 -1 -2)                [ 1  0 -1 -1]               [-1 0  1 -1]             ( 1 1 -2 0)
-(1 0 -1 1)               ( 1 0 -1 -3)                [ 1  0 -1 -2]               [ 3 0 -3  2]             ( 1 1 -2 0)
-(1 1 -2 1)               ( 0 0  0  2)             1/3[-1 -1  2  6]            1/3[ 1 1 -2  0]             ( 1 0 -1 0)
-(1 1 -2 2)               ( 1 1 -2 -4)             1/3[ 1  1 -2 -3]            1/3[ 2 2 -4  3]             ( 1 0 -1 0)
+{ 1  0 -1  2 }           { 1  0 -1 -2 }               < 1  0 -1 -1 >              <-1  0  1 -1>           { 1  1 -2  0 }
+{ 1  0 -1  1 }           { 1  0 -1 -3 }               < 1  0 -1 -2 >              < 3  0 -3  2>           { 1  1 -2  0 }
+{ 1  1 -2  1 }           { 0  0  0  2 }           1/3 <-1 -1  2  6 >          1/3 < 1  1 -2  0>           { 1  0 -1  0 }
+{ 1  1 -2  2 }           { 1  1 -2 -4 }           1/3 < 1  1 -2 -3 >          1/3 < 2  2 -4  3>           { 1  0 -1  0 }
 ======================== ======================== =========================== =========================== ======================
 
-Then, each plane and direction is reset as follows.
+In actual, one has to determine specific plane and direction for each twin mode.
+[Christian]_ proposed the method for determining them and
+``twinpy`` follows this convention which is
 
-- set :math:`\boldsymbol{K}_1` and calculate :math:`\boldsymbol{k}_1`
-- check whether condition 4. is fulfilled
-- if not, reset :math:`\boldsymbol{\eta}_2` to :math:`-\boldsymbol{\eta}_2`
-- check whether condition 2. is fulfilled
-- if not, reset :math:`\boldsymbol{\eta}_1` to :math:`-\boldsymbol{\eta}_1`
-- check whether condition 3. is fulfilled
-- if not, reset :math:`\boldsymbol{k}_2` to :math:`-\boldsymbol{k}_2`
-  and :math:`\boldsymbol{K}_2` to :math:`-\boldsymbol{K}_2`
-- look for the direction :math:`\boldsymbol{m}` which fulfill condition 1.
+  1. Vector :math:`\boldsymbol{m}` (, which is normal to shear plane),
+     :math:`\boldsymbol{\eta}_1` and
+     :math:`\boldsymbol{\eta}_2` form right hand system.
+  2. The angle between :math:`\boldsymbol{\eta}_1`
+     and :math:`\boldsymbol{\eta}_2` are obtuse.
+  3. The angle between :math:`\boldsymbol{\eta}_1`
+     and :math:`\boldsymbol{k}_2` are acute.
+  4. The angle between :math:`\boldsymbol{\eta}_2`
+     and :math:`\boldsymbol{k}_1` are acute.
 
-In the last step, first enumerate every equivalent plane
-with original plane :math:`\boldsymbol{S}`.
-When :math:`\boldsymbol{S} = (h,k,i,l)`, all candidates are
-(h, k, i, l), (h, i, k, l), (k, h, i, l),
-(k, i, h, l), (i, h, k, l), and (i, k, i, l).
-In each candidate, :math:`\boldsymbol{m}` is calculated
-and check :math:`\boldsymbol{m}` normal to
-:math:`\boldsymbol{k}_1` :math:`\boldsymbol{k}_2`
-:math:`\boldsymbol{\eta}_1` and :math:`\boldsymbol{\eta}_2`.
-Then, if abstructed :math:`\boldsymbol{m}` does not fulfill condition 4.,
-reset :math:`\boldsymbol{m}` to :math:`-\boldsymbol{m}`.
+In addition, ``twinpy`` add the following role as
+
+  5. K1 plane is determined to meet the condition that
+     the distance from K1 plane to the nearest atoms is minimum.
+     This condition depends on wyckoff position.
+
+In twinpy code, indices are set in order of
+
+   a. k1    condition 5.
+   b. eta2  condition 4.
+   c. eta1  condition 2.
+   d. k2    condition 3.
+   e. m     condition 1.
+
+References
+----------
+.. [Yoo] M. H. Yoo, MTA **12**, 409-418 (1981).
+.. [Christian] W. Christian, et al., Progress in Progress in Materials Science. **39**, 1 (1995).
