@@ -61,6 +61,22 @@ def is_hcp(lattice:np.array,
     if get_wyckoff:
         return wyckoffs[0]
 
+def get_hexagonal_structure_from_pymatgen(pmgstructure):
+    """
+    get HexagonalStructure object from pyamtgen structure
+
+    Args:
+        pmgstructure: pymatgen structure object
+    """
+    lattice = pmgstructure.lattice.matrix
+    scaled_positions = pmgstructure.frac_coords
+    symbols = [ specie.value for specie in pmgstructure.species ]
+    wyckoff = is_hcp(lattice=lattice,
+                     scaled_positions=scaled_positions,
+                     symbols=symbols,
+                     get_wyckoff=True)
+    return (lattice, scaled_positions, symbols[0], wyckoff)
+
 def get_atom_positions_from_lattice_points(lattice_points:np.array,
                                            atoms_from_lp:np.array):
     """
