@@ -72,14 +72,15 @@ class Twinpy():
             dim (3, numpy array): dimension
             shear_strain_ratio (float): shear strain ratio
         """
-        self._shear = get_shear(lattice=self._hcp_matrix,
-                                twinmode=self._twinmode,
-                                symbol=self._symbol,
-                                wyckoff=self._wyckoff,
-                                xshift=xshift,
-                                yshift=yshift,
-                                dim=dim,
-                                shear_strain_ratio=shear_strain_ratio)
+        self._shear = get_shear(
+                lattice=self._hcp_matrix,
+                twinmode=self._twinmode,
+                symbol=self._symbol,
+                wyckoff=self._wyckoff,
+                xshift=xshift,
+                yshift=yshift,
+                dim=dim,
+                shear_strain_ratio=shear_strain_ratio)
 
     def get_shear(self):
         """
@@ -113,16 +114,17 @@ class Twinpy():
             shear_strain_ratio (float): shear twinboundary ratio
             make_tb_flat (bool): whether make twin boundary flat
         """
-        self._twinboundary = get_shear(lattice=self._hcp_matrix,
-                                       twinmode=self._twinmode,
-                                       wyckoff=self._wyckoff,
-                                       symbol=self._symbol,
-                                       twintype=twintype,
-                                       xshift=xshift,
-                                       yshift=yshift,
-                                       dim=dim,
-                                       shear_strain_ratio=shear_strain_ratio,
-                                       make_tb_flat=make_tb_flat)
+        self._twinboundary = get_twinboundary(
+                lattice=self._hcp_matrix,
+                twinmode=self._twinmode,
+                wyckoff=self._wyckoff,
+                symbol=self._symbol,
+                twintype=twintype,
+                xshift=xshift,
+                yshift=yshift,
+                dim=dim,
+                shear_strain_ratio=shear_strain_ratio,
+                make_tb_flat=make_tb_flat)
 
     def get_twinboundary(self):
         """
