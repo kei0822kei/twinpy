@@ -7,8 +7,33 @@ API for twinpy
 
 import numpy as np
 from twinpy.lattice.lattice import Lattice
+from twinpy.structure.base import is_hcp
 from twinpy.structure.shear import get_shear
 from twinpy.structure.twinboundary import get_twinboundary
+
+def get_twinpy_from_cell(cell:tuple,
+                         twinmode:str):
+    """
+    get Twinpy object from cell
+
+    Args:
+        cell (tuple): (lattice, scaled_positions, symbols)
+        twinmode (str): twinmode
+
+    Note:
+        return Twinpy class object
+    """
+    lattice, scaled_positions, symbols = cell
+    wyckoff = is_hcp(lattice=lattice,
+              scaled_positions=scaled_positions,
+              symbols=symbols,
+              get_wyckoff=True)
+    twinpy = Twinpy(lattice=lattice,
+                    twinmode=twinmode,
+                    symbol=symbols[0],
+                    wyckoff=wyckoff)
+    return twinpy
+
 
 class Twinpy():
     """

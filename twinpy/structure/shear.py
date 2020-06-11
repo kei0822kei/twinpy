@@ -94,6 +94,18 @@ class ShearStructure(_BaseStructure):
         """
         self._shear_strain_ratio = ratio
 
+    def get_gamma(self):
+        """
+        get gamma
+
+        Returns:
+            float: gamma used for computing shear value
+                   more detail, see documentaion
+        """
+        shear_strain_function = self._indices.get_shear_strain_function()
+        gamma = shear_strain_function(self._r)
+        return gamma
+
     def get_shear_value(self, ratio:float=1.):
         """
         get shear value
@@ -101,11 +113,10 @@ class ShearStructure(_BaseStructure):
         Args:
             ratio (float): shear strain ratio
         """
-        shear_strain_function = self._indices.get_shear_strain_function()
         plane = HexagonalPlane(lattice=self._hexagonal_lattice.lattice,
                                four=self._indices.indices['K1'].four)
         d = plane.get_distance_from_plane(self._indices.indices['eta2'].three)
-        gamma = shear_strain_function(self._r)
+        gamma = self.get_gamma()
         norm_eta1 = np.linalg.norm(
                 plane.get_cartesian(self._indices.indices['eta1'].three))
         s = ratio * gamma * d / norm_eta1
@@ -181,6 +192,8 @@ class ShearStructure(_BaseStructure):
         Note:
             the built structure is set to self.output_structure
         """
+        if type(dim) is list:
+            dim = np.array(dim, dtype='intc')
         shear_matrix = self.get_shear_matrix(shear_strain_ratio)
         parent_matrix = self._indices.get_supercell_matrix_for_parent()
         supercell_matrix = parent_matrix * dim
