@@ -169,13 +169,10 @@ class TwinBoundaryStructure(_BaseStructure):
         """
         return shear twinboudnary lattice
         """
-        print(shear_strain_ratio)
-        print(tb_lattice)
         lat = deepcopy(tb_lattice)
         e_b = lat[1] / np.linalg.norm(lat[1])
         shear_func = self._indices.get_shear_strain_function()
         lat[2] += np.linalg.norm(lat[2]) * shear_func(self._r) * shear_strain_ratio * e_b
-        print(lat)
         return lat
 
     def _get_twinboundary_structure(self,
@@ -292,7 +289,6 @@ class TwinBoundaryStructure(_BaseStructure):
         Note:
             the structure built is set self.output_structure
         """
-        print(shear_strain_ratio)
         indices = self._indices.get_indices()
         parent = self._get_parent(zdim=dim[2])
         lp_p_cart, atoms_p_cart = self._get_parent_lattice_points_atoms(

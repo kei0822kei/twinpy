@@ -130,6 +130,51 @@ def reshape_dimension(dim):
         raise ValueError("input dim is not (3,) and (3,3) array")
     return dim_matrix
 
+def get_phonopy_structure(cell,
+                          structure_type:str='base',
+                          symprec:float=1e-5):
+    """
+    return phonopy structure
+
+    Args:
+        cell (tuple): (lattice, scaled_positions, symbols)
+        structure_type (str): 'base', 'primitive' or 'conventional'
+        symprec (float): used when searching conventional unitcell
+    """
+    if structure_type not in ['base', 'primitive', 'conventional']:
+        msg = "structure_type must be 'base', 'primitive' or 'conventional'"
+        raise RuntimeError(msg)
+
+    lattice, scaled_positions, symbols = cell
+    bravais = PhonopyAtoms(
+                  cell=lattice,
+                  scaled_positions=scaled_positions,
+                  symbols=symbols)
+    Z = bravais.get_atomic_numbers()
+    if structure_type == 'base':
+        return bravais
+
+    else:
+        from spglib import refine_cell
+        conv_lattice, conv_scaled_positions, conv_Z = \
+                refine_cell(cell=(lattice, scaled_positions, Z),
+                            symprec=symprec)
+        conv_bravais = PhonopyAtoms(cell=conv_lattice,
+                                    scaled_positions=conv_scaled_positions,
+                                    numbers=conv_Z)
+        if structure_type == 'conventional':
+            return conv_bravais
+        else:
+            from phonopy.structure.cells import (guess_primitive_matrix,
+                                                 get_primitive)
+            trans_mat = guess_primitive_matrix(conv_bravais,
+                                               symprec=symprec)
+            primitive = get_primitive(conv_bravais,
+                                      trans_mat,
+                                      symprec=symprec)
+            return primitive
+
+
 class _BaseStructure():
     """
     base structure class which is inherited
@@ -340,37 +385,6 @@ class _BaseStructure():
             structure_type (str): 'base', 'primitive' or 'conventional'
             symprec (float): used when searching conventional unitcell
         """
-        if structure_type not in ['base', 'primitive', 'conventional']:
-            msg = "structure_type must be 'base', 'primitive' or 'conventional'"
-            raise RuntimeError(msg)
-
-        lattice, scaled_positions, symbols = \
-            self.get_structure_for_export(get_lattice=False)
-
-        bravais = PhonopyAtoms(
-                      cell=lattice,
-                      scaled_positions=scaled_positions,
-                      symbols=symbols)
-        Z = bravais.get_atomic_numbers()
-        if structure_type == 'base':
-            return bravais
-
-        else:
-            from spglib import refine_cell
-            conv_lattice, conv_scaled_positions, conv_Z = \
-                    refine_cell(cell=(lattice, scaled_positions, Z),
-                                symprec=symprec)
-            conv_bravais = PhonopyAtoms(cell=conv_lattice,
-                                        scaled_positions=conv_scaled_positions,
-                                        numbers=conv_Z)
-            if structure_type == 'conventional':
-                return conv_bravais
-            else:
-                from phonopy.structure.cells import (guess_primitive_matrix,
-                                                     get_primitive)
-                trans_mat = guess_primitive_matrix(conv_bravais,
-                                                   symprec=symprec)
-                primitive = get_primitive(conv_bravais,
-                                          trans_mat,
-                                          symprec=symprec)
-                return primitive
+        cell = self.get_structure_for_export(get_lattice=False)
+        ph_structure = get_phonopy_structure(cell, structure_type, symprec)
+        return ph_structure
