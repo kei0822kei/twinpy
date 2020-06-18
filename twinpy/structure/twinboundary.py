@@ -44,7 +44,7 @@ def get_twinboundary(lattice:np.array,
         twintype (int): twintype, choose from 1 and 2
         xshift (float): x shift
         yshift (float): y shift
-        dim (3, numpy array): dimension
+        dim (np.array): dimension
         shear_strain_ratio (float): shear twinboundary ratio
         make_tb_flat (bool): whether make twin boundary flat
     """

@@ -38,7 +38,7 @@ def get_shear(lattice:np.array,
         wyckoff (str): No.194 Wycoff position ('c' or 'd')
         xshift (float): x shift
         yshift (float): y shift
-        dim (3, numpy array): dimension
+        dim (np.array): dimension
         shear_strain_ratio (float): shear strain ratio
     """
     shear = ShearStructure(lattice=lattice,

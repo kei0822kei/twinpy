@@ -14,6 +14,16 @@ Subpackages
 Submodules
 ----------
 
+twinpy.api\_twinpy module
+-------------------------
+
+.. automodule:: twinpy.api_twinpy
+   :members:
+   :special-members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
 twinpy.file\_io module
 ----------------------
 

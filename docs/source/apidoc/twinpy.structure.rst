@@ -4,10 +4,30 @@ twinpy.structure package
 Submodules
 ----------
 
-twinpy.structure.hexagonal module
----------------------------------
+twinpy.structure.base module
+----------------------------
 
-.. automodule:: twinpy.structure.hexagonal
+.. automodule:: twinpy.structure.base
+   :members:
+   :special-members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
+twinpy.structure.shear module
+-----------------------------
+
+.. automodule:: twinpy.structure.shear
+   :members:
+   :special-members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
+twinpy.structure.twinboundary module
+------------------------------------
+
+.. automodule:: twinpy.structure.twinboundary
    :members:
    :special-members:
    :private-members:

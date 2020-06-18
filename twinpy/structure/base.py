@@ -137,7 +137,7 @@ def get_phonopy_structure(cell,
     return phonopy structure
 
     Args:
-        cell (tuple): (lattice, scaled_positions, symbols)
+        cell: tuple (lattice, scaled_positions, symbols)
         structure_type (str): 'base', 'primitive' or 'conventional'
         symprec (float): used when searching conventional unitcell
     """

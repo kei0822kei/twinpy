@@ -17,7 +17,7 @@ def get_twinpy_from_cell(cell:tuple,
     get Twinpy object from cell
 
     Args:
-        cell (tuple): (lattice, scaled_positions, symbols)
+        cell: tuple (lattice, scaled_positions, symbols)
         twinmode (str): twinmode
 
     Note:
@@ -94,7 +94,7 @@ class Twinpy():
         Args:
             xshift (float): x shift
             yshift (float): y shift
-            dim (3, numpy array): dimension
+            dim (np.array): dimension
             shear_strain_ratio (float): shear strain ratio
         """
         self._shear = get_shear(
@@ -135,7 +135,7 @@ class Twinpy():
             twintype (int): twintype, choose from 1 and 2
             xshift (float): x shift
             yshift (float): y shift
-            dim (3, numpy array): dimension
+            dim (np.array): dimension
             shear_strain_ratio (float): shear twinboundary ratio
             make_tb_flat (bool): whether make twin boundary flat
         """
