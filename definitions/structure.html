@@ -310,9 +310,9 @@ gradient tensor can be defined as</p>
 =
 \frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
 =
-\frac{\partial (\boldsymbol{x} + \boldsymbol{u})}{\partial \boldsymbol{X}}
+\frac{\partial (\boldsymbol{X} + \boldsymbol{u})}{\partial \boldsymbol{X}}
 =
-\boldsymbol{I} + \frac{\partial \boldsymbol{u}}{\boldsymbol{X}}.\]</div>
+\boldsymbol{I} + \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}.\]</div>
 <p>Shear strain corresponds to <span class="math notranslate nohighlight">\(\frac{\partial \boldsymbol{u}}{\boldsymbol{X}}\)</span>
 However, note this equation is on the basis of cartesian coordinate.
 So we have to consider the matrix <span class="math notranslate nohighlight">\(S\)</span> on the same coordinate as</p>
@@ -348,7 +348,8 @@ So we have to consider the matrix <span class="math notranslate nohighlight">\(S
 , left Cauchy-Green tensor as <span class="math notranslate nohighlight">\(\boldsymbol{b}\)</span>
 then</p>
 <div class="math notranslate nohighlight">
-\[ \begin{align}\begin{aligned}\boldsymbol{C} = \boldsymbol{U}^2 = \boldsymbol{F}^{T} \boldsymbol{F}\\\boldsymbol{b} = \boldsymbol{V}^2 = \boldsymbol{F} \boldsymbol{F}^{T}\end{aligned}\end{align} \]</div>
+\[ \begin{align}\begin{aligned}\boldsymbol{C} = \boldsymbol{U}^2 = \boldsymbol{F}^{T} \boldsymbol{F}\\\boldsymbol{b} = \boldsymbol{V}^2 = \boldsymbol{F} \boldsymbol{F}^{T}\\\boldsymbol{R} = \boldsymbol{F} \boldsymbol{U}^{-1}
+               = \boldsymbol{V}^{-1} \boldsymbol{F}\end{aligned}\end{align} \]</div>
 </div>
 </div>
 <div class="section" id="future-edited">

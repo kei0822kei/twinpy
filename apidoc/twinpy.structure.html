@@ -100,13 +100,16 @@
 <li class="toctree-l3"><a class="reference internal" href="twinpy.properties.html">twinpy.properties package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">twinpy.structure package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.structure.hexagonal">twinpy.structure.hexagonal module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.structure.base">twinpy.structure.base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.structure.shear">twinpy.structure.shear module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.structure.twinboundary">twinpy.structure.twinboundary module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.structure">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy.api_twinpy">twinpy.api_twinpy module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy.file_io">twinpy.file_io module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy">Module contents</a></li>
 </ul>
@@ -180,23 +183,25 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
-<div class="section" id="module-twinpy.structure.hexagonal">
-<span id="twinpy-structure-hexagonal-module"></span><h2>twinpy.structure.hexagonal module<a class="headerlink" href="#module-twinpy.structure.hexagonal" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-twinpy.structure.base">
+<span id="twinpy-structure-base-module"></span><h2>twinpy.structure.base module<a class="headerlink" href="#module-twinpy.structure.base" title="Permalink to this headline">¶</a></h2>
 <p>HexagonalStructure</p>
 <dl class="class">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure">
-<em class="property">class </em><code class="sig-prename descclassname">twinpy.structure.hexagonal.</code><code class="sig-name descname">HexagonalStructure</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">symbol: str</em>, <em class="sig-param">wyckoff: str = 'c'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#HexagonalStructure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.structure.base.</code><code class="sig-name descname">_BaseStructure</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">symbol: str</em>, <em class="sig-param">wyckoff: str = 'c'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#_BaseStructure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base._BaseStructure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>deals with hexagonal close-packed structure</p>
+<p>base structure class which is inherited
+ShearStructure class and TwinBoundaryStructure class</p>
 <dl class="attribute">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.__dict__">
-<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.structure.hexagonal', '__doc__': '\n    deals with hexagonal close-packed structure\n    ', '__init__': &lt;function HexagonalStructure.__init__&gt;, '_parent_not_set': &lt;function HexagonalStructure._parent_not_set&gt;, 'r': &lt;property object&gt;, 'symbol': &lt;property object&gt;, 'wyckoff': &lt;property object&gt;, 'atoms_from_lattice_points': &lt;property object&gt;, 'hexagonal_lattice': &lt;property object&gt;, 'indices': &lt;property object&gt;, 'parent_matrix': &lt;property object&gt;, 'shear_strain_function': &lt;property object&gt;, 'shear_strain_ratio': &lt;property object&gt;, 'output_structure': &lt;property object&gt;, '_get_shear_matrix': &lt;function HexagonalStructure._get_shear_matrix&gt;, 'set_parent': &lt;function HexagonalStructure.set_parent&gt;, 'set_shear_ratio': &lt;function HexagonalStructure.set_shear_ratio&gt;, 'run': &lt;function HexagonalStructure.run&gt;, 'get_pymatgen_structure': &lt;function HexagonalStructure.get_pymatgen_structure&gt;, 'get_poscar': &lt;function HexagonalStructure.get_poscar&gt;, '__dict__': &lt;attribute '__dict__' of 'HexagonalStructure' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'HexagonalStructure' objects&gt;})</em><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.__dict__" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.__dict__">
+<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.structure.base', '__doc__': '\n    base structure class which is inherited\n    ShearStructure class and TwinBoundaryStructure class\n    ', '__init__': &lt;function _BaseStructure.__init__&gt;, 'r': &lt;property object&gt;, 'hcp_lattice': &lt;property object&gt;, 'symbol': &lt;property object&gt;, 'wyckoff': &lt;property object&gt;, 'atoms_from_lattice_points': &lt;property object&gt;, 'hexagonal_lattice': &lt;property object&gt;, 'xshift': &lt;property object&gt;, 'yshift': &lt;property object&gt;, 'natoms': &lt;property object&gt;, 'twinmode': &lt;property object&gt;, 'indices': &lt;property object&gt;, 'output_structure': &lt;property object&gt;, 'get_output_stucture': &lt;function _BaseStructure.get_output_stucture&gt;, 'set_parent': &lt;function _BaseStructure.set_parent&gt;, 'get_structure_for_export': &lt;function _BaseStructure.get_structure_for_export&gt;, 'get_pymatgen_structure': &lt;function _BaseStructure.get_pymatgen_structure&gt;, 'write_poscar': &lt;function _BaseStructure.write_poscar&gt;, 'get_phonopy_structure': &lt;function _BaseStructure.get_phonopy_structure&gt;, '__dict__': &lt;attribute '__dict__' of '_BaseStructure' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of '_BaseStructure' objects&gt;})</em><a class="headerlink" href="#twinpy.structure.base._BaseStructure.__dict__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">symbol: str</em>, <em class="sig-param">wyckoff: str = 'c'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#HexagonalStructure.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+<dt id="twinpy.structure.base._BaseStructure.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">symbol: str</em>, <em class="sig-param">wyckoff: str = 'c'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#_BaseStructure.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base._BaseStructure.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>initialize</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>lattice</strong> (<em>np.array</em>) – lattice</p></li>
@@ -214,97 +219,91 @@
 </dd></dl>
 
 <dl class="attribute">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.__module__">
-<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.structure.hexagonal'</em><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.__module__" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.__module__">
+<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.structure.base'</em><a class="headerlink" href="#twinpy.structure.base._BaseStructure.__module__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="attribute">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.__weakref__">
-<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.__weakref__" title="Permalink to this definition">¶</a></dt>
 <dd><p>list of weak references to the object (if defined)</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure._get_shear_matrix">
-<code class="sig-name descname">_get_shear_matrix</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#HexagonalStructure._get_shear_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure._get_shear_matrix" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure._parent_not_set">
-<code class="sig-name descname">_parent_not_set</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#HexagonalStructure._parent_not_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure._parent_not_set" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.atoms_from_lattice_points">
-<em class="property">property </em><code class="sig-name descname">atoms_from_lattice_points</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.atoms_from_lattice_points" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.atoms_from_lattice_points">
+<em class="property">property </em><code class="sig-name descname">atoms_from_lattice_points</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.atoms_from_lattice_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>atoms from lattice points</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.get_poscar">
-<code class="sig-name descname">get_poscar</code><span class="sig-paren">(</span><em class="sig-param">filename: str = 'POSCAR'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#HexagonalStructure.get_poscar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.get_poscar" title="Permalink to this definition">¶</a></dt>
-<dd><p>get poscar</p>
+<dt id="twinpy.structure.base._BaseStructure.get_output_stucture">
+<code class="sig-name descname">get_output_stucture</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#_BaseStructure.get_output_stucture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base._BaseStructure.get_output_stucture" title="Permalink to this definition">¶</a></dt>
+<dd><p>get output structure</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.base._BaseStructure.get_phonopy_structure">
+<code class="sig-name descname">get_phonopy_structure</code><span class="sig-paren">(</span><em class="sig-param">structure_type: str = 'base'</em>, <em class="sig-param">symprec: float = 1e-05</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#_BaseStructure.get_phonopy_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base._BaseStructure.get_phonopy_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>return phonopy structure</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – output filename</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>structure_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – ‘base’, ‘primitive’ or ‘conventional’</p></li>
+<li><p><strong>symprec</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – used when searching conventional unitcell</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.get_pymatgen_structure">
-<code class="sig-name descname">get_pymatgen_structure</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#HexagonalStructure.get_pymatgen_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.get_pymatgen_structure" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.get_pymatgen_structure">
+<code class="sig-name descname">get_pymatgen_structure</code><span class="sig-paren">(</span><em class="sig-param">get_lattice=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#_BaseStructure.get_pymatgen_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base._BaseStructure.get_pymatgen_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>get pymatgen structure</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.hexagonal_lattice">
-<em class="property">property </em><code class="sig-name descname">hexagonal_lattice</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.hexagonal_lattice" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.get_structure_for_export">
+<code class="sig-name descname">get_structure_for_export</code><span class="sig-paren">(</span><em class="sig-param">get_lattice=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#_BaseStructure.get_structure_for_export"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base._BaseStructure.get_structure_for_export" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.base._BaseStructure.hcp_lattice">
+<em class="property">property </em><code class="sig-name descname">hcp_lattice</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.hcp_lattice" title="Permalink to this definition">¶</a></dt>
+<dd><p>base HCP lattice</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.base._BaseStructure.hexagonal_lattice">
+<em class="property">property </em><code class="sig-name descname">hexagonal_lattice</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.hexagonal_lattice" title="Permalink to this definition">¶</a></dt>
 <dd><p>hexagonal lattice</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.indices">
-<em class="property">property </em><code class="sig-name descname">indices</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.indices" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.indices">
+<em class="property">property </em><code class="sig-name descname">indices</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>indices of twinmode</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.output_structure">
-<em class="property">property </em><code class="sig-name descname">output_structure</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.output_structure" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.natoms">
+<em class="property">property </em><code class="sig-name descname">natoms</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.natoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>number of atoms</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.base._BaseStructure.output_structure">
+<em class="property">property </em><code class="sig-name descname">output_structure</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.output_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>built structure</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.parent_matrix">
-<em class="property">property </em><code class="sig-name descname">parent_matrix</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.parent_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>parent matrix</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.r">
-<em class="property">property </em><code class="sig-name descname">r</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.r" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.r">
+<em class="property">property </em><code class="sig-name descname">r</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.r" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.run">
-<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">is_primitive=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#HexagonalStructure.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>build structure</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>is_primitive</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – if True, primitive structure is build
-choose from ‘tuple’</p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>the structure built is set self.output_structure</p>
-</div>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.set_parent">
-<code class="sig-name descname">set_parent</code><span class="sig-paren">(</span><em class="sig-param">twinmode: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#HexagonalStructure.set_parent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.set_parent" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.set_parent">
+<code class="sig-name descname">set_parent</code><span class="sig-paren">(</span><em class="sig-param">twinmode: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#_BaseStructure.set_parent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base._BaseStructure.set_parent" title="Permalink to this definition">¶</a></dt>
 <dd><p>set parent</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -320,53 +319,49 @@ set attribute ‘shear_function’</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.set_shear_ratio">
-<code class="sig-name descname">set_shear_ratio</code><span class="sig-paren">(</span><em class="sig-param">ratio</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#HexagonalStructure.set_shear_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.set_shear_ratio" title="Permalink to this definition">¶</a></dt>
-<dd><p>set shear ratio</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>ratio</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – the ratio of shear value</p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>set attribute ‘shear_strain_ratio’</p>
-</div>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.shear_strain_function">
-<em class="property">property </em><code class="sig-name descname">shear_strain_function</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.shear_strain_function" title="Permalink to this definition">¶</a></dt>
-<dd><p>shear shear strain function</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.shear_strain_ratio">
-<em class="property">property </em><code class="sig-name descname">shear_strain_ratio</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.shear_strain_ratio" title="Permalink to this definition">¶</a></dt>
-<dd><p>shear shear strain ratio</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.symbol">
-<em class="property">property </em><code class="sig-name descname">symbol</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.symbol" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.symbol">
+<em class="property">property </em><code class="sig-name descname">symbol</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.symbol" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="twinpy.structure.hexagonal.HexagonalStructure.wyckoff">
-<em class="property">property </em><code class="sig-name descname">wyckoff</code><a class="headerlink" href="#twinpy.structure.hexagonal.HexagonalStructure.wyckoff" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base._BaseStructure.twinmode">
+<em class="property">property </em><code class="sig-name descname">twinmode</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.twinmode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.base._BaseStructure.write_poscar">
+<code class="sig-name descname">write_poscar</code><span class="sig-paren">(</span><em class="sig-param">filename: str = 'POSCAR'</em>, <em class="sig-param">get_lattice=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#_BaseStructure.write_poscar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base._BaseStructure.write_poscar" title="Permalink to this definition">¶</a></dt>
+<dd><p>write poscar</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – output filename</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.base._BaseStructure.wyckoff">
+<em class="property">property </em><code class="sig-name descname">wyckoff</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.wyckoff" title="Permalink to this definition">¶</a></dt>
 <dd><p>wyckoff position</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="twinpy.structure.base._BaseStructure.xshift">
+<em class="property">property </em><code class="sig-name descname">xshift</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.xshift" title="Permalink to this definition">¶</a></dt>
+<dd><p>x shift</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.base._BaseStructure.yshift">
+<em class="property">property </em><code class="sig-name descname">yshift</code><a class="headerlink" href="#twinpy.structure.base._BaseStructure.yshift" title="Permalink to this definition">¶</a></dt>
+<dd><p>x shift</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
-<dt id="twinpy.structure.hexagonal._get_supercell_matrix">
-<code class="sig-prename descclassname">twinpy.structure.hexagonal.</code><code class="sig-name descname">_get_supercell_matrix</code><span class="sig-paren">(</span><em class="sig-param">indices</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#_get_supercell_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal._get_supercell_matrix" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="twinpy.structure.hexagonal.get_atom_positions_from_lattice_points">
-<code class="sig-prename descclassname">twinpy.structure.hexagonal.</code><code class="sig-name descname">get_atom_positions_from_lattice_points</code><span class="sig-paren">(</span><em class="sig-param">lattice_points: numpy.array</em>, <em class="sig-param">atoms_from_lp: numpy.array</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#get_atom_positions_from_lattice_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.get_atom_positions_from_lattice_points" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base.get_atom_positions_from_lattice_points">
+<code class="sig-prename descclassname">twinpy.structure.base.</code><code class="sig-name descname">get_atom_positions_from_lattice_points</code><span class="sig-paren">(</span><em class="sig-param">lattice_points: numpy.array</em>, <em class="sig-param">atoms_from_lp: numpy.array</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#get_atom_positions_from_lattice_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base.get_atom_positions_from_lattice_points" title="Permalink to this definition">¶</a></dt>
 <dd><p>get atom positions from lattice points</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -385,27 +380,8 @@ set attribute ‘shear_function’</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="twinpy.structure.hexagonal.get_hexagonal_structure_from_a_c">
-<code class="sig-prename descclassname">twinpy.structure.hexagonal.</code><code class="sig-name descname">get_hexagonal_structure_from_a_c</code><span class="sig-paren">(</span><em class="sig-param">a: float</em>, <em class="sig-param">c: float</em>, <em class="sig-param">symbol: str = None</em>, <em class="sig-param">wyckoff: str = 'c'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#get_hexagonal_structure_from_a_c"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.get_hexagonal_structure_from_a_c" title="Permalink to this definition">¶</a></dt>
-<dd><p>get HexagonalStructure class object from a and c axes</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the norm of a axis</p></li>
-<li><p><strong>c</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the norm of c axis</p></li>
-<li><p><strong>symbol</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – element symbol</p></li>
-<li><p><strong>wyckoff</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – No.194 Wycoff position (‘c’ or ‘d’)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>AssertionError</strong> – either a or c is negative value</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="twinpy.structure.hexagonal.get_hexagonal_structure_from_pymatgen">
-<code class="sig-prename descclassname">twinpy.structure.hexagonal.</code><code class="sig-name descname">get_hexagonal_structure_from_pymatgen</code><span class="sig-paren">(</span><em class="sig-param">pmgstructure</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#get_hexagonal_structure_from_pymatgen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.get_hexagonal_structure_from_pymatgen" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base.get_hexagonal_structure_from_pymatgen">
+<code class="sig-prename descclassname">twinpy.structure.base.</code><code class="sig-name descname">get_hexagonal_structure_from_pymatgen</code><span class="sig-paren">(</span><em class="sig-param">pmgstructure</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#get_hexagonal_structure_from_pymatgen"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base.get_hexagonal_structure_from_pymatgen" title="Permalink to this definition">¶</a></dt>
 <dd><p>get HexagonalStructure object from pyamtgen structure</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -415,8 +391,43 @@ set attribute ‘shear_function’</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="twinpy.structure.hexagonal.is_hcp">
-<code class="sig-prename descclassname">twinpy.structure.hexagonal.</code><code class="sig-name descname">is_hcp</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array, symbols: Sequence[str], positions: numpy.array = None, scaled_positions: numpy.array = None, get_wyckoff: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/hexagonal.html#is_hcp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.hexagonal.is_hcp" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.structure.base.get_lattice_points_from_supercell">
+<code class="sig-prename descclassname">twinpy.structure.base.</code><code class="sig-name descname">get_lattice_points_from_supercell</code><span class="sig-paren">(</span><em class="sig-param">lattice</em>, <em class="sig-param">dim</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/structure/base.html#get_lattice_points_from_supercell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base.get_lattice_points_from_supercell" title="Permalink to this definition">¶</a></dt>
+<dd><p>get lattice points from supercell</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lattice</strong> (<em>np.array</em>) – lattice</p></li>
+<li><p><strong>dim</strong> (<em>np.array</em>) – dimension, its shape is (3,) or (3,3)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>lattice points</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.structure.base.get_phonopy_structure">
+<code class="sig-prename descclassname">twinpy.structure.base.</code><code class="sig-name descname">get_phonopy_structure</code><span class="sig-paren">(</span><em class="sig-param">cell</em>, <em class="sig-param">structure_type: str = 'base'</em>, <em class="sig-param">symprec: float = 1e-05</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#get_phonopy_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base.get_phonopy_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>return phonopy structure</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cell</strong> – tuple (lattice, scaled_positions, symbols)</p></li>
+<li><p><strong>structure_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – ‘base’, ‘primitive’ or ‘conventional’</p></li>
+<li><p><strong>symprec</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – used when searching conventional unitcell</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.structure.base.is_hcp">
+<code class="sig-prename descclassname">twinpy.structure.base.</code><code class="sig-name descname">is_hcp</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array, symbols: Sequence[str], positions: numpy.array = None, scaled_positions: numpy.array = None, get_wyckoff: bool = False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#is_hcp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base.is_hcp" title="Permalink to this definition">¶</a></dt>
 <dd><p>check input structure is Hexagonal Close-Packed structure</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -434,6 +445,256 @@ set attribute ‘shear_function’</p>
 <li><p><strong>AssertionError</strong> – input symbols are not unique</p></li>
 <li><p><strong>AssertionError</strong> – input structure is not
     Hexagonal Close-Packed structure</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.structure.base.reshape_dimension">
+<code class="sig-prename descclassname">twinpy.structure.base.</code><code class="sig-name descname">reshape_dimension</code><span class="sig-paren">(</span><em class="sig-param">dim</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/base.html#reshape_dimension"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.base.reshape_dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>if dim.shape == (3,), reshape to (3,3) numpy array</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – input dim is not (3,) and (3,3) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-twinpy.structure.shear">
+<span id="twinpy-structure-shear-module"></span><h2>twinpy.structure.shear module<a class="headerlink" href="#module-twinpy.structure.shear" title="Permalink to this headline">¶</a></h2>
+<p>HexagonalStructure</p>
+<dl class="class">
+<dt id="twinpy.structure.shear.ShearStructure">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.structure.shear.</code><code class="sig-name descname">ShearStructure</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">symbol: str</em>, <em class="sig-param">wyckoff: str = 'c'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/shear.html#ShearStructure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.shear.ShearStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#twinpy.structure.base._BaseStructure" title="twinpy.structure.base._BaseStructure"><code class="xref py py-class docutils literal notranslate"><span class="pre">twinpy.structure.base._BaseStructure</span></code></a></p>
+<p>shear structure class</p>
+<dl class="method">
+<dt id="twinpy.structure.shear.ShearStructure.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">symbol: str</em>, <em class="sig-param">wyckoff: str = 'c'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/shear.html#ShearStructure.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.shear.ShearStructure.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>initialize</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>to see detail, visit _BaseStructure class</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.structure.shear.ShearStructure.__module__">
+<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.structure.shear'</em><a class="headerlink" href="#twinpy.structure.shear.ShearStructure.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.shear.ShearStructure.dim">
+<em class="property">property </em><code class="sig-name descname">dim</code><a class="headerlink" href="#twinpy.structure.shear.ShearStructure.dim" title="Permalink to this definition">¶</a></dt>
+<dd><p>dimension</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.shear.ShearStructure.get_gamma">
+<code class="sig-name descname">get_gamma</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/shear.html#ShearStructure.get_gamma"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.shear.ShearStructure.get_gamma" title="Permalink to this definition">¶</a></dt>
+<dd><p>get gamma</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><dl class="simple">
+<dt>gamma used for computing shear value</dt><dd><p>more detail, see documentaion</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.shear.ShearStructure.get_shear_matrix">
+<code class="sig-name descname">get_shear_matrix</code><span class="sig-paren">(</span><em class="sig-param">ratio: float = 1.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/shear.html#ShearStructure.get_shear_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.shear.ShearStructure.get_shear_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>get shear matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ratio</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – shear strain ratio</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.shear.ShearStructure.get_shear_properties">
+<code class="sig-name descname">get_shear_properties</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/twinpy/structure/shear.html#ShearStructure.get_shear_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.shear.ShearStructure.get_shear_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>get various properties related to shear</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>key variables are
+- shear value (s)
+- shear ratio (alpha)
+- strain matrix (S)
+- deformation gradient tensor (F)
+- right Cauchy-Green tensor (C)
+- left Cauchy-Green tensor (b)
+- matrial stretch tensor (U)
+- spatial stretch tensor (V)
+- rotation (R)
+for more detail and definition, see documentation</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.shear.ShearStructure.get_shear_value">
+<code class="sig-name descname">get_shear_value</code><span class="sig-paren">(</span><em class="sig-param">ratio: float = 1.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/shear.html#ShearStructure.get_shear_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.shear.ShearStructure.get_shear_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>get shear value</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ratio</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – shear strain ratio</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.shear.ShearStructure.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">shear_strain_ratio, dim=array([1, 1, 1], dtype=int32), xshift=0.0, yshift=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/shear.html#ShearStructure.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.shear.ShearStructure.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>build structure</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the built structure is set to self.output_structure</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.shear.ShearStructure.set_shear_strain_ratio">
+<code class="sig-name descname">set_shear_strain_ratio</code><span class="sig-paren">(</span><em class="sig-param">ratio</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/shear.html#ShearStructure.set_shear_strain_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.shear.ShearStructure.set_shear_strain_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>set shear ratio</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.shear.ShearStructure.shear_strain_ratio">
+<em class="property">property </em><code class="sig-name descname">shear_strain_ratio</code><a class="headerlink" href="#twinpy.structure.shear.ShearStructure.shear_strain_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>shear strain ratio</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.structure.shear.get_shear">
+<code class="sig-prename descclassname">twinpy.structure.shear.</code><code class="sig-name descname">get_shear</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array, symbol: str, twinmode: str, wyckoff: str = 'c', xshift: float = 0.0, yshift: float = 0.0, dim: numpy.array = array([1, 1, 1], dtype=int32), shear_strain_ratio: float = 0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/shear.html#get_shear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.shear.get_shear" title="Permalink to this definition">¶</a></dt>
+<dd><p>set shear structure object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lattice</strong> (<em>np.array</em>) – lattice</p></li>
+<li><p><strong>symbol</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – element symbol</p></li>
+<li><p><strong>wyckoff</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – No.194 Wycoff position (‘c’ or ‘d’)</p></li>
+<li><p><strong>xshift</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – x shift</p></li>
+<li><p><strong>yshift</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – y shift</p></li>
+<li><p><strong>dim</strong> (<em>np.array</em>) – dimension</p></li>
+<li><p><strong>shear_strain_ratio</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – shear strain ratio</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-twinpy.structure.twinboundary">
+<span id="twinpy-structure-twinboundary-module"></span><h2>twinpy.structure.twinboundary module<a class="headerlink" href="#module-twinpy.structure.twinboundary" title="Permalink to this headline">¶</a></h2>
+<p>HexagonalStructure</p>
+<dl class="class">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.structure.twinboundary.</code><code class="sig-name descname">TwinBoundaryStructure</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">symbol: str</em>, <em class="sig-param">wyckoff: str = 'c'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/twinboundary.html#TwinBoundaryStructure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#twinpy.structure.base._BaseStructure" title="twinpy.structure.base._BaseStructure"><code class="xref py py-class docutils literal notranslate"><span class="pre">twinpy.structure.base._BaseStructure</span></code></a></p>
+<p>twinboundary structure class</p>
+<dl class="method">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">symbol: str</em>, <em class="sig-param">wyckoff: str = 'c'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/twinboundary.html#TwinBoundaryStructure.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>initialize</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>to see detail, visit _BaseStructure class</p>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure.__module__">
+<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.structure.twinboundary'</em><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure._get_dichromatic_operation">
+<code class="sig-name descname">_get_dichromatic_operation</code><span class="sig-paren">(</span><em class="sig-param">twintype</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/twinboundary.html#TwinBoundaryStructure._get_dichromatic_operation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure._get_dichromatic_operation" title="Permalink to this definition">¶</a></dt>
+<dd><p>get dichromatic operation</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure._get_parent">
+<code class="sig-name descname">_get_parent</code><span class="sig-paren">(</span><em class="sig-param">zdim</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/twinboundary.html#TwinBoundaryStructure._get_parent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure._get_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>get parent</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure._get_parent_lattice_points_atoms">
+<code class="sig-name descname">_get_parent_lattice_points_atoms</code><span class="sig-paren">(</span><em class="sig-param">parent_output</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/twinboundary.html#TwinBoundaryStructure._get_parent_lattice_points_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure._get_parent_lattice_points_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>get parent structure for twinboudnary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure._get_shear_tb_lattice">
+<code class="sig-name descname">_get_shear_tb_lattice</code><span class="sig-paren">(</span><em class="sig-param">tb_lattice</em>, <em class="sig-param">shear_strain_ratio</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/twinboundary.html#TwinBoundaryStructure._get_shear_tb_lattice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure._get_shear_tb_lattice" title="Permalink to this definition">¶</a></dt>
+<dd><p>return shear twinboudnary lattice</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure._get_twin_lattice_points_atoms">
+<code class="sig-name descname">_get_twin_lattice_points_atoms</code><span class="sig-paren">(</span><em class="sig-param">dichromatic_operation</em>, <em class="sig-param">rotation</em>, <em class="sig-param">lp_p_cart</em>, <em class="sig-param">atoms_p_cart</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/twinboundary.html#TwinBoundaryStructure._get_twin_lattice_points_atoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure._get_twin_lattice_points_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>get twin structure for twinboudnary</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure._get_twinboundary_structure">
+<code class="sig-name descname">_get_twinboundary_structure</code><span class="sig-paren">(</span><em class="sig-param">tb_lattice</em>, <em class="sig-param">lp_p_cart</em>, <em class="sig-param">lp_t_cart</em>, <em class="sig-param">atoms_p_cart</em>, <em class="sig-param">atoms_t_cart</em>, <em class="sig-param">make_tb_flat</em>, <em class="sig-param">dim</em>, <em class="sig-param">xshift</em>, <em class="sig-param">yshift</em>, <em class="sig-param">shear_strain_ratio</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/twinboundary.html#TwinBoundaryStructure._get_twinboundary_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure._get_twinboundary_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>return twinbounadry structure</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">dim=array([1, 1, 1], dtype=int32), twintype=1, xshift=0.0, yshift=0.0, shear_strain_ratio=0.0, make_tb_flat=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/twinboundary.html#TwinBoundaryStructure.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>build structure</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>the structure built is set self.output_structure</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure.shear_strain_ratio">
+<em class="property">property </em><code class="sig-name descname">shear_strain_ratio</code><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure.shear_strain_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>shear twinboundary ratio</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.structure.twinboundary.TwinBoundaryStructure.twintype">
+<em class="property">property </em><code class="sig-name descname">twintype</code><a class="headerlink" href="#twinpy.structure.twinboundary.TwinBoundaryStructure.twintype" title="Permalink to this definition">¶</a></dt>
+<dd><p>twin type</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.structure.twinboundary.get_twinboundary">
+<code class="sig-prename descclassname">twinpy.structure.twinboundary.</code><code class="sig-name descname">get_twinboundary</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array, symbol: str, twinmode: str, wyckoff: str = 'c', twintype: int = 1, xshift: float = 0.0, yshift: float = 0.0, dim: numpy.array = array([1, 1, 1], dtype=int32), shear_strain_ratio: float = 0.0, make_tb_flat=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/structure/twinboundary.html#get_twinboundary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.structure.twinboundary.get_twinboundary" title="Permalink to this definition">¶</a></dt>
+<dd><p>set shear structure object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lattice</strong> (<em>np.array</em>) – lattice</p></li>
+<li><p><strong>symbol</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – element symbol</p></li>
+<li><p><strong>twinmode</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – twinmode</p></li>
+<li><p><strong>wyckoff</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – No.194 Wycoff position (‘c’ or ‘d’)</p></li>
+<li><p><strong>twintype</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – twintype, choose from 1 and 2</p></li>
+<li><p><strong>xshift</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – x shift</p></li>
+<li><p><strong>yshift</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – y shift</p></li>
+<li><p><strong>dim</strong> (<em>np.array</em>) – dimension</p></li>
+<li><p><strong>shear_strain_ratio</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – shear twinboundary ratio</p></li>
+<li><p><strong>make_tb_flat</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – whether make twin boundary flat</p></li>
 </ul>
 </dd>
 </dl>

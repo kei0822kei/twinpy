@@ -111,6 +111,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy.api_twinpy">twinpy.api_twinpy module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy.file_io">twinpy.file_io module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy">Module contents</a></li>
 </ul>
@@ -191,6 +192,12 @@
 <dt id="twinpy.lattice.brillouin.get_labels_for_twin">
 <code class="sig-prename descclassname">twinpy.lattice.brillouin.</code><code class="sig-name descname">get_labels_for_twin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/brillouin.html#get_labels_for_twin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.brillouin.get_labels_for_twin" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="function">
+<dt id="twinpy.lattice.brillouin.show_brillouin_zone">
+<code class="sig-prename descclassname">twinpy.lattice.brillouin.</code><code class="sig-name descname">show_brillouin_zone</code><span class="sig-paren">(</span><em class="sig-param">reciprocal_lattice</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/brillouin.html#show_brillouin_zone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.brillouin.show_brillouin_zone" title="Permalink to this definition">¶</a></dt>
+<dd><p>extract from seekpath’s script</p>
+</dd></dl>
 
 </div>
 <div class="section" id="module-twinpy.lattice.hexagonal_direction">
@@ -476,7 +483,7 @@
 <p>deals with lattice</p>
 <dl class="attribute">
 <dt id="twinpy.lattice.lattice.Lattice.__dict__">
-<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.lattice.lattice', '__doc__': '\n    deals with lattice\n\n    ', '__init__': &lt;function Lattice.__init__&gt;, 'lattice': &lt;property object&gt;, 'volume': &lt;property object&gt;, '_set_volume': &lt;function Lattice._set_volume&gt;, 'reciprocal_lattice': &lt;property object&gt;, '_set_reciprocal_lattice': &lt;function Lattice._set_reciprocal_lattice&gt;, 'norms': &lt;property object&gt;, '_set_norms': &lt;function Lattice._set_norms&gt;, 'angles': &lt;property object&gt;, 'cos_angles': &lt;property object&gt;, '_set_angles': &lt;function Lattice._set_angles&gt;, 'metric': &lt;property object&gt;, '_set_metric': &lt;function Lattice._set_metric&gt;, 'dot': &lt;function Lattice.dot&gt;, 'is_hexagonal_lattice': &lt;function Lattice.is_hexagonal_lattice&gt;, '__dict__': &lt;attribute '__dict__' of 'Lattice' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Lattice' objects&gt;})</em><a class="headerlink" href="#twinpy.lattice.lattice.Lattice.__dict__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.lattice.lattice', '__doc__': '\n    deals with lattice\n\n    ', '__init__': &lt;function Lattice.__init__&gt;, 'lattice': &lt;property object&gt;, 'volume': &lt;property object&gt;, '_set_volume': &lt;function Lattice._set_volume&gt;, 'reciprocal_lattice': &lt;property object&gt;, '_set_reciprocal_lattice': &lt;function Lattice._set_reciprocal_lattice&gt;, 'norms': &lt;property object&gt;, '_set_norms': &lt;function Lattice._set_norms&gt;, 'angles': &lt;property object&gt;, 'cos_angles': &lt;property object&gt;, '_set_angles': &lt;function Lattice._set_angles&gt;, 'metric': &lt;property object&gt;, '_set_metric': &lt;function Lattice._set_metric&gt;, 'dot': &lt;function Lattice.dot&gt;, 'is_hexagonal_lattice': &lt;function Lattice.is_hexagonal_lattice&gt;, 'get_abc': &lt;function Lattice.get_abc&gt;, '__dict__': &lt;attribute '__dict__' of 'Lattice' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Lattice' objects&gt;})</em><a class="headerlink" href="#twinpy.lattice.lattice.Lattice.__dict__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -555,6 +562,12 @@
 </dd></dl>
 
 <dl class="method">
+<dt id="twinpy.lattice.lattice.Lattice.get_abc">
+<code class="sig-name descname">get_abc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/lattice.html#Lattice.get_abc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.lattice.Lattice.get_abc" title="Permalink to this definition">¶</a></dt>
+<dd><p>get norms of each axis</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="twinpy.lattice.lattice.Lattice.is_hexagonal_lattice">
 <code class="sig-name descname">is_hexagonal_lattice</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/lattice.html#Lattice.is_hexagonal_lattice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.lattice.Lattice.is_hexagonal_lattice" title="Permalink to this definition">¶</a></dt>
 <dd><p>check lattice is hexagonal</p>
@@ -619,6 +632,29 @@
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference internal" href="#twinpy.lattice.lattice.Lattice" title="twinpy.lattice.lattice.Lattice">Lattice</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.lattice.lattice.get_hexagonal_lattice_from_a_c">
+<code class="sig-prename descclassname">twinpy.lattice.lattice.</code><code class="sig-name descname">get_hexagonal_lattice_from_a_c</code><span class="sig-paren">(</span><em class="sig-param">a: float</em>, <em class="sig-param">c: float</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/lattice.html#get_hexagonal_lattice_from_a_c"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.lattice.get_hexagonal_lattice_from_a_c" title="Permalink to this definition">¶</a></dt>
+<dd><p>get hexagonal lattice from a and c axes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the norm of a axis</p></li>
+<li><p><strong>c</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – the norm of c axis</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>hexagonal lattice</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – either a or c is negative value</p>
 </dd>
 </dl>
 </dd></dl>

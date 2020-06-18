@@ -141,9 +141,9 @@ gradient tensor can be defined as
    =
    \frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
    =
-   \frac{\partial (\boldsymbol{x} + \boldsymbol{u})}{\partial \boldsymbol{X}}
+   \frac{\partial (\boldsymbol{X} + \boldsymbol{u})}{\partial \boldsymbol{X}}
    =
-   \boldsymbol{I} + \frac{\partial \boldsymbol{u}}{\boldsymbol{X}}.
+   \boldsymbol{I} + \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}.
 
 Shear strain corresponds to :math:`\frac{\partial \boldsymbol{u}}{\boldsymbol{X}}`
 However, note this equation is on the basis of cartesian coordinate.
@@ -194,8 +194,8 @@ then
 
    \boldsymbol{b} = \boldsymbol{V}^2 = \boldsymbol{F} \boldsymbol{F}^{T}
 
-
-
+   \boldsymbol{R} = \boldsymbol{F} \boldsymbol{U}^{-1}
+                  = \boldsymbol{V}^{-1} \boldsymbol{F}
 
 
 FUTURE EDITED

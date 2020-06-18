@@ -98,10 +98,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#hexagonal-close-packed">hexagonal close-packed</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#twin-mode">twin mode</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#shear-strain-function">shear strain function</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#future-edited">FUTURE EDITED</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#twin-indices">twin indices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#references">References</a></li>
 </ul>
 </li>
 </ul>
@@ -179,21 +177,18 @@
 <h1>properties<a class="headerlink" href="#properties" title="Permalink to this headline">¶</a></h1>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#hexagonal-close-packed" id="id1">hexagonal close-packed</a></p></li>
-<li><p><a class="reference internal" href="#twin-mode" id="id2">twin mode</a></p>
+<li><p><a class="reference internal" href="#hexagonal-close-packed" id="id3">hexagonal close-packed</a></p></li>
+<li><p><a class="reference internal" href="#twin-mode" id="id4">twin mode</a></p>
 <ul>
-<li><p><a class="reference internal" href="#shear-strain-function" id="id3">shear strain function</a></p></li>
-</ul>
-</li>
-<li><p><a class="reference internal" href="#future-edited" id="id4">FUTURE EDITED</a></p>
-<ul>
-<li><p><a class="reference internal" href="#twin-indices" id="id5">twin indices</a></p></li>
+<li><p><a class="reference internal" href="#shear-strain-function" id="id5">shear strain function</a></p></li>
+<li><p><a class="reference internal" href="#twin-indices" id="id6">twin indices</a></p></li>
+<li><p><a class="reference internal" href="#references" id="id7">References</a></p></li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="section" id="hexagonal-close-packed">
-<h2><a class="toc-backref" href="#id1">hexagonal close-packed</a><a class="headerlink" href="#hexagonal-close-packed" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id3">hexagonal close-packed</a><a class="headerlink" href="#hexagonal-close-packed" title="Permalink to this headline">¶</a></h2>
 <p>Hexagonal lattice is already defined in the lattice page.
 There are two options how each atom set. First,
 two atoms <span class="math notranslate nohighlight">\(\boldsymbol{X}_{atm}\)</span> are placed Wyckoff ‘c’ (No. 194) as</p>
@@ -217,60 +212,28 @@ two atoms <span class="math notranslate nohighlight">\(\boldsymbol{X}_{atm}\)</s
 <p>with the <span class="math notranslate nohighlight">\([\boldsymbol{a}_1, \boldsymbol{a}_2, \boldsymbol{c}]\)</span> basis.</p>
 </div>
 <div class="section" id="twin-mode">
-<h2><a class="toc-backref" href="#id2">twin mode</a><a class="headerlink" href="#twin-mode" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4">twin mode</a><a class="headerlink" href="#twin-mode" title="Permalink to this headline">¶</a></h2>
 <p>Currently, {10-11}, {10-12}, {11-21} and {11-22} twins are supported.</p>
 <div class="section" id="shear-strain-function">
-<h3><a class="toc-backref" href="#id3">shear strain function</a><a class="headerlink" href="#shear-strain-function" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id5">shear strain function</a><a class="headerlink" href="#shear-strain-function" title="Permalink to this headline">¶</a></h3>
 <p>The shear strain function <span class="math notranslate nohighlight">\(\gamma\)</span> are provided in (Yoo. 1981).
 When <span class="math notranslate nohighlight">\(r (= \frac{c}{a})\)</span> are given,</p>
 <p>in {10-12} twin,</p>
 <div class="math notranslate nohighlight">
-\[\gamma = \frac{r^2-3}{r\sqrt{3}}\]</div>
+\[\gamma = \frac{|r^2-3|}{r\sqrt{3}}\]</div>
 <p>in {10-11} twin,</p>
 <div class="math notranslate nohighlight">
-\[\gamma = \frac{4r^2-9}{4r\sqrt{3}}\]</div>
+\[\gamma = \frac{|4r^2-9|}{4r\sqrt{3}}\]</div>
 <p>in {11-22} twin,</p>
 <div class="math notranslate nohighlight">
-\[\gamma = \frac{2(r^2-2)}{3r}\]</div>
+\[\gamma = \frac{2|r^2-2|}{3r}\]</div>
 <p>in {11-21} twin,</p>
 <div class="math notranslate nohighlight">
 \[\gamma = \frac{1}{r}.\]</div>
 </div>
-</div>
-<div class="section" id="future-edited">
-<h2><a class="toc-backref" href="#id4">FUTURE EDITED</a><a class="headerlink" href="#future-edited" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="twin-indices">
-<h3><a class="toc-backref" href="#id5">twin indices</a><a class="headerlink" href="#twin-indices" title="Permalink to this headline">¶</a></h3>
-<p>You can find customs how to set the four indices
-in the paper ‘DEFORMATION TWINNING’ by Christian (1995).
-Abstruct is as bellow:</p>
-<ol class="arabic simple">
-<li><p>Vector <span class="math notranslate nohighlight">\(\boldsymbol{m}\)</span> (, which is normal to shear plane),
-<span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span>
-form right hand system.</p></li>
-<li><p>The angle between <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span>
-and <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span> are obtuse.</p></li>
-<li><p>The angle between <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span>
-and <span class="math notranslate nohighlight">\(\boldsymbol{k}_2\)</span> are acute.</p></li>
-<li><p>The angle between <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span>
-and <span class="math notranslate nohighlight">\(\boldsymbol{k}_1\)</span> are acute.</p></li>
-</ol>
-<p>In this algorithm, indices are set in order of:</p>
-<ul class="simple">
-<li><p><span class="math notranslate nohighlight">\(\boldsymbol{k}_1\)</span>  set first</p></li>
-<li><p><span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span>  set using condition 4</p></li>
-<li><p><span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span>  set using condition 2</p></li>
-<li><p><span class="math notranslate nohighlight">\(\boldsymbol{k}_2\)</span>  set using condition 3</p></li>
-<li><p><span class="math notranslate nohighlight">\(\boldsymbol{m}\)</span>  set using condition 1.</p></li>
-</ul>
-<p>where <span class="math notranslate nohighlight">\(\boldsymbol{k}_1\)</span>, <span class="math notranslate nohighlight">\(\boldsymbol{k}_2\)</span>
-and <span class="math notranslate nohighlight">\(\boldsymbol{m}\)</span> are normal to
-<span class="math notranslate nohighlight">\(\boldsymbol{K}_1\)</span>, <span class="math notranslate nohighlight">\(\boldsymbol{K}_2\)</span>
-and <span class="math notranslate nohighlight">\(\boldsymbol{S}\)</span> plane.
-They all are positive direction toward each plane.</p>
-<div class="section" id="algorothm">
-<h4>algorothm<a class="headerlink" href="#algorothm" title="Permalink to this headline">¶</a></h4>
-<p>First, default indices are given which you can find in Yoo. 1981.</p>
+<h3><a class="toc-backref" href="#id6">twin indices</a><a class="headerlink" href="#twin-indices" title="Permalink to this headline">¶</a></h3>
+<p>You can find twin indices in the paper by <a class="reference internal" href="#yoo" id="id1"><span>[Yoo]</span></a>.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 19%" />
@@ -288,56 +251,84 @@ They all are positive direction toward each plane.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>(1 0 -1 2)</p></td>
-<td><p>( 1 0 -1 -2)</p></td>
-<td><p>[ 1  0 -1 -1]</p></td>
-<td><p>[-1 0  1 -1]</p></td>
-<td><p>( 1 1 -2 0)</p></td>
+<tr class="row-even"><td><p>{ 1  0 -1  2 }</p></td>
+<td><p>{ 1  0 -1 -2 }</p></td>
+<td><p>&lt; 1  0 -1 -1 &gt;</p></td>
+<td><p>&lt;-1  0  1 -1&gt;</p></td>
+<td><p>{ 1  1 -2  0 }</p></td>
 </tr>
-<tr class="row-odd"><td><p>(1 0 -1 1)</p></td>
-<td><p>( 1 0 -1 -3)</p></td>
-<td><p>[ 1  0 -1 -2]</p></td>
-<td><p>[ 3 0 -3  2]</p></td>
-<td><p>( 1 1 -2 0)</p></td>
+<tr class="row-odd"><td><p>{ 1  0 -1  1 }</p></td>
+<td><p>{ 1  0 -1 -3 }</p></td>
+<td><p>&lt; 1  0 -1 -2 &gt;</p></td>
+<td><p>&lt; 3  0 -3  2&gt;</p></td>
+<td><p>{ 1  1 -2  0 }</p></td>
 </tr>
-<tr class="row-even"><td><p>(1 1 -2 1)</p></td>
-<td><p>( 0 0  0  2)</p></td>
-<td><p>1/3[-1 -1  2  6]</p></td>
-<td><p>1/3[ 1 1 -2  0]</p></td>
-<td><p>( 1 0 -1 0)</p></td>
+<tr class="row-even"><td><p>{ 1  1 -2  1 }</p></td>
+<td><p>{ 0  0  0  2 }</p></td>
+<td><p>1/3 &lt;-1 -1  2  6 &gt;</p></td>
+<td><p>1/3 &lt; 1  1 -2  0&gt;</p></td>
+<td><p>{ 1  0 -1  0 }</p></td>
 </tr>
-<tr class="row-odd"><td><p>(1 1 -2 2)</p></td>
-<td><p>( 1 1 -2 -4)</p></td>
-<td><p>1/3[ 1  1 -2 -3]</p></td>
-<td><p>1/3[ 2 2 -4  3]</p></td>
-<td><p>( 1 0 -1 0)</p></td>
+<tr class="row-odd"><td><p>{ 1  1 -2  2 }</p></td>
+<td><p>{ 1  1 -2 -4 }</p></td>
+<td><p>1/3 &lt; 1  1 -2 -3 &gt;</p></td>
+<td><p>1/3 &lt; 2  2 -4  3&gt;</p></td>
+<td><p>{ 1  0 -1  0 }</p></td>
 </tr>
 </tbody>
 </table>
-<p>Then, each plane and direction is reset as follows.</p>
-<ul class="simple">
-<li><p>set <span class="math notranslate nohighlight">\(\boldsymbol{K}_1\)</span> and calculate <span class="math notranslate nohighlight">\(\boldsymbol{k}_1\)</span></p></li>
-<li><p>check whether condition 4. is fulfilled</p></li>
-<li><p>if not, reset <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span> to <span class="math notranslate nohighlight">\(-\boldsymbol{\eta}_2\)</span></p></li>
-<li><p>check whether condition 2. is fulfilled</p></li>
-<li><p>if not, reset <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span> to <span class="math notranslate nohighlight">\(-\boldsymbol{\eta}_1\)</span></p></li>
-<li><p>check whether condition 3. is fulfilled</p></li>
-<li><p>if not, reset <span class="math notranslate nohighlight">\(\boldsymbol{k}_2\)</span> to <span class="math notranslate nohighlight">\(-\boldsymbol{k}_2\)</span>
-and <span class="math notranslate nohighlight">\(\boldsymbol{K}_2\)</span> to <span class="math notranslate nohighlight">\(-\boldsymbol{K}_2\)</span></p></li>
-<li><p>look for the direction <span class="math notranslate nohighlight">\(\boldsymbol{m}\)</span> which fulfill condition 1.</p></li>
-</ul>
-<p>In the last step, first enumerate every equivalent plane
-with original plane <span class="math notranslate nohighlight">\(\boldsymbol{S}\)</span>.
-When <span class="math notranslate nohighlight">\(\boldsymbol{S} = (h,k,i,l)\)</span>, all candidates are
-(h, k, i, l), (h, i, k, l), (k, h, i, l),
-(k, i, h, l), (i, h, k, l), and (i, k, i, l).
-In each candidate, <span class="math notranslate nohighlight">\(\boldsymbol{m}\)</span> is calculated
-and check <span class="math notranslate nohighlight">\(\boldsymbol{m}\)</span> normal to
-<span class="math notranslate nohighlight">\(\boldsymbol{k}_1\)</span> <span class="math notranslate nohighlight">\(\boldsymbol{k}_2\)</span>
-<span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span> and <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span>.
-Then, if abstructed <span class="math notranslate nohighlight">\(\boldsymbol{m}\)</span> does not fulfill condition 4.,
-reset <span class="math notranslate nohighlight">\(\boldsymbol{m}\)</span> to <span class="math notranslate nohighlight">\(-\boldsymbol{m}\)</span>.</p>
+<p>In actual, one has to determine specific plane and direction for each twin mode.
+<a class="reference internal" href="#christian" id="id2"><span>[Christian]</span></a> proposed the method for determining them and
+<code class="docutils literal notranslate"><span class="pre">twinpy</span></code> follows this convention which is</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Vector <span class="math notranslate nohighlight">\(\boldsymbol{m}\)</span> (, which is normal to shear plane),
+<span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span> and
+<span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span> form right hand system.</p></li>
+<li><p>The angle between <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span>
+and <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span> are obtuse.</p></li>
+<li><p>The angle between <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span>
+and <span class="math notranslate nohighlight">\(\boldsymbol{k}_2\)</span> are acute.</p></li>
+<li><p>The angle between <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span>
+and <span class="math notranslate nohighlight">\(\boldsymbol{k}_1\)</span> are acute.</p></li>
+</ol>
+</div></blockquote>
+<p>In addition, <code class="docutils literal notranslate"><span class="pre">twinpy</span></code> add the following role as</p>
+<blockquote>
+<div><ol class="arabic simple" start="5">
+<li><p>K1 plane is determined to meet the condition that
+the distance from K1 plane to the nearest atoms is minimum.
+This condition depends on wyckoff position.</p></li>
+</ol>
+</div></blockquote>
+<p>In twinpy code, indices are set in order of</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><p>k1    condition 5.</p></li>
+<li><p>eta2  condition 4.</p></li>
+<li><p>eta1  condition 2.</p></li>
+<li><p>k2    condition 3.</p></li>
+<li><p>m     condition 1.</p></li>
+</ol>
+</div></blockquote>
 </div>
+<div class="section" id="references">
+<h3><a class="toc-backref" href="#id7">References</a><a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h3>
+<dl class="citation">
+<dt class="label" id="yoo"><span class="brackets"><a class="fn-backref" href="#id1">Yoo</a></span></dt>
+<dd><ol class="upperalpha simple" start="13">
+<li><ol class="upperalpha simple" start="8">
+<li><p>Yoo, MTA <strong>12</strong>, 409-418 (1981).</p></li>
+</ol>
+</li>
+</ol>
+</dd>
+<dt class="label" id="christian"><span class="brackets"><a class="fn-backref" href="#id2">Christian</a></span></dt>
+<dd><ol class="upperalpha simple" start="23">
+<li><p>Christian, et al., Progress in Progress in Materials Science. <strong>39</strong>, 1 (1995).</p></li>
+</ol>
+</dd>
+</dl>
 </div>
 </div>
 </div>

@@ -1,0 +1,530 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.structure.twinboundary &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script src="../../../_static/contentui.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within twinpy 0.0.1 documentation"
+          href="../../../_static/opensearch.xml"/>
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_guide/index.html">Developer guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.structure.twinboundary</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.structure.twinboundary</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">HexagonalStructure</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">sqrtm</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">spglib</span>
+<span class="kn">from</span> <span class="nn">phonopy.structure.atoms</span> <span class="kn">import</span> <span class="n">PhonopyAtoms</span>
+<span class="kn">from</span> <span class="nn">phonopy.structure.cells</span> <span class="kn">import</span> <span class="n">Primitive</span><span class="p">,</span> <span class="n">Supercell</span>
+<span class="kn">from</span> <span class="nn">pymatgen.core.structure</span> <span class="kn">import</span> <span class="n">Structure</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">twinpy.common.utils</span> <span class="kn">import</span> <span class="n">get_ratio</span>
+<span class="kn">from</span> <span class="nn">twinpy.properties.hexagonal</span> <span class="kn">import</span> <span class="n">get_atom_positions</span>
+<span class="kn">from</span> <span class="nn">twinpy.properties.twinmode</span> <span class="kn">import</span> <span class="n">TwinIndices</span>
+<span class="kn">from</span> <span class="nn">twinpy.lattice.lattice</span> <span class="kn">import</span> <span class="n">Lattice</span>
+<span class="kn">from</span> <span class="nn">twinpy.lattice.hexagonal_plane</span> <span class="kn">import</span> <span class="n">HexagonalPlane</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.base</span> <span class="kn">import</span> <span class="n">_BaseStructure</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.shear</span> <span class="kn">import</span> <span class="n">ShearStructure</span>
+<span class="kn">from</span> <span class="nn">twinpy.file_io</span> <span class="kn">import</span> <span class="n">write_poscar</span>
+
+<div class="viewcode-block" id="get_twinboundary"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.twinboundary.get_twinboundary">[docs]</a><span class="k">def</span> <span class="nf">get_twinboundary</span><span class="p">(</span><span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                     <span class="n">symbol</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
+                     <span class="n">twinmode</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
+                     <span class="n">wyckoff</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">,</span>
+                     <span class="n">twintype</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                     <span class="n">xshift</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                     <span class="n">yshift</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                     <span class="n">dim</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;intc&#39;</span><span class="p">),</span>
+                     <span class="n">shear_strain_ratio</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                     <span class="n">make_tb_flat</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    set shear structure object</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lattice (np.array): lattice</span>
+<span class="sd">        symbol (str): element symbol</span>
+<span class="sd">        twinmode (str): twinmode</span>
+<span class="sd">        wyckoff (str): No.194 Wycoff position (&#39;c&#39; or &#39;d&#39;)</span>
+<span class="sd">        twintype (int): twintype, choose from 1 and 2</span>
+<span class="sd">        xshift (float): x shift</span>
+<span class="sd">        yshift (float): y shift</span>
+<span class="sd">        dim (np.array): dimension</span>
+<span class="sd">        shear_strain_ratio (float): shear twinboundary ratio</span>
+<span class="sd">        make_tb_flat (bool): whether make twin boundary flat</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tb</span> <span class="o">=</span> <span class="n">TwinBoundaryStructure</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+                               <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span>
+                               <span class="n">wyckoff</span><span class="o">=</span><span class="n">wyckoff</span><span class="p">)</span>
+    <span class="n">tb</span><span class="o">.</span><span class="n">set_parent</span><span class="p">(</span><span class="n">twinmode</span><span class="p">)</span>
+    <span class="n">tb</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span>
+           <span class="n">twintype</span><span class="o">=</span><span class="n">twintype</span><span class="p">,</span>
+           <span class="n">xshift</span><span class="o">=</span><span class="n">xshift</span><span class="p">,</span>
+           <span class="n">yshift</span><span class="o">=</span><span class="n">yshift</span><span class="p">,</span>
+           <span class="n">shear_strain_ratio</span><span class="o">=</span><span class="n">shear_strain_ratio</span><span class="p">,</span>
+           <span class="n">make_tb_flat</span><span class="o">=</span><span class="n">make_tb_flat</span><span class="p">,</span>
+           <span class="p">)</span>
+    <span class="k">return</span> <span class="n">tb</span></div>
+
+<div class="viewcode-block" id="TwinBoundaryStructure"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.twinboundary.TwinBoundaryStructure">[docs]</a><span class="k">class</span> <span class="nc">TwinBoundaryStructure</span><span class="p">(</span><span class="n">_BaseStructure</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    twinboundary structure class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TwinBoundaryStructure.__init__"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.twinboundary.TwinBoundaryStructure.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+           <span class="bp">self</span><span class="p">,</span>
+           <span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+           <span class="n">symbol</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
+           <span class="n">wyckoff</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">,</span>
+        <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        initialize</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            to see detail, visit _BaseStructure class</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+                         <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span>
+                         <span class="n">wyckoff</span><span class="o">=</span><span class="n">wyckoff</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dim</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_twintype</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shear_strain_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        shear twinboundary ratio</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">twintype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        twin type</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_twintype</span>
+
+<div class="viewcode-block" id="TwinBoundaryStructure._get_dichromatic_operation"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.twinboundary.TwinBoundaryStructure._get_dichromatic_operation">[docs]</a>    <span class="k">def</span> <span class="nf">_get_dichromatic_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">twintype</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get dichromatic operation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">twintype</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                          <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                          <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="k">elif</span> <span class="n">twintype</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                          <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                          <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">]])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;twintype must be 1 or 2&quot;</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">W</span></div>
+
+<div class="viewcode-block" id="TwinBoundaryStructure._get_parent"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.twinboundary.TwinBoundaryStructure._get_parent">[docs]</a>    <span class="k">def</span> <span class="nf">_get_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zdim</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get parent</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="n">ShearStructure</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_hcp_lattice</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
+                               <span class="n">symbol</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span><span class="p">,</span>
+                               <span class="n">wyckoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_wyckoff</span><span class="p">)</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">set_parent</span><span class="p">(</span><span class="n">twinmode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_twinmode</span><span class="p">)</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">shear_strain_ratio</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                   <span class="n">dim</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">zdim</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">parent</span></div>
+
+<div class="viewcode-block" id="TwinBoundaryStructure._get_parent_lattice_points_atoms"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.twinboundary.TwinBoundaryStructure._get_parent_lattice_points_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">_get_parent_lattice_points_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_output</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get parent structure for twinboudnary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">parent_output</span><span class="p">[</span><span class="s1">&#39;lattice&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">lattice_points</span> <span class="o">=</span> <span class="n">parent_output</span><span class="p">[</span><span class="s1">&#39;lattice_points&#39;</span><span class="p">][</span><span class="s1">&#39;white&#39;</span><span class="p">]</span>
+        <span class="n">additional_points</span> <span class="o">=</span> \
+                <span class="n">lattice_points</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">lattice_points</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">)]</span> <span class="o">+</span> \
+                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">1.</span><span class="p">])</span>
+        <span class="n">lattice_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">lattice_points</span><span class="p">,</span> <span class="n">additional_points</span><span class="p">))</span>
+        <span class="n">lp_p_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">lattice_points</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">atoms_p_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+                <span class="n">M</span><span class="p">,</span> <span class="n">parent_output</span><span class="p">[</span><span class="s1">&#39;atoms_from_lattice_points&#39;</span><span class="p">][</span><span class="s1">&#39;white&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">lp_p_cart</span><span class="p">,</span> <span class="n">atoms_p_cart</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TwinBoundaryStructure._get_twin_lattice_points_atoms"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.twinboundary.TwinBoundaryStructure._get_twin_lattice_points_atoms">[docs]</a>    <span class="k">def</span> <span class="nf">_get_twin_lattice_points_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                       <span class="n">dichromatic_operation</span><span class="p">,</span>
+                                       <span class="n">rotation</span><span class="p">,</span>
+                                       <span class="n">lp_p_cart</span><span class="p">,</span>
+                                       <span class="n">atoms_p_cart</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get twin structure for twinboudnary</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="n">dichromatic_operation</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">rotation</span>
+        <span class="n">lp_t_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span>
+                          <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W</span><span class="p">,</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">R</span><span class="p">),</span>
+                                        <span class="n">lp_p_cart</span><span class="o">.</span><span class="n">T</span><span class="p">)))</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">atoms_t_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span>
+                              <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W</span><span class="p">,</span>
+                                     <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">R</span><span class="p">),</span>
+                                            <span class="n">atoms_p_cart</span><span class="o">.</span><span class="n">T</span><span class="p">)))</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">lp_t_cart</span><span class="p">,</span> <span class="n">atoms_t_cart</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TwinBoundaryStructure._get_shear_tb_lattice"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.twinboundary.TwinBoundaryStructure._get_shear_tb_lattice">[docs]</a>    <span class="k">def</span> <span class="nf">_get_shear_tb_lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                              <span class="n">tb_lattice</span><span class="p">,</span>
+                              <span class="n">shear_strain_ratio</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return shear twinboudnary lattice</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">tb_lattice</span><span class="p">)</span>
+        <span class="n">e_b</span> <span class="o">=</span> <span class="n">lat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">lat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">shear_func</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="o">.</span><span class="n">get_shear_strain_function</span><span class="p">()</span>
+        <span class="n">lat</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">lat</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="n">shear_func</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_r</span><span class="p">)</span> <span class="o">*</span> <span class="n">shear_strain_ratio</span> <span class="o">*</span> <span class="n">e_b</span>
+        <span class="k">return</span> <span class="n">lat</span></div>
+
+<div class="viewcode-block" id="TwinBoundaryStructure._get_twinboundary_structure"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.twinboundary.TwinBoundaryStructure._get_twinboundary_structure">[docs]</a>    <span class="k">def</span> <span class="nf">_get_twinboundary_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">tb_lattice</span><span class="p">,</span>
+                                    <span class="n">lp_p_cart</span><span class="p">,</span>
+                                    <span class="n">lp_t_cart</span><span class="p">,</span>
+                                    <span class="n">atoms_p_cart</span><span class="p">,</span>
+                                    <span class="n">atoms_t_cart</span><span class="p">,</span>
+                                    <span class="n">make_tb_flat</span><span class="p">,</span>
+                                    <span class="n">dim</span><span class="p">,</span>
+                                    <span class="n">xshift</span><span class="p">,</span>
+                                    <span class="n">yshift</span><span class="p">,</span>
+                                    <span class="n">shear_strain_ratio</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        return twinbounadry structure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">white_lp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">tb_lattice</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">lp_p_cart</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">%</span> <span class="mi">1</span>
+        <span class="n">black_lp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">tb_lattice</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">lp_t_cart</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">%</span> <span class="mi">1</span>
+        <span class="n">shear_tb_lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_shear_tb_lattice</span><span class="p">(</span><span class="n">tb_lattice</span><span class="p">,</span>
+                                                  <span class="n">shear_strain_ratio</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">make_tb_flat</span><span class="p">:</span>
+            <span class="n">black_tb_ix</span>  <span class="o">=</span> <span class="p">[</span> <span class="n">bl2</span> <span class="k">for</span> <span class="n">bl2</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">white_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">)</span> <span class="p">]</span>
+            <span class="n">white_tb_ix</span> <span class="o">=</span> <span class="p">[</span> <span class="n">bl1</span> <span class="ow">or</span> <span class="n">bl3</span> <span class="k">for</span> <span class="n">bl1</span><span class="p">,</span> <span class="n">bl3</span> <span class="ow">in</span> \
+                            <span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">black_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span>
+                                <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">black_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span> <span class="p">]</span>
+
+            <span class="n">white_tb_lp</span> <span class="o">=</span> <span class="n">white_lp</span><span class="p">[</span><span class="n">white_tb_ix</span><span class="p">]</span>
+            <span class="n">black_tb_lp</span> <span class="o">=</span> <span class="n">black_lp</span><span class="p">[</span><span class="n">black_tb_ix</span><span class="p">]</span>
+            <span class="n">w_ix</span>  <span class="o">=</span> <span class="p">[</span> <span class="n">bl1</span> <span class="ow">or</span> <span class="n">bl2</span> <span class="ow">or</span> <span class="n">bl3</span> <span class="k">for</span> <span class="n">bl1</span><span class="p">,</span> <span class="n">bl2</span><span class="p">,</span> <span class="n">bl3</span> <span class="ow">in</span> \
+                             <span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">white_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">white_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">),</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">white_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span> <span class="p">]</span>
+            <span class="n">b_ix</span>  <span class="o">=</span> <span class="p">[</span> <span class="n">bl1</span> <span class="ow">or</span> <span class="n">bl2</span> <span class="ow">or</span> <span class="n">bl3</span> <span class="k">for</span> <span class="n">bl1</span><span class="p">,</span> <span class="n">bl2</span><span class="p">,</span> <span class="n">bl3</span> <span class="ow">in</span> \
+                             <span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">black_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">black_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">),</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">black_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span> <span class="p">]</span>
+            <span class="n">white_lp</span> <span class="o">=</span> <span class="n">white_lp</span><span class="p">[[</span> <span class="ow">not</span> <span class="n">bl</span> <span class="k">for</span> <span class="n">bl</span> <span class="ow">in</span> <span class="n">w_ix</span> <span class="p">]]</span>
+            <span class="n">black_lp</span> <span class="o">=</span> <span class="n">black_lp</span><span class="p">[[</span> <span class="ow">not</span> <span class="n">bl</span> <span class="k">for</span> <span class="n">bl</span> <span class="ow">in</span> <span class="n">b_ix</span> <span class="p">]]</span>
+
+            <span class="c1"># atoms from lattice points</span>
+            <span class="n">white_atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">tb_lattice</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
+                                 <span class="n">atoms_p_cart</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">black_atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">tb_lattice</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>
+                                 <span class="n">atoms_t_cart</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">atms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">white_atoms</span><span class="p">)</span>
+            <span class="n">white_tb_atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">white_atoms</span><span class="p">[:,:</span><span class="mi">2</span><span class="p">],</span>
+                                        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">atms</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">atms</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+            <span class="n">black_tb_atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">black_atoms</span><span class="p">[:,:</span><span class="mi">2</span><span class="p">],</span>
+                                        <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">atms</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">atms</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+            <span class="n">nlp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">white_lp</span><span class="p">)</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">black_lp</span><span class="p">)</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">white_tb_lp</span><span class="p">)</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">black_tb_lp</span><span class="p">)</span>
+            <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span><span class="p">]</span> <span class="o">*</span> <span class="n">nlp</span> \
+                                     <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atoms_from_lattice_points</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;lattice&#39;</span><span class="p">:</span> <span class="n">shear_tb_lat</span><span class="p">,</span>
+                    <span class="s1">&#39;lattice_points&#39;</span><span class="p">:</span> <span class="p">{</span>
+                         <span class="s1">&#39;white&#39;</span><span class="p">:</span> <span class="n">white_lp</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                       <span class="n">yshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                       <span class="mf">0.</span><span class="p">]),</span>
+                         <span class="s1">&#39;white_tb&#39;</span><span class="p">:</span> <span class="n">white_tb_lp</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                             <span class="n">yshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                             <span class="mf">0.</span><span class="p">]),</span>
+                         <span class="s1">&#39;black&#39;</span><span class="p">:</span> <span class="n">black_lp</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">xshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                       <span class="o">-</span><span class="n">yshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                       <span class="mf">0.</span><span class="p">]),</span>
+                         <span class="s1">&#39;black_tb&#39;</span><span class="p">:</span> <span class="n">black_tb_lp</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">xshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                             <span class="o">-</span><span class="n">yshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                             <span class="mf">0.</span><span class="p">]),</span>
+                                      <span class="p">},</span>
+                    <span class="s1">&#39;atoms_from_lattice_points&#39;</span><span class="p">:</span> <span class="p">{</span>
+                         <span class="s1">&#39;white&#39;</span><span class="p">:</span> <span class="n">white_atoms</span><span class="p">,</span>
+                         <span class="s1">&#39;white_tb&#39;</span><span class="p">:</span> <span class="n">white_tb_atoms</span><span class="p">,</span>
+                         <span class="s1">&#39;black&#39;</span><span class="p">:</span> <span class="n">black_atoms</span><span class="p">,</span>
+                         <span class="s1">&#39;black_tb&#39;</span><span class="p">:</span> <span class="n">black_tb_atoms</span><span class="p">,</span>
+                                                 <span class="p">},</span>
+                    <span class="s1">&#39;symbols&#39;</span><span class="p">:</span> <span class="n">symbols</span><span class="p">}</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">grey_ix</span>  <span class="o">=</span> <span class="p">[</span> <span class="n">bl2</span> <span class="k">for</span> <span class="n">bl2</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">white_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">)</span> <span class="p">]</span>
+            <span class="n">grey_ix_</span> <span class="o">=</span> <span class="p">[</span> <span class="n">bl1</span> <span class="ow">or</span> <span class="n">bl3</span> <span class="k">for</span> <span class="n">bl1</span><span class="p">,</span> <span class="n">bl3</span> <span class="ow">in</span> \
+                             <span class="nb">zip</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">black_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">black_lp</span><span class="p">[:,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span> <span class="p">]</span>
+
+            <span class="n">white_lp</span> <span class="o">=</span> <span class="n">white_lp</span><span class="p">[[</span> <span class="ow">not</span> <span class="n">bl</span> <span class="k">for</span> <span class="n">bl</span> <span class="ow">in</span> <span class="n">grey_ix</span> <span class="p">]]</span>
+            <span class="n">black_lp</span> <span class="o">=</span> <span class="n">black_lp</span><span class="p">[[</span> <span class="ow">not</span> <span class="n">bl</span> <span class="k">for</span> <span class="n">bl</span> <span class="ow">in</span> <span class="n">grey_ix_</span> <span class="p">]]</span>
+            <span class="n">white_atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">tb_lattice</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">atoms_p_cart</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">black_atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">tb_lattice</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">atoms_t_cart</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_symbol</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">white_lp</span><span class="p">)</span><span class="o">+</span><span class="nb">len</span><span class="p">(</span><span class="n">black_lp</span><span class="p">))</span> \
+                                     <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_atoms_from_lattice_points</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;lattice&#39;</span><span class="p">:</span> <span class="n">shear_tb_lat</span><span class="p">,</span>
+                    <span class="s1">&#39;lattice_points&#39;</span><span class="p">:</span> <span class="p">{</span>
+                         <span class="s1">&#39;white&#39;</span><span class="p">:</span> <span class="n">white_lp</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">xshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                       <span class="bp">self</span><span class="o">.</span><span class="n">_yshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                       <span class="mf">0.</span><span class="p">]),</span>
+                         <span class="s1">&#39;black&#39;</span><span class="p">:</span> <span class="n">black_lp</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="n">xshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                       <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">_yshift</span><span class="o">/</span><span class="p">(</span><span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">),</span>
+                                                       <span class="mf">0.</span><span class="p">]),</span>
+                                      <span class="p">},</span>
+                    <span class="s1">&#39;atoms_from_lattice_points&#39;</span><span class="p">:</span> <span class="p">{</span>
+                         <span class="s1">&#39;white&#39;</span><span class="p">:</span> <span class="n">white_atoms</span><span class="p">,</span>
+                         <span class="s1">&#39;black&#39;</span><span class="p">:</span> <span class="n">black_atoms</span><span class="p">,</span>
+                                                 <span class="p">},</span>
+                    <span class="s1">&#39;symbols&#39;</span><span class="p">:</span> <span class="n">symbols</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="TwinBoundaryStructure.run"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.twinboundary.TwinBoundaryStructure.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">dim</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;intc&#39;</span><span class="p">),</span>
+            <span class="n">twintype</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">xshift</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+            <span class="n">yshift</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+            <span class="n">shear_strain_ratio</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+            <span class="n">make_tb_flat</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        build structure</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            the structure built is set self.output_structure</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="o">.</span><span class="n">get_indices</span><span class="p">()</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_parent</span><span class="p">(</span><span class="n">zdim</span><span class="o">=</span><span class="n">dim</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">lp_p_cart</span><span class="p">,</span> <span class="n">atoms_p_cart</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_parent_lattice_points_atoms</span><span class="p">(</span>
+                        <span class="n">parent_output</span><span class="o">=</span><span class="n">parent</span><span class="o">.</span><span class="n">get_output_stucture</span><span class="p">())</span>
+        <span class="n">W</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_dichromatic_operation</span><span class="p">(</span><span class="n">twintype</span><span class="o">=</span><span class="n">twintype</span><span class="p">)</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+                <span class="n">indices</span><span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="n">indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="n">indices</span><span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                <span class="p">])</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">lp_t_cart</span><span class="p">,</span> <span class="n">atoms_t_cart</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_twin_lattice_points_atoms</span><span class="p">(</span>
+                        <span class="n">dichromatic_operation</span><span class="o">=</span><span class="n">W</span><span class="p">,</span>
+                        <span class="n">rotation</span><span class="o">=</span><span class="n">R</span><span class="p">,</span>
+                        <span class="n">lp_p_cart</span><span class="o">=</span><span class="n">lp_p_cart</span><span class="p">,</span>
+                        <span class="n">atoms_p_cart</span><span class="o">=</span><span class="n">atoms_p_cart</span><span class="p">,</span>
+                        <span class="p">)</span>
+        <span class="n">tb_c</span> <span class="o">=</span> <span class="n">lp_p_cart</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">lp_t_cart</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">tb_lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">parent</span><span class="o">.</span><span class="n">output_structure</span><span class="p">[</span><span class="s1">&#39;lattice&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
+                               <span class="n">parent</span><span class="o">.</span><span class="n">output_structure</span><span class="p">[</span><span class="s1">&#39;lattice&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+                               <span class="n">tb_c</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_structure</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_get_twinboundary_structure</span><span class="p">(</span>
+                        <span class="n">tb_lattice</span><span class="o">=</span><span class="n">tb_lattice</span><span class="p">,</span>
+                        <span class="n">lp_p_cart</span><span class="o">=</span><span class="n">lp_p_cart</span><span class="p">,</span>
+                        <span class="n">lp_t_cart</span><span class="o">=</span><span class="n">lp_t_cart</span><span class="p">,</span>
+                        <span class="n">atoms_p_cart</span><span class="o">=</span><span class="n">atoms_p_cart</span><span class="p">,</span>
+                        <span class="n">atoms_t_cart</span><span class="o">=</span><span class="n">atoms_t_cart</span><span class="p">,</span>
+                        <span class="n">make_tb_flat</span><span class="o">=</span><span class="n">make_tb_flat</span><span class="p">,</span>
+                        <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">,</span>
+                        <span class="n">xshift</span><span class="o">=</span><span class="n">xshift</span><span class="p">,</span>
+                        <span class="n">yshift</span><span class="o">=</span><span class="n">yshift</span><span class="p">,</span>
+                        <span class="n">shear_strain_ratio</span><span class="o">=</span><span class="n">shear_strain_ratio</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_natoms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_structure</span><span class="p">[</span><span class="s1">&#39;symbols&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dim</span> <span class="o">=</span> <span class="n">dim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_twintype</span> <span class="o">=</span> <span class="n">twintype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xshift</span> <span class="o">=</span> <span class="n">xshift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_yshift</span> <span class="o">=</span> <span class="n">yshift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_strain_ratio</span> <span class="o">=</span> <span class="n">shear_strain_ratio</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

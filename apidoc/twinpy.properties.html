@@ -109,6 +109,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy.api_twinpy">twinpy.api_twinpy module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy.file_io">twinpy.file_io module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy">Module contents</a></li>
 </ul>
@@ -206,6 +207,201 @@
 <div class="section" id="module-twinpy.properties.twinmode">
 <span id="twinpy-properties-twinmode-module"></span><h2>twinpy.properties.twinmode module<a class="headerlink" href="#module-twinpy.properties.twinmode" title="Permalink to this headline">¶</a></h2>
 <p>provide properties of twin modes</p>
+<dl class="class">
+<dt id="twinpy.properties.twinmode.TwinIndices">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.properties.twinmode.</code><code class="sig-name descname">TwinIndices</code><span class="sig-paren">(</span><em class="sig-param">lattice: twinpy.lattice.lattice.Lattice</em>, <em class="sig-param">twinmode: str</em>, <em class="sig-param">wyckoff: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>deals with twin indices</p>
+<blockquote>
+<div><dl class="attribute">
+<dt id="twinpy.properties.twinmode.TwinIndices.att1">
+<code class="sig-name descname">att1</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.att1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional comment string.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.properties.twinmode.TwinIndices.att2">
+<code class="sig-name descname">att2</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.att2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional comment string.</p>
+</dd></dl>
+
+</div></blockquote>
+<dl class="attribute">
+<dt id="twinpy.properties.twinmode.TwinIndices.__dict__">
+<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.properties.twinmode', '__doc__': '\n    deals with twin indices\n\n       .. attribute:: att1\n\n          Optional comment string.\n\n\n       .. attribute:: att2\n\n          Optional comment string.\n\n    ', '__init__': &lt;function TwinIndices.__init__&gt;, 'lattice': &lt;property object&gt;, 'twinmode': &lt;property object&gt;, 'wyckoff': &lt;property object&gt;, 'indices_Yoo': &lt;property object&gt;, 'indices': &lt;property object&gt;, 'get_indices': &lt;function TwinIndices.get_indices&gt;, '_get_indices_Yoo': &lt;function TwinIndices._get_indices_Yoo&gt;, '_set_K1': &lt;function TwinIndices._set_K1&gt;, '_set_k1_k2': &lt;function TwinIndices._set_k1_k2&gt;, '_reset_indices': &lt;function TwinIndices._reset_indices&gt;, '_set_shear_plane': &lt;function TwinIndices._set_shear_plane&gt;, 'get_supercell_matrix_for_parent': &lt;function TwinIndices.get_supercell_matrix_for_parent&gt;, 'get_shear_strain_function': &lt;function TwinIndices.get_shear_strain_function&gt;, '__dict__': &lt;attribute '__dict__' of 'TwinIndices' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'TwinIndices' objects&gt;})</em><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">lattice: twinpy.lattice.lattice.Lattice</em>, <em class="sig-param">twinmode: str</em>, <em class="sig-param">wyckoff: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>get twin indices of input twinmode
+twinmode must be ‘10-11’, ‘10-12’, ‘11-21’ or ‘11-22’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>twinmode</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – currently supported                             ‘10-11’, ‘10-12’, ‘11-22’ and ‘11-21’</p></li>
+<li><p><strong>lattice</strong> (<a class="reference internal" href="twinpy.lattice.html#twinpy.lattice.lattice.Lattice" title="twinpy.lattice.lattice.Lattice"><em>Lattice</em></a>) – lattice</p></li>
+<li><p><strong>wyckoff</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – wyckoff letter, ‘c’ or ‘d’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>twin indices</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/2.7/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You can find customs how to set the four indices
+in the paper ‘DEFORMATION TWINNING’ by Christian (1995).
+Abstruct is as bellow</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>Vector m normal to shear plane,
+eta1 and eta2 form right hand system.</p></li>
+<li><p>The angle between eta1 and eta2 are abtuse.</p></li>
+<li><p>The angle between eta1 and k2 are acute.</p></li>
+<li><p>The angle between eta2 and k1 are acute.
+Additional rule:</p></li>
+<li><p>K1 plane depends on wyckoff ‘c’ or ‘d’
+because in the case of {10-12}, either (10-12) or (-1012)
+is chosen based on which plane are nearer to the neighbor
+atoms</p></li>
+</ol>
+</div></blockquote>
+<p>In this algorithm, indices are set in order of</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li><p>k1    condition(5)</p></li>
+<li><p>eta2  condition(4)</p></li>
+<li><p>eta1  condition(2)</p></li>
+<li><p>k2    condition(3)</p></li>
+<li><p>m     condition(1)</p></li>
+</ol>
+</div></blockquote>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.properties.twinmode.TwinIndices.__module__">
+<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.properties.twinmode'</em><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.properties.twinmode.TwinIndices.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices._get_indices_Yoo">
+<code class="sig-name descname">_get_indices_Yoo</code><span class="sig-paren">(</span><em class="sig-param">lattice</em>, <em class="sig-param">twinmode</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._get_indices_Yoo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._get_indices_Yoo" title="Permalink to this definition">¶</a></dt>
+<dd><p>get specific twinmode indices which are found in Yoo’s paper</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices._reset_indices">
+<code class="sig-name descname">_reset_indices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._reset_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._reset_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>reset indices</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>conditions are as bellow</p>
+<ul class="simple">
+<li><p>if the angle between k1 and eta2 is obtuse, eta2 -&gt; -eta2</p></li>
+<li><p>if the angle between eta1 and eta2 is acute, eta1 -&gt; -eta1</p></li>
+<li><p>if the angle between eta1 and k2 is obtuse, k2 -&gt; -k2</p></li>
+<li><p>check k1 is orthogonal to eta1</p></li>
+<li><p>check k2 is orthogonal to eta2</p></li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices._set_K1">
+<code class="sig-name descname">_set_K1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._set_K1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._set_K1" title="Permalink to this definition">¶</a></dt>
+<dd><p>set K1</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>There are two candidates for K1 plane.
+One is the K1 plane (defimed as (hkil) plane)
+which is found in Yoo’s paper, and
+the other is (-h-k-il) plane.
+The plane which has shorter dictance from nearest atoms
+is set as K1 plane.
+If (-h-k-il) is determined, every other planes and directions
+are fixed by multiplied (-1, -1, -1, 1).</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices._set_k1_k2">
+<code class="sig-name descname">_set_k1_k2</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._set_k1_k2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._set_k1_k2" title="Permalink to this definition">¶</a></dt>
+<dd><p>set k1 and k2</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices._set_shear_plane">
+<code class="sig-name descname">_set_shear_plane</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._set_shear_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._set_shear_plane" title="Permalink to this definition">¶</a></dt>
+<dd><p>set shear plane</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>set shear plane which fulfill the following conditions
+from six candidates
+((hkil), (hikl), (khil), (kihl), (ihkl), (ikhl)).</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices.get_indices">
+<code class="sig-name descname">get_indices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices.get_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.get_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>get indices</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices.get_shear_strain_function">
+<code class="sig-name descname">get_shear_strain_function</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices.get_shear_strain_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.get_shear_strain_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>get shear strain function</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices.get_supercell_matrix_for_parent">
+<code class="sig-name descname">get_supercell_matrix_for_parent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices.get_supercell_matrix_for_parent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.get_supercell_matrix_for_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>get supercell matrix for creating parent matrix</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>create lattice basis with integerized m, eta1 and eta2</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices.indices">
+<em class="property">property </em><code class="sig-name descname">indices</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.indices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices.indices_Yoo">
+<em class="property">property </em><code class="sig-name descname">indices_Yoo</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.indices_Yoo" title="Permalink to this definition">¶</a></dt>
+<dd><p>indices Yoo showed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices.lattice">
+<em class="property">property </em><code class="sig-name descname">lattice</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.lattice" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices.twinmode">
+<em class="property">property </em><code class="sig-name descname">twinmode</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.twinmode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.properties.twinmode.TwinIndices.wyckoff">
+<em class="property">property </em><code class="sig-name descname">wyckoff</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.wyckoff" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="twinpy.properties.twinmode.check_supported_twinmode">
 <code class="sig-prename descclassname">twinpy.properties.twinmode.</code><code class="sig-name descname">check_supported_twinmode</code><span class="sig-paren">(</span><em class="sig-param">twinmode</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#check_supported_twinmode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.check_supported_twinmode" title="Permalink to this definition">¶</a></dt>
@@ -244,47 +440,9 @@
 </dd></dl>
 
 <dl class="function">
-<dt id="twinpy.properties.twinmode.get_twin_indices">
-<code class="sig-prename descclassname">twinpy.properties.twinmode.</code><code class="sig-name descname">get_twin_indices</code><span class="sig-paren">(</span><em class="sig-param">twinmode: str</em>, <em class="sig-param">lattice: twinpy.lattice.lattice.Lattice</em>, <em class="sig-param">wyckoff: str</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#get_twin_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.get_twin_indices" title="Permalink to this definition">¶</a></dt>
-<dd><p>get twin indices of input twinmode
-twinmode must be ‘10-11’, ‘10-12’, ‘11-21’ or ‘11-22’</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>twinmode</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – currently supported                         ‘10-11’, ‘10-12’, ‘11-22’ and ‘11-21’</p></li>
-<li><p><strong>lattice</strong> – lattice</p></li>
-<li><p><strong>wyckoff</strong> – wyckoff letter, ‘c’ or ‘d’</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>twin indices</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/2.7/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>You can find customs how to set the four indices
-in the paper ‘DEFORMATION TWINNING’ by Christian (1995).
-Abstruct is as bellow:
-(1) Vector m normal to shear plane,
-eta1 and eta2 form right hand system.
-(2) The angle between eta1 and eta2 are abtuse.
-(3) The angle between eta1 and k2 are acute.
-(4) The angle between eta2 and k1 are acute.
-Additional rule:
-(5) K1 plane depends on wyckoff ‘c’ or ‘d’
-because in the case of {10-12}, either (10-12) or (-1012)
-is choosed based on which plane are nearer to the neighbor
-atoms</p>
-<p>in this algorithm, indices are set in order of:
-=&gt; k1    condition(5)
-=&gt; eta2  condition(4)
-=&gt; eta1  condition(2)
-=&gt; k2    condition(3)
-=&gt; m     condition(1)</p>
-</div>
+<dt id="twinpy.properties.twinmode.get_twin_indices_by_Yoo">
+<code class="sig-prename descclassname">twinpy.properties.twinmode.</code><code class="sig-name descname">get_twin_indices_by_Yoo</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#get_twin_indices_by_Yoo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.get_twin_indices_by_Yoo" title="Permalink to this definition">¶</a></dt>
+<dd><p>get twin indices Yoo showed in his paper</p>
 </dd></dl>
 
 </div>

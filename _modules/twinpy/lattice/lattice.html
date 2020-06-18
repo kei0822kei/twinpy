@@ -202,6 +202,26 @@
                        <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">a</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">c</span><span class="p">]])</span><span class="o">.</span><span class="n">T</span>
     <span class="k">return</span> <span class="n">lattice</span></div>
 
+<div class="viewcode-block" id="get_hexagonal_lattice_from_a_c"><a class="viewcode-back" href="../../../apidoc/twinpy.lattice.html#twinpy.lattice.lattice.get_hexagonal_lattice_from_a_c">[docs]</a><span class="k">def</span> <span class="nf">get_hexagonal_lattice_from_a_c</span><span class="p">(</span><span class="n">a</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+                                   <span class="n">c</span><span class="p">:</span><span class="nb">float</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get hexagonal lattice from a and c axes</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a (str): the norm of a axis</span>
+<span class="sd">        c (str): the norm of c axis</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array: hexagonal lattice</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: either a or c is negative value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">,</span> <span class="s2">&quot;input &#39;a&#39; and &#39;c&#39; must be positive value&quot;</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.</span><span class="p">,</span>           <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                        <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                        <span class="p">[</span>  <span class="mf">0.</span><span class="p">,</span>           <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">lattice</span></div>
 
 <div class="viewcode-block" id="Lattice"><a class="viewcode-back" href="../../../apidoc/twinpy.lattice.html#twinpy.lattice.lattice.Lattice">[docs]</a><span class="k">class</span> <span class="nc">Lattice</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -356,7 +376,14 @@
             <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">except</span> <span class="ne">AssertionError</span><span class="p">:</span>
             <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">return</span> <span class="n">flag</span></div></div>
+        <span class="k">return</span> <span class="n">flag</span></div>
+
+<div class="viewcode-block" id="Lattice.get_abc"><a class="viewcode-back" href="../../../apidoc/twinpy.lattice.html#twinpy.lattice.lattice.Lattice.get_abc">[docs]</a>    <span class="k">def</span> <span class="nf">get_abc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        get norms of each axis</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">abc</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">abc</span></div></div>
 </pre></div>
 
            </div>
