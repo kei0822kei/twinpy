@@ -174,6 +174,14 @@ def get_phonopy_structure(cell,
                                       symprec=symprec)
             return primitive
 
+def get_cell_from_phonopy_structure(ph_structure):
+    """
+    get cell from phonopy structure
+    """
+    lattice = ph_structure.get_cell()
+    scaled_positions = ph_structure.get_scaled_positions()
+    symbols = ph_structure.get_chemical_symbols()
+    return (lattice, scaled_positions, symbols)
 
 class _BaseStructure():
     """
