@@ -7,7 +7,7 @@ aiida interface
 import numpy as np
 from twinpy.structure.base import get_phonopy_structure
 from twinpy.api_twinpy import get_twinpy_from_cell
-from twinpy.analysis.shear import ShearAnalizer
+from twinpy.analysis.shear_analyzer import ShearAnalizer
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
 from aiida.orm import load_node, Node, QueryBuilder
@@ -228,7 +228,8 @@ class ShearWorkChain():
                 dim=[1,1,1],
                 shear_strain_ratio=ratio,
                 )
-            orig_cells.append(twinpy.shear.get_structure_for_export())
+            # orig_cells.append(twinpy.shear.get_structure_for_export())
+            orig_cells.append(twinpy.shear.get_base_primitive_cell(ratio))
         return orig_cells
 
     def get_analyzer(self):

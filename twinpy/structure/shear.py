@@ -51,6 +51,7 @@ def get_shear(lattice:np.array,
               yshift=yshift)
     return shear
 
+
 class ShearStructure(_BaseStructure):
     """
     shear structure class
@@ -133,6 +134,23 @@ class ShearStructure(_BaseStructure):
         shear_matrix = np.eye(3)
         shear_matrix[1,2] = s
         return shear_matrix
+
+    def get_base_primitive_cell(self, ratio):
+        """
+        get base primitive cells
+        """
+        H = self.hexagonal_lattice.lattice.T
+        M = self._indices.get_supercell_matrix_for_parent()
+        S = self.get_shear_matrix(ratio=ratio)
+        shear_prim_lat = np.dot(np.dot(H, M),
+                                np.dot(S, np.linalg.inv(M))).T
+        # print(shear_prim_lat)
+        # print(np.dot(np.dot(M, S), np.linalg.inv(M)))
+        # print(Lattice(shear_prim_lat).norms)
+        scaled_positions = self._atoms_from_lattice_points % 1.
+        symbols = [self._symbol] * len(scaled_positions)
+        cell = (shear_prim_lat, scaled_positions, symbols)
+        return cell
 
     def get_shear_properties(self) -> dict:
         """

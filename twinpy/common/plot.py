@@ -9,6 +9,7 @@ provide various kinds of plot
 
 import numpy as np
 from copy import deepcopy
+import spglib
 from matplotlib import pyplot as plt
 import mpl_toolkits.axes_grid1
 from phonopy.phonon.band_structure import BandPlot as PhonopyBandPlot
@@ -16,6 +17,7 @@ from phonopy.phonon.dos import TotalDos as PhonopyTotalDos
 from phonopy.phonon.band_structure import get_band_qpoints_and_path_connections
 from mpl_toolkits.axes_grid1 import ImageGrid
 import matplotlib.cm as cm
+from twinpy.structure.base import get_cell_from_phonopy_structure
 
 
 # plt.rcParams["font.size"] = 18
@@ -311,6 +313,7 @@ class BandsPlot(PhonopyBandPlot):
     def __init__(self,
                  fig,
                  phonons,
+                 orig_cells,
                  band_labels=None,
                  segment_qpoints=None,
                  is_auto=False,
@@ -327,6 +330,7 @@ class BandsPlot(PhonopyBandPlot):
         self.connections = None
         self.axes = None
         self.mesh = mesh
+        self.orig_cells = orig_cells
         self.with_dos = with_dos
         self.npoints = npoints
         self._run_band(band_labels,
@@ -374,47 +378,84 @@ class BandsPlot(PhonopyBandPlot):
                       self.phonons[0].band_structure.get_frequencies(),
                       self.phonons[0].band_structure.get_distances())
 
+    def _get_spg_dataset(self, orig_cell, ph_atoms):
+        """
+        orig_cell: original input cell
+        ph_atoms: primitive cell stored in phonon object
+        """
+        def __get_orig_cell_for_spg(orig_cell):
+            orig_cell = list(orig_cell)
+            orig_cell[2] = ph_atoms.get_atomic_numbers()
+            return tuple(orig_cell)
+        ph_cell = get_cell_from_phonopy_structure(ph_atoms)
+        orig_cell = __get_orig_cell_for_spg(orig_cell)
+        dataset = spglib.get_symmetry_dataset(orig_cell)
+        prim_cell = spglib.find_primitive(orig_cell)
+        # np.testing.assert_allclose(prim_cell[i], ph_cell[i], atol=1e-8)
+        np.testing.assert_allclose(prim_cell[0], ph_cell[0], atol=1e-8)
+        return dataset
+
     def _run_band(self,
                   band_labels,
                   segment_qpoints,
                   is_auto,
                   npoints):
         for i, phonon in enumerate(self.phonons):
+            dataset = self._get_spg_dataset(
+                    self.orig_cells[i],
+                    phonon.get_primitive())
+            P = dataset['transformation_matrix']
+            std_lattice_before_idealization = np.dot(
+                np.transpose(self.orig_cells[i][0]),
+                np.linalg.inv(P)).T
+            R = np.dot(dataset['std_lattice'].T,
+                       np.linalg.inv(std_lattice_before_idealization.T))
             if i == 0:
                 _run_band_calc(phonon=phonon,
                                band_labels=band_labels,
                                segment_qpoints=segment_qpoints,
                                is_auto=is_auto,
                                npoints=npoints)
-                base_primitive_matrix = phonon.get_primitive_matrix()
+                base_primitive_lattice = phonon.get_primitive().get_cell()
                 qpt = phonon.band_structure.qpoints
                 con = phonon.band_structure.path_connections
-                segment_qpoints = []
+                path_qpoints = []
                 l = []
-                for i in range(len(qpt)):
-                    if con[i]:
-                        l.append(qpt[i][0])
+                for j in range(len(qpt)):
+                    if con[j]:
+                        l.append(qpt[j][0])
                     else:
-                        l.extend([qpt[i][0], qpt[i][-1]])
-                        segment_qpoints.append(np.array(l))
+                        l.extend([qpt[j][0], qpt[j][-1]])
+                        path_qpoints.append(np.array(l))
                         l = []
-                self.segment_qpoints = segment_qpoints
+
+                orig_path_qpoints_cart = []
+                for seg_path_qpoints in path_qpoints:
+                    seg_path_qpoints_cart = np.dot(base_primitive_lattice.T,
+                                                   seg_path_qpoints.T).T
+                    orig_seg_path_qpoints_cart = \
+                            np.dot(np.dot(np.linalg.inv(R), np.linalg.inv(P)),
+                                   seg_path_qpoints_cart.T).T
+                    orig_path_qpoints_cart.append(orig_seg_path_qpoints_cart)
 
             else:
-                primitive_matrix = phonon.get_primitive_matrix()
-                fixed_segment_qpoints = []
-                for segment in self.segment_qpoints:
-                    fixed_segment = \
-                            np.dot(primitive_matrix.T,
-                                   np.dot(np.linalg.inv(base_primitive_matrix.T),
-                                          segment.T)).T
-                    fixed_segment_qpoints.append(fixed_segment)
-                fixed_segment_qpoints = np.array(fixed_segment_qpoints)
+                fixed_path_qpoints = []
+                for orig_seg_path_qpoints_cart in orig_path_qpoints_cart:
+                    path_qpoints_cart = \
+                        np.dot(np.dot(P, R),
+                               orig_seg_path_qpoints_cart.T).T
+                    primitive_lattice = phonon.get_primitive().get_cell()
+                    fixed_seg_path_qpoints = \
+                        np.dot(np.linalg.inv(primitive_lattice.T),
+                               path_qpoints_cart.T).T
+                    fixed_path_qpoints.append(fixed_seg_path_qpoints)
+                fixed_path_qpoints = np.array(fixed_path_qpoints)
                 _run_band_calc(phonon=phonon,
                                band_labels=self.phonons[0].band_structure.labels,
-                               segment_qpoints=fixed_segment_qpoints,
+                               segment_qpoints=fixed_path_qpoints,
                                is_auto=False,
                                npoints=npoints)
+
 
         if is_auto:
             self.band_labels = self.phonons[0].band_structure.labels
@@ -541,35 +582,9 @@ def _run_band_calc(phonon,
                                   is_legacy_plot=False)
         phonon.write_yaml_band_structure()
 
-def band_plot(fig,
-              phonon,
-              with_dos=False,
-              mesh=None,
-              band_labels=None,
-              segment_qpoints=None,
-              is_auto=False,
-              c='r',
-              alpha=1.,
-              linewidth=1.,
-              linestyle='solid',
-              ):
-    bands_plot(fig,
-               [phonon],
-               with_dos=with_dos,
-               mesh=mesh,
-               band_labels=band_labels,
-               segment_qpoints=segment_qpoints,
-               is_auto=is_auto,
-               xscale=20,
-               cs=[c],
-               alphas=[alpha],
-               linewidths=[linewidth],
-               linestyles=[linestyle],
-               labels=None,
-               )
-
 def bands_plot(fig,
                phonons,
+               orig_cells,
                with_dos=False,
                mesh=None,
                band_labels=None,
@@ -585,6 +600,7 @@ def bands_plot(fig,
                ):
     bp = BandsPlot(fig,
                    phonons,
+                   orig_cells=orig_cells,
                    with_dos=with_dos,
                    mesh=mesh,
                    band_labels=band_labels,

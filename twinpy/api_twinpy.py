@@ -10,6 +10,7 @@ from twinpy.lattice.lattice import Lattice
 from twinpy.structure.base import is_hcp
 from twinpy.structure.shear import get_shear
 from twinpy.structure.twinboundary import get_twinboundary
+from twinpy.file_io import write_poscar
 
 def get_twinpy_from_cell(cell:tuple,
                          twinmode:str):
@@ -183,6 +184,24 @@ class Twinpy():
         self._shear_structure_is_not_set()
         self._shear.write_poscar(filename=filename,
                                  get_lattice=True)
+
+    def write_shear_structure(self,
+                              structure_type='base',
+                              filename:str='shear_structure.poscar'):
+        """
+        create shear lattice poscar file
+
+        Args:
+            filename (str): POSCAR filename
+        """
+        self._shear_structure_is_not_set()
+        ph_structure = self._shear.get_phonopy_structure(
+                structure_type=structure_type)
+        lattice = ph_structure.get_cell()
+        scaled_positions = ph_structure.get_scaled_positions()
+        symbols = ph_structure.get_chemical_symbols()
+        cell = (lattice, scaled_positions, symbols)
+        write_poscar(filename=filename, *cell)
 
     def write_twinboundary_lattice(
             self, filename:str='twinboundary_lattice.poscar'):

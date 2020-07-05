@@ -17,7 +17,8 @@ class ShearAnalizer():
     analize shear result
 
        .. attribute:: att1
-Optional comment string.
+
+          Optional comment string.
 
 
        .. attribute:: att2
@@ -36,13 +37,13 @@ Optional comment string.
         """
         Args:
             structure_type (str): 'base', 'primitive' or 'conventional'
-            orig_cells (list): original cells, orig_cells=(cell1, cell2, ...)
+            orig_cells (list): (primitivie) original cells,
+                                orig_cells=(cell1, cell2, ...)
             input_cells (list): input cells for vasp
         """
         if structure_type == 'conventional':
             warnings.warn("structure_type = 'conventional' \
                            may occur some errors")
-
         structures = [ get_phonopy_structure(cell=cell,
                                              structure_type=structure_type,
                                              symprec=symprec)
@@ -156,8 +157,10 @@ Optional comment string.
         cs, alphas, linewidths, linestyles = \
                 get_plot_properties_from_trajectory(
                         plot_nums=len(self._phonons))
+        # orig_lattices = [ cell[0] for cell in self._original_cells ]
         bands_plot(fig=fig,
                    phonons=self._phonons,
+                   orig_cells=self._original_cells,
                    with_dos=with_dos,
                    mesh=mesh,
                    band_labels=band_labels,

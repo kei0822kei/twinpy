@@ -8,7 +8,7 @@ HexagonalStructure
 import numpy as np
 from scipy.linalg import sqrtm
 import spglib
-from phonopy.structure.atoms import PhonopyAtoms
+from phonopy.structure.atoms import PhonopyAtoms, symbol_map
 from phonopy.structure.cells import Primitive, Supercell
 from pymatgen.core.structure import Structure
 from typing import Sequence, Union
@@ -18,6 +18,20 @@ from twinpy.properties.twinmode import TwinIndices
 from twinpy.lattice.lattice import Lattice
 from twinpy.lattice.hexagonal_plane import HexagonalPlane
 from twinpy.file_io import write_poscar
+
+def get_atomic_numbers(symbols):
+    """
+    get atomic numbers from symbols
+    """
+    numbers = [ symbol_map[symbol] for symbol in symbols ]
+    return numbers
+
+def get_chemical_symbols(numbers):
+    """
+    get chemical symbols from atomic numbers
+    """
+    symbols = [ symbol_map.keys()[num] for num in numbers ]
+    return symbols
 
 def is_hcp(lattice:np.array,
            symbols:Sequence[str],
@@ -114,6 +128,31 @@ def get_lattice_points_from_supercell(lattice, dim) -> np.array:
                               supercell_matrix=reshape_dimension(dim))
     lattice_points = super_lattice.scaled_positions
     return lattice_points
+
+def get_original_to_primitive_cell_info(orig_cell, prim_cell):
+    """
+    get original to primitive cell information
+
+    Args:
+        orig_cell: original cell
+        prim_cell: primitive cell
+    """
+    M = orig_cell[0].T
+    M_r = spglib.delaunay_reduce(orig_cell[0]).T
+    # print(M)
+    # print(M_r)
+    # W_c = np.dot(M_r, np.linalg.inv(M))
+    # W_c = np.dot(np.linalg.inv(M_r), orig_cell[0].T)
+    # W_c = np.dot(np.linalg.inv(M_r), M)
+    # W_c = np.dot(M_r, np.linalg.inv(M))
+    W_c = np.dot(M, np.linalg.inv(M_r))
+    print(W_c)
+    M_r_bar = prim_cell[0].T
+    prim_posi = np.dot(np.dot(np.linalg.inv(M_r_bar), W_c),
+                       np.dot(M, orig_cell[1].T)).T % 1
+    np.testing.assert_allclose(prim_posi, prim_cell[1])
+    # return {'reduction': M_f,
+    #         'cartesian_rotation': R}
 
 def reshape_dimension(dim):
     """
