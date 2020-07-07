@@ -18,20 +18,7 @@ from twinpy.properties.twinmode import TwinIndices
 from twinpy.lattice.lattice import Lattice
 from twinpy.lattice.hexagonal_plane import HexagonalPlane
 from twinpy.file_io import write_poscar
-
-def get_atomic_numbers(symbols):
-    """
-    get atomic numbers from symbols
-    """
-    numbers = [ symbol_map[symbol] for symbol in symbols ]
-    return numbers
-
-def get_chemical_symbols(numbers):
-    """
-    get chemical symbols from atomic numbers
-    """
-    symbols = [ symbol_map.keys()[num] for num in numbers ]
-    return symbols
+from twinpy.structure.standardize import StandardizeCell
 
 def is_hcp(lattice:np.array,
            symbols:Sequence[str],
@@ -129,31 +116,6 @@ def get_lattice_points_from_supercell(lattice, dim) -> np.array:
     lattice_points = super_lattice.scaled_positions
     return lattice_points
 
-def get_original_to_primitive_cell_info(orig_cell, prim_cell):
-    """
-    get original to primitive cell information
-
-    Args:
-        orig_cell: original cell
-        prim_cell: primitive cell
-    """
-    M = orig_cell[0].T
-    M_r = spglib.delaunay_reduce(orig_cell[0]).T
-    # print(M)
-    # print(M_r)
-    # W_c = np.dot(M_r, np.linalg.inv(M))
-    # W_c = np.dot(np.linalg.inv(M_r), orig_cell[0].T)
-    # W_c = np.dot(np.linalg.inv(M_r), M)
-    # W_c = np.dot(M_r, np.linalg.inv(M))
-    W_c = np.dot(M, np.linalg.inv(M_r))
-    print(W_c)
-    M_r_bar = prim_cell[0].T
-    prim_posi = np.dot(np.dot(np.linalg.inv(M_r_bar), W_c),
-                       np.dot(M, orig_cell[1].T)).T % 1
-    np.testing.assert_allclose(prim_posi, prim_cell[1])
-    # return {'reduction': M_f,
-    #         'cartesian_rotation': R}
-
 def reshape_dimension(dim):
     """
     if dim.shape == (3,), reshape to (3,3) numpy array
@@ -184,34 +146,20 @@ def get_phonopy_structure(cell,
         msg = "structure_type must be 'base', 'primitive' or 'conventional'"
         raise RuntimeError(msg)
 
-    lattice, scaled_positions, symbols = cell
-    bravais = PhonopyAtoms(
-                  cell=lattice,
-                  scaled_positions=scaled_positions,
-                  symbols=symbols)
-    Z = bravais.get_atomic_numbers()
+    fixed_cell = None
     if structure_type == 'base':
-        return bravais
-
+        fixed_cell = cell
     else:
-        from spglib import refine_cell
-        conv_lattice, conv_scaled_positions, conv_Z = \
-                refine_cell(cell=(lattice, scaled_positions, Z),
-                            symprec=symprec)
-        conv_bravais = PhonopyAtoms(cell=conv_lattice,
-                                    scaled_positions=conv_scaled_positions,
-                                    numbers=conv_Z)
-        if structure_type == 'conventional':
-            return conv_bravais
+        if structure_type == 'primitive':
+            to_primitive = True
         else:
-            from phonopy.structure.cells import (guess_primitive_matrix,
-                                                 get_primitive)
-            trans_mat = guess_primitive_matrix(conv_bravais,
-                                               symprec=symprec)
-            primitive = get_primitive(conv_bravais,
-                                      trans_mat,
-                                      symprec=symprec)
-            return primitive
+            to_primitive = False
+        std = StandardizeCell(cell)
+        fixed_cell = std.get_standardized_cell(to_primitive=to_primitive)
+    ph_structure = PhonopyAtoms(cell=fixed_cell[0],
+                                scaled_positions=fixed_cell[1],
+                                symbols=fixed_cell[2])
+    return ph_structure
 
 def get_cell_from_phonopy_structure(ph_structure):
     """

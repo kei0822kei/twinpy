@@ -8,16 +8,33 @@ Symmetry Analyzer
 import numpy as np
 import spglib
 from phonopy.structure.atoms import symbol_map
-from twinpy.structure.base import get_atomic_numbers
+
+def get_atomic_numbers(symbols):
+    """
+    get atomic numbers from symbols
+    """
+    numbers = [ symbol_map[symbol] for symbol in symbols ]
+    return numbers
+
+def get_chemical_symbols(numbers):
+    """
+    get chemical symbols from atomic numbers
+    """
+    symbols = [ symbol_map.keys()[num] for num in numbers ]
+    return symbols
 
 def get_conventional_to_primitive_matrix(centering:str):
     """
     get conventional to primitive matrix, P_c
 
     Args:
-        centering (str): choose from 'A', 'C', 'R', 'I' and 'F'
+        centering (str): choose from  'P', 'A', 'C', 'R', 'I' and 'F'
     """
-    if centering == 'A':
+    if centering == 'P':
+        P_c = np.array([[ 1. ,  0. ,  0.  ],
+                        [ 0. ,  1. ,  0.  ],
+                        [ 0. ,  0. ,  1.  ]])
+    elif centering == 'A':
         P_c = np.array([[ 1. ,  0. ,  0.  ],
                         [ 0. ,  0.5, -0.5 ],
                         [ 0. ,  0.5,  0.5 ]])
@@ -38,11 +55,12 @@ def get_conventional_to_primitive_matrix(centering:str):
                         [ 0.5,  0. ,  0.5 ],
                         [ 0.5,  0.5,  0.  ]])
     else:
+        print(centering)
         raise RuntimeError("irrigal centering specified")
     return P_c
 
 
-class SymmetryAnalyzer():
+class StandardizeCell():
     """
     symmetry analyzer
 
@@ -78,11 +96,39 @@ class SymmetryAnalyzer():
         self._check_spg_output()
 
     @property
+    def cell(self):
+        """
+        cell
+        """
+        return self._cell
+
+    @property
+    def origin_shift(self):
+        """
+        origin shift, p
+        """
+        return self._origin_shift
+
+    @property
     def rotation_matrix(self):
         """
         rotation matrix
         """
         return self._rotation_matrix
+
+    @property
+    def transformation_matrix(self):
+        """
+        transformation matrix, P
+        """
+        return self._transformation_matrix
+
+    @property
+    def conventional_to_primitive_matrix(self):
+        """
+        conventional to primitive matrix, P_c
+        """
+        return self._conv_to_prim_matrix
 
     def _check_spg_output(self):
         """
@@ -117,14 +163,17 @@ class SymmetryAnalyzer():
 
         def __check_atom_positions(P, p, P_c, x, x_s, x_p):
             # check x_s = P x + p
-            x_s_ = np.dot(P, np.transpose(x)).T + p
+            x_s_ = (np.dot(P, np.transpose(x)).T + p) % 1
             for i in range(len(x_s_)):
-                assert x_s_[i] in x_s, \
+                # assert x_s_[i] in x_s, \
+                assert np.round(x_s_[i], decimals=8) \
+                       in np.round(x_s, decimals=8), \
                        "x_s != Px+p, check script"
             # check x_p = P_c^{-1} x_s
-            x_p_ = np.dot(np.linalg.inv(P_c), np.transpose(x_s)).T
+            x_p_ = (np.dot(np.linalg.inv(P_c), np.transpose(x_s)).T) % 1
             for i in range(len(x_p_)):
-                assert x_p_[i] in x_p, \
+                assert np.round(x_p_[i], decimals=8) \
+                       in np.round(x_p, decimals=8), \
                        'x_p != P_c^{-1} x_s, check script'
 
 

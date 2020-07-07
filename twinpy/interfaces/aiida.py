@@ -7,7 +7,7 @@ aiida interface
 import numpy as np
 from twinpy.structure.base import get_phonopy_structure
 from twinpy.api_twinpy import get_twinpy_from_cell
-from twinpy.analysis.shear_analyzer import ShearAnalizer
+from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
 from aiida.orm import load_node, Node, QueryBuilder
@@ -234,7 +234,7 @@ class ShearWorkChain():
 
     def get_analyzer(self):
         """
-        get ShearAnalizer class object
+        get ShearAnalyzer class object
         """
         relax_pks = self._get_pks(workflow='relax')
         phonon_pks = self._get_pks(workflow='phonopy')
@@ -247,10 +247,10 @@ class ShearWorkChain():
         phonons = [
             PhonopyWorkChain(phonon_pk).get_phonon()
             for phonon_pk in phonon_pks ]
-        analyzer = ShearAnalizer(
+        analyzer = ShearAnalyzer(
             structure_type=self._shear_conf['structure_type'],
             orig_cells=self._get_original_cells(),
             input_cells=input_cells)
-        analyzer.set_relax_output_structures(relax_cells)
+        analyzer.set_relax_cells(relax_cells)
         analyzer.set_phonons(phonons)
         return analyzer
