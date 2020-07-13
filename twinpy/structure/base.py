@@ -372,14 +372,14 @@ class _BaseStructure():
                      symbols=symbols,
                      filename=filename)
 
-    def get_phonopy_structure(self, structure_type:str='base', symprec:float=1e-5):
-        """
-        return phonopy structure
+    # def get_phonopy_structure(self, structure_type:str='base', symprec:float=1e-5):
+    #     """
+    #     return phonopy structure
 
-        Args:
-            structure_type (str): 'base', 'primitive' or 'conventional'
-            symprec (float): used when searching conventional unitcell
-        """
-        cell = self.get_structure_for_export(get_lattice=False)
-        ph_structure = get_phonopy_structure(cell, structure_type, symprec)
-        return ph_structure
+    #     Args:
+    #         structure_type (str): 'base', 'primitive' or 'conventional'
+    #         symprec (float): used when searching conventional unitcell
+    #     """
+    #     cell = self.get_structure_for_export(get_lattice=False)
+    #     ph_structure = get_phonopy_structure(cell, structure_type, symprec)
+    #     return ph_structure

@@ -7,7 +7,8 @@ Symmetry Analyzer
 
 import numpy as np
 import spglib
-from phonopy.structure.atoms import symbol_map
+from phonopy.structure.atoms import symbol_map, atom_data
+from phonopy.interface.vasp import sort_positions_by_symbols
 
 def get_atomic_numbers(symbols):
     """
@@ -20,7 +21,7 @@ def get_chemical_symbols(numbers):
     """
     get chemical symbols from atomic numbers
     """
-    symbols = [ symbol_map.keys()[num] for num in numbers ]
+    symbols = [ atom_data[num][0] for num in numbers ]
     return symbols
 
 def get_conventional_to_primitive_matrix(centering:str):
@@ -208,7 +209,9 @@ class StandardizeCell():
     def get_standardized_cell(self,
                               to_primitive:bool,
                               no_idealize:bool,
-                              symprec:float=1.e-5):
+                              symprec:float=1.e-5,
+                              no_sort:bool=False,
+                              get_sort_list:list=False):
         """
         get stadandardized cell
 
@@ -219,7 +222,25 @@ class StandardizeCell():
                                 False => rotate crystal body
             symprec (float): symmetry tolerance, for more detail
                              see spglib documentation
+            no_sort (bool): does not change atoms order
+            get_sort_list (bool): When no_sort=True, return sort list
         """
-        return spglib.standardize_cell(self._cell_for_spglib,
-                                       to_primitive=to_primitive,
-                                       no_idealize=no_idealize)
+        std_cell =  spglib.standardize_cell(self._cell_for_spglib,
+                                            to_primitive=to_primitive,
+                                            no_idealize=no_idealize)
+        if no_sort:
+            return std_cell
+        else:
+            num_atoms, unique_symbols, scaled_positions, sort_list = \
+                sort_positions_by_symbols(
+                        symbols=get_chemical_symbols(std_cell[2]),
+                        positions=std_cell[1])
+            symbols = []
+            for num, symbol in zip(num_atoms, unique_symbols):
+                symbols.extend([symbol] * num)
+
+            sort_std_cell = (std_cell[0], scaled_positions, symbols)
+            if get_sort_list:
+                return (sort_std_cell, sort_list)
+            else:
+                return sort_std_cell

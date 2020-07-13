@@ -61,6 +61,7 @@ class ShearStructure(_BaseStructure):
            self,
            lattice:np.array,
            symbol:str,
+           ratio:float,
            wyckoff:str='c',
         ):
         """
@@ -73,7 +74,7 @@ class ShearStructure(_BaseStructure):
                          symbol=symbol,
                          wyckoff=wyckoff)
         self._dim = None
-        self._shear_strain_ratio = None
+        self._shear_strain_ratio = ratio
 
     @property
     def dim(self):
@@ -89,12 +90,6 @@ class ShearStructure(_BaseStructure):
         """
         return self._shear_strain_ratio
 
-    def set_shear_strain_ratio(self, ratio):
-        """
-        set shear ratio
-        """
-        self._shear_strain_ratio = ratio
-
     def get_gamma(self):
         """
         get gamma
@@ -107,13 +102,11 @@ class ShearStructure(_BaseStructure):
         gamma = shear_strain_function(self._r)
         return gamma
 
-    def get_shear_value(self, ratio:float=1.):
+    def get_shear_value(self):
         """
         get shear value
-
-        Args:
-            ratio (float): shear strain ratio
         """
+        ratio = self._shear_strain_ratio
         plane = HexagonalPlane(lattice=self._hexagonal_lattice.lattice,
                                four=self._indices.indices['K1'].four)
         d = plane.get_distance_from_plane(self._indices.indices['eta2'].three)
@@ -123,30 +116,26 @@ class ShearStructure(_BaseStructure):
         s = ratio * gamma * d / norm_eta1
         return s
 
-    def get_shear_matrix(self, ratio:float=1.):
+    def get_shear_matrix(self):
         """
         get shear matrix
-
-        Args:
-            ratio (float): shear strain ratio
         """
+        ratio = self._shear_strain_ratio
         s = self.get_shear_value(ratio=ratio)
         shear_matrix = np.eye(3)
         shear_matrix[1,2] = s
         return shear_matrix
 
-    def get_base_primitive_cell(self, ratio):
+    def get_base_primitive_cell(self):
         """
         get base primitive cells
         """
+        ratio = self._shear_strain_ratio
         H = self.hexagonal_lattice.lattice.T
         M = self._indices.get_supercell_matrix_for_parent()
         S = self.get_shear_matrix(ratio=ratio)
         shear_prim_lat = np.dot(np.dot(H, M),
                                 np.dot(S, np.linalg.inv(M))).T
-        # print(shear_prim_lat)
-        # print(np.dot(np.dot(M, S), np.linalg.inv(M)))
-        # print(Lattice(shear_prim_lat).norms)
         scaled_positions = self._atoms_from_lattice_points % 1.
         symbols = [self._symbol] * len(scaled_positions)
         cell = (shear_prim_lat, scaled_positions, symbols)
@@ -168,6 +157,9 @@ class ShearStructure(_BaseStructure):
             - spatial stretch tensor (V)
             - rotation (R)
             for more detail and definition, see documentation
+
+        Todo:
+            FUTURE EDITED
         """
         H = self.hexagonal_lattice.lattice.T
         M = self._parent_matrix
@@ -200,7 +192,6 @@ class ShearStructure(_BaseStructure):
                }
 
     def run(self,
-            shear_strain_ratio,
             dim=np.ones(3, dtype='intc'),
             xshift=0.,
             yshift=0.):
@@ -210,9 +201,11 @@ class ShearStructure(_BaseStructure):
         Note:
             the built structure is set to self.output_structure
         """
+        ratio = self._shear_strain_ratio
         if type(dim) is list:
             dim = np.array(dim, dtype='intc')
-        shear_matrix = self.get_shear_matrix(shear_strain_ratio)
+
+        shear_matrix = self.get_shear_matrix(ratio)
         parent_matrix = self._indices.get_supercell_matrix_for_parent()
         supercell_matrix = parent_matrix * dim
         unit_lattice = PhonopyAtoms(symbols=['H'],
@@ -240,8 +233,6 @@ class ShearStructure(_BaseStructure):
                          'white': atoms_from_lattice_points},
                      'symbols': symbols}
         self._output_structure = structure
-        self._natoms = len(self._output_structure['symbols'])
-        self._shear_strain_ratio = shear_strain_ratio
         self._dim = dim
         self._xshift = xshift
         self._yshift = yshift
