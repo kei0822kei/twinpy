@@ -179,6 +179,7 @@ class _BaseStructure():
            self,
            lattice:np.array,
            symbol:str,
+           twinmode:str,
            wyckoff:str='c',
         ):
         """
@@ -209,6 +210,7 @@ class _BaseStructure():
         self._natoms = 2
         self._twinmode = None
         self._indices = None
+        self._set_twinmode(twinmode=twinmode)
         self._xshift = None
         self._yshift = None
         self._output_structure = \
@@ -218,6 +220,23 @@ class _BaseStructure():
                  'atoms_from_lattice_points': {
                      'white': self._atoms_from_lattice_points},
                  'symbols': [self._symbol] * 2}
+
+    def _set_twinmode(self, twinmode:str):
+        """
+        set parent
+
+        Args:
+            twinmode (str): twinmode
+
+        Note:
+            set attribute 'twinmode'
+            set attribute 'indices'
+        """
+        self._twinmode = twinmode
+        self._indices = TwinIndices(twinmode=self._twinmode,
+                                    lattice=self._hexagonal_lattice,
+                                    wyckoff=self._wyckoff)
+
 
     @property
     def r(self):
@@ -303,30 +322,19 @@ class _BaseStructure():
         """
         return self._output_structure
 
-    def get_output_stucture(self):
+    def get_structure_for_export(self,
+                                 get_lattice=False,
+                                 move_atoms_into_unitcell=True):
         """
-        get output structure
-        """
-        return self.output_structure
-
-    def set_parent(self, twinmode:str):
-        """
-        set parent
+        get structure for export
 
         Args:
-            twinmode (str): twinmode
+            get_lattice (str): get lattice points not crystal structure
+            move_atoms_into_unitcell (bool): if True, move atoms to unitcell
 
-        Note:
-            set attribute 'indices'
-            set attribute 'parent_matrix'
-            set attribute 'shear_function'
+        Returns:
+            tuple: output cell
         """
-        self._twinmode = twinmode
-        self._indices = TwinIndices(twinmode=self._twinmode,
-                                    lattice=self._hexagonal_lattice,
-                                    wyckoff=self._wyckoff)
-
-    def get_structure_for_export(self, get_lattice=False):
         _dummy = {'white': 'H', 'white_tb': 'H',
                   'black': 'He', 'black_tb': 'He', 'grey': 'Li'}
         scaled_positions = []
@@ -343,22 +351,62 @@ class _BaseStructure():
                     self._output_structure['lattice_points'][color],
                     self._output_structure['atoms_from_lattice_points'][color])
                 scaled_positions.extend(posi.tolist())
+            scaled_positions = np.array(scaled_positions)
+
+            if move_atoms_into_unitcell:
+                scaled_positions = scaled_positions % 1.
+
             symbols = self._output_structure['symbols']
         return (self._output_structure['lattice'],
-                np.array(scaled_positions),
+                scaled_positions,
                 symbols)
 
-    def get_pymatgen_structure(self, get_lattice=False):
+    # def get_output_stucture(self):
+    #     """
+    #     get output structure
+    #     """
+    #     return self.output_structure
+
+    # def get_structure_for_export(self, get_lattice=False):
+    #     _dummy = {'white': 'H', 'white_tb': 'H',
+    #               'black': 'He', 'black_tb': 'He', 'grey': 'Li'}
+    #     scaled_positions = []
+    #     if get_lattice:
+    #         symbols = []
+    #         for color in self._output_structure['lattice_points']:
+    #             posi = self._output_structure['lattice_points'][color]
+    #             sym = [_dummy[color]] * len(posi)
+    #             scaled_positions.extend(posi.tolist())
+    #             symbols.extend(sym)
+    #     else:
+    #         for color in self._output_structure['lattice_points']:
+    #             posi = get_atom_positions_from_lattice_points(
+    #                 self._output_structure['lattice_points'][color],
+    #                 self._output_structure['atoms_from_lattice_points'][color])
+    #             scaled_positions.extend(posi.tolist())
+    #         symbols = self._output_structure['symbols']
+    #     return (self._output_structure['lattice'],
+    #             np.array(scaled_positions),
+    #             symbols)
+
+    def get_pymatgen_structure(self,
+                               get_lattice=False,
+                               move_atoms_into_unitcell=True):
         """
         get pymatgen structure
         """
         lattice, scaled_positions, species = \
-                self.get_structure_for_export(get_lattice)
+                self.get_structure_for_export(
+                        get_lattice=get_lattice,
+                        move_atoms_into_unitcell=move_atoms_into_unitcell)
         return Structure(lattice=lattice,
                          coords=scaled_positions,
                          species=species)
 
-    def write_poscar(self, filename:str='POSCAR', get_lattice=False):
+    def write_poscar(self,
+                     filename:str='POSCAR',
+                     get_lattice=False,
+                     move_atoms_into_unitcell=True):
         """
         write poscar
 
@@ -366,7 +414,9 @@ class _BaseStructure():
             filename (str): output filename
         """
         lattice, scaled_positions, symbols = \
-                self.get_structure_for_export(get_lattice)
+                self.get_structure_for_export(
+                        get_lattice=get_lattice,
+                        move_atoms_into_unitcell=move_atoms_into_unitcell)
         write_poscar(lattice=lattice,
                      scaled_positions=scaled_positions,
                      symbols=symbols,

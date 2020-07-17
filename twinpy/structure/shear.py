@@ -13,13 +13,14 @@ from phonopy.structure.cells import Primitive, Supercell
 from pymatgen.core.structure import Structure
 from typing import Sequence, Union
 from twinpy.common.utils import get_ratio
-from twinpy.properties.hexagonal import get_atom_positions
 from twinpy.properties.twinmode import TwinIndices
 from twinpy.lattice.lattice import Lattice
 from twinpy.lattice.hexagonal_plane import HexagonalPlane
 from twinpy.file_io import write_poscar
 from twinpy.structure.base import (get_lattice_points_from_supercell,
+                                   get_atom_positions_from_lattice_points,
                                    _BaseStructure)
+
 
 def get_shear(lattice:np.array,
               symbol:str,
@@ -62,6 +63,7 @@ class ShearStructure(_BaseStructure):
            lattice:np.array,
            symbol:str,
            ratio:float,
+           twinmode:str,
            wyckoff:str='c',
         ):
         """
@@ -72,9 +74,11 @@ class ShearStructure(_BaseStructure):
         """
         super().__init__(lattice=lattice,
                          symbol=symbol,
+                         twinmode=twinmode,
                          wyckoff=wyckoff)
         self._dim = None
         self._shear_strain_ratio = ratio
+        self._output_structure_primitive = None
 
     @property
     def dim(self):
@@ -89,6 +93,14 @@ class ShearStructure(_BaseStructure):
         shear strain ratio
         """
         return self._shear_strain_ratio
+
+    @property
+    def output_structure_primitive(self):
+        """
+        built structure primitive basis
+        not standardized
+        """
+        return self._output_structure
 
     def get_gamma(self):
         """
@@ -121,7 +133,7 @@ class ShearStructure(_BaseStructure):
         get shear matrix
         """
         ratio = self._shear_strain_ratio
-        s = self.get_shear_value(ratio=ratio)
+        s = self.get_shear_value()
         shear_matrix = np.eye(3)
         shear_matrix[1,2] = s
         return shear_matrix
@@ -191,6 +203,27 @@ class ShearStructure(_BaseStructure):
                  'rotation':R,
                }
 
+    def get_shear_lattice(self,
+                          dim=np.ones(3, dtype='intc'),
+                          xshift=0.,
+                          yshift=0.):
+        """
+        get shear lattice
+        """
+        shear_matrix = self.get_shear_matrix()
+        parent_matrix = self._indices.get_supercell_matrix_for_parent()
+        supercell_matrix = parent_matrix * dim
+        shear_lattice = \
+            np.dot(self._hexagonal_lattice.lattice.T,
+                   np.dot(supercell_matrix,
+                          shear_matrix)).T
+        lattice_points = get_lattice_points_from_supercell(
+                lattice=self._hexagonal_lattice.lattice,
+                dim=supercell_matrix)
+        lattice_points += np.array([xshift, yshift, 0]) / np.array(dim)
+        symbols = ['white'] * len(lattice_points)
+        return (shear_lattice, lattice_points, symbols)
+
     def run(self,
             dim=np.ones(3, dtype='intc'),
             xshift=0.,
@@ -205,34 +238,66 @@ class ShearStructure(_BaseStructure):
         if type(dim) is list:
             dim = np.array(dim, dtype='intc')
 
-        shear_matrix = self.get_shear_matrix(ratio)
-        parent_matrix = self._indices.get_supercell_matrix_for_parent()
-        supercell_matrix = parent_matrix * dim
-        unit_lattice = PhonopyAtoms(symbols=['H'],
-                cell=self._hexagonal_lattice.lattice,
-                scaled_positions=np.array([[xshift,yshift,0]]))
-        super_lattice = Supercell(unitcell=unit_lattice,
-                                  supercell_matrix=supercell_matrix)
-        lattice_points = get_lattice_points_from_supercell(
-                lattice=self._hexagonal_lattice.lattice,
-                dim=supercell_matrix)
-        shear_lattice = \
-            np.dot(self._hexagonal_lattice.lattice.T,
-                   np.dot(supercell_matrix,
-                          shear_matrix)).T
-        atoms_from_lattice_points = np.dot(
-                np.linalg.inv(supercell_matrix),
-                self._atoms_from_lattice_points.T,
-                ).T
+        shear_lattice, lattice_points, _ = \
+                self.get_shear_lattice(dim=dim,
+                                       xshift=xshift,
+                                       yshift=yshift)
+        lattice_points = np.round(lattice_points, decimals=8) % 1
         symbols = [self._symbol] * len(lattice_points) \
                                  * len(self._atoms_from_lattice_points)
         structure = {'lattice': shear_lattice,
                      'lattice_points': {
                          'white': lattice_points},
                      'atoms_from_lattice_points': {
-                         'white': atoms_from_lattice_points},
+                         'white': self._atoms_from_lattice_points},
                      'symbols': symbols}
         self._output_structure = structure
         self._dim = dim
         self._xshift = xshift
         self._yshift = yshift
+
+    # def _set_primitive_output_structure(structure, supercell_matrix):
+    #     prim_lat = np.dot(structure['lattice'].T,
+    #                       np.linalg.inv(supercell_matrix)).T
+    #     prim_lat_points = 
+
+
+    # def get_structure_for_export(self,
+    #                              get_lattice=False,
+    #                              move_atoms_into_unitcell=True):
+    #     """
+    #     get structure for export
+
+    #     Args:
+    #         get_lattice (str): get lattice points not crystal structure
+    #         move_atoms_into_unitcell (bool): if True, move atoms to unitcell
+
+    #     Returns:
+    #         tuple: output cell
+    #     """
+    #     _dummy = {'white': 'H', 'white_tb': 'H',
+    #               'black': 'He', 'black_tb': 'He', 'grey': 'Li'}
+    #     scaled_positions = []
+    #     if get_lattice:
+    #         symbols = []
+    #         for color in self._output_structure['lattice_points']:
+    #             posi = self._output_structure['lattice_points'][color]
+    #             sym = [_dummy[color]] * len(posi)
+    #             scaled_positions.extend(posi.tolist())
+    #             symbols.extend(sym)
+    #     else:
+    #         for color in self._output_structure['lattice_points']:
+    #             posi = get_atom_positions_from_lattice_points(
+    #                 self._output_structure['lattice_points'][color],
+    #                 self._output_structure['atoms_from_lattice_points'][color])
+    #             scaled_positions.extend(posi.tolist())
+    #             scaled_positions = np.array(scaled_positions)
+
+    #         if move_atoms_into_unitcell:
+    #             scaled_positions = scaled_positions % 1.
+
+    #         symbols = self._output_structure['symbols']
+    #     return (self._output_structure['lattice'],
+    #             scaled_positions,
+    #             symbols)
+

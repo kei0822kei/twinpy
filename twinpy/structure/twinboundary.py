@@ -70,6 +70,8 @@ class TwinBoundaryStructure(_BaseStructure):
            self,
            lattice:np.array,
            symbol:str,
+           twinmode:str,
+           twintype:int,
            wyckoff:str='c',
         ):
         """
@@ -80,10 +82,31 @@ class TwinBoundaryStructure(_BaseStructure):
         """
         super().__init__(lattice=lattice,
                          symbol=symbol,
+                         twinmode=twinmode,
                          wyckoff=wyckoff)
         self._dim = np.ones(3, dtype=int)
         self._shear_strain_ratio = None
-        self._twintype = None
+        self._twintype = twintype
+        self._rotation_matrix = None
+        self._set_rotation_matrix()
+        self._dichromatic_operation = None
+        self._set_dichromatic_operation()
+
+    def _set_rotation_matrix(self):
+        indices = self._indices.get_indices()
+        rotation_matrix = np.array([
+                indices['m'].get_cartesian(normalize=True),
+                indices['eta1'].get_cartesian(normalize=True),
+                indices['k1'].get_cartesian(normalize=True),
+                ])
+        self._rotation_matrix = rotation_matrix
+
+    @property
+    def rotation_matrix(self):
+        """
+        rotation matrix
+        """
+        return self._rotation_matrix
 
     @property
     def shear_strain_ratio(self):
@@ -99,10 +122,11 @@ class TwinBoundaryStructure(_BaseStructure):
         """
         return self._twintype
 
-    def _get_dichromatic_operation(self, twintype):
+    def _set_dichromatic_operation(self):
         """
         get dichromatic operation
         """
+        twintype = self._twintype
         if twintype == 1:
             W = np.array([[ 1, 0, 0],
                           [ 0, 1, 0],
@@ -114,171 +138,69 @@ class TwinBoundaryStructure(_BaseStructure):
         else:
             msg = "twintype must be 1 or 2"
             raise RuntimeError(msg)
-        return W
+        self._dichromatic_operation = W
 
-    def _get_parent(self, zdim):
+    @property
+    def dichromatic_operation(self):
+        """
+        rotation matrix
+        """
+        return self._dichromatic_operation
+
+    def _get_parent_structure(self, dim):
         """
         get parent
         """
         parent = ShearStructure(lattice=self._hcp_lattice.lattice,
-                               symbol=self._symbol,
-                               wyckoff=self._wyckoff)
-        parent.set_parent(twinmode=self._twinmode)
-        parent.run(shear_strain_ratio=0.,
-                   dim=(1,1,zdim))
-        return parent
+                                symbol=self._symbol,
+                                ratio=0.,
+                                twinmode=self._twinmode,
+                                wyckoff=self._wyckoff)
+        parent.run(dim=dim)
+        output_structure = parent.output_structure
+        return output_structure
 
-    def _get_parent_lattice_points_atoms(self, parent_output):
+    def get_twinboudnary_lattice(self, dim=np.ones(3, dtype='intc')):
         """
-        get parent structure for twinboudnary
+        return twinboundary lattice
         """
-        M = parent_output['lattice'].T
-        lattice_points = parent_output['lattice_points']['white']
-        additional_points = \
-                lattice_points[np.isclose(lattice_points[:,2], 0)] + \
-                    np.array([0.,0.,1.])
-        lattice_points = np.vstack((lattice_points, additional_points))
-        lp_p_cart = np.dot(M, lattice_points.T).T
-        atoms_p_cart = np.dot(
-                M, parent_output['atoms_from_lattice_points']['white'].T).T
-        return (lp_p_cart, atoms_p_cart)
+        multi_dim = np.array(dim) * np.array([1,1,2])
+        p_orig_structure = self._get_parent_structure(dim=multi_dim)
+        p_frame = np.dot(self._rotation_matrix,
+                         p_orig_structure['lattice'].T).T
+        p_cart_points = np.dot(p_frame.T,
+                               p_orig_structure['lattice_points']['white'].T).T
+        t_frame = np.dot(self._dichromatic_operation,
+                         p_frame.T).T
+        t_cart_points = np.dot(self._dichromatic_operation,
+                               p_cart_points.T).T
+        tb_frame = np.array([
+            p_frame[0],
+            p_frame[1],
+            (p_frame[2] - t_frame[2]) / 2
+            ])
 
-    def _get_twin_lattice_points_atoms(self,
-                                       dichromatic_operation,
-                                       rotation,
-                                       lp_p_cart,
-                                       atoms_p_cart):
-        """
-        get twin structure for twinboudnary
-        """
-        W = dichromatic_operation
-        R = rotation
-        lp_t_cart = np.dot(R,
-                          np.dot(W,
-                                 np.dot(np.linalg.inv(R),
-                                        lp_p_cart.T))).T
-        atoms_t_cart = np.dot(R,
-                              np.dot(W,
-                                     np.dot(np.linalg.inv(R),
-                                            atoms_p_cart.T))).T
-        return (lp_t_cart, atoms_t_cart)
+        p_frac_points = np.dot(np.linalg.inv(tb_frame.T),
+                               p_cart_points.T).T
+        p_frac_points = np.round(p_frac_points, decimals=8) % 1.
+        t_frac_points = np.dot(np.linalg.inv(tb_frame.T),
+                               t_cart_points.T).T
+        t_frac_points = np.round(t_frac_points, decimals=8) % 1.
 
-    def _get_shear_tb_lattice(self,
-                              tb_lattice,
-                              shear_strain_ratio):
-        """
-        return shear twinboudnary lattice
-        """
-        lat = deepcopy(tb_lattice)
-        e_b = lat[1] / np.linalg.norm(lat[1])
-        shear_func = self._indices.get_shear_strain_function()
-        lat[2] += np.linalg.norm(lat[2]) * shear_func(self._r) * shear_strain_ratio * e_b
-        return lat
+        p_ix = np.where(p_frac_points[:,2]<0.5)[0]
+        t_ix = np.where(t_frac_points[:,2]>=0.5)[0]
+        scaled_positions = np.vstack([p_frac_points[p_ix],
+                                      t_frac_points[t_ix]])
 
-    def _get_twinboundary_structure(self,
-                                    tb_lattice,
-                                    lp_p_cart,
-                                    lp_t_cart,
-                                    atoms_p_cart,
-                                    atoms_t_cart,
-                                    make_tb_flat,
-                                    dim,
-                                    xshift,
-                                    yshift,
-                                    shear_strain_ratio):
-        """
-        return twinbounadry structure
-        """
-        white_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_p_cart.T).T % 1
-        black_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_t_cart.T).T % 1
-        shear_tb_lat = self._get_shear_tb_lattice(tb_lattice,
-                                                  shear_strain_ratio)
+        num = len(p_ix)
+        symbols = ['white'] * num + ['black'] * num
 
-        if make_tb_flat:
-            black_tb_ix  = [ bl2 for bl2 in np.isclose(white_lp[:,2], 0.5) ]
-            white_tb_ix = [ bl1 or bl3 for bl1, bl3 in \
-                            zip(np.isclose(black_lp[:,2], 0),
-                                np.isclose(black_lp[:,2], 1)) ]
+        return (tb_frame, scaled_positions, symbols)
 
-            white_tb_lp = white_lp[white_tb_ix]
-            black_tb_lp = black_lp[black_tb_ix]
-            w_ix  = [ bl1 or bl2 or bl3 for bl1, bl2, bl3 in \
-                             zip(np.isclose(white_lp[:,2], 0),
-                                 np.isclose(white_lp[:,2], 0.5),
-                                 np.isclose(white_lp[:,2], 1)) ]
-            b_ix  = [ bl1 or bl2 or bl3 for bl1, bl2, bl3 in \
-                             zip(np.isclose(black_lp[:,2], 0),
-                                 np.isclose(black_lp[:,2], 0.5),
-                                 np.isclose(black_lp[:,2], 1)) ]
-            white_lp = white_lp[[ not bl for bl in w_ix ]]
-            black_lp = black_lp[[ not bl for bl in b_ix ]]
 
-            # atoms from lattice points
-            white_atoms = np.dot(np.linalg.inv(tb_lattice.T),
-                                 atoms_p_cart.T).T
-            black_atoms = np.dot(np.linalg.inv(tb_lattice.T),
-                                 atoms_t_cart.T).T
-            atms = len(white_atoms)
-            white_tb_atoms = np.hstack((white_atoms[:,:2],
-                                        np.zeros(atms).reshape(atms,1)))
-            black_tb_atoms = np.hstack((black_atoms[:,:2],
-                                        np.zeros(atms).reshape(atms,1)))
-            nlp = len(white_lp)+len(black_lp)+len(white_tb_lp)+len(black_tb_lp)
-            symbols = [self._symbol] * nlp \
-                                     * len(self._atoms_from_lattice_points)
-            return {'lattice': shear_tb_lat,
-                    'lattice_points': {
-                         'white': white_lp + np.array([xshift/(dim[0]*2),
-                                                       yshift/(dim[1]*2),
-                                                       0.]),
-                         'white_tb': white_tb_lp + np.array([xshift/(dim[0]*2),
-                                                             yshift/(dim[1]*2),
-                                                             0.]),
-                         'black': black_lp + np.array([-xshift/(dim[0]*2),
-                                                       -yshift/(dim[1]*2),
-                                                       0.]),
-                         'black_tb': black_tb_lp + np.array([-xshift/(dim[0]*2),
-                                                             -yshift/(dim[1]*2),
-                                                             0.]),
-                                      },
-                    'atoms_from_lattice_points': {
-                         'white': white_atoms,
-                         'white_tb': white_tb_atoms,
-                         'black': black_atoms,
-                         'black_tb': black_tb_atoms,
-                                                 },
-                    'symbols': symbols}
-
-        else:
-            grey_ix  = [ bl2 for bl2 in np.isclose(white_lp[:,2], 0.5) ]
-            grey_ix_ = [ bl1 or bl3 for bl1, bl3 in \
-                             zip(np.isclose(black_lp[:,2], 0),
-                                 np.isclose(black_lp[:,2], 1)) ]
-
-            white_lp = white_lp[[ not bl for bl in grey_ix ]]
-            black_lp = black_lp[[ not bl for bl in grey_ix_ ]]
-            white_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_p_cart.T).T
-            black_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_t_cart.T).T
-            symbols = [self._symbol] * (len(white_lp)+len(black_lp)) \
-                                     * len(self._atoms_from_lattice_points)
-            return {'lattice': shear_tb_lat,
-                    'lattice_points': {
-                         'white': white_lp + np.array([xshift/(dim[0]*2),
-                                                       self._yshift/(dim[1]*2),
-                                                       0.]),
-                         'black': black_lp + np.array([-xshift/(dim[0]*2),
-                                                       -self._yshift/(dim[1]*2),
-                                                       0.]),
-                                      },
-                    'atoms_from_lattice_points': {
-                         'white': white_atoms,
-                         'black': black_atoms,
-                                                 },
-                    'symbols': symbols}
 
     def run(self,
             dim=np.ones(3, dtype='intc'),
-            twintype=1,
             xshift=0.,
             yshift=0.,
             shear_strain_ratio=0.,
@@ -289,16 +211,11 @@ class TwinBoundaryStructure(_BaseStructure):
         Note:
             the structure built is set self.output_structure
         """
-        indices = self._indices.get_indices()
         parent = self._get_parent(zdim=dim[2])
         lp_p_cart, atoms_p_cart = self._get_parent_lattice_points_atoms(
-                        parent_output=parent.get_output_stucture())
-        W = self._get_dichromatic_operation(twintype=twintype)
-        R = np.array([
-                indices['m'].get_cartesian(normalize=True),
-                indices['eta1'].get_cartesian(normalize=True),
-                indices['k1'].get_cartesian(normalize=True),
-                ]).T
+                        parent_output=parent.output_structure)
+        W = self.get_dichromatic_operation()
+        R = self._rotation_matrix
         lp_t_cart, atoms_t_cart = \
                 self._get_twin_lattice_points_atoms(
                         dichromatic_operation=W,
@@ -322,9 +239,164 @@ class TwinBoundaryStructure(_BaseStructure):
                         xshift=xshift,
                         yshift=yshift,
                         shear_strain_ratio=shear_strain_ratio)
-        self._natoms = len(self.output_structure['symbols'])
+        self._natoms = len(self._output_structure['symbols'])
         self._dim = dim
-        self._twintype = twintype
         self._xshift = xshift
         self._yshift = yshift
         self._shear_strain_ratio = shear_strain_ratio
+
+
+
+
+    # def _get_parent_lattice_points_atoms(self, parent_output):
+    #     """
+    #     get parent structure for twinboudnary
+    #     """
+    #     M = parent_output['lattice'].T
+    #     lattice_points = parent_output['lattice_points']['white']
+    #     additional_points = \
+    #             lattice_points[np.isclose(lattice_points[:,2], 0)] + \
+    #                 np.array([0.,0.,1.])
+    #     lattice_points = np.vstack((lattice_points, additional_points))
+    #     lp_p_cart = np.dot(M, lattice_points.T).T
+    #     atoms_p_cart = np.dot(
+    #             M, parent_output['atoms_from_lattice_points']['white'].T).T
+    #     return (lp_p_cart, atoms_p_cart)
+
+    # def _get_twin_lattice_points_atoms(self,
+    #                                    dichromatic_operation,
+    #                                    rotation,
+    #                                    lp_p_cart,
+    #                                    atoms_p_cart):
+    #     """
+    #     get twin structure for twinboudnary
+    #     """
+    #     W = dichromatic_operation
+    #     R = rotation
+    #     lp_t_cart = np.dot(R,
+    #                       np.dot(W,
+    #                              np.dot(np.linalg.inv(R),
+    #                                     lp_p_cart.T))).T
+    #     atoms_t_cart = np.dot(R,
+    #                           np.dot(W,
+    #                                  np.dot(np.linalg.inv(R),
+    #                                         atoms_p_cart.T))).T
+    #     return (lp_t_cart, atoms_t_cart)
+
+    # def _get_shear_tb_lattice(self,
+    #                           tb_lattice,
+    #                           shear_strain_ratio):
+    #     """
+    #     return shear twinboudnary lattice
+    #     """
+    #     lat = deepcopy(tb_lattice)
+    #     e_b = lat[1] / np.linalg.norm(lat[1])
+    #     shear_func = self._indices.get_shear_strain_function()
+    #     lat[2] += np.linalg.norm(lat[2]) * shear_func(self._r) * shear_strain_ratio * e_b
+    #     return lat
+
+    # def _get_twinboundary_structure(self,
+    #                                 tb_lattice,
+    #                                 lp_p_cart,
+    #                                 lp_t_cart,
+    #                                 atoms_p_cart,
+    #                                 atoms_t_cart,
+    #                                 make_tb_flat,
+    #                                 dim,
+    #                                 xshift,
+    #                                 yshift,
+    #                                 shear_strain_ratio):
+    #     """
+    #     return twinbounadry structure
+    #     """
+    #     white_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_p_cart.T).T % 1
+    #     black_lp = np.dot(np.linalg.inv(tb_lattice.T), lp_t_cart.T).T % 1
+    #     shear_tb_lat = self._get_shear_tb_lattice(tb_lattice,
+    #                                               shear_strain_ratio)
+
+    #     if make_tb_flat:
+    #         black_tb_ix  = [ bl2 for bl2 in np.isclose(white_lp[:,2], 0.5) ]
+    #         white_tb_ix = [ bl1 or bl3 for bl1, bl3 in \
+    #                         zip(np.isclose(black_lp[:,2], 0),
+    #                             np.isclose(black_lp[:,2], 1)) ]
+
+    #         white_tb_lp = white_lp[white_tb_ix]
+    #         black_tb_lp = black_lp[black_tb_ix]
+    #         w_ix  = [ bl1 or bl2 or bl3 for bl1, bl2, bl3 in \
+    #                          zip(np.isclose(white_lp[:,2], 0),
+    #                              np.isclose(white_lp[:,2], 0.5),
+    #                              np.isclose(white_lp[:,2], 1)) ]
+    #         b_ix  = [ bl1 or bl2 or bl3 for bl1, bl2, bl3 in \
+    #                          zip(np.isclose(black_lp[:,2], 0),
+    #                              np.isclose(black_lp[:,2], 0.5),
+    #                              np.isclose(black_lp[:,2], 1)) ]
+    #         white_lp = white_lp[[ not bl for bl in w_ix ]]
+    #         black_lp = black_lp[[ not bl for bl in b_ix ]]
+
+    #         # atoms from lattice points
+    #         white_atoms = np.dot(np.linalg.inv(tb_lattice.T),
+    #                              atoms_p_cart.T).T
+    #         black_atoms = np.dot(np.linalg.inv(tb_lattice.T),
+    #                              atoms_t_cart.T).T
+    #         atms = len(white_atoms)
+    #         white_tb_atoms = np.hstack((white_atoms[:,:2],
+    #                                     np.zeros(atms).reshape(atms,1)))
+    #         black_tb_atoms = np.hstack((black_atoms[:,:2],
+    #                                     np.zeros(atms).reshape(atms,1)))
+    #         nlp = len(white_lp)+len(black_lp)+len(white_tb_lp)+len(black_tb_lp)
+    #         symbols = [self._symbol] * nlp \
+    #                                  * len(self._atoms_from_lattice_points)
+    #         return {'lattice': shear_tb_lat,
+    #                 'lattice_points': {
+    #                      'white': white_lp + np.array([xshift/(dim[0]*2),
+    #                                                    yshift/(dim[1]*2),
+    #                                                    0.]),
+    #                      'white_tb': white_tb_lp + np.array([xshift/(dim[0]*2),
+    #                                                          yshift/(dim[1]*2),
+    #                                                          0.]),
+    #                      'black': black_lp + np.array([-xshift/(dim[0]*2),
+    #                                                    -yshift/(dim[1]*2),
+    #                                                    0.]),
+    #                      'black_tb': black_tb_lp + np.array([-xshift/(dim[0]*2),
+    #                                                          -yshift/(dim[1]*2),
+    #                                                          0.]),
+    #                                   },
+    #                 'atoms_from_lattice_points': {
+    #                      'white': white_atoms,
+    #                      'white_tb': white_tb_atoms,
+    #                      'black': black_atoms,
+    #                      'black_tb': black_tb_atoms,
+    #                                              },
+    #                 'symbols': symbols}
+
+    #     else:
+    #         grey_ix  = [ bl2 for bl2 in np.isclose(white_lp[:,2], 0.5) ]
+    #         grey_ix_ = [ bl1 or bl3 for bl1, bl3 in \
+    #                          zip(np.isclose(black_lp[:,2], 0),
+    #                              np.isclose(black_lp[:,2], 1)) ]
+
+    #         white_lp = white_lp[[ not bl for bl in grey_ix ]]
+    #         black_lp = black_lp[[ not bl for bl in grey_ix_ ]]
+    #         white_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_p_cart.T).T
+    #         black_atoms = np.dot(np.linalg.inv(tb_lattice.T), atoms_t_cart.T).T
+    #         symbols = [self._symbol] * (len(white_lp)+len(black_lp)) \
+    #                                  * len(self._atoms_from_lattice_points)
+    #         return {'lattice': shear_tb_lat,
+    #                 'lattice_points': {
+    #                      'white': white_lp + np.array([xshift/(dim[0]*2),
+    #                                                    self._yshift/(dim[1]*2),
+    #                                                    0.]),
+    #                      'black': black_lp + np.array([-xshift/(dim[0]*2),
+    #                                                    -self._yshift/(dim[1]*2),
+    #                                                    0.]),
+    #                                   },
+    #                 'atoms_from_lattice_points': {
+    #                      'white': white_atoms,
+    #                      'black': black_atoms,
+    #                                              },
+    #                 'symbols': symbols}
+
+
+
+
+
