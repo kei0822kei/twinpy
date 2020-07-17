@@ -208,6 +208,7 @@ class _BaseStructure():
                 get_atom_positions(wyckoff=self._wyckoff)
         self._hexagonal_lattice = Lattice(lattice)
         self._natoms = 2
+        self._dim = None
         self._twinmode = None
         self._indices = None
         self._set_twinmode(twinmode=twinmode)
@@ -265,6 +266,13 @@ class _BaseStructure():
         wyckoff position
         """
         return self._wyckoff
+
+    @property
+    def dim(self):
+        """
+        dimension
+        """
+        return self._dim
 
     @property
     def atoms_from_lattice_points(self):
