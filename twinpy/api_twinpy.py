@@ -127,7 +127,7 @@ class Twinpy():
                          yshift:float=0.,
                          dim:np.array=np.ones(3, dtype='intc'),
                          shear_strain_ratio:float=0.,
-                         make_tb_flat=True,
+                         # make_tb_flat=True,
                          ):
         """
         set twinboundary structure object

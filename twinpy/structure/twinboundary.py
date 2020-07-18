@@ -31,6 +31,7 @@ def get_twinboundary(lattice:np.array,
                      yshift:float=0.,
                      dim:np.array=np.ones(3, dtype='intc'),
                      shear_strain_ratio:float=0.,
+                     make_tb_flat:bool=False,
                      ):
     """
     set shear structure object
@@ -55,7 +56,8 @@ def get_twinboundary(lattice:np.array,
     tb.run(dim=dim,
            xshift=xshift,
            yshift=yshift,
-           shear_strain_ratio=shear_strain_ratio)
+           shear_strain_ratio=shear_strain_ratio,
+           make_tb_flat=make_tb_flat)
     return tb
 
 class TwinBoundaryStructure(_BaseStructure):
@@ -213,11 +215,36 @@ class TwinBoundaryStructure(_BaseStructure):
 
         return (tb_frame, scaled_positions, symbols)
 
+    def _make_twinboundary_flat(self, output_structure):
+        """
+        make twinboundary flat
+        """
+        white_lp = output_structure['lattice_points']['white']
+        black_lp = output_structure['lattice_points']['black']
+        white_ix = np.where(white_lp[2] != 0.)[0]
+        white_tb_ix = np.where(white_lp[2] == 0.)[0]
+        black_ix = np.where(black_lp[2] != 0.5)[0]
+        black_tb_ix = np.where(black_lp[2] == 0.5)[0]
+        lattice_points = {'white': white_lp[white_ix],
+                          'white_tb': white_lp[white_tb_ix],
+                          'black': black_lp[black_ix],
+                          'black_tb_ix': black_lp[black_tb_ix]}
+        atoms_from_lp = output_structure['atoms_from_lattice_points']
+        atoms_from_lp['white_tb'] = atoms_from_lp['white'] * np.array([1.,1.,0.])
+        atoms_from_lp['black_tb'] = atoms_from_lp['black'] * np.array([1.,1.,0.])
+        flat_structure = {
+                'lattice': output_structure['lattice'],
+                'lattice_points': lattice_points,
+                'atoms_from_lattice_points': atoms_from_lp,
+                'symbol': output_structure['symbols'],
+                }
+
     def run(self,
             dim=np.ones(3, dtype='intc'),
             xshift=0.,
             yshift=0.,
             shear_strain_ratio=0.,
+            make_tb_flat=False,
             ):
         """
         build structure
@@ -244,7 +271,7 @@ class TwinBoundaryStructure(_BaseStructure):
         tb_shear_frame = self._get_shear_tb_lattice(
                 tb_lattice=tb_frame,
                 shear_strain_ratio=shear_strain_ratio)
-        self._output_structure = \
+        output_structure = \
                 {'lattice': tb_shear_frame,
                  'lattice_points': {
                      'white': lat_points[white_ix],
@@ -255,6 +282,11 @@ class TwinBoundaryStructure(_BaseStructure):
                       'black': twin_frac_atoms,
                                               },
                  'symbols': symbols}
+
+        if make_tb_flat:
+            output_structure = self._make_twinboundary_flat(output_structure)
+
+        self._output_structure = output_structure
         self._natoms = len(self._output_structure['symbols'])
         self._dim = dim
         self._xshift = xshift
