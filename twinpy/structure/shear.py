@@ -29,7 +29,8 @@ def get_shear(lattice:np.array,
               xshift:float=0.,
               yshift:float=0.,
               dim:np.array=np.ones(3, dtype='intc'),
-              shear_strain_ratio:float=0.):
+              shear_strain_ratio:float=0.,
+              is_primitive:bool=False):
     """
     set shear structure object
 
@@ -49,7 +50,8 @@ def get_shear(lattice:np.array,
                            wyckoff=wyckoff)
     shear.run(dim=dim,
               xshift=xshift,
-              yshift=yshift)
+              yshift=yshift,
+              is_primitive=is_primitive)
     return shear
 
 
@@ -222,10 +224,18 @@ class ShearStructure(_BaseStructure):
                 lattice=self._hexagonal_lattice.lattice,
                 dim=supercell_matrix)
         lattice_points += np.array([xshift, yshift, 0]) / np.array(dim)
+
+        if is_primitive:
+            shear_lattice = np.dot(shear_lattice.T,
+                                   np.linalg.inv(supercell_matrix)).T
+            lattice_points = np.array([xshift, yshift, 0.])
+
+        lattice_points = np.round(lattice_points, decimals=8) % 1
         symbols = ['white'] * len(lattice_points)
         return (shear_lattice, lattice_points, symbols)
 
     def run(self,
+            is_primitive=False,
             dim=np.ones(3, dtype='intc'),
             xshift=0.,
             yshift=0.):
@@ -235,23 +245,32 @@ class ShearStructure(_BaseStructure):
         Note:
             the built structure is set to self.output_structure
         """
-        ratio = self._shear_strain_ratio
         if type(dim) is list:
             dim = np.array(dim, dtype='intc')
 
         shear_lattice, lattice_points, _ = \
-                self.get_shear_lattice(dim=dim,
+                self.get_shear_lattice(is_primitive=is_primitive,
+                                       dim=dim,
                                        xshift=xshift,
                                        yshift=yshift)
-        lattice_points = np.round(lattice_points, decimals=8) % 1
+
+        if not is_primitive:
+            parent_matrix = self._indices.get_supercell_matrix_for_parent()
+            supercell_matrix = parent_matrix * dim
+            atoms_from_lp = np.dot(np.linalg.inv(supercell_matrix),
+                                   self._atoms_from_lattice_points.T).T
+        else:
+            atoms_from_lp = self._atoms_from_lattice_points
+
         symbols = [self._symbol] * len(lattice_points) \
                                  * len(self._atoms_from_lattice_points)
         structure = {'lattice': shear_lattice,
                      'lattice_points': {
                          'white': lattice_points},
                      'atoms_from_lattice_points': {
-                         'white': self._atoms_from_lattice_points},
+                         'white': atoms_from_lp},
                      'symbols': symbols}
+
         self._output_structure = structure
         self._dim = dim
         self._xshift = xshift
