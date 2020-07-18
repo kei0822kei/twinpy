@@ -44,10 +44,10 @@ def get_shear(lattice:np.array,
     """
     shear = ShearStructure(lattice=lattice,
                            symbol=symbol,
+                           twinmode=twinmode,
+                           shear_strain_ratio=shear_strain_ratio,
                            wyckoff=wyckoff)
-    shear.set_parent(twinmode)
-    shear.run(shear_strain_ratio=shear_strain_ratio,
-              dim=dim,
+    shear.run(dim=dim,
               xshift=xshift,
               yshift=yshift)
     return shear
@@ -62,7 +62,7 @@ class ShearStructure(_BaseStructure):
            self,
            lattice:np.array,
            symbol:str,
-           ratio:float,
+           shear_strain_ratio:float,
            twinmode:str,
            wyckoff:str='c',
         ):
@@ -77,7 +77,7 @@ class ShearStructure(_BaseStructure):
                          twinmode=twinmode,
                          wyckoff=wyckoff)
         self._dim = None
-        self._shear_strain_ratio = ratio
+        self._shear_strain_ratio = shear_strain_ratio
         self._output_structure_primitive = None
 
     @property
@@ -138,20 +138,20 @@ class ShearStructure(_BaseStructure):
         shear_matrix[1,2] = s
         return shear_matrix
 
-    def get_base_primitive_cell(self):
-        """
-        get base primitive cells
-        """
-        ratio = self._shear_strain_ratio
-        H = self.hexagonal_lattice.lattice.T
-        M = self._indices.get_supercell_matrix_for_parent()
-        S = self.get_shear_matrix(ratio=ratio)
-        shear_prim_lat = np.dot(np.dot(H, M),
-                                np.dot(S, np.linalg.inv(M))).T
-        scaled_positions = self._atoms_from_lattice_points % 1.
-        symbols = [self._symbol] * len(scaled_positions)
-        cell = (shear_prim_lat, scaled_positions, symbols)
-        return cell
+    # def get_base_primitive_cell(self):
+    #     """
+    #     get base primitive cells
+    #     """
+    #     ratio = self._shear_strain_ratio
+    #     H = self.hexagonal_lattice.lattice.T
+    #     M = self._indices.get_supercell_matrix_for_parent()
+    #     S = self.get_shear_matrix(ratio=ratio)
+    #     shear_prim_lat = np.dot(np.dot(H, M),
+    #                             np.dot(S, np.linalg.inv(M))).T
+    #     scaled_positions = self._atoms_from_lattice_points % 1.
+    #     symbols = [self._symbol] * len(scaled_positions)
+    #     cell = (shear_prim_lat, scaled_positions, symbols)
+    #     return cell
 
     def get_shear_properties(self) -> dict:
         """
@@ -204,6 +204,7 @@ class ShearStructure(_BaseStructure):
                }
 
     def get_shear_lattice(self,
+                          is_primitive=False,
                           dim=np.ones(3, dtype='intc'),
                           xshift=0.,
                           yshift=0.):

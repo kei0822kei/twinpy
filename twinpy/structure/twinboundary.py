@@ -31,7 +31,6 @@ def get_twinboundary(lattice:np.array,
                      yshift:float=0.,
                      dim:np.array=np.ones(3, dtype='intc'),
                      shear_strain_ratio:float=0.,
-                     make_tb_flat=True,
                      ):
     """
     set shear structure object
@@ -50,15 +49,13 @@ def get_twinboundary(lattice:np.array,
     """
     tb = TwinBoundaryStructure(lattice=lattice,
                                symbol=symbol,
+                               twinmode=twinmode,
+                               twintype=twintype,
                                wyckoff=wyckoff)
-    tb.set_parent(twinmode)
     tb.run(dim=dim,
-           twintype=twintype,
            xshift=xshift,
            yshift=yshift,
-           shear_strain_ratio=shear_strain_ratio,
-           make_tb_flat=make_tb_flat,
-           )
+           shear_strain_ratio=shear_strain_ratio)
     return tb
 
 class TwinBoundaryStructure(_BaseStructure):

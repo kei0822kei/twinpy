@@ -369,34 +369,6 @@ class _BaseStructure():
                 scaled_positions,
                 symbols)
 
-    # def get_output_stucture(self):
-    #     """
-    #     get output structure
-    #     """
-    #     return self.output_structure
-
-    # def get_structure_for_export(self, get_lattice=False):
-    #     _dummy = {'white': 'H', 'white_tb': 'H',
-    #               'black': 'He', 'black_tb': 'He', 'grey': 'Li'}
-    #     scaled_positions = []
-    #     if get_lattice:
-    #         symbols = []
-    #         for color in self._output_structure['lattice_points']:
-    #             posi = self._output_structure['lattice_points'][color]
-    #             sym = [_dummy[color]] * len(posi)
-    #             scaled_positions.extend(posi.tolist())
-    #             symbols.extend(sym)
-    #     else:
-    #         for color in self._output_structure['lattice_points']:
-    #             posi = get_atom_positions_from_lattice_points(
-    #                 self._output_structure['lattice_points'][color],
-    #                 self._output_structure['atoms_from_lattice_points'][color])
-    #             scaled_positions.extend(posi.tolist())
-    #         symbols = self._output_structure['symbols']
-    #     return (self._output_structure['lattice'],
-    #             np.array(scaled_positions),
-    #             symbols)
-
     def get_pymatgen_structure(self,
                                get_lattice=False,
                                move_atoms_into_unitcell=True):
