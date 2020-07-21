@@ -47,7 +47,8 @@ def write_poscar(
     strings += 'Direct\n'
     for position in positions:
         strings += ' '.join(list(position)) + '\n'
+    print("export filename:")
+    print("    %s" % filename)
 
-    print(filename)
     with open(filename, 'w') as f:
         f.write(strings)

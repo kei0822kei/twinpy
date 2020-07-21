@@ -343,8 +343,8 @@ class _BaseStructure():
         Returns:
             tuple: output cell
         """
-        _dummy = {'white': 'H', 'white_tb': 'H',
-                  'black': 'He', 'black_tb': 'He', 'grey': 'Li'}
+        _dummy = {'white': 'H', 'white_tb': 'Li',
+                  'black': 'He', 'black_tb': 'Be'}
         scaled_positions = []
         if get_lattice:
             symbols = []
@@ -353,6 +353,11 @@ class _BaseStructure():
                 sym = [_dummy[color]] * len(posi)
                 scaled_positions.extend(posi.tolist())
                 symbols.extend(sym)
+            print("replacing lattice points to elements:")
+            print("    'white'   : 'H'")
+            print("    'white_tb': 'Li'")
+            print("    'black'   : 'He'")
+            print("    'black_tb': 'Be'")
         else:
             for color in self._output_structure['lattice_points']:
                 posi = get_atom_positions_from_lattice_points(
@@ -401,15 +406,3 @@ class _BaseStructure():
                      scaled_positions=scaled_positions,
                      symbols=symbols,
                      filename=filename)
-
-    # def get_phonopy_structure(self, structure_type:str='base', symprec:float=1e-5):
-    #     """
-    #     return phonopy structure
-
-    #     Args:
-    #         structure_type (str): 'base', 'primitive' or 'conventional'
-    #         symprec (float): used when searching conventional unitcell
-    #     """
-    #     cell = self.get_structure_for_export(get_lattice=False)
-    #     ph_structure = get_phonopy_structure(cell, structure_type, symprec)
-    #     return ph_structure

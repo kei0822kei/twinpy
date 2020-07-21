@@ -151,7 +151,7 @@ class TwinBoundaryStructure(_BaseStructure):
         """
         parent = ShearStructure(lattice=self._hcp_lattice.lattice,
                                 symbol=self._symbol,
-                                ratio=0.,
+                                shear_strain_ratio=0.,
                                 twinmode=self._twinmode,
                                 wyckoff=self._wyckoff)
         parent.run(dim=dim)
@@ -221,14 +221,14 @@ class TwinBoundaryStructure(_BaseStructure):
         """
         white_lp = output_structure['lattice_points']['white']
         black_lp = output_structure['lattice_points']['black']
-        white_ix = np.where(white_lp[2] != 0.)[0]
-        white_tb_ix = np.where(white_lp[2] == 0.)[0]
-        black_ix = np.where(black_lp[2] != 0.5)[0]
-        black_tb_ix = np.where(black_lp[2] == 0.5)[0]
+        white_ix = np.where(white_lp[:,2] != 0.)[0]
+        white_tb_ix = np.where(white_lp[:,2] == 0.)[0]
+        black_ix = np.where(black_lp[:,2] != 0.5)[0]
+        black_tb_ix = np.where(black_lp[:,2] == 0.5)[0]
         lattice_points = {'white': white_lp[white_ix],
                           'white_tb': white_lp[white_tb_ix],
                           'black': black_lp[black_ix],
-                          'black_tb_ix': black_lp[black_tb_ix]}
+                          'black_tb': black_lp[black_tb_ix]}
         atoms_from_lp = output_structure['atoms_from_lattice_points']
         atoms_from_lp['white_tb'] = atoms_from_lp['white'] * np.array([1.,1.,0.])
         atoms_from_lp['black_tb'] = atoms_from_lp['black'] * np.array([1.,1.,0.])
@@ -236,8 +236,9 @@ class TwinBoundaryStructure(_BaseStructure):
                 'lattice': output_structure['lattice'],
                 'lattice_points': lattice_points,
                 'atoms_from_lattice_points': atoms_from_lp,
-                'symbol': output_structure['symbols'],
+                'symbols': output_structure['symbols'],
                 }
+        return flat_structure
 
     def run(self,
             dim=np.ones(3, dtype='intc'),
