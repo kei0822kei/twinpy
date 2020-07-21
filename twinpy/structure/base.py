@@ -8,7 +8,7 @@ HexagonalStructure
 import numpy as np
 from scipy.linalg import sqrtm
 import spglib
-from phonopy.structure.atoms import PhonopyAtoms
+from phonopy.structure.atoms import PhonopyAtoms, symbol_map
 from phonopy.structure.cells import Primitive, Supercell
 from pymatgen.core.structure import Structure
 from typing import Sequence, Union
@@ -18,6 +18,7 @@ from twinpy.properties.twinmode import TwinIndices
 from twinpy.lattice.lattice import Lattice
 from twinpy.lattice.hexagonal_plane import HexagonalPlane
 from twinpy.file_io import write_poscar
+from twinpy.structure.standardize import StandardizeCell
 
 def is_hcp(lattice:np.array,
            symbols:Sequence[str],
@@ -145,35 +146,29 @@ def get_phonopy_structure(cell,
         msg = "structure_type must be 'base', 'primitive' or 'conventional'"
         raise RuntimeError(msg)
 
-    lattice, scaled_positions, symbols = cell
-    bravais = PhonopyAtoms(
-                  cell=lattice,
-                  scaled_positions=scaled_positions,
-                  symbols=symbols)
-    Z = bravais.get_atomic_numbers()
+    fixed_cell = None
     if structure_type == 'base':
-        return bravais
-
+        fixed_cell = cell
     else:
-        from spglib import refine_cell
-        conv_lattice, conv_scaled_positions, conv_Z = \
-                refine_cell(cell=(lattice, scaled_positions, Z),
-                            symprec=symprec)
-        conv_bravais = PhonopyAtoms(cell=conv_lattice,
-                                    scaled_positions=conv_scaled_positions,
-                                    numbers=conv_Z)
-        if structure_type == 'conventional':
-            return conv_bravais
+        if structure_type == 'primitive':
+            to_primitive = True
         else:
-            from phonopy.structure.cells import (guess_primitive_matrix,
-                                                 get_primitive)
-            trans_mat = guess_primitive_matrix(conv_bravais,
-                                               symprec=symprec)
-            primitive = get_primitive(conv_bravais,
-                                      trans_mat,
-                                      symprec=symprec)
-            return primitive
+            to_primitive = False
+        std = StandardizeCell(cell)
+        fixed_cell = std.get_standardized_cell(to_primitive=to_primitive)
+    ph_structure = PhonopyAtoms(cell=fixed_cell[0],
+                                scaled_positions=fixed_cell[1],
+                                symbols=fixed_cell[2])
+    return ph_structure
 
+def get_cell_from_phonopy_structure(ph_structure):
+    """
+    get cell from phonopy structure
+    """
+    lattice = ph_structure.get_cell()
+    scaled_positions = ph_structure.get_scaled_positions()
+    symbols = ph_structure.get_chemical_symbols()
+    return (lattice, scaled_positions, symbols)
 
 class _BaseStructure():
     """
@@ -184,6 +179,7 @@ class _BaseStructure():
            self,
            lattice:np.array,
            symbol:str,
+           twinmode:str,
            wyckoff:str='c',
         ):
         """
@@ -212,8 +208,10 @@ class _BaseStructure():
                 get_atom_positions(wyckoff=self._wyckoff)
         self._hexagonal_lattice = Lattice(lattice)
         self._natoms = 2
+        self._dim = None
         self._twinmode = None
         self._indices = None
+        self._set_twinmode(twinmode=twinmode)
         self._xshift = None
         self._yshift = None
         self._output_structure = \
@@ -223,6 +221,23 @@ class _BaseStructure():
                  'atoms_from_lattice_points': {
                      'white': self._atoms_from_lattice_points},
                  'symbols': [self._symbol] * 2}
+
+    def _set_twinmode(self, twinmode:str):
+        """
+        set parent
+
+        Args:
+            twinmode (str): twinmode
+
+        Note:
+            set attribute 'twinmode'
+            set attribute 'indices'
+        """
+        self._twinmode = twinmode
+        self._indices = TwinIndices(twinmode=self._twinmode,
+                                    lattice=self._hexagonal_lattice,
+                                    wyckoff=self._wyckoff)
+
 
     @property
     def r(self):
@@ -251,6 +266,13 @@ class _BaseStructure():
         wyckoff position
         """
         return self._wyckoff
+
+    @property
+    def dim(self):
+        """
+        dimension
+        """
+        return self._dim
 
     @property
     def atoms_from_lattice_points(self):
@@ -308,32 +330,21 @@ class _BaseStructure():
         """
         return self._output_structure
 
-    def get_output_stucture(self):
+    def get_structure_for_export(self,
+                                 get_lattice=False,
+                                 move_atoms_into_unitcell=True):
         """
-        get output structure
-        """
-        return self.output_structure
-
-    def set_parent(self, twinmode:str):
-        """
-        set parent
+        get structure for export
 
         Args:
-            twinmode (str): twinmode
+            get_lattice (str): get lattice points not crystal structure
+            move_atoms_into_unitcell (bool): if True, move atoms to unitcell
 
-        Note:
-            set attribute 'indices'
-            set attribute 'parent_matrix'
-            set attribute 'shear_function'
+        Returns:
+            tuple: output cell
         """
-        self._twinmode = twinmode
-        self._indices = TwinIndices(twinmode=self._twinmode,
-                                    lattice=self._hexagonal_lattice,
-                                    wyckoff=self._wyckoff)
-
-    def get_structure_for_export(self, get_lattice=False):
-        _dummy = {'white': 'H', 'white_tb': 'H',
-                  'black': 'He', 'black_tb': 'He', 'grey': 'Li'}
+        _dummy = {'white': 'H', 'white_tb': 'Li',
+                  'black': 'He', 'black_tb': 'Be'}
         scaled_positions = []
         if get_lattice:
             symbols = []
@@ -342,28 +353,45 @@ class _BaseStructure():
                 sym = [_dummy[color]] * len(posi)
                 scaled_positions.extend(posi.tolist())
                 symbols.extend(sym)
+            print("replacing lattice points to elements:")
+            print("    'white'   : 'H'")
+            print("    'white_tb': 'Li'")
+            print("    'black'   : 'He'")
+            print("    'black_tb': 'Be'")
         else:
             for color in self._output_structure['lattice_points']:
                 posi = get_atom_positions_from_lattice_points(
                     self._output_structure['lattice_points'][color],
                     self._output_structure['atoms_from_lattice_points'][color])
                 scaled_positions.extend(posi.tolist())
+            scaled_positions = np.array(scaled_positions)
+
+            if move_atoms_into_unitcell:
+                scaled_positions = scaled_positions % 1.
+
             symbols = self._output_structure['symbols']
         return (self._output_structure['lattice'],
-                np.array(scaled_positions),
+                scaled_positions,
                 symbols)
 
-    def get_pymatgen_structure(self, get_lattice=False):
+    def get_pymatgen_structure(self,
+                               get_lattice=False,
+                               move_atoms_into_unitcell=True):
         """
         get pymatgen structure
         """
         lattice, scaled_positions, species = \
-                self.get_structure_for_export(get_lattice)
+                self.get_structure_for_export(
+                        get_lattice=get_lattice,
+                        move_atoms_into_unitcell=move_atoms_into_unitcell)
         return Structure(lattice=lattice,
                          coords=scaled_positions,
                          species=species)
 
-    def write_poscar(self, filename:str='POSCAR', get_lattice=False):
+    def write_poscar(self,
+                     filename:str='POSCAR',
+                     get_lattice=False,
+                     move_atoms_into_unitcell=True):
         """
         write poscar
 
@@ -371,20 +399,10 @@ class _BaseStructure():
             filename (str): output filename
         """
         lattice, scaled_positions, symbols = \
-                self.get_structure_for_export(get_lattice)
+                self.get_structure_for_export(
+                        get_lattice=get_lattice,
+                        move_atoms_into_unitcell=move_atoms_into_unitcell)
         write_poscar(lattice=lattice,
                      scaled_positions=scaled_positions,
                      symbols=symbols,
                      filename=filename)
-
-    def get_phonopy_structure(self, structure_type:str='base', symprec:float=1e-5):
-        """
-        return phonopy structure
-
-        Args:
-            structure_type (str): 'base', 'primitive' or 'conventional'
-            symprec (float): used when searching conventional unitcell
-        """
-        cell = self.get_structure_for_export(get_lattice=False)
-        ph_structure = get_phonopy_structure(cell, structure_type, symprec)
-        return ph_structure
