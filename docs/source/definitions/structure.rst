@@ -15,12 +15,12 @@ Hexagonal Structure
 set parent
 ----------
 
-Parent lattice can be defined by specifying twin mode.
+Parent lattice can be defined by specific twin mode.
 By this, the following properties are determined.
 
 #. twin indices
 #. shear strain functoin :math:`\gamma(r)`
-#. parent matrix
+#. parent matrix :math:`\boldsymbol{M}`
 
 where parent matrix :math:`\boldsymbol{M}` is constructed as bellow
 
@@ -39,7 +39,8 @@ where :math:`\boldsymbol{m}^{p}`,
 :math:`\boldsymbol{\eta}^{p}_1` and
 :math:`\boldsymbol{\eta}^{p}_2` are
 a little bit different from the ones in 'get_twin_indices' in twinmode.py
-because they are rescaled to be the vectors whose element are all integer.
+because they are rescaled to be the vectors whose element are
+all minimum integers.
 Therefore, every element of supercell matrix
 :math:`\boldsymbol{M}` is integer. The fractional points :math:`\boldsymbol{X}`
 is transformed to :math:`\boldsymbol{X}^{p}` as
@@ -55,11 +56,8 @@ shear structure
 Shear structure here means the structure which is sheared from parent to
 twin structure. Let the bases of shear and twin structure is defined as
 :math:`[\boldsymbol{m}^{s}, \boldsymbol{\eta}^{s}_{1},
-\boldsymbol{\eta}^{s}_{2}]`
-and
-:math:`[\boldsymbol{m}^{t}, \boldsymbol{\eta}^{t}_{1},
-\boldsymbol{\eta}^{t}_{2}]`
-then
+\boldsymbol{\eta}^{s}_{2}]`.
+Then
 
 .. math::
 
@@ -85,6 +83,11 @@ where
    \end{pmatrix}
 
 where :math:`\alpha` is shear ratio.
+Let fractional points in this shear lattice be :math:`\boldsymbol{X^{s}}`,
+
+.. math::
+
+   \boldsymbol{X^{s}} = \boldsymbol{X^{p}}
 
 The shear value :math:`s` is determined as below.
 From the figure, shear vector from parent to twin
@@ -112,11 +115,9 @@ corresponds to :math:`\alpha=1`.
 The fractional positions are unfixed during this transformation
 from parent structure to shear and twin structure.
 
-Let the bases of the primitive structure of the shear and twin structure
+Let the bases of the primitive structure of the shear
 as
 :math:`[\boldsymbol{a}^{s}_{1}, \boldsymbol{a}^{s}_{2}, \boldsymbol{c}^{s}]`
-and
-:math:`[\boldsymbol{a}^{t}_{1}, \boldsymbol{a}^{t}_{2}, \boldsymbol{c}^{t}]`
 can be written as
 
 .. math::
@@ -127,80 +128,92 @@ can be written as
     \boldsymbol{a}_2,
     \boldsymbol{c}] \boldsymbol{M} \boldsymbol{S} \boldsymbol{M}^{-1}.
 
-
-deformation gradient tensor
----------------------------
-
-In the provious section, shear structure is introduced. Now, we can
-hold deformation gradient tensor from this shear. In general, deformation
-gradient tensor can be defined as
+Let fractional points in this primitive shear lattice be
+:math:`\boldsymbol{X^{sp}}`,
 
 .. math::
 
-   \boldsymbol{F}
-   =
-   \frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
-   =
-   \frac{\partial (\boldsymbol{X} + \boldsymbol{u})}{\partial \boldsymbol{X}}
-   =
-   \boldsymbol{I} + \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}.
+   \boldsymbol{X^{sp}} = \boldsymbol{M} \boldsymbol{X^{s}}
 
-Shear strain corresponds to :math:`\frac{\partial \boldsymbol{u}}{\boldsymbol{X}}`
-However, note this equation is on the basis of cartesian coordinate.
-So we have to consider the matrix :math:`S` on the same coordinate as
+
+
+twinboundary structure
+----------------------
+
+For constructing twinboudnary structure,
+crystal body rotation is taken place.
+In this step, the cartesian basis vectors from
+:math:`[\boldsymbol{e}_x, \boldsymbol{e}_y, \boldsymbol{e}_z]` to
+:math:`[\boldsymbol{e}_{\boldsymbol{m}^{p}},
+\boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+\boldsymbol{e}_{\boldsymbol{k}^{p}_1}]`
+where
+:math:`\boldsymbol{e}_{\boldsymbol{m}^{p}}
+= \frac{\boldsymbol{m}^{p}}{|\boldsymbol{m}^{p}|}`
+:math:`\boldsymbol{e}_{\boldsymbol{\eta}^{p}_1}
+= \frac{\boldsymbol{\eta}^{p}_1}{|\boldsymbol{\eta}^{p}_1|}`
+:math:`\boldsymbol{e}_{\boldsymbol{k}^{p}_1}
+= \frac{\boldsymbol{k}_1}{|\boldsymbol{k}_1|}`.
+In this step, rotation matrix :math:`\boldsymbol{R}` is defined as
 
 .. math::
 
-   [\boldsymbol{e}_{x}, \boldsymbol{e}_{y}, \boldsymbol{e}_{z}]
+   [\boldsymbol{e}_{\boldsymbol{m}^{p}},
+    \boldsymbol{e}_{\boldsymbol{\eta}^{p}_1},
+    \boldsymbol{e}_{\boldsymbol{k}^{p}_1}]
+   =
+   [\boldsymbol{Re}_x, \boldsymbol{Re}_y, \boldsymbol{Re}_z]
+
+:math:`\boldsymbol{R}` is orthogonal matrix.
+
+Therefore, lattice points and atom positions are rotated as
+
+.. math::
+
+   [\boldsymbol{e}_{x}, \boldsymbol{e}_{y}, \boldsymbol{e}_z]
    \boldsymbol{X}_{0}
-   =
-   [\boldsymbol{m}^{p},
-    \boldsymbol{\eta}^{p}_{1},
-    \boldsymbol{\eta}^{p}_{2}]
-   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}
-
-.. math::
-
    \rightarrow
-   [\boldsymbol{m}^{s},
-    \boldsymbol{\eta}^{s}_{1},
-    \boldsymbol{\eta}^{s}_{2}]
-   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}
-   =
-   [\boldsymbol{e}_{x}, \boldsymbol{e}_{y}, \boldsymbol{e}_{z}]
-   \boldsymbol{H} \boldsymbol{M} \boldsymbol{S}
-   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}.
+   [\boldsymbol{e}_{x}, \boldsymbol{e}_{y}, \boldsymbol{e}_z]
+   \boldsymbol{RX}_{0}
 
-So deformation gradient tensor can be defined as
+:math:`\boldsymbol{R}` is orthogonal matrix
 
 .. math::
 
-   \boldsymbol{F}
-   =
-   \boldsymbol{I} +
-   \boldsymbol{H} \boldsymbol{M} \boldsymbol{S}
-   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1}
+   \boldsymbol{R}^{-1} = \boldsymbol{R}^{T}.
 
-and let material stretch tensor as :math:`\boldsymbol{U}`
-, spatial stretch tensor as :math:`\boldsymbol{V}`
-, rotaion as :math:`\boldsymbol{R}`
-, right Cauchy-Green tensor as :math:`\boldsymbol{C}`
-, left Cauchy-Green tensor as :math:`\boldsymbol{b}`
-then
+Parent lattice :math:`\bar{\boldsymbol{L}^{p}}` and
+twin lattice :math:`\bar{\boldsymbol{L}^{t}}`
+can be calculated in this rotated crystal body as
 
 .. math::
 
-   \boldsymbol{C} = \boldsymbol{U}^2 = \boldsymbol{F}^{T} \boldsymbol{F}
+   \bar{\boldsymbol{L}^{p}} = \boldsymbol{RHM}
 
-   \boldsymbol{b} = \boldsymbol{V}^2 = \boldsymbol{F} \boldsymbol{F}^{T}
+and
 
-   \boldsymbol{R} = \boldsymbol{F} \boldsymbol{U}^{-1}
-                  = \boldsymbol{V}^{-1} \boldsymbol{F}
+.. math::
+
+   \bar{\boldsymbol{L}^{t}} = \boldsymbol{WRHM}
+
+parent atom cartesian atom positions :math:`\bar{\boldsymbol{X}^{p}_{0}}` and
+twin atom cartesian atom positions :math:`\bar{\boldsymbol{X}^{t}_{0}}`
+in the rotated crystal body is
+
+.. math::
+
+   \bar{\boldsymbol{X}^{p}_{0}} = \boldsymbol{RX}^{p}_{0}
+
+and
+
+.. math::
+
+   \bar{\boldsymbol{X}^{t}_{0}} = \boldsymbol{WRX}^{p}_{0}
 
 
-FUTURE EDITED
-=============
 
+OLD
+---
 First, supercell matrix :math:`\boldsymbol{M}` is constructed as bellow
 
 .. math::
@@ -280,7 +293,7 @@ In this step, rotation matrix :math:`\boldsymbol{R}` is defined
 
    \boldsymbol{R}^{-1} = \boldsymbol{R}^{T}
 
-If the number vectors :math:`\boldsymbol{X}_{0}` are transformed to
+When the number vectors :math:`\boldsymbol{X}_{0}` are transformed to
 :math:`\boldsymbol{X}^{p}_{0}` by this operation, the following relations hold.
 
 .. math::
@@ -350,6 +363,84 @@ basis such as :math:`\boldsymbol{X}^{p}_{lat}` and
 because two rigid atoms must be the nearest atoms from the specified
 :math:`\boldsymbol{K}_1` plane. In the case you choose 'c' wyckoff letter,
 this revising (probably) always occur.
+
+FUTURE EDITED
+=============
+
+deformation gradient tensor
+---------------------------
+
+In the provious section, shear structure is introduced. Now, we can
+hold deformation gradient tensor from this shear. In general, deformation
+gradient tensor can be defined as
+
+.. math::
+
+   \boldsymbol{F}
+   =
+   \frac{\partial \boldsymbol{x}}{\partial \boldsymbol{X}}
+   =
+   \frac{\partial (\boldsymbol{X} + \boldsymbol{u})}{\partial \boldsymbol{X}}
+   =
+   \boldsymbol{I} + \frac{\partial \boldsymbol{u}}{\partial \boldsymbol{X}}.
+
+Shear strain corresponds to :math:`\frac{\partial \boldsymbol{u}}{\boldsymbol{X}}`
+However, note this equation is on the basis of cartesian coordinate.
+So we have to consider the matrix :math:`S` on the same coordinate as
+
+.. math::
+
+   [\boldsymbol{e}_{x}, \boldsymbol{e}_{y}, \boldsymbol{e}_{z}]
+   \boldsymbol{X}_{0}
+   =
+   [\boldsymbol{m}^{p},
+    \boldsymbol{\eta}^{p}_{1},
+    \boldsymbol{\eta}^{p}_{2}]
+   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}
+
+.. math::
+
+   \rightarrow
+   [\boldsymbol{m}^{s},
+    \boldsymbol{\eta}^{s}_{1},
+    \boldsymbol{\eta}^{s}_{2}]
+   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}
+   =
+   [\boldsymbol{e}_{x}, \boldsymbol{e}_{y}, \boldsymbol{e}_{z}]
+   \boldsymbol{H} \boldsymbol{M} \boldsymbol{S}
+   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1} \boldsymbol{X}_{0}.
+
+So deformation gradient tensor can be defined as
+
+.. math::
+
+   \boldsymbol{F}
+   =
+   \boldsymbol{I} +
+   \boldsymbol{H} \boldsymbol{M} \boldsymbol{S}
+   \boldsymbol{M}^{-1} \boldsymbol{H}^{-1}
+
+and let material stretch tensor as :math:`\boldsymbol{U}`
+, spatial stretch tensor as :math:`\boldsymbol{V}`
+, rotaion as :math:`\boldsymbol{R}`
+, right Cauchy-Green tensor as :math:`\boldsymbol{C}`
+, left Cauchy-Green tensor as :math:`\boldsymbol{b}`
+then
+
+.. math::
+
+   \boldsymbol{C} = \boldsymbol{U}^2 = \boldsymbol{F}^{T} \boldsymbol{F}
+
+   \boldsymbol{b} = \boldsymbol{V}^2 = \boldsymbol{F} \boldsymbol{F}^{T}
+
+   \boldsymbol{R} = \boldsymbol{F} \boldsymbol{U}^{-1}
+                  = \boldsymbol{V}^{-1} \boldsymbol{F}
+
+
+
+
+
+
 
 
 get_sheared_structure
@@ -429,7 +520,7 @@ get_twin_structure
 ------------------
 
 The operation from parent lattice to twin lattice
-:math:`\boldsymbol{W}^{t}` is defineda as
+:math:`\boldsymbol{W}^{t}` is defined as
 
 .. math::
 
