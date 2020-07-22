@@ -257,7 +257,7 @@ class ShearAnalyzer():
 
         Args:
             arg1 (str): description
-            arg2 (3x3 numpy array): description
+            arg2 (np.array): (3x3 numpy array) description
 
         Returns:
             dict: description

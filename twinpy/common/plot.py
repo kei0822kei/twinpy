@@ -465,15 +465,15 @@ class BandsPlot(PhonopyBandPlot):
 
     def plot_bands(self, cs=None, alphas=None, linestyles=None, linewidths=None, labels=None):
         """
-        plot band, **kwargs is passed for plotting with matplotlib
+        plot band, kwargs is passed for plotting with matplotlib
 
         Note:
-            currently suppored **kwargs
-            - 'cs'
-            - 'alphas'
-            - 'linestyles'
-            - 'linewidths'
-            - 'labels'
+            currently suppored kwargs
+              - 'cs'
+              - 'alphas'
+              - 'linestyles'
+              - 'linewidths'
+              - 'labels'
         """
         def _plot(distances, frequencies, connections, is_decorate,
                   c, alpha, linestyle, linewidth, label):

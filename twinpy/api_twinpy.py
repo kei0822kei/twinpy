@@ -6,11 +6,10 @@ API for twinpy
 """
 
 import numpy as np
-from twinpy.lattice.lattice import Lattice
 from twinpy.structure.base import is_hcp
 from twinpy.structure.shear import get_shear
 from twinpy.structure.twinboundary import get_twinboundary
-from twinpy.file_io import write_poscar
+
 
 def get_twinpy_from_cell(cell:tuple,
                          twinmode:str):
@@ -26,9 +25,9 @@ def get_twinpy_from_cell(cell:tuple,
     """
     lattice, scaled_positions, symbols = cell
     wyckoff = is_hcp(lattice=lattice,
-              scaled_positions=scaled_positions,
-              symbols=symbols,
-              get_wyckoff=True)
+                     scaled_positions=scaled_positions,
+                     symbols=symbols,
+                     get_wyckoff=True)
     twinpy = Twinpy(lattice=lattice,
                     twinmode=twinmode,
                     symbol=symbols[0],
@@ -50,25 +49,19 @@ class Twinpy():
           Optional comment string.
 
     """
-    def __init__(
-           self,
-           lattice:np.array,
-           twinmode:str,
-           symbol:str,
-           wyckoff:str='c',
-        ):
+    def __init__(self,
+                 lattice:np.array,
+                 twinmode:str,
+                 symbol:str,
+                 wyckoff:str='c'):
         """
         initialize
 
         Args:
-            lattice (np.array): lattice
+            lattice (np.array): 3x3 lattice
             twinmode (str): twinmode
             symbol (str): element symbol
             wyckoff (str): No.194 Wycoff position ('c' or 'd')
-
-        Raises:
-            AssertionError: wyckoff is not 'c' and 'd'
-            ValueError: lattice is not None (future fix)
         """
         self._hcp_matrix = lattice
         self._twinmode = twinmode
@@ -109,13 +102,6 @@ class Twinpy():
                 dim=dim,
                 shear_strain_ratio=shear_strain_ratio,
                 is_primitive=is_primitive)
-
-    @property
-    def shear(self):
-        """
-        get shear structure
-        """
-        return self._shear
 
     def set_twinboundary(self,
                          twintype:int=1,
@@ -168,7 +154,8 @@ class Twinpy():
         raise RuntimeError when twinboundary structure is not set
         """
         if self._twinboundary is None:
-            msg = "twinboundary structure is not set, run please set twinboundary"
+            msg = "twinboundary structure is not set, \
+                   run please set twinboundary"
             raise RuntimeError(msg)
 
     def write_shear_structure(self,
@@ -181,12 +168,14 @@ class Twinpy():
 
         Args:
             filename (str): POSCAR filename
-            structure_type (str): choose from 'base', 'primitive' and 'conventional'
+            structure_type (str): choose from 'base', 'primitive'
+                                  and 'conventional'
         """
         self._shear_structure_is_not_set()
-        self._shear.write_poscar(filename=filename,
-                                 move_atoms_into_unitcell=move_atoms_into_unitcell,
-                                 get_lattice=get_lattice)
+        self._shear.write_poscar(
+                filename=filename,
+                move_atoms_into_unitcell=move_atoms_into_unitcell,
+                get_lattice=get_lattice)
 
     def write_twinboundary_structure(self,
                                      move_atoms_into_unitcell:bool=True,
@@ -198,43 +187,11 @@ class Twinpy():
 
         Args:
             filename (str): POSCAR filename
-            structure_type (str): choose from 'base', 'primitive' and 'conventional'
+            structure_type (str): choose from 'base', 'primitive'
+                                  and 'conventional'
         """
         self._twinboundary_structure_is_not_set()
-        self._twinboundary.write_poscar(filename=filename,
-                                        move_atoms_into_unitcell=move_atoms_into_unitcell,
-                                        get_lattice=get_lattice)
-
-    # def get_shear_phonopy_structure(self,
-    #                                 structure_type:str='base',
-    #                                 symprec:float=1e-5):
-    #     """
-    #     return shear phonopy strucutre
-
-    #     Args:
-    #         structure_type (str): choose from 'base', 'conventional'
-    #                               and 'primitive'
-    #         symprec (float): use when shearching conventional unitcell
-    #     """
-    #     self._shear_structure_is_not_set()
-    #     ph_structure = self._shear.get_phonopy_structure(
-    #             structure_type=structure_type,
-    #             symprec=symprec)
-    #     return ph_structure
-
-    # def get_twinboundary_phonopy_structure(self,
-    #                                        structure_type:str='base',
-    #                                        symprec:float=1e-5):
-    #     """
-    #     return twinboundary phonopy strucutre
-
-    #     Args:
-    #         structure_type (str): choose from 'base', 'conventional'
-    #                               and 'primitive'
-    #         symprec (float): use when shearching conventional unitcell
-    #     """
-    #     self._twinboundary_structure_is_not_set()
-    #     ph_structure = self._twinboundary.get_phonopy_structure(
-    #             structure_type=structure_type,
-    #             symprec=symprec)
-    #     return ph_structure
+        self._twinboundary.write_poscar(
+                filename=filename,
+                move_atoms_into_unitcell=move_atoms_into_unitcell,
+                get_lattice=get_lattice)

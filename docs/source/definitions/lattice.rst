@@ -9,8 +9,62 @@ In this page, some formulations are provided used in hexagonal.py file.
    :local:
 
 
+Lattice
+=======
+
+Inner Product and Metric Tensor
+-------------------------------
+
+Given lattice matrix :math:`\boldsymbol{L}`
+and two vectors :math:`(x_1, y_1, z_1)^{T}` and :math:`(x_2, y_2, z_2)^{T}`,
+inner product can calculated as
+
+.. math::
+
+   [\boldsymbol{a},
+    \boldsymbol{b},
+    \boldsymbol{c}]
+   =
+   [\boldsymbol{e}_x,
+    \boldsymbol{e}_y,
+    \boldsymbol{e}_z] \boldsymbol{L}
+
+.. math::
+
+   (
+   \boldsymbol{L}
+   \begin{pmatrix}
+   x_1 \\
+   y_1 \\
+   z_1 \\
+   \end{pmatrix}
+   )^{T}
+   \boldsymbol{L}
+   \begin{pmatrix}
+   x_2 \\
+   y_2 \\
+   z_2 \\
+   \end{pmatrix}
+   =
+   (x_1, y_1, z_1) \boldsymbol{G}
+   \begin{pmatrix}
+   x_2 \\
+   y_2 \\
+   z_2 \\
+   \end{pmatrix}
+
+where metric tensor :math:`\boldsymbol{G}`
+
+.. math::
+
+   \boldsymbol{G} = \boldsymbol{L}^{T} \boldsymbol{L}
+
+
+Hexagonal Direction
+===================
+
 Hexagonal Lattice
-=================
+-----------------
 
 To create this object, hexagonal lattice :math:`\boldsymbol{H}`
 and plane indices (three or four) are needed.
@@ -37,8 +91,6 @@ where
    0 & 0 & c \\
    \end{pmatrix}.
 
-Hexagonal Direction
-===================
 
 indices
 -------
