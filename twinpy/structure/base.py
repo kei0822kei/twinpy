@@ -131,34 +131,16 @@ def reshape_dimension(dim):
         raise ValueError("input dim is not (3,) and (3,3) array")
     return dim_matrix
 
-def get_phonopy_structure(cell,
-                          structure_type:str='base',
-                          symprec:float=1e-5):
+def get_phonopy_structure(cell):
     """
     return phonopy structure
 
     Args:
         cell: tuple (lattice, scaled_positions, symbols)
-        structure_type (str): 'base', 'primitive' or 'conventional'
-        symprec (float): used when searching conventional unitcell
     """
-    if structure_type not in ['base', 'primitive', 'conventional']:
-        msg = "structure_type must be 'base', 'primitive' or 'conventional'"
-        raise RuntimeError(msg)
-
-    fixed_cell = None
-    if structure_type == 'base':
-        fixed_cell = cell
-    else:
-        if structure_type == 'primitive':
-            to_primitive = True
-        else:
-            to_primitive = False
-        std = StandardizeCell(cell)
-        fixed_cell = std.get_standardized_cell(to_primitive=to_primitive)
-    ph_structure = PhonopyAtoms(cell=fixed_cell[0],
-                                scaled_positions=fixed_cell[1],
-                                symbols=fixed_cell[2])
+    ph_structure = PhonopyAtoms(cell=cell[0],
+                                scaled_positions=cell[1],
+                                symbols=cell[2])
     return ph_structure
 
 def get_cell_from_phonopy_structure(ph_structure):
@@ -380,23 +362,25 @@ class _BaseStructure():
         """
         get pymatgen structure
         """
-        lattice, scaled_positions, species = \
+        lattice, scaled_positions, symbols = \
                 self.get_structure_for_export(
                         get_lattice=get_lattice,
                         move_atoms_into_unitcell=move_atoms_into_unitcell)
         return Structure(lattice=lattice,
                          coords=scaled_positions,
-                         species=species)
+                         species=symbols)
 
     def write_poscar(self,
                      filename:str='POSCAR',
                      get_lattice=False,
-                     move_atoms_into_unitcell=True):
+                     move_atoms_into_unitcell=True,
+                     structure_type:bool=None):
         """
         write poscar
 
         Args:
             filename (str): output filename
+            structure_type (bool): if not None, choose from 'primitive' and 'conventional'
         """
         lattice, scaled_positions, symbols = \
                 self.get_structure_for_export(

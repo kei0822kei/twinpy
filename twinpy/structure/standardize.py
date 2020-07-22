@@ -10,6 +10,32 @@ import spglib
 from phonopy.structure.atoms import symbol_map, atom_data
 from phonopy.interface.vasp import sort_positions_by_symbols
 
+def get_standardized_cell(cell,
+                          to_primitive:bool,
+                          no_idealize:bool,
+                          symprec:float=1.e-5,
+                          no_sort:bool=False,
+                          get_sort_list:list=False,
+                          ):
+    """
+    get standardized cell
+    return tuple
+
+    Args:
+        cell: input cell
+
+    Note:
+        For the other arguments, see StandardizeCell.get_standardized_cell.
+    """
+    std = StandardizeCell(cell)
+    std_cell = std.get_standardized_cell(to_primitive=to_primitive,
+                                         no_idealize=False,
+                                         symprec=symprec,
+                                         no_sort=no_sort,
+                                         get_sort_list=False)
+    return std_cell
+
+
 def get_atomic_numbers(symbols):
     """
     get atomic numbers from symbols

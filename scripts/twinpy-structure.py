@@ -45,6 +45,10 @@ def get_argparse():
         help="POSCAR filename")
     parser.add_argument('--is_primitive', action='store_true',
         help="get primitive shear structure")
+    parser.add_argument('--get_primitive_standardized', action='store_true',
+        help="get primitive standardized")
+    parser.add_argument('--get_conventional_standardized', action='store_true',
+        help="get conventional standardized")
     args = parser.parse_args()
     return args
 
@@ -78,6 +82,8 @@ def main(
          output,
          make_tb_flat,
          is_primitive,
+         get_primitive_standardized,
+         get_conventional_standardized,
         ):
     if posfile is None:
         print("Warning:")
@@ -147,4 +153,6 @@ if __name__ == '__main__':
          output=args.output,
          make_tb_flat=args.make_tb_flat,
          is_primitive=args.is_primitive,
+         get_primitive_standardized=args.get_primitive_standardized,
+         get_conventional_standardized=args.get_conventional_standardized,
         )

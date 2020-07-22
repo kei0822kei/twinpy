@@ -174,12 +174,14 @@ class Twinpy():
     def write_shear_structure(self,
                               move_atoms_into_unitcell:bool=True,
                               get_lattice:bool=False,
-                              filename:str='shear_lattice.poscar'):
+                              filename:str='shear_lattice.poscar',
+                              structure_type:str='base'):
         """
         create shear lattice poscar file
 
         Args:
             filename (str): POSCAR filename
+            structure_type (str): choose from 'base', 'primitive' and 'conventional'
         """
         self._shear_structure_is_not_set()
         self._shear.write_poscar(filename=filename,
@@ -189,12 +191,14 @@ class Twinpy():
     def write_twinboundary_structure(self,
                                      move_atoms_into_unitcell:bool=True,
                                      get_lattice:bool=False,
-                                     filename:str='shear_lattice.poscar'):
+                                     filename:str='shear_lattice.poscar',
+                                     structure_type:str='base'):
         """
         create shear lattice poscar file
 
         Args:
             filename (str): POSCAR filename
+            structure_type (str): choose from 'base', 'primitive' and 'conventional'
         """
         self._twinboundary_structure_is_not_set()
         self._twinboundary.write_poscar(filename=filename,
