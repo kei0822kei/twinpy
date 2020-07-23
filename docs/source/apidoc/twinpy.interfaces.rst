@@ -14,6 +14,26 @@ twinpy.interfaces.aiida module
    :undoc-members:
    :show-inheritance:
 
+twinpy.interfaces.phonopy module
+--------------------------------
+
+.. automodule:: twinpy.interfaces.phonopy
+   :members:
+   :special-members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
+twinpy.interfaces.pymatgen module
+---------------------------------
+
+.. automodule:: twinpy.interfaces.pymatgen
+   :members:
+   :special-members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------
