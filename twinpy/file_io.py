@@ -6,6 +6,11 @@ make structures
 """
 
 import numpy as np
+import yaml
+try:
+    from yaml import CLoader as Loader, CDumper as Dumper
+except ImportError:
+    from yaml import Loader, Dumper
 
 epsilon = 1e-8
 
@@ -50,3 +55,30 @@ def write_poscar(
 
     with open(filename, 'w') as f:
         f.write(strings)
+
+
+def write_yaml(dic:dict, filename:str):
+    """
+    Write yaml file from dic.
+
+    Args:
+        dic (dict): dictionary
+        filename (str): output file name
+    """
+    with open(filename, 'w') as f:
+        yaml.dump(dic, f, indent=4, default_flow_style=False, Dumper=Dumper)
+
+
+def read_yaml(filename:str):
+    """
+    Return dic from yaml.
+
+    Args:
+        filename (str): output file name
+
+    Returns:
+        dict: dictionary object
+    """
+    with open(filename, 'w') as f:
+        dic = yaml.load(f, Loader=Loader)
+    return dic

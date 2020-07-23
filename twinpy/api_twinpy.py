@@ -10,6 +10,7 @@ from twinpy.structure.base import is_hcp
 from twinpy.structure.shear import get_shear
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
+from twinpy.file_io import read_yaml, write_yaml
 
 
 def get_twinpy_from_cell(cell:tuple,
@@ -58,6 +59,8 @@ class Twinpy():
         self._wyckoff = wyckoff
         self._shear = None
         self._twinboundary = None
+        self._shear_is_primitive = None
+        self._twinboundary_make_tb_flat = None
 
     @property
     def shear(self):
@@ -92,6 +95,14 @@ class Twinpy():
                 dim=dim,
                 shear_strain_ratio=shear_strain_ratio,
                 is_primitive=is_primitive)
+        self._shear_is_primitive = is_primitive
+
+    @property
+    def shear_is_primitive(self):
+        """
+        Shear structure object.
+        """
+        return self._shear_is_primitive
 
     def set_twinboundary(self,
                          twintype:int=1,
@@ -130,6 +141,13 @@ class Twinpy():
         Twinboundary structure object.
         """
         return self._twinboundary
+
+    @property
+    def twinboundary_make_tb_flat(self):
+        """
+        Twinboundary make_tb_flat
+        """
+        return self._twinboundary_make_tb_flat
 
     def _shear_structure_is_not_set(self):
         """
@@ -181,3 +199,104 @@ class Twinpy():
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
                 )
         return StandardizeCell(cell)
+
+    def dump_yaml(self, filename:str='twinpy.yaml'):
+        """
+        Dump Twinpy object in yaml file.
+
+        Args:
+            filename (str): dump to yaml file
+        """
+        dic = self.dump_dict()
+        write_yaml(dic=dic, filename=filename)
+
+    def dump_dict(self) -> dict:
+        """
+        Dump Twinpy object in yaml file
+
+        Returns:
+            dict: dumped dictionary
+        """
+        if self._shear is None:
+            shear = None
+        else:
+            shear = {}
+            shear['xshift'] = self._shear.xshift
+            shear['yshift'] = self._shear.yshift
+            shear['dim'] = self._shear.dim
+            shear['shear_strain_ratio'] = self._shear.shear_strain_ratio
+            shear['is_primitive'] = self._shear._shear_is_primitive
+
+        if self._twinboundary is None:
+            tb = None
+        else:
+            tb = {}
+            tb['dim'] = self._tb.dim
+            tb['xshift'] = self._tb.xshift
+            tb['yshift'] = self._tb.yshift
+            tb['twintype'] = self._tb.twintype
+            tb['shear_strain_ratio'] = self._tb.shear_strain_ratio
+            tb['make_tb_flat'] = self._tb._twinboundary_make_tb_flat
+
+        dic = {}
+        dic['hcp_matrix'] = self._hcp_matrix
+        dic['twinmode'] = self._twinmode
+        dic['symbol'] = self._symbol
+        dic['wyckoff'] = self._wyckoff
+        dic['shear'] = shear
+        dic['twinboundary'] = tb
+
+        return dic
+
+    @staticmethod
+    def load_yaml(self, filename:str):
+        """
+        Load twinpy from yaml file.
+
+        Args:
+            filename (str): yaml file
+
+        Returns:
+            Twinpy: Twinpy object
+        """
+        dic = read_yaml(filename)
+        twinpy = self.load_dict(dic)
+
+        return twinpy
+
+    @staticmethod
+    def load_dict(self, dic:dict):
+        """
+        Load twinpy from dic.
+
+        Args:
+            dic (dict): dictionary contaning necessary infomation
+                        for loading Twinpy object
+
+        Returns:
+            Twinpy: Twinpy object
+        """
+        twinpy = Twinpy(lattice=dic['hcp_matrix'],
+                        twinmode=dic['twinmode'],
+                        symbol=dic['symbol'],
+                        wyckoff=dic['wyckoff'])
+
+        shear = dic['shear']
+        if shear is not None:
+            twinpy.set_shear(
+                    xshift=shear['xshift'],
+                    yshift=shear['yshift'],
+                    dim=shear['dim'],
+                    shear_strain_ratio=shear['shear_strain_ratio'],
+                    is_primitive=shear['is_primitive'])
+
+        tb = dic['twinboundary']
+        if tb is not None:
+            twinpy.set_twinboundary(
+                    dim=tb['dim'],
+                    xshift=tb['xshift'],
+                    yshift=tb['yshift'],
+                    shear_strain_ratio=tb['shear_strain_ratio'],
+                    make_tb_flat=tb['make_tb_flat'])
+
+        return twinpy
