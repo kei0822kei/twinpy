@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-provide properties of twin modes
+Provide properties of twin modes.
 """
 
 import numpy as np
@@ -14,9 +14,10 @@ from twinpy.lattice.hexagonal_direction import HexagonalDirection
 from twinpy.properties.hexagonal import get_atom_positions
 from twinpy.common.utils import get_ratio
 
+
 def check_supported_twinmode(twinmode):
     """
-    check input twinmode is supported
+    Check input twinmode is supported.
 
     Args:
         twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
@@ -28,9 +29,10 @@ def check_supported_twinmode(twinmode):
     supported_twinmodes = ['10-12', '10-11', '11-22', '11-21']
     assert twinmode in supported_twinmodes, '%s is not supported' % twinmode
 
-def get_shear_strain_function(twinmode:str) -> 'function':
+
+def get_shear_strain_function(twinmode:str):
     """
-    get shear strain
+    Get shear strain.
 
     Args:
         twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
@@ -38,7 +40,7 @@ def get_shear_strain_function(twinmode:str) -> 'function':
 
     Returns:
         function: function which returns shear strain
-                  input args: r
+                  input arg is r
     """
     check_supported_twinmode(twinmode)
     if twinmode == '10-12':
@@ -55,9 +57,13 @@ def get_shear_strain_function(twinmode:str) -> 'function':
                 1 / r
     return func
 
+
 def get_twin_indices_by_Yoo() -> dict:
     """
-    get twin indices Yoo showed in his paper
+    Get twin indices Yoo showed in his paper.
+
+    Returns:
+        dict: twin indices
     """
     dataset = {
             '10-12': {
@@ -93,19 +99,10 @@ def get_twin_indices_by_Yoo() -> dict:
               }
     return dataset
 
+
 class TwinIndices():
     """
-    deals with twin indices
-
-       .. attribute:: att1
-
-          Optional comment string.
-
-
-       .. attribute:: att2
-
-          Optional comment string.
-
+    Deals with twin indices
     """
 
     def __init__(
@@ -113,10 +110,10 @@ class TwinIndices():
            lattice:Lattice,
            twinmode:str,
            wyckoff:str,
-       ):
+           ):
         """
-        get twin indices of input twinmode
-        twinmode must be '10-11', '10-12', '11-21' or '11-22'
+        Get twin indices of input twinmode.
+        Twinmode must be '10-11', '10-12', '11-21' or '11-22'.
 
         Args:
             twinmode (str): currently supported \
@@ -152,8 +149,8 @@ class TwinIndices():
               e. m     condition(1)
 
         Todo:
-            _twin_indices_orig is a little bit different from the ones 1981. Yoo
-            especially 'S'
+            _twin_indices_orig is a little bit
+            different from the ones 1981. Yoo especially 'S'
         """
         check_hexagonal_lattice(lattice.lattice)
         check_supported_twinmode(twinmode)
@@ -171,47 +168,44 @@ class TwinIndices():
     @property
     def lattice(self):
         """
-        lattice
+        Lattice.
         """
         return self._lattice
 
     @property
     def twinmode(self):
         """
-        twinmode
+        Twinmode.
         """
         return self._twinmode
 
     @property
     def wyckoff(self):
         """
-        wyckoff
+        Wyckoff.
         """
         return self._wyckoff
 
     @property
     def indices_Yoo(self):
         """
-        indices Yoo showed
+        Indices Yoo showed.
         """
         return self._indices_Yoo
 
     @property
     def indices(self):
         """
-        indices
+        Indices.
         """
         return self._indices
 
-    def get_indices(self):
+    def _get_indices_Yoo(self, lattice, twinmode) -> dict:
         """
-        get indices
-        """
-        return self.indices
+        Get specific twinmode indices which are found in Yoo's paper.
 
-    def _get_indices_Yoo(self, lattice, twinmode):
-        """
-        get specific twinmode indices which are found in Yoo's paper
+        Returns:
+            dict: indices by Yoo
         """
         indices_ = get_twin_indices_by_Yoo()[twinmode]
         indices = {}
@@ -225,7 +219,7 @@ class TwinIndices():
 
     def _set_K1(self):
         """
-        set K1
+        Set K1.
 
         Note:
             There are two candidates for K1 plane.
@@ -245,18 +239,25 @@ class TwinIndices():
         if K1_1.get_distance_from_plane(atoms[0]) > \
                K1_2.get_distance_from_plane(atoms[0]):
             for key in ['S', 'K1', 'K2', 'eta1', 'eta2']:
-                self._indices[key].reset_indices(four=self._indices[key].four*arr)
+                self._indices[key].reset_indices(
+                        four=self._indices[key].four*arr)
 
     def _set_k1_k2(self):
         """
-        set k1 and k2
+        Set k1 and k2.
         """
-        self._indices['k1'] = self._indices['K1'].get_direction_normal_to_plane()
-        self._indices['k2'] = self._indices['K2'].get_direction_normal_to_plane()
+        self._indices['k1'] = \
+                self._indices['K1'].get_direction_normal_to_plane()
+        self._indices['k2'] = \
+                self._indices['K2'].get_direction_normal_to_plane()
 
     def _reset_indices(self):
         """
-        reset indices
+        Reset indices.
+
+        Raises:
+            AssertionError: k1 is not orthogonal to eta1
+            AssertionError: k2 is not orthogonal to eta2
 
         Note:
             conditions are as bellow
@@ -274,19 +275,19 @@ class TwinIndices():
 
         # reset eta1
         if self.lattice.dot(self._indices['eta1'].three,
-                       self._indices['eta2'].three) > 0:
+                            self._indices['eta2'].three) > 0:
             self._indices['eta1'].inverse()
 
         # reset K2
         if self.lattice.dot(self._indices['eta1'].three,
-                       self._indices['k2'].three) < 0:
+                            self._indices['k2'].three) < 0:
             self._indices['K2'].inverse()
             self._indices['k2'].inverse()
 
         # check k1 is orthogonal to eta1
         np.testing.assert_allclose(
                 actual=self.lattice.dot(self._indices['k1'].three,
-                                   self._indices['eta1'].three),
+                                        self._indices['eta1'].three),
                 desired=0,
                 atol=1e-6,
                 err_msg="k1 is not orthogonal to eta1")
@@ -294,14 +295,17 @@ class TwinIndices():
         # check k2 is orthogonal to eta2
         np.testing.assert_allclose(
                 actual=self.lattice.dot(self._indices['k2'].three,
-                                   self._indices['eta2'].three),
+                                        self._indices['eta2'].three),
                 desired=0,
                 atol=1e-6,
                 err_msg="k2 is not orthogonal to eta2")
 
     def _set_shear_plane(self):
         """
-        set shear plane
+        Set shear plane.
+
+        Raises:
+            RuntimeError: could not find shear plane
 
         Note:
             set shear plane which fulfill the following conditions
@@ -325,20 +329,24 @@ class TwinIndices():
                 flag = 0
                 break
         if flag == 1:
-            raise ValueError("could not find shear plane")
+            raise RuntimeError("could not find shear plane")
 
-        triple_product = np.dot(trial_m.get_cartesian(),
-                                np.cross(self._indices['eta1'].get_cartesian(),
-                                         self._indices['eta2'].get_cartesian()))
+        triple_product = \
+                np.dot(trial_m.get_cartesian(),
+                       np.cross(self._indices['eta1'].get_cartesian(),
+                                self._indices['eta2'].get_cartesian()))
         if triple_product < 0:
             trial_S.inverse()
             trial_m.inverse()
         self._indices['S'] = trial_S
         self._indices['m'] = trial_m
 
-    def get_supercell_matrix_for_parent(self):
+    def get_supercell_matrix_for_parent(self) -> np.array:
         """
-        get supercell matrix for creating parent matrix
+        Get supercell matrix for creating parent matrix.
+
+        Returns:
+            np.array: sueprcell matrix
 
         Note:
             create lattice basis with integerized m, eta1 and eta2
@@ -351,6 +359,6 @@ class TwinIndices():
 
     def get_shear_strain_function(self):
         """
-        get shear strain function
+        Get shear strain function.
         """
         return get_shear_strain_function(self._twinmode)

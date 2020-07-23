@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-hexagonal property
+Hexagonal property.
 """
 
 import numpy as np
 
+
 def get_atom_positions(wyckoff:str) -> np.array:
     """
-    get atom positions in Hexagonal Close-Packed
+    Get atom positions in Hexagonal Close-Packed.
 
     Args:
         wyckoff (str): wyckoff letter, choose 'c' or 'd'
