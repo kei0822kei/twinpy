@@ -145,7 +145,7 @@ class _BaseStructure():
                scaled_positions=atoms_from_lp,
                symbols=symbols)
         self._hcp_lattice = Lattice(lattice)
-        self._a, _, self._c = self._hcp_lattice.get_abc()
+        self._a, _, self._c = self._hcp_lattice.abc
         self._r = self._c / self._a
         self._symbol = symbol
         self._wyckoff = wyckoff

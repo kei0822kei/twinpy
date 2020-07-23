@@ -46,7 +46,7 @@ class TwinBoundaryStructure(_BaseStructure):
         """
         Set rotation matrix
         """
-        indices = self._indices.get_indices()
+        indices = self._indices.indices
         rotation_matrix = np.array([
                 indices['m'].get_cartesian(normalize=True),
                 indices['eta1'].get_cartesian(normalize=True),
@@ -117,7 +117,7 @@ class TwinBoundaryStructure(_BaseStructure):
         output_structure = parent.output_structure
         return output_structure
 
-    def _get_shear_twobundary_lattice(self,
+    def _get_shear_twinboundary_lattice(self,
                                       tb_lattice:np.array,
                                       shear_strain_ratio:float):
         """

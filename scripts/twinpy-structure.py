@@ -90,15 +90,15 @@ def main(structure,
 
     move_atoms_into_unitcell = True
     symprec = 1e-5
-    no_idealize = True,
-    no_sort = True,
-    get_sort_list = False,
+    no_idealize = True
+    no_sort = True
+    get_sort_list = False
 
     if posfile is None:
         print("Warning:")
         print("    POSCAR file did not specify")
-        print("    Set automatically, a=2.93, c=4.65, symbol='Ti', \
-                   wyckoff='c'")
+        print("    Set automatically, a=2.93, c=4.65, symbol='Ti', "
+              "wyckoff='c'")
         lattice = get_hexagonal_lattice_from_a_c(a=2.93, c=4.65)
         symbol = 'Ti'
         wyckoff = 'c'
@@ -146,7 +146,7 @@ def main(structure,
     if get_primitive_standardized:
         to_primitive = True
     elif get_conventional_standardized:
-        to_primitive = False,
+        to_primitive = False
     else:
         to_primitive = None
 

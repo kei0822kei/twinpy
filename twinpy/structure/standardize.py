@@ -65,7 +65,7 @@ def get_chemical_symbols(numbers) -> list:
     Returns:
         list: list of symbols
     """
-    symbols = [ atom_data[num][0] for num in numbers ]
+    symbols = [ atom_data[num][1] for num in numbers ]
     return symbols
 
 
@@ -271,15 +271,17 @@ class StandardizeCell():
             no_sort (bool): does not change atoms order
             get_sort_list (bool): When no_sort=True, return sort list
         """
-        std_cell = spglib.standardize_cell(self._cell_for_spglib,
+        spg_cell = spglib.standardize_cell(self._cell_for_spglib,
                                            to_primitive=to_primitive,
                                            no_idealize=no_idealize)
+        symbols = get_chemical_symbols(spg_cell[2])
+        std_cell = (spg_cell[0], spg_cell[1], symbols)
         if no_sort:
             return std_cell
         else:
             num_atoms, unique_symbols, scaled_positions, sort_list = \
                 sort_positions_by_symbols(
-                        symbols=get_chemical_symbols(std_cell[2]),
+                        symbols=std_cell[2],
                         positions=std_cell[1])
             symbols = []
             for num, symbol in zip(num_atoms, unique_symbols):
