@@ -41,7 +41,7 @@
   <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="twinpy.common package" href="twinpy.common.html" />
+    <link rel="next" title="twinpy.analysis package" href="twinpy.analysis.html" />
     <link rel="prev" title="Developer guide" href="../developer_guide/index.html" /> 
 </head>
 
@@ -96,7 +96,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">API documentation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="twinpy.analysis.html">twinpy.analysis package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.common.html">twinpy.common package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="twinpy.interfaces.html">twinpy.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.lattice.html">twinpy.lattice package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.properties.html">twinpy.properties package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.structure.html">twinpy.structure package</a></li>
@@ -176,10 +178,26 @@
 <h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="twinpy.analysis.html">twinpy.analysis package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.analysis.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.analysis.html#module-twinpy.analysis.shear_analyzer">twinpy.analysis.shear_analyzer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.analysis.html#module-twinpy.analysis">Module contents</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="twinpy.common.html">twinpy.common package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.common.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.common.html#module-twinpy.common.plot">twinpy.common.plot module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="twinpy.common.html#plot">plot</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.common.html#module-twinpy.common.utils">twinpy.common.utils module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.common.html#module-twinpy.common">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="twinpy.interfaces.html">twinpy.interfaces package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.interfaces.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.interfaces.html#module-twinpy.interfaces.aiida">twinpy.interfaces.aiida module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.interfaces.html#module-twinpy.interfaces">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="twinpy.lattice.html">twinpy.lattice package</a><ul>
@@ -201,7 +219,9 @@
 <li class="toctree-l1"><a class="reference internal" href="twinpy.structure.html">twinpy.structure package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.structure.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.structure.html#module-twinpy.structure.base">twinpy.structure.base module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.structure.html#module-twinpy.structure.diff">twinpy.structure.diff module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.structure.html#module-twinpy.structure.shear">twinpy.structure.shear module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.structure.html#module-twinpy.structure.standardize">twinpy.structure.standardize module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.structure.html#module-twinpy.structure.twinboundary">twinpy.structure.twinboundary module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="twinpy.structure.html#module-twinpy.structure">Module contents</a></li>
 </ul>
@@ -236,7 +256,7 @@
 </div></blockquote>
 <dl class="attribute">
 <dt id="twinpy.api_twinpy.Twinpy.__dict__">
-<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.api_twinpy', '__doc__': '\n    API for twinpy\n\n       .. attribute:: att1\n\n          Optional comment string.\n\n\n       .. attribute:: att2\n\n          Optional comment string.\n\n    ', '__init__': &lt;function Twinpy.__init__&gt;, 'shear': &lt;property object&gt;, 'set_shear': &lt;function Twinpy.set_shear&gt;, 'get_shear': &lt;function Twinpy.get_shear&gt;, 'twinboundary': &lt;property object&gt;, 'set_twinboundary': &lt;function Twinpy.set_twinboundary&gt;, 'get_twinboundary': &lt;function Twinpy.get_twinboundary&gt;, '_shear_structure_is_not_set': &lt;function Twinpy._shear_structure_is_not_set&gt;, '_twinboundary_structure_is_not_set': &lt;function Twinpy._twinboundary_structure_is_not_set&gt;, 'write_shear_lattice': &lt;function Twinpy.write_shear_lattice&gt;, 'write_twinboundary_lattice': &lt;function Twinpy.write_twinboundary_lattice&gt;, 'get_shear_phonopy_structure': &lt;function Twinpy.get_shear_phonopy_structure&gt;, 'get_twinboundary_phonopy_structure': &lt;function Twinpy.get_twinboundary_phonopy_structure&gt;, '__dict__': &lt;attribute '__dict__' of 'Twinpy' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Twinpy' objects&gt;})</em><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.__dict__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.api_twinpy', '__doc__': '\n    API for twinpy\n\n       .. attribute:: att1\n\n          Optional comment string.\n\n\n       .. attribute:: att2\n\n          Optional comment string.\n\n    ', '__init__': &lt;function Twinpy.__init__&gt;, 'shear': &lt;property object&gt;, 'set_shear': &lt;function Twinpy.set_shear&gt;, 'set_twinboundary': &lt;function Twinpy.set_twinboundary&gt;, 'twinboundary': &lt;property object&gt;, '_shear_structure_is_not_set': &lt;function Twinpy._shear_structure_is_not_set&gt;, '_twinboundary_structure_is_not_set': &lt;function Twinpy._twinboundary_structure_is_not_set&gt;, 'write_shear_structure': &lt;function Twinpy.write_shear_structure&gt;, 'write_twinboundary_structure': &lt;function Twinpy.write_twinboundary_structure&gt;, '__dict__': &lt;attribute '__dict__' of 'Twinpy' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'Twinpy' objects&gt;})</em><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.__dict__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
@@ -246,16 +266,10 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>lattice</strong> (<em>np.array</em>) – lattice</p></li>
+<li><p><strong>lattice</strong> (<em>np.array</em>) – 3x3 lattice</p></li>
 <li><p><strong>twinmode</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – twinmode</p></li>
 <li><p><strong>symbol</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – element symbol</p></li>
 <li><p><strong>wyckoff</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – No.194 Wycoff position (‘c’ or ‘d’)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><ul class="simple">
-<li><p><strong>AssertionError</strong> – wyckoff is not ‘c’ and ‘d’</p></li>
-<li><p><strong>ValueError</strong> – lattice is not None (future fix)</p></li>
 </ul>
 </dd>
 </dl>
@@ -285,50 +299,8 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.api_twinpy.Twinpy.get_shear">
-<code class="sig-name descname">get_shear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/api_twinpy.html#Twinpy.get_shear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.get_shear" title="Permalink to this definition">¶</a></dt>
-<dd><p>get shear structure</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.api_twinpy.Twinpy.get_shear_phonopy_structure">
-<code class="sig-name descname">get_shear_phonopy_structure</code><span class="sig-paren">(</span><em class="sig-param">structure_type: str = 'base'</em>, <em class="sig-param">symprec: float = 1e-05</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/api_twinpy.html#Twinpy.get_shear_phonopy_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.get_shear_phonopy_structure" title="Permalink to this definition">¶</a></dt>
-<dd><p>return shear phonopy strucutre</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>structure_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – choose from ‘base’, ‘conventional’
-and ‘primitive’</p></li>
-<li><p><strong>symprec</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – use when shearching conventional unitcell</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.api_twinpy.Twinpy.get_twinboundary">
-<code class="sig-name descname">get_twinboundary</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/api_twinpy.html#Twinpy.get_twinboundary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.get_twinboundary" title="Permalink to this definition">¶</a></dt>
-<dd><p>get twinboundary structure</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.api_twinpy.Twinpy.get_twinboundary_phonopy_structure">
-<code class="sig-name descname">get_twinboundary_phonopy_structure</code><span class="sig-paren">(</span><em class="sig-param">structure_type: str = 'base'</em>, <em class="sig-param">symprec: float = 1e-05</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/api_twinpy.html#Twinpy.get_twinboundary_phonopy_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.get_twinboundary_phonopy_structure" title="Permalink to this definition">¶</a></dt>
-<dd><p>return twinboundary phonopy strucutre</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>structure_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – choose from ‘base’, ‘conventional’
-and ‘primitive’</p></li>
-<li><p><strong>symprec</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – use when shearching conventional unitcell</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
 <dt id="twinpy.api_twinpy.Twinpy.set_shear">
-<code class="sig-name descname">set_shear</code><span class="sig-paren">(</span><em class="sig-param">xshift=0.0, yshift=0.0, dim=array([1, 1, 1], dtype=int32), shear_strain_ratio=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/api_twinpy.html#Twinpy.set_shear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.set_shear" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">set_shear</code><span class="sig-paren">(</span><em class="sig-param">xshift=0.0, yshift=0.0, dim=array([1, 1, 1], dtype=int32), shear_strain_ratio=0.0, is_primitive=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/api_twinpy.html#Twinpy.set_shear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.set_shear" title="Permalink to this definition">¶</a></dt>
 <dd><p>set shear structure object</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -373,23 +345,31 @@ and ‘primitive’</p></li>
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.api_twinpy.Twinpy.write_shear_lattice">
-<code class="sig-name descname">write_shear_lattice</code><span class="sig-paren">(</span><em class="sig-param">filename: str = 'shear_lattice.poscar'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/api_twinpy.html#Twinpy.write_shear_lattice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.write_shear_lattice" title="Permalink to this definition">¶</a></dt>
+<dt id="twinpy.api_twinpy.Twinpy.write_shear_structure">
+<code class="sig-name descname">write_shear_structure</code><span class="sig-paren">(</span><em class="sig-param">move_atoms_into_unitcell: bool = True</em>, <em class="sig-param">get_lattice: bool = False</em>, <em class="sig-param">filename: str = 'shear_lattice.poscar'</em>, <em class="sig-param">structure_type: str = 'base'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/api_twinpy.html#Twinpy.write_shear_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.write_shear_structure" title="Permalink to this definition">¶</a></dt>
 <dd><p>create shear lattice poscar file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – POSCAR filename</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – POSCAR filename</p></li>
+<li><p><strong>structure_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – choose from ‘base’, ‘primitive’
+and ‘conventional’</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.api_twinpy.Twinpy.write_twinboundary_lattice">
-<code class="sig-name descname">write_twinboundary_lattice</code><span class="sig-paren">(</span><em class="sig-param">filename: str = 'twinboundary_lattice.poscar'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/api_twinpy.html#Twinpy.write_twinboundary_lattice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.write_twinboundary_lattice" title="Permalink to this definition">¶</a></dt>
-<dd><p>create twinboundary lattice poscar file</p>
+<dt id="twinpy.api_twinpy.Twinpy.write_twinboundary_structure">
+<code class="sig-name descname">write_twinboundary_structure</code><span class="sig-paren">(</span><em class="sig-param">move_atoms_into_unitcell: bool = True</em>, <em class="sig-param">get_lattice: bool = False</em>, <em class="sig-param">filename: str = 'shear_lattice.poscar'</em>, <em class="sig-param">structure_type: str = 'base'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/api_twinpy.html#Twinpy.write_twinboundary_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.api_twinpy.Twinpy.write_twinboundary_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>create shear lattice poscar file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – POSCAR filename</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – POSCAR filename</p></li>
+<li><p><strong>structure_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – choose from ‘base’, ‘primitive’
+and ‘conventional’</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -452,7 +432,7 @@ even if its lattice basis is left handed.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="twinpy.common.html" class="btn btn-neutral float-right" title="twinpy.common package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="twinpy.analysis.html" class="btn btn-neutral float-right" title="twinpy.analysis package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../developer_guide/index.html" class="btn btn-neutral float-left" title="Developer guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

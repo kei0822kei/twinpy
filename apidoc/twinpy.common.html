@@ -41,8 +41,8 @@
   <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="twinpy.lattice package" href="twinpy.lattice.html" />
-    <link rel="prev" title="twinpy package" href="twinpy.html" /> 
+    <link rel="next" title="twinpy.interfaces package" href="twinpy.interfaces.html" />
+    <link rel="prev" title="twinpy.analysis package" href="twinpy.analysis.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -96,12 +96,15 @@
 <li class="toctree-l1"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="twinpy.html">API documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="twinpy.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="twinpy.analysis.html">twinpy.analysis package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">twinpy.common package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.common.plot">twinpy.common.plot module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.common.utils">twinpy.common.utils module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.common">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="twinpy.interfaces.html">twinpy.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.lattice.html">twinpy.lattice package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.properties.html">twinpy.properties package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.structure.html">twinpy.structure package</a></li>
@@ -181,6 +184,168 @@
 <h1>twinpy.common package<a class="headerlink" href="#twinpy-common-package" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-twinpy.common.plot">
+<span id="twinpy-common-plot-module"></span><h2>twinpy.common.plot module<a class="headerlink" href="#module-twinpy.common.plot" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="plot">
+<h3>plot<a class="headerlink" href="#plot" title="Permalink to this headline">¶</a></h3>
+<p>provide various kinds of plot</p>
+<dl class="class">
+<dt id="twinpy.common.plot.BandsPlot">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">BandsPlot</code><span class="sig-paren">(</span><em class="sig-param">fig</em>, <em class="sig-param">phonons</em>, <em class="sig-param">orig_cells</em>, <em class="sig-param">band_labels=None</em>, <em class="sig-param">segment_qpoints=None</em>, <em class="sig-param">is_auto=False</em>, <em class="sig-param">xscale=20</em>, <em class="sig-param">npoints=51</em>, <em class="sig-param">with_dos=False</em>, <em class="sig-param">mesh=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#BandsPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.BandsPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">phonopy.phonon.band_structure.BandPlot</span></code></p>
+<p>band structure plot class</p>
+<dl class="method">
+<dt id="twinpy.common.plot.BandsPlot.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">fig</em>, <em class="sig-param">phonons</em>, <em class="sig-param">orig_cells</em>, <em class="sig-param">band_labels=None</em>, <em class="sig-param">segment_qpoints=None</em>, <em class="sig-param">is_auto=False</em>, <em class="sig-param">xscale=20</em>, <em class="sig-param">npoints=51</em>, <em class="sig-param">with_dos=False</em>, <em class="sig-param">mesh=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#BandsPlot.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.BandsPlot.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>band plot</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.common.plot.BandsPlot.__module__">
+<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.common.plot'</em><a class="headerlink" href="#twinpy.common.plot.BandsPlot.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.common.plot.BandsPlot._get_spg_dataset">
+<code class="sig-name descname">_get_spg_dataset</code><span class="sig-paren">(</span><em class="sig-param">orig_cell</em>, <em class="sig-param">ph_atoms</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#BandsPlot._get_spg_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.BandsPlot._get_spg_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>orig_cell: original input cell
+ph_atoms: primitive cell stored in phonon object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.common.plot.BandsPlot._revise_distances">
+<code class="sig-name descname">_revise_distances</code><span class="sig-paren">(</span><em class="sig-param">distances</em>, <em class="sig-param">base_distances</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#BandsPlot._revise_distances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.BandsPlot._revise_distances" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.common.plot.BandsPlot._run_band">
+<code class="sig-name descname">_run_band</code><span class="sig-paren">(</span><em class="sig-param">band_labels</em>, <em class="sig-param">segment_qpoints</em>, <em class="sig-param">is_auto</em>, <em class="sig-param">npoints</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#BandsPlot._run_band"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.BandsPlot._run_band" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.common.plot.BandsPlot._set_axs">
+<code class="sig-name descname">_set_axs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#BandsPlot._set_axs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.BandsPlot._set_axs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.common.plot.BandsPlot._set_frame">
+<code class="sig-name descname">_set_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#BandsPlot._set_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.BandsPlot._set_frame" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.common.plot.BandsPlot.plot_bands">
+<code class="sig-name descname">plot_bands</code><span class="sig-paren">(</span><em class="sig-param">cs=None</em>, <em class="sig-param">alphas=None</em>, <em class="sig-param">linestyles=None</em>, <em class="sig-param">linewidths=None</em>, <em class="sig-param">labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#BandsPlot.plot_bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.BandsPlot.plot_bands" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot band, kwargs is passed for plotting with matplotlib</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>currently suppored kwargs</dt><dd><ul class="simple">
+<li><p>‘cs’</p></li>
+<li><p>‘alphas’</p></li>
+<li><p>‘linestyles’</p></li>
+<li><p>‘linewidths’</p></li>
+<li><p>‘labels’</p></li>
+</ul>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="twinpy.common.plot.TotalDosPlot">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">TotalDosPlot</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">mesh_object</em>, <em class="sig-param">sigma=None</em>, <em class="sig-param">use_tetrahedron_method=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#TotalDosPlot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.TotalDosPlot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">phonopy.phonon.dos.TotalDos</span></code></p>
+<dl class="method">
+<dt id="twinpy.common.plot.TotalDosPlot.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">mesh_object</em>, <em class="sig-param">sigma=None</em>, <em class="sig-param">use_tetrahedron_method=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#TotalDosPlot.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.TotalDosPlot.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>total dos plot</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sigma</strong> – float, optional
+Smearing width for smearing method. Default is None</p></li>
+<li><p><strong>use_tetrahedron_method</strong> – float, optional
+Use tetrahedron method when this is True. When sigma is set,
+smearing method is used.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.common.plot.TotalDosPlot.__module__">
+<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.common.plot'</em><a class="headerlink" href="#twinpy.common.plot.TotalDosPlot.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.common.plot.TotalDosPlot.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">c</em>, <em class="sig-param">alpha</em>, <em class="sig-param">linestyle</em>, <em class="sig-param">linewidth</em>, <em class="sig-param">xlabel=None</em>, <em class="sig-param">ylabel=None</em>, <em class="sig-param">draw_grid=True</em>, <em class="sig-param">flip_xy=False</em>, <em class="sig-param">label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#TotalDosPlot.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.TotalDosPlot.plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.common.plot._plot_total_dos">
+<code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">_plot_total_dos</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">frequency_points</em>, <em class="sig-param">total_dos</em>, <em class="sig-param">c</em>, <em class="sig-param">alpha</em>, <em class="sig-param">linewidth</em>, <em class="sig-param">linestyle</em>, <em class="sig-param">freq_Debye=None</em>, <em class="sig-param">Debye_fit_coef=None</em>, <em class="sig-param">xlabel=None</em>, <em class="sig-param">ylabel=None</em>, <em class="sig-param">draw_grid=True</em>, <em class="sig-param">flip_xy=False</em>, <em class="sig-param">label=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#_plot_total_dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot._plot_total_dos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="twinpy.common.plot._run_band_calc">
+<code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">_run_band_calc</code><span class="sig-paren">(</span><em class="sig-param">phonon</em>, <em class="sig-param">band_labels=None</em>, <em class="sig-param">segment_qpoints=None</em>, <em class="sig-param">is_auto=False</em>, <em class="sig-param">npoints=51</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#_run_band_calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot._run_band_calc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="twinpy.common.plot.bands_plot">
+<code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">bands_plot</code><span class="sig-paren">(</span><em class="sig-param">fig</em>, <em class="sig-param">phonons</em>, <em class="sig-param">orig_cells</em>, <em class="sig-param">with_dos=False</em>, <em class="sig-param">mesh=None</em>, <em class="sig-param">band_labels=None</em>, <em class="sig-param">segment_qpoints=None</em>, <em class="sig-param">is_auto=False</em>, <em class="sig-param">xscale=20</em>, <em class="sig-param">npoints=51</em>, <em class="sig-param">cs=None</em>, <em class="sig-param">alphas=None</em>, <em class="sig-param">linewidths=None</em>, <em class="sig-param">linestyles=None</em>, <em class="sig-param">labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#bands_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.bands_plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="twinpy.common.plot.decorate_string_for_latex">
+<code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">decorate_string_for_latex</code><span class="sig-paren">(</span><em class="sig-param">string</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#decorate_string_for_latex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.decorate_string_for_latex" title="Permalink to this definition">¶</a></dt>
+<dd><p>decorate strings for latex</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.common.plot.get_plot_properties_from_trajectory">
+<code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">get_plot_properties_from_trajectory</code><span class="sig-paren">(</span><em class="sig-param">plot_nums: int</em>, <em class="sig-param">base_color: str = 'r'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#get_plot_properties_from_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.get_plot_properties_from_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>arg ‘plot_nums’ is the number of plots
+return (cs, alphas, linewidths, linestyles)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.common.plot.line_chart">
+<code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">line_chart</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">xdata</em>, <em class="sig-param">ydata</em>, <em class="sig-param">xlabel</em>, <em class="sig-param">ylabel</em>, <em class="sig-param">label=None</em>, <em class="sig-param">alpha=1.0</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#line_chart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.line_chart" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot line chart in ax</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>kwargs: c, marker, facecolor</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.common.plot.line_chart_group">
+<code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">line_chart_group</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">xdata</em>, <em class="sig-param">ydata</em>, <em class="sig-param">xlabel</em>, <em class="sig-param">ylabel</em>, <em class="sig-param">gdata</em>, <em class="sig-param">glabel</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#line_chart_group"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.line_chart_group" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="twinpy.common.plot.line_chart_group_trajectory">
+<code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">line_chart_group_trajectory</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">xdata</em>, <em class="sig-param">ydata</em>, <em class="sig-param">xlabel</em>, <em class="sig-param">ylabel</em>, <em class="sig-param">gdata</em>, <em class="sig-param">glabel</em>, <em class="sig-param">tdata=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#line_chart_group_trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.line_chart_group_trajectory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="twinpy.common.plot.shift_energy_plot">
+<code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">shift_energy_plot</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">shifts</em>, <em class="sig-param">energies</em>, <em class="sig-param">natoms</em>, <em class="sig-param">a</em>, <em class="sig-param">b</em>, <em class="sig-param">ev_range=4</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#shift_energy_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.shift_energy_plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="twinpy.common.plot.total_doses_plot">
+<code class="sig-prename descclassname">twinpy.common.plot.</code><code class="sig-name descname">total_doses_plot</code><span class="sig-paren">(</span><em class="sig-param">ax</em>, <em class="sig-param">phonons</em>, <em class="sig-param">mesh</em>, <em class="sig-param">sigma=None</em>, <em class="sig-param">freq_min=None</em>, <em class="sig-param">freq_max=None</em>, <em class="sig-param">freq_pitch=None</em>, <em class="sig-param">use_tetrahedron_method=False</em>, <em class="sig-param">cs=None</em>, <em class="sig-param">alphas=None</em>, <em class="sig-param">linewidths=None</em>, <em class="sig-param">linestyles=None</em>, <em class="sig-param">draw_grid=True</em>, <em class="sig-param">flip_xy=False</em>, <em class="sig-param">labels=None</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/plot.html#total_doses_plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.plot.total_doses_plot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
 </div>
 <div class="section" id="module-twinpy.common.utils">
 <span id="twinpy-common-utils-module"></span><h2>twinpy.common.utils module<a class="headerlink" href="#module-twinpy.common.utils" title="Permalink to this headline">¶</a></h2>
@@ -288,10 +453,10 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="twinpy.lattice.html" class="btn btn-neutral float-right" title="twinpy.lattice package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="twinpy.interfaces.html" class="btn btn-neutral float-right" title="twinpy.interfaces package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="twinpy.html" class="btn btn-neutral float-left" title="twinpy package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="twinpy.analysis.html" class="btn btn-neutral float-left" title="twinpy.analysis package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

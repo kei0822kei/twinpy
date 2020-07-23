@@ -1,0 +1,422 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.interfaces package &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/language_data.js"></script>
+        <script src="../_static/contentui.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within twinpy 0.0.1 documentation"
+          href="../_static/opensearch.xml"/>
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="twinpy.lattice package" href="twinpy.lattice.html" />
+    <link rel="prev" title="twinpy.common package" href="twinpy.common.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="twinpy.html">API documentation</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="twinpy.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="twinpy.analysis.html">twinpy.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="twinpy.common.html">twinpy.common package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">twinpy.interfaces package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.interfaces.aiida">twinpy.interfaces.aiida module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.interfaces">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="twinpy.lattice.html">twinpy.lattice package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="twinpy.properties.html">twinpy.properties package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="twinpy.structure.html">twinpy.structure package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy.api_twinpy">twinpy.api_twinpy module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy.file_io">twinpy.file_io module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="twinpy.html#module-twinpy">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="twinpy.html">twinpy package</a> &raquo;</li>
+        
+      <li>twinpy.interfaces package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="twinpy-interfaces-package">
+<h1>twinpy.interfaces package<a class="headerlink" href="#twinpy-interfaces-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-twinpy.interfaces.aiida">
+<span id="twinpy-interfaces-aiida-module"></span><h2>twinpy.interfaces.aiida module<a class="headerlink" href="#module-twinpy.interfaces.aiida" title="Permalink to this headline">¶</a></h2>
+<p>aiida interface</p>
+<dl class="class">
+<dt id="twinpy.interfaces.aiida.PhonopyWorkChain">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.interfaces.aiida.</code><code class="sig-name descname">PhonopyWorkChain</code><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#PhonopyWorkChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.PhonopyWorkChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>phonon work chain class</p>
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.PhonopyWorkChain.__dict__">
+<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.interfaces.aiida', '__doc__': '\n    phonon work chain class\n    ', '__init__': &lt;function PhonopyWorkChain.__init__&gt;, 'get_unitcell': &lt;function PhonopyWorkChain.get_unitcell&gt;, 'get_phonon': &lt;function PhonopyWorkChain.get_phonon&gt;, '__dict__': &lt;attribute '__dict__' of 'PhonopyWorkChain' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'PhonopyWorkChain' objects&gt;})</em><a class="headerlink" href="#twinpy.interfaces.aiida.PhonopyWorkChain.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.PhonopyWorkChain.__init__">
+<code class="sig-name descname">__init__</code><em class="property"> = &lt;method-wrapper '__init__' of FunctionWrapper object&gt;</em><a class="headerlink" href="#twinpy.interfaces.aiida.PhonopyWorkChain.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.PhonopyWorkChain.__module__">
+<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.interfaces.aiida'</em><a class="headerlink" href="#twinpy.interfaces.aiida.PhonopyWorkChain.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.PhonopyWorkChain.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#twinpy.interfaces.aiida.PhonopyWorkChain.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.PhonopyWorkChain.get_phonon">
+<code class="sig-name descname">get_phonon</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#PhonopyWorkChain.get_phonon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.PhonopyWorkChain.get_phonon" title="Permalink to this definition">¶</a></dt>
+<dd><p>return phonopy object</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.PhonopyWorkChain.get_unitcell">
+<code class="sig-name descname">get_unitcell</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#PhonopyWorkChain.get_unitcell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.PhonopyWorkChain.get_unitcell" title="Permalink to this definition">¶</a></dt>
+<dd><p>get cell</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.interfaces.aiida.</code><code class="sig-name descname">RelaxWorkChain</code><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#RelaxWorkChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>relax work chain class</p>
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain.__dict__">
+<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.interfaces.aiida', '__doc__': '\n    relax work chain class\n    ', '__init__': &lt;function RelaxWorkChain.__init__&gt;, '_set_forces': &lt;function RelaxWorkChain._set_forces&gt;, 'forces': &lt;property object&gt;, '_set_stress': &lt;function RelaxWorkChain._set_stress&gt;, 'stress': &lt;property object&gt;, 'initial_cell': &lt;property object&gt;, 'final_cell': &lt;property object&gt;, 'get_pks': &lt;function RelaxWorkChain.get_pks&gt;, '__dict__': &lt;attribute '__dict__' of 'RelaxWorkChain' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'RelaxWorkChain' objects&gt;})</em><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain.__init__">
+<code class="sig-name descname">__init__</code><em class="property"> = &lt;method-wrapper '__init__' of FunctionWrapper object&gt;</em><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain.__module__">
+<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.interfaces.aiida'</em><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain._set_forces">
+<code class="sig-name descname">_set_forces</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#RelaxWorkChain._set_forces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain._set_forces" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain._set_stress">
+<code class="sig-name descname">_set_stress</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#RelaxWorkChain._set_stress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain._set_stress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain.final_cell">
+<em class="property">property </em><code class="sig-name descname">final_cell</code><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain.final_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>final cell</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain.forces">
+<em class="property">property </em><code class="sig-name descname">forces</code><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain.forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>forces acting on atoms after relax</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain.get_pks">
+<code class="sig-name descname">get_pks</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#RelaxWorkChain.get_pks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain.get_pks" title="Permalink to this definition">¶</a></dt>
+<dd><p>get related pks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain.initial_cell">
+<em class="property">property </em><code class="sig-name descname">initial_cell</code><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain.initial_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>initial cell</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.RelaxWorkChain.stress">
+<em class="property">property </em><code class="sig-name descname">stress</code><a class="headerlink" href="#twinpy.interfaces.aiida.RelaxWorkChain.stress" title="Permalink to this definition">¶</a></dt>
+<dd><p>stress acting on lattice after relax</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="twinpy.interfaces.aiida.ShearWorkChain">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.interfaces.aiida.</code><code class="sig-name descname">ShearWorkChain</code><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#ShearWorkChain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.ShearWorkChain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>shear work chain class</p>
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.ShearWorkChain.__dict__">
+<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.interfaces.aiida', '__doc__': '\n    shear work chain class\n    ', '__init__': &lt;function ShearWorkChain.__init__&gt;, '_get_pks': &lt;function ShearWorkChain._get_pks&gt;, '_get_original_cells': &lt;function ShearWorkChain._get_original_cells&gt;, 'get_analyzer': &lt;function ShearWorkChain.get_analyzer&gt;, '__dict__': &lt;attribute '__dict__' of 'ShearWorkChain' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'ShearWorkChain' objects&gt;})</em><a class="headerlink" href="#twinpy.interfaces.aiida.ShearWorkChain.__dict__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.ShearWorkChain.__init__">
+<code class="sig-name descname">__init__</code><em class="property"> = &lt;method-wrapper '__init__' of FunctionWrapper object&gt;</em><a class="headerlink" href="#twinpy.interfaces.aiida.ShearWorkChain.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.ShearWorkChain.__module__">
+<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.interfaces.aiida'</em><a class="headerlink" href="#twinpy.interfaces.aiida.ShearWorkChain.__module__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="twinpy.interfaces.aiida.ShearWorkChain.__weakref__">
+<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#twinpy.interfaces.aiida.ShearWorkChain.__weakref__" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of weak references to the object (if defined)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.ShearWorkChain._get_original_cells">
+<code class="sig-name descname">_get_original_cells</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#ShearWorkChain._get_original_cells"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.ShearWorkChain._get_original_cells" title="Permalink to this definition">¶</a></dt>
+<dd><p>get original cell before standardize</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.ShearWorkChain._get_pks">
+<code class="sig-name descname">_get_pks</code><span class="sig-paren">(</span><em class="sig-param">workflow</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#ShearWorkChain._get_pks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.ShearWorkChain._get_pks" title="Permalink to this definition">¶</a></dt>
+<dd><p>get relax and phonopy pks</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="twinpy.interfaces.aiida.ShearWorkChain.get_analyzer">
+<code class="sig-name descname">get_analyzer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#ShearWorkChain.get_analyzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.ShearWorkChain.get_analyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>get ShearAnalyzer class object</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.interfaces.aiida.check_process_class">
+<code class="sig-prename descclassname">twinpy.interfaces.aiida.</code><code class="sig-name descname">check_process_class</code><span class="sig-paren">(</span><em class="sig-param">node</em>, <em class="sig-param">expected_process_class: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#check_process_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.check_process_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>check process class of node is the same as the expected</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> – aiida node</p></li>
+<li><p><strong>expected_process_class</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – expected process class</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – input node is not the same as expected</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="twinpy.interfaces.aiida.get_cell_from_aiida">
+<code class="sig-prename descclassname">twinpy.interfaces.aiida.</code><code class="sig-name descname">get_cell_from_aiida</code><span class="sig-paren">(</span><em class="sig-param">aiida_structure</em>, <em class="sig-param">get_scaled_positions=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/interfaces/aiida.html#get_cell_from_aiida"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.interfaces.aiida.get_cell_from_aiida" title="Permalink to this definition">¶</a></dt>
+<dd><p>cell = (lattice, scaled_positions, symbols)</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-twinpy.interfaces">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-twinpy.interfaces" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="twinpy.lattice.html" class="btn btn-neutral float-right" title="twinpy.lattice package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="twinpy.common.html" class="btn btn-neutral float-left" title="twinpy.common package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

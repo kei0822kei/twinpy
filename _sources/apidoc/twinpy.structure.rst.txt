@@ -14,10 +14,30 @@ twinpy.structure.base module
    :undoc-members:
    :show-inheritance:
 
+twinpy.structure.diff module
+----------------------------
+
+.. automodule:: twinpy.structure.diff
+   :members:
+   :special-members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
 twinpy.structure.shear module
 -----------------------------
 
 .. automodule:: twinpy.structure.shear
+   :members:
+   :special-members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
+twinpy.structure.standardize module
+-----------------------------------
+
+.. automodule:: twinpy.structure.standardize
    :members:
    :special-members:
    :private-members:
