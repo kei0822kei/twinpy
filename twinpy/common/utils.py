@@ -2,16 +2,17 @@
 # -*- coding: utf-8 -*-
 
 """
-this script provide various convenient tools used by other scripts in twinpy
+This file provides various convenient tools used by other scripts in twinpy.
 """
 
 import numpy as np
 import math
 from decimal import Decimal, ROUND_HALF_UP
 
-def float2frac(var, accuracy=3, denominator=10):
+
+def float2frac(var, accuracy=3, denominator=10) -> str:
     """
-    transform float to fractional (str object)
+    Transform float to fractional (str object).
 
     Args:
         var (float): input value
@@ -22,17 +23,14 @@ def float2frac(var, accuracy=3, denominator=10):
                            check from 1/2 to 12/13
 
     Returns:
-        dict: description
+        str: fractional value
 
     Raises:
-        ValueError: could not find fractional representation of input 'var'
+        RuntimeError: could not find fractional representation of input 'var'
 
     Examples:
         >>> float2frac(-1.333333, 3)
           '-4/3'
-
-    Note:
-        description
     """
     def _decimal_part2frac(deci_part, accuracy, denominator):
         flag = 1
@@ -49,8 +47,8 @@ def float2frac(var, accuracy=3, denominator=10):
             else:
                 continue
         if flag == 1:
-            raise ValueError("could not find fractional representation of %s"
-                    % deci_part)
+            raise RuntimeError("could not find fractional representation of %s"
+                               % deci_part)
         else:
             return pair
 
@@ -70,11 +68,12 @@ def float2frac(var, accuracy=3, denominator=10):
         pair = _decimal_part2frac(deci_part, accuracy, denominator)
         return sign+str(int_part*pair[1]+pair[0])+'/'+str(pair[1])
 
+
 def get_ratio(nums:list,
               threshold:float=1e-3,
               maxmultiply:int=100) -> list:
     """
-    get ration of input nums
+    Get ration of input nums.
 
     Args:
         nums (list): numbers
@@ -83,8 +82,8 @@ def get_ratio(nums:list,
         list: ratio
 
     Raises:
-        ValueError: could not find multiply number
-                    for making input number integer
+        RuntimeError: could not find multiply number
+                      for making input number integer
 
     Examples:
         >>> get_ratio([ 1.33333, 5, 7.5])
@@ -104,8 +103,8 @@ def get_ratio(nums:list,
                 break
             else:
                 if i == 100:
-                    raise ValueError("could not find multiply number "
-                                     "for make input number integer")
+                    raise RuntimeError("could not find multiply number "
+                                       "for make input number integer")
         return multinum
 
     inputs = np.array(nums)
@@ -119,6 +118,7 @@ def get_ratio(nums:list,
         common_multi = (common_multi * multi) // math.gcd(common_multi, multi)
     integers = list(map(round_off, inputs_div * common_multi))
     return integers
+
 
 def round_off(x:float):
     """
