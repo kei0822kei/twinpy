@@ -10,19 +10,30 @@ import spglib
 from phonopy.structure.atoms import symbol_map, atom_data
 from phonopy.interface.vasp import sort_positions_by_symbols
 
-def get_standardized_cell(cell,
+
+def get_standardized_cell(cell:tuple,
                           to_primitive:bool,
                           no_idealize:bool,
                           symprec:float=1.e-5,
                           no_sort:bool=False,
                           get_sort_list:list=False,
-                          ):
+                          ) -> tuple:
     """
-    get standardized cell
-    return tuple
+    Get standardized cell.
 
     Args:
-        cell: input cell
+        cell (tuple): input cell
+        to_primitive (bool): True => primitive,
+                             False => conventional
+        no_idealize (bool): True => not rotate crystal body,
+                            False => rotate crystal body
+        symprec (float): symmetry tolerance, for more detail
+                         see spglib documentation
+        no_sort (bool): does not change atoms order
+        get_sort_list (bool): When no_sort=True, return sort list
+
+    Returns:
+        tuple: standardized cell
 
     Note:
         For the other arguments, see StandardizeCell.get_standardized_cell.
@@ -36,26 +47,40 @@ def get_standardized_cell(cell,
     return std_cell
 
 
-def get_atomic_numbers(symbols):
+def get_atomic_numbers(symbols:list) -> list:
     """
-    get atomic numbers from symbols
+    Get atomic numbers from symbols.
+
+    Returns:
+        list: list of element numbers
     """
     numbers = [ symbol_map[symbol] for symbol in symbols ]
     return numbers
 
-def get_chemical_symbols(numbers):
+
+def get_chemical_symbols(numbers) -> list:
     """
-    get chemical symbols from atomic numbers
+    Get chemical symbols from atomic numbers.
+
+    Returns:
+        list: list of symbols
     """
     symbols = [ atom_data[num][0] for num in numbers ]
     return symbols
 
-def get_conventional_to_primitive_matrix(centering:str):
+
+def get_conventional_to_primitive_matrix(centering:str) -> np.array:
     """
     get conventional to primitive matrix, P_c
 
     Args:
         centering (str): choose from  'P', 'A', 'C', 'R', 'I' and 'F'
+
+    Raises:
+        RuntimeError: irrigal centering specified
+
+    Returns:
+        np.array: conventional to primitive matrix
     """
     if centering == 'P':
         P_c = np.array([[ 1. ,  0. ,  0.  ],
@@ -89,23 +114,11 @@ def get_conventional_to_primitive_matrix(centering:str):
 
 class StandardizeCell():
     """
-    symmetry analyzer
-
-       .. attribute:: att1
-
-          Optional comment string.
-
-
-       .. attribute:: att2
-
-          Optional comment string.
-
+    Symmetry analyzer
     """
 
     def __init__(self, cell):
         """
-        init
-
         Args:
             cell: cell = (lattice, scaled_positions, symbols)
         """
@@ -125,41 +138,49 @@ class StandardizeCell():
     @property
     def cell(self):
         """
-        cell
+        Cell
         """
         return self._cell
 
     @property
     def origin_shift(self):
         """
-        origin shift, p
+        Origin shift, p.
         """
         return self._origin_shift
 
     @property
     def rotation_matrix(self):
         """
-        rotation matrix
+        Rotation matrix.
         """
         return self._rotation_matrix
 
     @property
     def transformation_matrix(self):
         """
-        transformation matrix, P
+        Transformation matrix, P.
         """
         return self._transformation_matrix
 
     @property
     def conventional_to_primitive_matrix(self):
         """
-        conventional to primitive matrix, P_c
+        Conventional to primitive matrix, P_c.
         """
         return self._conv_to_prim_matrix
 
     def _check_spg_output(self):
         """
         check spglib output
+
+        Raises:
+            AssertionError: M != M_s P
+            AssertionError: M_p != M_s P_c
+            AssertionError: M_bar_s != R M_s
+            AssertionError: M_bar_p != R M_p
+            AssertionError: x_s != P x + p
+            AssertionError: x_p != P_c^{-1} x_s
         """
         def __check_lattice_matrix(P, P_c, R, M, M_s, M_p,
                                    M_bar_s, M_bar_p):
@@ -203,7 +224,6 @@ class StandardizeCell():
                        in np.round(x_p, decimals=8), \
                        'x_p != P_c^{-1} x_s, check script'
 
-
         atol = 1e-8
 
         conv_orig = self.get_standardized_cell(to_primitive=False,
@@ -239,7 +259,7 @@ class StandardizeCell():
                               no_sort:bool=False,
                               get_sort_list:list=False):
         """
-        get stadandardized cell
+        Get stadandardized cell.
 
         Args:
             to_primitive (bool): True => primitive,
@@ -251,9 +271,9 @@ class StandardizeCell():
             no_sort (bool): does not change atoms order
             get_sort_list (bool): When no_sort=True, return sort list
         """
-        std_cell =  spglib.standardize_cell(self._cell_for_spglib,
-                                            to_primitive=to_primitive,
-                                            no_idealize=no_idealize)
+        std_cell = spglib.standardize_cell(self._cell_for_spglib,
+                                           to_primitive=to_primitive,
+                                           no_idealize=no_idealize)
         if no_sort:
             return std_cell
         else:

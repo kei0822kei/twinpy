@@ -6,63 +6,14 @@ HexagonalStructure
 """
 
 import numpy as np
-from scipy.linalg import sqrtm
 from copy import deepcopy
-import spglib
-from phonopy.structure.atoms import PhonopyAtoms
-from phonopy.structure.cells import Primitive, Supercell
-from pymatgen.core.structure import Structure
-from typing import Sequence, Union
-from twinpy.common.utils import get_ratio
-from twinpy.properties.hexagonal import get_atom_positions
-from twinpy.properties.twinmode import TwinIndices
-from twinpy.lattice.lattice import Lattice
-from twinpy.lattice.hexagonal_plane import HexagonalPlane
 from twinpy.structure.base import _BaseStructure
 from twinpy.structure.shear import ShearStructure
-from twinpy.file_io import write_poscar
 
-def get_twinboundary(lattice:np.array,
-                     symbol:str,
-                     twinmode:str,
-                     wyckoff:str='c',
-                     twintype:int=1,
-                     xshift:float=0.,
-                     yshift:float=0.,
-                     dim:np.array=np.ones(3, dtype='intc'),
-                     shear_strain_ratio:float=0.,
-                     make_tb_flat:bool=False,
-                     ):
-    """
-    set shear structure object
-
-    Args:
-        lattice (np.array): lattice
-        symbol (str): element symbol
-        twinmode (str): twinmode
-        wyckoff (str): No.194 Wycoff position ('c' or 'd')
-        twintype (int): twintype, choose from 1 and 2
-        xshift (float): x shift
-        yshift (float): y shift
-        dim (np.array): dimension
-        shear_strain_ratio (float): shear twinboundary ratio
-        make_tb_flat (bool): whether make twin boundary flat
-    """
-    tb = TwinBoundaryStructure(lattice=lattice,
-                               symbol=symbol,
-                               twinmode=twinmode,
-                               twintype=twintype,
-                               wyckoff=wyckoff)
-    tb.run(dim=dim,
-           xshift=xshift,
-           yshift=yshift,
-           shear_strain_ratio=shear_strain_ratio,
-           make_tb_flat=make_tb_flat)
-    return tb
 
 class TwinBoundaryStructure(_BaseStructure):
     """
-    twinboundary structure class
+    Twinboundary structure class.
     """
 
     def __init__(
@@ -72,9 +23,10 @@ class TwinBoundaryStructure(_BaseStructure):
            twinmode:str,
            twintype:int,
            wyckoff:str='c',
-        ):
+           ):
         """
-        initialize
+        Args:
+            twintype (int): twin type choose 1 or 2
 
         Note:
             to see detail, visit _BaseStructure class
@@ -91,6 +43,9 @@ class TwinBoundaryStructure(_BaseStructure):
         self._set_dichromatic_operation()
 
     def _set_rotation_matrix(self):
+        """
+        Set rotation matrix
+        """
         indices = self._indices.get_indices()
         rotation_matrix = np.array([
                 indices['m'].get_cartesian(normalize=True),
@@ -102,27 +57,30 @@ class TwinBoundaryStructure(_BaseStructure):
     @property
     def rotation_matrix(self):
         """
-        rotation matrix
+        Rotation matrix.
         """
         return self._rotation_matrix
 
     @property
     def shear_strain_ratio(self):
         """
-        shear twinboundary ratio
+        Shear twinboundary ratio.
         """
         return self._shear_strain_ratio
 
     @property
     def twintype(self):
         """
-        twin type
+        Twin type.
         """
         return self._twintype
 
     def _set_dichromatic_operation(self):
         """
-        get dichromatic operation
+        Set dichromatic operation.
+
+        Raises:
+            ValueError: twintype != 1 nor 2
         """
         twintype = self._twintype
         if twintype == 1:
@@ -135,19 +93,20 @@ class TwinBoundaryStructure(_BaseStructure):
                           [ 0, 0,-1]])
         else:
             msg = "twintype must be 1 or 2"
-            raise RuntimeError(msg)
+            raise ValueError(msg)
         self._dichromatic_operation = W
 
     @property
     def dichromatic_operation(self):
         """
-        rotation matrix
+        Dichromatic operation.
         """
         return self._dichromatic_operation
 
-    def _get_parent_structure(self, dim):
+    def _get_parent_structure(self,
+                              dim:np.array):
         """
-        get parent
+        Get parent.
         """
         parent = ShearStructure(lattice=self._hcp_lattice.lattice,
                                 symbol=self._symbol,
@@ -158,11 +117,11 @@ class TwinBoundaryStructure(_BaseStructure):
         output_structure = parent.output_structure
         return output_structure
 
-    def _get_shear_tb_lattice(self,
-                              tb_lattice,
-                              shear_strain_ratio):
+    def _get_shear_twobundary_lattice(self,
+                                      tb_lattice:np.array,
+                                      shear_strain_ratio:float):
         """
-        return shear twinboudnary lattice
+        Get shear twinboudnary lattice.
         """
         lat = deepcopy(tb_lattice)
         e_b = lat[1] / np.linalg.norm(lat[1])
@@ -174,11 +133,16 @@ class TwinBoundaryStructure(_BaseStructure):
         return lat
 
     def get_twinboudnary_lattice(self,
-                                 dim=np.ones(3, dtype='intc'),
-                                 xshift=0.,
-                                 yshift=0.):
+                                 dim:np.array=np.ones(3, dtype='intc'),
+                                 xshift:float=0.,
+                                 yshift:float=0.):
         """
-        return twinboundary lattice
+        Get twinboundary lattice.
+
+        Args:
+            dim (np.array): dimension
+            xshift (float): x shift
+            yshift (float): y shift
         """
         multi_dim = np.array(dim) * np.array([1,1,2])
         p_orig_structure = self._get_parent_structure(dim=multi_dim)
@@ -203,8 +167,8 @@ class TwinBoundaryStructure(_BaseStructure):
                                t_cart_points.T).T
         t_frac_points = np.round(t_frac_points, decimals=8) % 1.
 
-        p_ix = np.where(p_frac_points[:,2]<0.5)[0]
-        t_ix = np.where(t_frac_points[:,2]>=0.5)[0]
+        p_ix = np.where(p_frac_points[:,2] < 0.5)[0]
+        t_ix = np.where(t_frac_points[:,2] >= 0.5)[0]
         p_shift = np.array([-xshift/2/dim[0], -yshift/2/dim[1], 0.])
         t_shift = np.array([ xshift/2/dim[0],  yshift/2/dim[1], 0.])
         scaled_positions = np.vstack([p_frac_points[p_ix]+p_shift,
@@ -215,9 +179,10 @@ class TwinBoundaryStructure(_BaseStructure):
 
         return (tb_frame, scaled_positions, symbols)
 
-    def _make_twinboundary_flat(self, output_structure):
+    def _make_twinboundary_flat(self,
+                                output_structure:dict):
         """
-        make twinboundary flat
+        Make twinboundary flat.
         """
         white_lp = output_structure['lattice_points']['white']
         black_lp = output_structure['lattice_points']['black']
@@ -230,8 +195,10 @@ class TwinBoundaryStructure(_BaseStructure):
                           'black': black_lp[black_ix],
                           'black_tb': black_lp[black_tb_ix]}
         atoms_from_lp = output_structure['atoms_from_lattice_points']
-        atoms_from_lp['white_tb'] = atoms_from_lp['white'] * np.array([1.,1.,0.])
-        atoms_from_lp['black_tb'] = atoms_from_lp['black'] * np.array([1.,1.,0.])
+        atoms_from_lp['white_tb'] = \
+                atoms_from_lp['white'] * np.array([1.,1.,0. ])
+        atoms_from_lp['black_tb'] = \
+                atoms_from_lp['black'] * np.array([1.,1.,0. ])
         flat_structure = {
                 'lattice': output_structure['lattice'],
                 'lattice_points': lattice_points,
@@ -241,14 +208,21 @@ class TwinBoundaryStructure(_BaseStructure):
         return flat_structure
 
     def run(self,
-            dim=np.ones(3, dtype='intc'),
-            xshift=0.,
-            yshift=0.,
-            shear_strain_ratio=0.,
-            make_tb_flat=False,
+            dim:np.array=np.ones(3, dtype='intc'),
+            xshift:float=0.,
+            yshift:float=0.,
+            shear_strain_ratio:float=0.,
+            make_tb_flat:bool=False,
             ):
         """
-        build structure
+        Build structure.
+
+        Args:
+            dim (np.array): dimension
+            xshift (float): x shift
+            yshift (float): y shift
+            shear_strain_ratio (float): shear strain ratio
+            make_tb_flat (bool): whether make twin boundary flat
 
         Note:
             the structure built is set self.output_structure
@@ -269,7 +243,7 @@ class TwinBoundaryStructure(_BaseStructure):
         white_ix = [ i for i in range(len(dichs)) if dichs[i] == 'white' ]
         black_ix = [ i for i in range(len(dichs)) if dichs[i] == 'black' ]
         symbols = [ self._symbol ] * len(lat_points) * len(parent_frac_atoms)
-        tb_shear_frame = self._get_shear_tb_lattice(
+        tb_shear_frame = self._get_shear_twinboundary_lattice(
                 tb_lattice=tb_frame,
                 shear_strain_ratio=shear_strain_ratio)
         output_structure = \
@@ -293,3 +267,42 @@ class TwinBoundaryStructure(_BaseStructure):
         self._xshift = xshift
         self._yshift = yshift
         self._shear_strain_ratio = shear_strain_ratio
+
+
+def get_twinboundary(lattice:np.array,
+                     symbol:str,
+                     twinmode:str,
+                     wyckoff:str='c',
+                     twintype:int=1,
+                     xshift:float=0.,
+                     yshift:float=0.,
+                     dim:np.array=np.ones(3, dtype='intc'),
+                     shear_strain_ratio:float=0.,
+                     make_tb_flat:bool=False,
+                     ):
+    """
+    Get twinboudnary structure object.
+
+    Args:
+        lattice (np.array): lattice
+        symbol (str): element symbol
+        twinmode (str): twinmode
+        wyckoff (str): No.194 Wycoff position ('c' or 'd')
+        twintype (int): twintype, choose from 1 and 2
+        xshift (float): x shift
+        yshift (float): y shift
+        dim (np.array): dimension
+        shear_strain_ratio (float): shear twinboundary ratio
+        make_tb_flat (bool): whether make twin boundary flat
+    """
+    tb = TwinBoundaryStructure(lattice=lattice,
+                               symbol=symbol,
+                               twinmode=twinmode,
+                               twintype=twintype,
+                               wyckoff=wyckoff)
+    tb.run(dim=dim,
+           xshift=xshift,
+           yshift=yshift,
+           shear_strain_ratio=shear_strain_ratio,
+           make_tb_flat=make_tb_flat)
+    return tb

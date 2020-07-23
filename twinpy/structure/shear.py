@@ -2,62 +2,19 @@
 # -*- coding: utf-8 -*-
 
 """
-HexagonalStructure
+Hexagonal shear structure
 """
 
 import numpy as np
 from scipy.linalg import sqrtm
-import spglib
-from phonopy.structure.atoms import PhonopyAtoms
-from phonopy.structure.cells import Primitive, Supercell
-from pymatgen.core.structure import Structure
-from typing import Sequence, Union
-from twinpy.common.utils import get_ratio
-from twinpy.properties.twinmode import TwinIndices
-from twinpy.lattice.lattice import Lattice
 from twinpy.lattice.hexagonal_plane import HexagonalPlane
-from twinpy.file_io import write_poscar
 from twinpy.structure.base import (get_lattice_points_from_supercell,
-                                   get_atom_positions_from_lattice_points,
                                    _BaseStructure)
-
-
-def get_shear(lattice:np.array,
-              symbol:str,
-              twinmode:str,
-              wyckoff:str='c',
-              xshift:float=0.,
-              yshift:float=0.,
-              dim:np.array=np.ones(3, dtype='intc'),
-              shear_strain_ratio:float=0.,
-              is_primitive:bool=False):
-    """
-    set shear structure object
-
-    Args:
-        lattice (np.array): lattice
-        symbol (str): element symbol
-        wyckoff (str): No.194 Wycoff position ('c' or 'd')
-        xshift (float): x shift
-        yshift (float): y shift
-        dim (np.array): dimension
-        shear_strain_ratio (float): shear strain ratio
-    """
-    shear = ShearStructure(lattice=lattice,
-                           symbol=symbol,
-                           twinmode=twinmode,
-                           shear_strain_ratio=shear_strain_ratio,
-                           wyckoff=wyckoff)
-    shear.run(dim=dim,
-              xshift=xshift,
-              yshift=yshift,
-              is_primitive=is_primitive)
-    return shear
 
 
 class ShearStructure(_BaseStructure):
     """
-    shear structure class
+    Shear structure class.
     """
 
     def __init__(
@@ -67,9 +24,10 @@ class ShearStructure(_BaseStructure):
            shear_strain_ratio:float,
            twinmode:str,
            wyckoff:str='c',
-        ):
+           ):
         """
-        initialize
+        Args:
+            shear_strain_ratio (float): shear strain ratio
 
         Note:
             to see detail, visit _BaseStructure class
@@ -80,33 +38,32 @@ class ShearStructure(_BaseStructure):
                          wyckoff=wyckoff)
         self._dim = None
         self._shear_strain_ratio = shear_strain_ratio
-        self._output_structure_primitive = None
 
     @property
     def dim(self):
         """
-        dimension
+        Dimension.
         """
         return self._dim
 
     @property
     def shear_strain_ratio(self):
         """
-        shear strain ratio
+        Shear strain ratio.
         """
         return self._shear_strain_ratio
 
     @property
     def output_structure_primitive(self):
         """
-        built structure primitive basis
-        not standardized
+        Built structure primitive basis
+        not standardized.
         """
         return self._output_structure
 
     def get_gamma(self):
         """
-        get gamma
+        Get gamma.
 
         Returns:
             float: gamma used for computing shear value
@@ -118,7 +75,7 @@ class ShearStructure(_BaseStructure):
 
     def get_shear_value(self):
         """
-        get shear value
+        Get shear value.
         """
         ratio = self._shear_strain_ratio
         plane = HexagonalPlane(lattice=self._hexagonal_lattice.lattice,
@@ -132,32 +89,16 @@ class ShearStructure(_BaseStructure):
 
     def get_shear_matrix(self):
         """
-        get shear matrix
+        Get shear matrix.
         """
-        ratio = self._shear_strain_ratio
         s = self.get_shear_value()
         shear_matrix = np.eye(3)
         shear_matrix[1,2] = s
         return shear_matrix
 
-    # def get_base_primitive_cell(self):
-    #     """
-    #     get base primitive cells
-    #     """
-    #     ratio = self._shear_strain_ratio
-    #     H = self.hexagonal_lattice.lattice.T
-    #     M = self._indices.get_supercell_matrix_for_parent()
-    #     S = self.get_shear_matrix(ratio=ratio)
-    #     shear_prim_lat = np.dot(np.dot(H, M),
-    #                             np.dot(S, np.linalg.inv(M))).T
-    #     scaled_positions = self._atoms_from_lattice_points % 1.
-    #     symbols = [self._symbol] * len(scaled_positions)
-    #     cell = (shear_prim_lat, scaled_positions, symbols)
-    #     return cell
-
     def get_shear_properties(self) -> dict:
         """
-        get various properties related to shear
+        Get various properties related to shear.
 
         Note:
             key variables are
@@ -206,12 +147,21 @@ class ShearStructure(_BaseStructure):
                }
 
     def get_shear_lattice(self,
-                          is_primitive=False,
-                          dim=np.ones(3, dtype='intc'),
-                          xshift=0.,
-                          yshift=0.):
+                          is_primitive:bool=False,
+                          dim:np.array=np.ones(3, dtype='intc'),
+                          xshift:float=0.,
+                          yshift:float=0.) -> tuple:
         """
-        get shear lattice
+        Get shear lattice.
+
+        Args:
+            is_primitive (bool): If primitive, multiplied M^(-1)
+            dim (np.array): dimension
+            xshift (float): x shift
+            yshift (float): y shift
+
+        Returns:
+            tuple: shear lattice
         """
         shear_matrix = self.get_shear_matrix()
         parent_matrix = self._indices.get_supercell_matrix_for_parent()
@@ -235,12 +185,18 @@ class ShearStructure(_BaseStructure):
         return (shear_lattice, lattice_points, symbols)
 
     def run(self,
-            is_primitive=False,
-            dim=np.ones(3, dtype='intc'),
-            xshift=0.,
-            yshift=0.):
+            is_primitive:bool=False,
+            dim:np.array=np.ones(3, dtype='intc'),
+            xshift:float=0.,
+            yshift:float=0.):
         """
-        build structure
+        Build structure.
+
+        Args:
+            is_primitive (bool): If primitive, multiplied M^(-1)
+            dim (np.array): dimension
+            xshift (float): x shift
+            yshift (float): y shift
 
         Note:
             the built structure is set to self.output_structure
@@ -275,3 +231,38 @@ class ShearStructure(_BaseStructure):
         self._dim = dim
         self._xshift = xshift
         self._yshift = yshift
+
+
+def get_shear(lattice:np.array,
+              symbol:str,
+              twinmode:str,
+              wyckoff:str='c',
+              xshift:float=0.,
+              yshift:float=0.,
+              dim:np.array=np.ones(3, dtype='intc'),
+              shear_strain_ratio:float=0.,
+              is_primitive:bool=False,
+              ) -> ShearStructure:
+    """
+    Get shear structure object.
+
+    Args:
+        lattice (np.array): lattice
+        symbol (str): element symbol
+        wyckoff (str): No.194 Wycoff position ('c' or 'd')
+        xshift (float): x shift
+        yshift (float): y shift
+        dim (np.array): dimension
+        shear_strain_ratio (float): shear strain ratio
+        is_primitive (bool): If primitive, multiplied M^(-1)
+    """
+    shear = ShearStructure(lattice=lattice,
+                           symbol=symbol,
+                           twinmode=twinmode,
+                           shear_strain_ratio=shear_strain_ratio,
+                           wyckoff=wyckoff)
+    shear.run(dim=dim,
+              xshift=xshift,
+              yshift=yshift,
+              is_primitive=is_primitive)
+    return shear

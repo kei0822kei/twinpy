@@ -6,44 +6,41 @@ HexagonalStructure
 """
 
 import numpy as np
-from scipy.linalg import sqrtm
 import spglib
-from phonopy.structure.atoms import PhonopyAtoms, symbol_map
-from phonopy.structure.cells import Primitive, Supercell
-from pymatgen.core.structure import Structure
-from typing import Sequence, Union
-from twinpy.common.utils import get_ratio
+from phonopy.structure.atoms import PhonopyAtoms
+from phonopy.structure.cells import Supercell
 from twinpy.properties.hexagonal import get_atom_positions
 from twinpy.properties.twinmode import TwinIndices
 from twinpy.lattice.lattice import Lattice
-from twinpy.lattice.hexagonal_plane import HexagonalPlane
-from twinpy.file_io import write_poscar
-from twinpy.structure.standardize import StandardizeCell
+
 
 def is_hcp(lattice:np.array,
-           symbols:Sequence[str],
+           symbols:list,
            positions:np.array=None,
            scaled_positions:np.array=None,
            get_wyckoff:bool=False):
     """
-    check input structure is Hexagonal Close-Packed structure
+    Check input structure is Hexagonal Close-Packed structure.
 
     Args:
         lattice (np.array): lattice
-        symbols: atomic symbols
+        symbols: list of atomic symbols
         positions (np.array): atom cartesian positions
         scaled_positions (np.array): atom fractional positions
         get_wyckoff (bool): if True, return wyckoff letter, which is 'c' or 'd'
 
     Raises:
-        AssertionError: both positions and scaled_positions are specified
+        RuntimeError: both positions and scaled_positions are specified
         AssertionError: input symbols are not unique
         AssertionError: input structure is not
                         Hexagonal Close-Packed structure
+
+    Returns:
+        str: if get_wyckoff=True, return wyckoff letter
     """
     if positions is not None and scaled_positions is not None:
-        raise AssertionError("both positions and scaled_positions "
-                             "are specified")
+        raise RuntimeError("both positions and scaled_positions "
+                           "are specified")
 
     assert (len(set(symbols)) == 1 and len(symbols) == 2), \
         "symbols is not unique or the number of atoms are not two"
@@ -62,26 +59,11 @@ def is_hcp(lattice:np.array,
     if get_wyckoff:
         return wyckoffs[0]
 
-def get_hexagonal_structure_from_pymatgen(pmgstructure):
-    """
-    get HexagonalStructure object from pyamtgen structure
-
-    Args:
-        pmgstructure: pymatgen structure object
-    """
-    lattice = pmgstructure.lattice.matrix
-    scaled_positions = pmgstructure.frac_coords
-    symbols = [ specie.value for specie in pmgstructure.species ]
-    wyckoff = is_hcp(lattice=lattice,
-                     scaled_positions=scaled_positions,
-                     symbols=symbols,
-                     get_wyckoff=True)
-    return (lattice, scaled_positions, symbols[0], wyckoff)
 
 def get_atom_positions_from_lattice_points(lattice_points:np.array,
-                                           atoms_from_lp:np.array):
+                                           atoms_from_lp:np.array) -> np.array:
     """
-    get atom positions from lattice points
+    Get atom positions from lattice points.
 
     Args:
         lattice_points (np.array): lattice points
@@ -96,9 +78,11 @@ def get_atom_positions_from_lattice_points(lattice_points:np.array,
         scaled_positions.extend(atoms.tolist())
     return np.array(scaled_positions)
 
-def get_lattice_points_from_supercell(lattice, dim) -> np.array:
+
+def get_lattice_points_from_supercell(lattice:np.array,
+                                      dim:np.array) -> np.array:
     """
-    get lattice points from supercell
+    Get lattice points from supercell.
 
     Args:
         lattice (np.array): lattice
@@ -108,54 +92,38 @@ def get_lattice_points_from_supercell(lattice, dim) -> np.array:
         np.array: lattice points
     """
     unitcell = PhonopyAtoms(symbols=['H'],
-                    cell=lattice,
-                    scaled_positions=np.array([[0.,0.,0]]),
-                    )
+                            cell=lattice,
+                            scaled_positions=np.array([[0.,0.,0]]),
+                            )
     super_lattice = Supercell(unitcell=unitcell,
                               supercell_matrix=reshape_dimension(dim))
     lattice_points = super_lattice.scaled_positions
     return lattice_points
 
-def reshape_dimension(dim):
+
+def reshape_dimension(dim:np.array) -> np.array:
     """
-    if dim.shape == (3,), reshape to (3,3) numpy array
+    If dim.shape == (3,), reshape to (3,3) numpy array.
 
     Raises:
         ValueError: input dim is not (3,) and (3,3) array
+
+    Returns:
+        np.array: 3x3 dimention matrix
     """
     if np.array(dim).shape == (3,3):
-        dim_matrix =np.array(dim)
+        dim_matrix = np.array(dim)
     elif np.array(dim).shape == (3,):
         dim_matrix = np.diag(dim)
     else:
         raise ValueError("input dim is not (3,) and (3,3) array")
     return dim_matrix
 
-def get_phonopy_structure(cell):
-    """
-    return phonopy structure
-
-    Args:
-        cell: tuple (lattice, scaled_positions, symbols)
-    """
-    ph_structure = PhonopyAtoms(cell=cell[0],
-                                scaled_positions=cell[1],
-                                symbols=cell[2])
-    return ph_structure
-
-def get_cell_from_phonopy_structure(ph_structure):
-    """
-    get cell from phonopy structure
-    """
-    lattice = ph_structure.get_cell()
-    scaled_positions = ph_structure.get_scaled_positions()
-    symbols = ph_structure.get_chemical_symbols()
-    return (lattice, scaled_positions, symbols)
 
 class _BaseStructure():
     """
-    base structure class which is inherited
-    ShearStructure class and TwinBoundaryStructure class
+    Base structure class which is inherited
+    ShearStructure class and TwinBoundaryStructure class.
     """
     def __init__(
            self,
@@ -163,18 +131,13 @@ class _BaseStructure():
            symbol:str,
            twinmode:str,
            wyckoff:str='c',
-        ):
+           ):
         """
-        initialize
-
         Args:
             lattice (np.array): lattice
             symbol (str): element symbol
+            twinmode (str): twin mode
             wyckoff (str): No.194 Wycoff position ('c' or 'd')
-
-        Raises:
-            AssertionError: wyckoff is not 'c' and 'd'
-            ValueError: lattice is not None (future fix)
         """
         atoms_from_lp = get_atom_positions(wyckoff)
         symbols = [symbol] * 2
@@ -206,7 +169,7 @@ class _BaseStructure():
 
     def _set_twinmode(self, twinmode:str):
         """
-        set parent
+        Set parent.
 
         Args:
             twinmode (str): twinmode
@@ -220,107 +183,109 @@ class _BaseStructure():
                                     lattice=self._hexagonal_lattice,
                                     wyckoff=self._wyckoff)
 
-
     @property
     def r(self):
         """
-        r ( = c / a )
+        Lattice ratio: r ( = c / a ).
         """
         return self._r
 
     @property
     def hcp_lattice(self):
         """
-        base HCP lattice
+        Base HCP lattice.
         """
         return self._hcp_lattice
 
     @property
     def symbol(self):
         """
-        symbol
+        Symbol.
         """
         return self._symbol
 
     @property
     def wyckoff(self):
         """
-        wyckoff position
+        Wyckoff position.
         """
         return self._wyckoff
 
     @property
     def dim(self):
         """
-        dimension
+        Dimension.
         """
         return self._dim
 
     @property
     def atoms_from_lattice_points(self):
         """
-        atoms from lattice points
+        Atoms from lattice points.
         """
         return self._atoms_from_lattice_points
 
     @property
     def hexagonal_lattice(self):
         """
-        hexagonal lattice
+        Hexagonal lattice.
         """
         return self._hexagonal_lattice
 
     @property
     def xshift(self):
         """
-        x shift
+        Structure x shift.
         """
         return self._xshift
 
     @property
     def yshift(self):
         """
-        x shift
+        Structure y shift.
         """
         return self._yshift
 
     @property
     def natoms(self):
         """
-        number of atoms
+        Number of atoms.
         """
         return self._natoms
 
     @property
     def twinmode(self):
         """
-        twinmode
+        Twinmode.
         """
         return self._twinmode
 
     @property
     def indices(self):
         """
-        indices of twinmode
+        Indices of twinmode.
         """
         return self._indices
 
     @property
     def output_structure(self):
         """
-        built structure
+        Built structure.
         """
         return self._output_structure
 
-    def get_structure_for_export(self,
-                                 get_lattice=False,
-                                 move_atoms_into_unitcell=True):
+    def get_cell_for_export(self,
+                            get_lattice:bool=False,
+                            move_atoms_into_unitcell:bool=True,
+                            structure_type:bool=None) -> tuple:
         """
-        get structure for export
+        Get cell for export.
 
         Args:
             get_lattice (str): get lattice points not crystal structure
             move_atoms_into_unitcell (bool): if True, move atoms to unitcell
+            structure_type (bool): if not None, choose from 'primitive'
+                                   and 'conventional'
 
         Returns:
             tuple: output cell
@@ -355,38 +320,3 @@ class _BaseStructure():
         return (self._output_structure['lattice'],
                 scaled_positions,
                 symbols)
-
-    def get_pymatgen_structure(self,
-                               get_lattice=False,
-                               move_atoms_into_unitcell=True):
-        """
-        get pymatgen structure
-        """
-        lattice, scaled_positions, symbols = \
-                self.get_structure_for_export(
-                        get_lattice=get_lattice,
-                        move_atoms_into_unitcell=move_atoms_into_unitcell)
-        return Structure(lattice=lattice,
-                         coords=scaled_positions,
-                         species=symbols)
-
-    def write_poscar(self,
-                     filename:str='POSCAR',
-                     get_lattice=False,
-                     move_atoms_into_unitcell=True,
-                     structure_type:bool=None):
-        """
-        write poscar
-
-        Args:
-            filename (str): output filename
-            structure_type (bool): if not None, choose from 'primitive' and 'conventional'
-        """
-        lattice, scaled_positions, symbols = \
-                self.get_structure_for_export(
-                        get_lattice=get_lattice,
-                        move_atoms_into_unitcell=move_atoms_into_unitcell)
-        write_poscar(lattice=lattice,
-                     scaled_positions=scaled_positions,
-                     symbols=symbols,
-                     filename=filename)
