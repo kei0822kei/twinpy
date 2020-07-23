@@ -255,7 +255,7 @@ class StandardizeCell():
     def get_standardized_cell(self,
                               to_primitive:bool,
                               no_idealize:bool,
-                              symprec:float=1.e-5,
+                              symprec:float=1e-5,
                               no_sort:bool=False,
                               get_sort_list:list=False):
         """

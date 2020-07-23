@@ -8,13 +8,14 @@ API for twinpy
 import numpy as np
 from twinpy.structure.base import is_hcp
 from twinpy.structure.shear import get_shear
+from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
 
 
 def get_twinpy_from_cell(cell:tuple,
                          twinmode:str):
     """
-    get Twinpy object from cell
+    Get Twinpy object from cell.
 
     Args:
         cell: tuple (lattice, scaled_positions, symbols)
@@ -38,16 +39,6 @@ def get_twinpy_from_cell(cell:tuple,
 class Twinpy():
     """
     API for twinpy
-
-       .. attribute:: att1
-
-          Optional comment string.
-
-
-       .. attribute:: att2
-
-          Optional comment string.
-
     """
     def __init__(self,
                  lattice:np.array,
@@ -55,8 +46,6 @@ class Twinpy():
                  symbol:str,
                  wyckoff:str='c'):
         """
-        initialize
-
         Args:
             lattice (np.array): 3x3 lattice
             twinmode (str): twinmode
@@ -73,18 +62,19 @@ class Twinpy():
     @property
     def shear(self):
         """
-        shear structure object
+        Shear structure object.
         """
         return self._shear
 
     def set_shear(self,
-                  xshift=0.,
-                  yshift=0.,
-                  dim=np.ones(3, dtype='intc'),
-                  shear_strain_ratio=0.,
-                  is_primitive=False,):
+                  xshift:float=0.,
+                  yshift:float=0.,
+                  dim:np.array=np.ones(3, dtype='intc'),
+                  shear_strain_ratio:float=0.,
+                  is_primitive:bool=False,
+                  ):
         """
-        set shear structure object
+        Set shear structure object.
 
         Args:
             xshift (float): x shift
@@ -112,7 +102,7 @@ class Twinpy():
                          make_tb_flat=True,
                          ):
         """
-        set twinboundary structure object
+        Set twinboundary structure object.
 
         Args:
             twintype (int): twintype, choose from 1 and 2
@@ -137,13 +127,16 @@ class Twinpy():
     @property
     def twinboundary(self):
         """
-        twinboundary structure object
+        Twinboundary structure object.
         """
         return self._twinboundary
 
     def _shear_structure_is_not_set(self):
         """
-        raise RuntimeError when shear structure is not set
+        Check shear structure is set.
+
+        Raises:
+            RuntimeError: when shear structure is not set
         """
         if self._shear is None:
             msg = "shear structure is not set, run please set shear"
@@ -151,47 +144,40 @@ class Twinpy():
 
     def _twinboundary_structure_is_not_set(self):
         """
-        raise RuntimeError when twinboundary structure is not set
+        Check twinboudnary is set.
+
+        Raises:
+            RuntimeError: when twinboudary structure is not set
         """
         if self._twinboundary is None:
             msg = "twinboundary structure is not set, \
                    run please set twinboundary"
             raise RuntimeError(msg)
 
-    def write_shear_structure(self,
-                              move_atoms_into_unitcell:bool=True,
+    def get_shear_standardize(self,
                               get_lattice:bool=False,
-                              filename:str='shear_lattice.poscar',
-                              structure_type:str='base'):
+                              move_atoms_into_unitcell:bool=True,
+                              ) -> StandardizeCell:
         """
-        create shear lattice poscar file
-
-        Args:
-            filename (str): POSCAR filename
-            structure_type (str): choose from 'base', 'primitive'
-                                  and 'conventional'
+        Get shear standardized structure object.
         """
         self._shear_structure_is_not_set()
-        self._shear.write_poscar(
-                filename=filename,
+        cell = self._shear.get_cell_for_export(
+                get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
-                get_lattice=get_lattice)
+                )
+        return StandardizeCell(cell)
 
-    def write_twinboundary_structure(self,
-                                     move_atoms_into_unitcell:bool=True,
+    def get_twinboundary_standardize(self,
                                      get_lattice:bool=False,
-                                     filename:str='shear_lattice.poscar',
-                                     structure_type:str='base'):
+                                     move_atoms_into_unitcell:bool=True,
+                                     ) -> StandardizeCell:
         """
-        create shear lattice poscar file
-
-        Args:
-            filename (str): POSCAR filename
-            structure_type (str): choose from 'base', 'primitive'
-                                  and 'conventional'
+        Get twinboundary standardized structure object.
         """
         self._twinboundary_structure_is_not_set()
-        self._twinboundary.write_poscar(
-                filename=filename,
+        cell = self._twinboundary.get_cell_for_export(
+                get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
-                get_lattice=get_lattice)
+                )
+        return StandardizeCell(cell)

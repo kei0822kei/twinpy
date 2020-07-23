@@ -2,55 +2,57 @@
 # -*- coding: utf-8 -*-
 
 """
-get structure from twinpy
+Get twinpy strucuture
 """
 
 import argparse
 import numpy as np
 from twinpy.lattice.lattice import get_hexagonal_lattice_from_a_c
-from twinpy.lattice.lattice import Lattice
-from twinpy.structure.base import get_hexagonal_structure_from_pymatgen
-from twinpy.lattice.brillouin import show_brillouin_zone
+from twinpy.interfaces.pymatgen import get_hexagonal_cell_wyckoff_from_pymatgen
 from twinpy.api_twinpy import Twinpy
+from twinpy.file_io import write_poscar
 from pymatgen.io.vasp import Poscar
-from pymatgen.core.structure import Structure
+
 
 # argparse
 def get_argparse():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('--structure', type=str,
-        help="'shear' or 'twinboundary'")
+                        help="'shear' or 'twinboundary'")
     parser.add_argument('-r', '--shear_strain_ratio', type=float, default=0.,
-        help="shear strain ratio")
+                        help="shear strain ratio")
     parser.add_argument('--twinmode', type=str,
-        help="twinmode")
+                        help="twinmode")
     parser.add_argument('--twintype', type=int, default=None,
-        help="twintype, when you specify this, twin boundary mode is evoked")
+                        help="twintype, when you specify this, \
+                              twin boundary mode is evoked")
     parser.add_argument('--xshift', type=float, default=0.,
-        help="x shift")
+                        help="x shift")
     parser.add_argument('--yshift', type=float, default=0.,
-        help="y shift")
+                        help="y shift")
     parser.add_argument('--dim', type=str, default='1 1 1',
-        help="dimension")
+                        help="dimension")
     parser.add_argument('--make_tb_flat', action='store_true',
-        help="make twin boundary flat")
+                        help="make twin boundary flat")
     parser.add_argument('-c', '--posfile', default=None,
-        help="POSCAR file")
+                        help="POSCAR file")
     parser.add_argument('--get_poscar', action='store_true',
-        help="get poscar")
+                        help="get poscar")
     parser.add_argument('--get_lattice', action='store_true',
-        help="get lattice not structure")
+                        help="get lattice not structure")
     parser.add_argument('-o', '--output', default=None,
-        help="POSCAR filename")
+                        help="POSCAR filename")
     parser.add_argument('--is_primitive', action='store_true',
-        help="get primitive shear structure")
+                        help="get primitive shear structure")
     parser.add_argument('--get_primitive_standardized', action='store_true',
-        help="get primitive standardized")
+                        help="get primitive standardized")
     parser.add_argument('--get_conventional_standardized', action='store_true',
-        help="get conventional standardized")
+                        help="get conventional standardized")
     args = parser.parse_args()
+
     return args
+
 
 def _get_output_name(structure, get_lattice, shear_strain_ratio, twinmode):
     name = ''
@@ -68,8 +70,8 @@ def _get_output_name(structure, get_lattice, shear_strain_ratio, twinmode):
         name += '.poscar'
     return name
 
-def main(
-         structure,
+
+def main(structure,
          shear_strain_ratio,
          twinmode,
          twintype,
@@ -84,11 +86,19 @@ def main(
          is_primitive,
          get_primitive_standardized,
          get_conventional_standardized,
-        ):
+         ):
+
+    move_atoms_into_unitcell = True
+    symprec = 1e-5
+    no_idealize = True,
+    no_sort = True,
+    get_sort_list = False,
+
     if posfile is None:
         print("Warning:")
         print("    POSCAR file did not specify")
-        print("    Set automatically, a=2.93, c=4.65, symbol='Ti', wyckoff='c'")
+        print("    Set automatically, a=2.93, c=4.65, symbol='Ti', \
+                   wyckoff='c'")
         lattice = get_hexagonal_lattice_from_a_c(a=2.93, c=4.65)
         symbol = 'Ti'
         wyckoff = 'c'
@@ -96,7 +106,8 @@ def main(
         poscar = Poscar.from_file(posfile)
         pmgstructure = poscar.structure
         lattice, _, symbol, wyckoff = \
-                get_hexagonal_structure_from_pymatgen(pmgstructure)
+            get_hexagonal_cell_wyckoff_from_pymatgen(pmgstructure)
+
     twinpy = Twinpy(lattice=lattice,
                     twinmode=twinmode,
                     symbol=symbol,
@@ -115,10 +126,9 @@ def main(
                          dim=dim,
                          shear_strain_ratio=shear_strain_ratio,
                          is_primitive=is_primitive)
-        twinpy.write_shear_structure(
-                move_atoms_into_unitcell=True,
+        std = twinpy.get_shear_standardize(
                 get_lattice=get_lattice,
-                filename=output,
+                move_atoms_into_unitcell=move_atoms_into_unitcell,
                 )
 
     else:
@@ -128,19 +138,40 @@ def main(
                                 dim=dim,
                                 shear_strain_ratio=shear_strain_ratio,
                                 make_tb_flat=make_tb_flat)
-        twinpy.write_twinboundary_structure(
-                move_atoms_into_unitcell=True,
+        std = twinpy.get_twinboundary_standardize(
                 get_lattice=get_lattice,
-                filename=output,
+                move_atoms_into_unitcell=move_atoms_into_unitcell,
                 )
+
+    if get_primitive_standardized:
+        to_primitive = True
+    elif get_conventional_standardized:
+        to_primitive = False,
+    else:
+        to_primitive = None
+
+    if to_primitive is None:
+        out_cell = std.cell
+    else:
+        out_cell = std.get_standardized_cell(
+                       to_primitive=to_primitive,
+                       no_idealize=no_idealize,
+                       symprec=symprec,
+                       no_sort=no_sort,
+                       get_sort_list=get_sort_list,
+                       )
+
+    write_poscar(cell=out_cell,
+                 filename=output)
+
 
 if __name__ == '__main__':
     args = get_argparse()
     dimension = list(map(int, args.dim.split()))
     assert args.structure in ['shear', 'twinboundary'], \
         "structure must be 'shear' or 'twinboundary'"
-    main(
-         structure=args.structure,
+
+    main(structure=args.structure,
          shear_strain_ratio=args.shear_strain_ratio,
          twinmode=args.twinmode,
          twintype=args.twintype,
@@ -155,4 +186,4 @@ if __name__ == '__main__':
          is_primitive=args.is_primitive,
          get_primitive_standardized=args.get_primitive_standardized,
          get_conventional_standardized=args.get_conventional_standardized,
-        )
+         )

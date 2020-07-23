@@ -11,9 +11,7 @@ epsilon = 1e-8
 
 
 def write_poscar(
-        lattice:np.array,
-        scaled_positions:np.array,
-        symbols:list,
+        cell:tuple,
         filename:str='POSCAR'):
     """
     Write out structure to file.
@@ -21,11 +19,10 @@ def write_poscar(
     even if its lattice basis is left handed.
 
     Args:
-        lattice (np.array): lattice, 3x3 numpy array
-        scaled_positions (np.array): fractional positioninates
-        symbols (list): list of symbols
+        cell (tuple): cell
         filename (str): poscar filename
     """
+    lattice, scaled_positions, symbols = cell
     symbol_sets = list(set(symbols))
     nums = []
     idx = []

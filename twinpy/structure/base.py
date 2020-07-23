@@ -277,15 +277,13 @@ class _BaseStructure():
     def get_cell_for_export(self,
                             get_lattice:bool=False,
                             move_atoms_into_unitcell:bool=True,
-                            structure_type:bool=None) -> tuple:
+                            ) -> tuple:
         """
         Get cell for export.
 
         Args:
             get_lattice (str): get lattice points not crystal structure
             move_atoms_into_unitcell (bool): if True, move atoms to unitcell
-            structure_type (bool): if not None, choose from 'primitive'
-                                   and 'conventional'
 
         Returns:
             tuple: output cell
