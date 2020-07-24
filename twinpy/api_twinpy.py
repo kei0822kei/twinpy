@@ -165,7 +165,7 @@ class Twinpy():
         Check twinboudnary is set.
 
         Raises:
-            RuntimeError: when twinboudary structure is not set
+            RuntimeError: when twinboundary structure is not set
         """
         if self._twinboundary is None:
             msg = "twinboundary structure is not set, \
@@ -206,6 +206,10 @@ class Twinpy():
 
         Args:
             filename (str): dump to yaml file
+
+        Todo:
+            FUTURE EDITED, currently dic contains numpy array
+            which is not well stored in yaml file
         """
         dic = self.dump_dict()
         write_yaml(dic=dic, filename=filename)
@@ -231,12 +235,12 @@ class Twinpy():
             tb = None
         else:
             tb = {}
-            tb['dim'] = self._tb.dim
-            tb['xshift'] = self._tb.xshift
-            tb['yshift'] = self._tb.yshift
-            tb['twintype'] = self._tb.twintype
-            tb['shear_strain_ratio'] = self._tb.shear_strain_ratio
-            tb['make_tb_flat'] = self._tb._twinboundary_make_tb_flat
+            tb['dim'] = self._twinboundary.dim
+            tb['xshift'] = self._twinboundary.xshift
+            tb['yshift'] = self._twinboundary.yshift
+            tb['twintype'] = self._twinboundary.twintype
+            tb['shear_strain_ratio'] = self._twinboundary.shear_strain_ratio
+            tb['make_tb_flat'] = self._twinboundary_make_tb_flat
 
         dic = {}
         dic['hcp_matrix'] = self._hcp_matrix

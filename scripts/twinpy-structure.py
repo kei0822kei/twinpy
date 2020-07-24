@@ -49,6 +49,8 @@ def get_argparse():
                         help="get primitive standardized")
     parser.add_argument('--get_conventional_standardized', action='store_true',
                         help="get conventional standardized")
+    parser.add_argument('--dump', action='store_true',
+                        help="dump twinpy structure object to yaml")
     args = parser.parse_args()
 
     return args
@@ -86,6 +88,7 @@ def main(structure,
          is_primitive,
          get_primitive_standardized,
          get_conventional_standardized,
+         dump,
          ):
 
     move_atoms_into_unitcell = True
@@ -164,6 +167,9 @@ def main(structure,
     write_poscar(cell=out_cell,
                  filename=output)
 
+    if dump:
+        twinpy.dump_yaml()
+
 
 if __name__ == '__main__':
     args = get_argparse()
@@ -186,4 +192,5 @@ if __name__ == '__main__':
          is_primitive=args.is_primitive,
          get_primitive_standardized=args.get_primitive_standardized,
          get_conventional_standardized=args.get_conventional_standardized,
+         dump=args.dump,
          )
