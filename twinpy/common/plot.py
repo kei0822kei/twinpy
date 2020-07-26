@@ -17,7 +17,7 @@ from phonopy.phonon.dos import TotalDos as PhonopyTotalDos
 from phonopy.phonon.band_structure import get_band_qpoints_and_path_connections
 from mpl_toolkits.axes_grid1 import ImageGrid
 import matplotlib.cm as cm
-from twinpy.structure.base import get_cell_from_phonopy_structure
+from twinpy.interfaces.phonopy import get_cell_from_phonopy_structure
 
 
 # plt.rcParams["font.size"] = 18

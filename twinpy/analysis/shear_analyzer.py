@@ -4,15 +4,14 @@
 """
 analize shear
 """
-import warnings
 import numpy as np
 from phonopy.structure.atoms import PhonopyAtoms
 from phonopy.structure.cells import Supercell
-from twinpy.structure.base import get_cell_from_phonopy_structure
 from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.common.plot import (bands_plot,
                                 get_plot_properties_from_trajectory)
+
 
 class ShearAnalyzer():
     """
@@ -35,7 +34,7 @@ class ShearAnalyzer():
            orig_cells:list,
            input_cells:list,
            symprec:float=1e-5,
-       ):
+           ):
         """
         Args:
             structure_type (str): 'base', 'primitive' or 'conventional'

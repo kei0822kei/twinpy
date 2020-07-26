@@ -84,6 +84,7 @@ class Twinpy():
             yshift (float): y shift
             dim (np.array): dimension
             shear_strain_ratio (float): shear strain ratio
+            is_primitive (bool): if True, output shear structure is primitive
         """
         self._shear = get_shear(
                 lattice=self._hcp_matrix,
