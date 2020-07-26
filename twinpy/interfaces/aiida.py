@@ -10,7 +10,11 @@ from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from twinpy.interfaces.phonopy import get_phonopy_structure
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
-from aiida.orm import load_node, Node, QueryBuilder, StructureData
+from aiida.orm import (load_node,
+                       Node,
+                       QueryBuilder,
+                       StructureData,
+                       CalcFunctionNode)
 from aiida.plugins import WorkflowFactory
 from phonopy import Phonopy
 
@@ -73,8 +77,8 @@ def get_cell_from_aiida(structure:StructureData,
     return (lattice, positions, symbols)
 
 
-def get_pks(pk:int,
-            workflow_name:str) -> dict:
+def get_workflow_pks(pk:int,
+                     workflow_name:str) -> dict:
     """
     Get workflow pk in the specified pk.
 
@@ -313,20 +317,30 @@ class ShearWorkChain():
         """
         node = load_node(pk)
         check_process_class(node, 'ShearWorkChain')
+        is_phonon = node.inputs.is_phonon.value
 
-        self._node = node
-        self._pk = pk
         self._shear_conf = node.inputs.shear_conf.get_dict()
         self._shear_ratios = \
             node.called[-1].outputs.shear_settings.get_dict()['shear_ratios']
         self._hexagonal_cell = get_cell_from_aiida(node.inputs.structure)
         self._gamma = node.outputs.gamma.value
-        self._shear_original_cells = None
-        self._shear_primitive_cells = None
-        self._shear_relax_cells = None
+
+        self._node = node
+        self._pk = pk
+
+        self._create_shears_pk = None
+        self._original_cell_pks = None
+        self._original_cells = None
+        self._set_shear_structures()
+
+        self._relax_pks = None
         self._relaxes = None
         self._set_relaxes()
+
         self._phonon_pks = None
+        self._phonons = None
+        if is_phonon:
+            self._set_phonons()
 
     @property
     def node(self):
@@ -364,18 +378,60 @@ class ShearWorkChain():
         return self._hexagonal_cell
 
     @property
+    def original_cells(self):
+        """
+        Output shear original cells
+        """
+        return self._original_cells
+
+    @property
     def gamma(self):
         """
         Output gamma
         """
         return self._gamma
 
+    def _set_shear_structures(self):
+        """
+        Set original cells in ShearWorkChain.
+        """
+        qb = QueryBuilder()
+        qb.append(Node, filters={'id':{'==': self._pk}}, tag='wf')
+        qb.append(CalcFunctionNode,
+                  filters={'label':{'==': 'get_shear_structures'}},
+                  with_incoming='wf',
+                  project=['id'])
+        create_shears_pk = qb.all()[0][0]
+
+        qb = QueryBuilder()
+        qb.append(Node, filters={'id':{'==': create_shears_pk}}, tag='cs')
+        qb.append(StructureData,
+                  with_incoming='cs',
+                  project=['id', 'label'])
+        structs = qb.all()
+        orig_cell_pks = [ struct[0] for struct in structs
+                                    if 'shear_orig' in struct[1] ]
+        orig_cell_pks.sort(key=lambda x: x)
+
+        self._create_shears_pk = create_shears_pk
+        self._original_cell_pks = orig_cell_pks
+        self._original_cells = [ get_cell_from_aiida(load_node(pk))
+                                     for pk in self._original_cell_pks ]
+
     def _set_relaxes(self):
         """
         Set relax in ShearWorkChain.
         """
-        relax_pks = get_pks(pk=self._pk, workflow_name='vasp.relax')
-        self._relaxes = [ RelaxWorkChain(pk=pk) for pk in relax_pks ]
+        self._relax_pks = get_workflow_pks(pk=self._pk,
+                                           workflow_name='vasp.relax')
+        self._relaxes = [ RelaxWorkChain(pk=pk) for pk in self._relax_pks ]
+
+    @property
+    def relax_pks(self):
+        """
+        Output relax pks.
+        """
+        return self._relax_pks
 
     @property
     def relaxes(self):
@@ -384,74 +440,54 @@ class ShearWorkChain():
         """
         return self._relaxes
 
-    def _set_phonon_pks(self):
+    def _set_phonons(self):
         """
         Set phonon_pks in ShearWorkChain.
         """
-        self._phonon_pks = get_pks(pk=self._pk, workflow='phonon')
+        self._phonon_pks = get_workflow_pks(pk=self._pk,
+                                            workflow_name='phonopy.phonopy')
+        self._phonons = [ PhonopyWorkChain(pk=pk) for pk in self._phonon_pks ]
 
     @property
     def phonon_pks(self):
         """
-        Output phonon_pks in ShearWorkChain.
+        Output phonon pks.
         """
         return self._phonon_pks
 
-    def _get_original_cells(self):
+    @property
+    def phonons(self):
         """
-        get original cell before standardize
+        Output phonons in ShearWorkChain.
         """
-        orig_cells = []
-        for ratio in self._shear_ratios:
-            twinpy = get_twinpy_from_cell(
-                    cell=self._input_cell,
-                    twinmode=self._shear_conf['twinmode'])
-            twinpy.set_shear(
-                xshift=self._shear_conf['xshift'],
-                yshift=self._shear_conf['yshift'],
-                dim=[1,1,1],
-                shear_strain_ratio=ratio,
-                )
-            # orig_cells.append(twinpy.shear.get_structure_for_export())
-            orig_cells.append(twinpy.shear.get_base_primitive_cell(ratio))
-        return orig_cells
+        return self._phonons
 
-    def get_analyzer(self):
+    def get_analyzer(self) -> ShearAnalyzer:
         """
-        get ShearAnalyzer class object
+        Get ShearAnalyzer class object.
         """
-        input_cells = [
-            get_cell_from_aiida(load_node(relax_pk).inputs.structure)
-            for relax_pk in self._relax_pks ]
-        relax_cells = [
-            get_cell_from_aiida(load_node(relax_pk).outputs.relax__structure)
-            for relax_pk in self._relax_pks ]
-        phonons = [
-            PhonopyWorkChain(phonon_pk).get_phonon()
-            for phonon_pk in self._phonon_pks ]
-        analyzer = ShearAnalyzer(
-            structure_type=self._shear_conf['structure_type'],
-            orig_cells=self._get_original_cells(),
-            input_cells=input_cells)
-        analyzer.set_relax_cells(relax_cells)
-        analyzer.set_phonons(phonons)
+        original_cells = self._original_cells
+        input_cells = [ relax.initial_cell for relax in self._relaxes ]
+        relax_cells = [ relax.final_cell for relax in self._relaxes ]
+        analyzer = ShearAnalyzer(original_cells=original_cells,
+                                 input_cells=input_cells,
+                                 relax_cells=relax_cells)
+        phns = [ phonon_wf.get_phonon() for phonon_wf in self._phonons ]
+        analyzer.set_phonons(phonons=phns)
         return analyzer
 
-    # def _get_original_cells(self):
-    #     """
-    #     get original cell before standardize
-    #     """
-    #     orig_cells = []
-    #     for ratio in self._shear_ratios:
-    #         twinpy = get_twinpy_from_cell(
-    #                 cell=self._input_cell,
-    #                 twinmode=self._shear_conf['twinmode'])
-    #         twinpy.set_shear(
-    #             xshift=self._shear_conf['xshift'],
-    #             yshift=self._shear_conf['yshift'],
-    #             dim=[1,1,1],
-    #             shear_strain_ratio=ratio,
-    #             )
-    #         # orig_cells.append(twinpy.shear.get_structure_for_export())
-    #         orig_cells.append(twinpy.shear.get_base_primitive_cell(ratio))
-    #     return orig_cells
+    def get_pks(self) -> dict:
+        """
+        Get pks.
+
+        Returns:
+            dict: keys and corresponding pks
+        """
+        pks = {
+                'shear_pk': self._pk,
+                'get_shear_structures_pk': self._create_shears_pk,
+                'original_cell_pks': self._original_cell_pks,
+                'relax_pks': self._relax_pks,
+                'phonon_pks': self._phonon_pks,
+              }
+        return pks

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-analize shear
+Analize shear calculation.
 """
 import numpy as np
 from phonopy.structure.atoms import PhonopyAtoms
@@ -13,130 +13,120 @@ from twinpy.common.plot import (bands_plot,
                                 get_plot_properties_from_trajectory)
 
 
+def is_cells_are_same(first_cell:tuple,
+                      second_cell:tuple) -> bool:
+    """
+    Check first cell and second cell are same.
+
+    Args:
+        first_cell (tuple): first cell
+        second_cell (tuple): second cell
+
+    Returns:
+        bool: return True if two cells are same
+    """
+    is_lattice_same = np.allclose(first_cell[0], second_cell[0])
+    is_scaled_positions_same = np.allclose(first_cell[1], second_cell[1])
+    is_symbols_same = (first_cell[2] == second_cell[2])
+    is_same = (is_lattice_same
+               and is_scaled_positions_same
+               and is_symbols_same)
+    return is_same
+
+
 class ShearAnalyzer():
     """
-    analize shear result
-
-       .. attribute:: att1
-
-          Optional comment string.
-
-
-       .. attribute:: att2
-
-          Optional comment string.
-
+    Analize shear result.
     """
 
     def __init__(
            self,
-           structure_type:str,
-           orig_cells:list,
+           original_cells:list,
            input_cells:list,
-           symprec:float=1e-5,
+           relax_cells:list,
            ):
         """
         Args:
-            structure_type (str): 'base', 'primitive' or 'conventional'
-            orig_cells (list): (primitivie) original cells,
-                                orig_cells=(cell1, cell2, ...)
+            original_cells (list): primitivie original cells, which is output
+                               cells of ShearStructure class
             input_cells (list): input cells for vasp
+            relax_eells (list): relax cells of vasp
         """
-        self._check_input_cells(structure_type=structure_type,
-                                orig_cells=orig_cells,
-                                input_cells=input_cells,
-                                symprec=symprec)
-        self._structure_type = structure_type
-        self._orig_cells = orig_cells
+        self._original_cells = original_cells
         self._input_cells = input_cells
-        self._symprec = symprec
+        self._relax_cells = relax_cells
         self._standardizes = None
         self._set_standardizes()
-        self._relax_cells = None
         self._phonons = None
-
-    def _check_structure_type(self, structure_type):
-        valid_structure_type = ['base', 'primitive', 'convnetional']
-        if not structure_type in valid_structure_type:
-            raise ValueError("illigal inputs structure_tyle: {}" \
-                             .format(structure_type))
-
-    def _check_input_cells(self,
-                           structure_type,
-                           orig_cells,
-                           input_cells,
-                           symprec):
-        self._check_structure_type(structure_type=structure_type)
-        if structure_type == 'base':
-            input_cells_ = orig_cells
-        else:
-            if structure_type == 'primitive':
-                to_primitive = True
-            else:
-                to_primitive = False
-            input_cells_ = [ StandardizeCell(cell).get_standardized_cell(
-                             to_primitive=to_primitive,
-                             no_idealize=False,
-                             symprec=symprec)
-                             for cell in orig_cells ]
-        are_same_lattices = [ np.allclose(input_cells_[i][0],
-                                          input_cells[i][0])
-                              for i in range(len(input_cells)) ]
-        if False in are_same_lattices:
-            raise RuntimeError("could not be detected relation "
-                               "between original cell and input cell")
-
-    def _set_standardizes(self):
-        self._standardizes = \
-                [ StandardizeCell(cell) for cell in self._orig_cells ]
-
-    @property
-    def standardizes(self):
-        """
-        standardizes
-        """
-        return self._standardizes
-
-    def set_relax_cells(self, relax_cells:list):
-        """
-        Args:
-            relax_cells (list): relax cells
-        """
-        self._relax_cells = relax_cells
-
-    def set_phonons(self, phonons):
-        """
-        set phonons
-        """
-        self._phonons = phonons
-
-    @property
-    def phonons(self):
-        """
-        phonons
-        """
-        return self._phonons
 
     @property
     def original_cells(self):
         """
-        original cells
+        Original cells, which are output of ShearStructure.
         """
-        return self._orig_cells
+        return self._original_cells
 
     @property
     def input_cells(self):
         """
-        relax input cells
+        Relax input cells.
         """
         return self._input_cells
 
     @property
     def relax_cells(self):
         """
-        relax output cells
+        Relax output cells.
         """
         return self._relax_cells
+
+    def _set_standardizes(self):
+        """
+        Set standardizes.
+        """
+        to_primitive = True
+        no_idealize = False
+        symprec = 1e-5
+        no_sort = False
+        get_sort_list = False
+
+        standardizes = [ StandardizeCell(cell) for cell in self._original_cells ]
+
+        for i, standardize in enumerate(standardizes):
+            std_cell = standardize.get_standardized_cell(
+                    to_primitive=to_primitive,
+                    no_idealize=no_idealize,
+                    symprec=symprec,
+                    no_sort=no_sort,
+                    get_sort_list=get_sort_list,
+                    )
+            cells_are_same = is_cells_are_same(self._input_cells[i],
+                                               std_cell)
+            if not cells_are_same:
+                raise RuntimeError("standardized cell do not match "
+                                   "with input cell")
+
+        self._standardizes = standardizes
+
+    @property
+    def standardizes(self):
+        """
+        Standardizes.
+        """
+        return self._standardizes
+
+    def set_phonons(self, phonons):
+        """
+        Set phonons.
+        """
+        self._phonons = phonons
+
+    @property
+    def phonons(self):
+        """
+        Phonons.
+        """
+        return self._phonons
 
     def get_relax_cells_with_original_basis(self):
         """
@@ -203,8 +193,8 @@ class ShearAnalyzer():
             # atom order is different from original, so fix it
             # print(i)
             # print(supercell_input.get_scaled_positions())
-            # print(self._orig_cells[i][1])
-            # idxes = [ __get_idx(self._orig_cells[i][1], val)
+            # print(self._original_cells[i][1])
+            # idxes = [ __get_idx(self._original_cells[i][1], val)
             #           for val in supercell_input.get_scaled_positions() ]
             # fixed_atoms = supercell.get_scaled_positions()[idxes]
 
@@ -216,7 +206,7 @@ class ShearAnalyzer():
                                supercell.get_chemical_symbols())
             np.testing.assert_allclose(
                     np.round(orig_relax_cell[0], decimals=8),
-                    np.round(self._orig_cells[i][0], decimals=8))
+                    np.round(self._original_cells[i][0], decimals=8))
 
 
             orig_relax_cells.append(orig_relax_cell)
@@ -230,7 +220,7 @@ class ShearAnalyzer():
         output_cells = self.get_relax_cells_with_original_basis()
         diffs = [ get_structure_diff(input_cell, output_cell)
                   for input_cell, output_cell
-                  in zip(self._orig_cells, output_cells) ]
+                  in zip(self._original_cells, output_cells) ]
         return diffs
 
     def get_shear_diffs(self):
@@ -278,7 +268,7 @@ class ShearAnalyzer():
                         plot_nums=len(self._phonons))
         bands_plot(fig=fig,
                    phonons=self._phonons,
-                   orig_cells=self._orig_cells,
+                   original_cells=self._original_cells,
                    with_dos=with_dos,
                    mesh=mesh,
                    band_labels=band_labels,
