@@ -245,54 +245,54 @@ class ShearAnalyzer():
                                    include_base=True)
         return diffs
 
-    # def plot_bands(self,
-    #                fig,
-    #                with_dos=False,
-    #                mesh=None,
-    #                band_labels=None,
-    #                segment_qpoints=None,
-    #                is_auto=False,
-    #                xscale=20,
-    #                npoints=51,
-    #                labels=None,):
-    #     """
-    #     plot phonon bands
+    def plot_bands(self,
+                   fig,
+                   with_dos=False,
+                   mesh=None,
+                   band_labels=None,
+                   segment_qpoints=None,
+                   is_auto=False,
+                   xscale=20,
+                   npoints=51,
+                   labels=None,):
+        """
+        plot phonon bands
 
-    #     Args:
-    #         arg1 (str): description
-    #         arg2 (np.array): (3x3 numpy array) description
+        Args:
+            arg1 (str): description
+            arg2 (np.array): (3x3 numpy array) description
 
-    #     Returns:
-    #         dict: description
+        Returns:
+            dict: description
 
-    #     Raises:
-    #         ValueError: description
+        Raises:
+            ValueError: description
 
-    #     Examples:
-    #         description
+        Examples:
+            description
 
-    #         >>> print_test ("test", "message")
-    #           test message
+            >>> print_test ("test", "message")
+              test message
 
-    #     Note:
-    #         description
-    #     """
-    #     cs, alphas, linewidths, linestyles = \
-    #             get_plot_properties_from_trajectory(
-    #                     plot_nums=len(self._phonons))
-    #     bands_plot(fig=fig,
-    #                phonons=self._phonons,
-    #                original_cells=self._original_cells,
-    #                with_dos=with_dos,
-    #                mesh=mesh,
-    #                band_labels=band_labels,
-    #                segment_qpoints=segment_qpoints,
-    #                is_auto=is_auto,
-    #                xscale=xscale,
-    #                npoints=npoints,
-    #                cs=cs,
-    #                alphas=alphas,
-    #                linewidths=linewidths,
-    #                linestyles=linestyles,
-    #                labels=labels,
-    #                )
+        Note:
+            description
+        """
+        cs, alphas, linewidths, linestyles = \
+                get_plot_properties_from_trajectory(
+                        plot_nums=len(self._phonons))
+        bands_plot(fig=fig,
+                   phonons=self._phonons,
+                   original_cells=self._original_cells,
+                   with_dos=with_dos,
+                   mesh=mesh,
+                   band_labels=band_labels,
+                   segment_qpoints=segment_qpoints,
+                   is_auto=is_auto,
+                   xscale=xscale,
+                   npoints=npoints,
+                   cs=cs,
+                   alphas=alphas,
+                   linewidths=linewidths,
+                   linestyles=linestyles,
+                   labels=labels,
+                   )
