@@ -50,13 +50,37 @@ class ShearAnalyzer():
             original_cells (list): primitivie original cells, which is output
                                cells of ShearStructure class
             input_cells (list): input cells for vasp
-            relax_eells (list): relax cells of vasp
+            relax_cells (list): relax cells of vasp
+
+        Raises:
+            RuntimeError: The number of atoms changes between original cells
+                          and input cells, which is not supported.
+
+        Todo:
+            Currently not supported the case the number of original_cells
+            and input_cells changes because it is difficult to construct
+            the relax cells in the original frame. But future fix this
+            problem. One solution is to make attribute 'self._original_primitive'
+            which contains two atoms in the unit cell and original basis.
         """
+        def __check_number_of_atoms_not_changed(original_cells,
+                                                input_cells):
+            for original_cell, input_cell in zip(original_cells, input_cells):
+                if not len(original_cell) == len(input_cell):
+                    raise RuntimeError(
+                            "The number of atoms changes between "
+                            "original cells and input cells, "
+                            "which is not supported.")
+
+        __check_number_of_atoms_not_changed(original_cells, input_cells)
         self._original_cells = original_cells
         self._input_cells = input_cells
-        self._relax_cells = relax_cells
+        self._relax_cells = None
+        self._set_relax_cells(input_cells, relax_cells)
         self._standardizes = None
         self._set_standardizes()
+        self._relax_cells_original_frame = None
+        self._set_relax_cells_in_original_frame()
         self._phonons = None
 
     @property
@@ -72,6 +96,16 @@ class ShearAnalyzer():
         Relax input cells.
         """
         return self._input_cells
+
+    def _set_relax_cells(self, input_cells, relax_cells):
+        """
+        Check lattice does not change in relaxation and
+        set relax_cells.
+        """
+        for input_cell, relax_cell in zip(input_cells, relax_cells):
+            np.testing.assert_allclose(input_cell[0], relax_cell[0],
+                                       atol=1e-5)
+        self._relax_cells = relax_cells
 
     @property
     def relax_cells(self):
@@ -115,6 +149,62 @@ class ShearAnalyzer():
         """
         return self._standardizes
 
+    def _set_relax_cells_in_original_frame(self) -> list:
+        """
+        Set relax cells in original frame which is not
+        conventional and its angles are close to (90., 90., 120.).
+
+        Returns:
+            list: relax cells in original frame
+
+        Note:
+            For variable definitions in this definition,
+            see Eq.(1.8) and (1.17) in Crystal Structure documention.
+            Note that by crystal body rotation, fractional
+            coordinate of atom positions are not changed.
+        """
+        def __get_relax_atoms_in_original_frame(prim_atoms,
+                                                conv_to_prim_matrix,
+                                                transformation_matrix,
+                                                origin_shift):
+            X_p = prim_atoms.T
+            P_c = conv_to_prim_matrix
+            P = transformation_matrix
+            p = origin_shift.reshape(3,1)
+
+            X_s = np.dot(P_c, X_p)
+            X = np.dot(np.linalg.inv(P), X_s) \
+                    - np.dot(np.linalg.inv(P), p)
+            orig_atoms = np.round(X.T, decimals=8) % 1.
+            return orig_atoms
+
+        relax_orig_cells = []
+        for i in range(len(self._relax_cells)):
+            lattice = self._original_cells[i][0]
+            conv_to_prim_matrix = \
+                self._standardizes[i].conventional_to_primitive_matrix
+            transformation_matrix = \
+                self._standardizes[i].transformation_matrix
+            origin_shift = self._standardizes[i].origin_shift
+            scaled_positions = __get_relax_atoms_in_original_frame(
+                    prim_atoms=self._relax_cells[i][1],
+                    conv_to_prim_matrix=conv_to_prim_matrix,
+                    transformation_matrix=transformation_matrix,
+                    origin_shift=origin_shift,
+                    )
+            symbols = self._original_cells[i][2]
+            relax_orig_cell = (lattice, scaled_positions, symbols)
+            relax_orig_cells.append(relax_orig_cell)
+
+        self._relax_cells_in_original_frame = relax_orig_cells
+
+    @property
+    def relax_cells_in_original_frame(self):
+        """
+        Relax cells in original frame
+        """
+        return self._relax_cells_in_original_frame
+
     def set_phonons(self, phonons):
         """
         Set phonons.
@@ -128,157 +218,81 @@ class ShearAnalyzer():
         """
         return self._phonons
 
-    def get_relax_cells_with_original_basis(self):
-        """
-        get relax cells with original basis
-        """
-        # def __get_idx(lst, val):
-        #     a = np.round(lst, decimals=8)
-        #     b = np.round(val, decimals=8)
-        #     idx = [ i for i in range(len(a)) if np.all(a[i] == b) ]
-        #     assert len(idx) == 1
-        #     return idx[0]
-
-        if self._structure_type == 'base':
-            return self._relax_cells
-
-        orig_relax_cells = []
-        for i, relax_cell in enumerate(self._relax_cells):
-            R = self._standardizes[i].rotation_matrix
-            P_c = self._standardizes[i].conventional_to_primitive_matrix
-            P = self._standardizes[i].transformation_matrix
-            p = self._standardizes[i].origin_shift
-
-            before_rotate_lattice = \
-                    np.dot(np.linalg.inv(R),
-                           np.transpose(relax_cell[0])).T
-
-            supercell_matrix = None
-            if self._structure_type == 'primitive':
-                supercell_matrix = np.dot(np.linalg.inv(P_c), P)
-            else:
-                supercell_matrix = P
-            np.testing.assert_allclose(
-                    np.round(supercell_matrix, decimals=8) % 1,
-                    np.zeros(supercell_matrix.shape),
-                    err_msg="supercell_matrix must int matrix")
-            supercell_matrix = \
-                    np.round(supercell_matrix, decimals=8).astype(int)
-
-            before_rotate_atoms = np.dot(np.linalg.inv(P),
-                                         np.transpose(relax_cell[1])).T
-            before_rotate_atoms_input = np.dot(np.linalg.inv(P),
-                                               np.transpose(self._input_cells[i][1])).T
-            before_rotate_shift = np.dot(np.linalg.inv(P), p)
-            fixed_atoms = (before_rotate_atoms - before_rotate_shift) % 1
-            fixed_atoms_input = (before_rotate_atoms_input - before_rotate_shift) % 1
-
-            cell = (before_rotate_lattice,
-                    fixed_atoms,
-                    relax_cell[2])
-            cell_input = (before_rotate_lattice,
-                          fixed_atoms_input,
-                          relax_cell[2])
-            unitcell = PhonopyAtoms(cell=cell[0],
-                                    scaled_positions=cell[1],
-                                    symbols=cell[2])
-            unitcell_input = PhonopyAtoms(cell=cell_input[0],
-                                          scaled_positions=cell_input[1],
-                                          symbols=cell_input[2])
-            supercell = Supercell(unitcell=unitcell,
-                                  supercell_matrix=supercell_matrix)
-            supercell_input = Supercell(unitcell=unitcell_input,
-                                        supercell_matrix=supercell_matrix)
-
-            # atom order is different from original, so fix it
-            # print(i)
-            # print(supercell_input.get_scaled_positions())
-            # print(self._original_cells[i][1])
-            # idxes = [ __get_idx(self._original_cells[i][1], val)
-            #           for val in supercell_input.get_scaled_positions() ]
-            # fixed_atoms = supercell.get_scaled_positions()[idxes]
-
-            # orig_relax_cell = (supercell.get_cell(),
-            #                    fixed_atoms,
-            #                    supercell.get_chemical_symbols())
-            orig_relax_cell = (supercell.get_cell(),
-                               supercell.get_scaled_positions(),
-                               supercell.get_chemical_symbols())
-            np.testing.assert_allclose(
-                    np.round(orig_relax_cell[0], decimals=8),
-                    np.round(self._original_cells[i][0], decimals=8))
-
-
-            orig_relax_cells.append(orig_relax_cell)
-
-        return orig_relax_cells
-
     def get_relax_diffs(self):
         """
-        get structure diffs between original and relax structures
+        Get structure diffs between input and relax cells
+        IN ORIGINAL FRAME.
         """
-        output_cells = self.get_relax_cells_with_original_basis()
-        diffs = [ get_structure_diff(input_cell, output_cell)
-                  for input_cell, output_cell
-                  in zip(self._original_cells, output_cells) ]
+        diffs = []
+        for input_cell, relax_cell in \
+                zip(self._original_cells, self._relax_cells_in_original_frame):
+            cells = (input_cell, relax_cell)
+            diff = get_structure_diff(cells=cells,
+                                      base_index=0,
+                                      include_base=False)
+            diffs.append(diff)
+
         return diffs
 
     def get_shear_diffs(self):
         """
-        get structure diffs between original and sheared structures
+        Get structure diffs between original and sheared structures
+        IN ORIGINAL FRAME.
         """
-        output_cells = self.get_relax_cells_with_original_basis()
-        diffs = get_structure_diff(*output_cells)
+        cells = self._relax_cells_in_original_frame
+        diffs = get_structure_diff(cells=cells,
+                                   base_index=0,
+                                   include_base=True)
         return diffs
 
-    def plot_bands(self,
-                   fig,
-                   with_dos=False,
-                   mesh=None,
-                   band_labels=None,
-                   segment_qpoints=None,
-                   is_auto=False,
-                   xscale=20,
-                   npoints=51,
-                   labels=None,):
-        """
-        plot phonon bands
+    # def plot_bands(self,
+    #                fig,
+    #                with_dos=False,
+    #                mesh=None,
+    #                band_labels=None,
+    #                segment_qpoints=None,
+    #                is_auto=False,
+    #                xscale=20,
+    #                npoints=51,
+    #                labels=None,):
+    #     """
+    #     plot phonon bands
 
-        Args:
-            arg1 (str): description
-            arg2 (np.array): (3x3 numpy array) description
+    #     Args:
+    #         arg1 (str): description
+    #         arg2 (np.array): (3x3 numpy array) description
 
-        Returns:
-            dict: description
+    #     Returns:
+    #         dict: description
 
-        Raises:
-            ValueError: description
+    #     Raises:
+    #         ValueError: description
 
-        Examples:
-            description
+    #     Examples:
+    #         description
 
-            >>> print_test ("test", "message")
-              test message
+    #         >>> print_test ("test", "message")
+    #           test message
 
-        Note:
-            description
-        """
-        cs, alphas, linewidths, linestyles = \
-                get_plot_properties_from_trajectory(
-                        plot_nums=len(self._phonons))
-        bands_plot(fig=fig,
-                   phonons=self._phonons,
-                   original_cells=self._original_cells,
-                   with_dos=with_dos,
-                   mesh=mesh,
-                   band_labels=band_labels,
-                   segment_qpoints=segment_qpoints,
-                   is_auto=is_auto,
-                   xscale=xscale,
-                   npoints=npoints,
-                   cs=cs,
-                   alphas=alphas,
-                   linewidths=linewidths,
-                   linestyles=linestyles,
-                   labels=labels,
-                   )
+    #     Note:
+    #         description
+    #     """
+    #     cs, alphas, linewidths, linestyles = \
+    #             get_plot_properties_from_trajectory(
+    #                     plot_nums=len(self._phonons))
+    #     bands_plot(fig=fig,
+    #                phonons=self._phonons,
+    #                original_cells=self._original_cells,
+    #                with_dos=with_dos,
+    #                mesh=mesh,
+    #                band_labels=band_labels,
+    #                segment_qpoints=segment_qpoints,
+    #                is_auto=is_auto,
+    #                xscale=xscale,
+    #                npoints=npoints,
+    #                cs=cs,
+    #                alphas=alphas,
+    #                linewidths=linewidths,
+    #                linestyles=linestyles,
+    #                labels=labels,
+    #                )
