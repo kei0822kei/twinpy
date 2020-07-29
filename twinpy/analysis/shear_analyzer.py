@@ -1,16 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/env pythoo
 # -*- coding: utf-8 -*-
 
 """
 Analize shear calculation.
 """
 import numpy as np
-from phonopy.structure.atoms import PhonopyAtoms
-from phonopy.structure.cells import Supercell
 from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.standardize import StandardizeCell
-from twinpy.common.plot import (bands_plot,
-                                get_plot_properties_from_trajectory)
+from twinpy.plot.base import get_plot_properties_for_trajectory
+from twinpy.plot.band import bands_plot
 
 
 def is_cells_are_same(first_cell:tuple,
@@ -60,8 +58,9 @@ class ShearAnalyzer():
             Currently not supported the case the number of original_cells
             and input_cells changes because it is difficult to construct
             the relax cells in the original frame. But future fix this
-            problem. One solution is to make attribute 'self._original_primitive'
-            which contains two atoms in the unit cell and original basis.
+            problem. One solution is to make attribute
+            'self._original_primitive' which contains two atoms
+            in the unit cell and original basis.
         """
         def __check_number_of_atoms_not_changed(original_cells,
                                                 input_cells):
@@ -124,7 +123,8 @@ class ShearAnalyzer():
         no_sort = False
         get_sort_list = False
 
-        standardizes = [ StandardizeCell(cell) for cell in self._original_cells ]
+        standardizes = [ StandardizeCell(cell)
+                             for cell in self._original_cells ]
 
         for i, standardize in enumerate(standardizes):
             std_cell = standardize.get_standardized_cell(
@@ -251,7 +251,6 @@ class ShearAnalyzer():
                    mesh=None,
                    band_labels=None,
                    segment_qpoints=None,
-                   is_auto=False,
                    xscale=20,
                    npoints=51,
                    labels=None,):
@@ -278,18 +277,19 @@ class ShearAnalyzer():
             description
         """
         cs, alphas, linewidths, linestyles = \
-                get_plot_properties_from_trajectory(
+                get_plot_properties_for_trajectory(
                         plot_nums=len(self._phonons))
+        rotation_matrices = \
+                [ std.rotation_matrix for std in self._standardizes ]
         bands_plot(fig=fig,
                    phonons=self._phonons,
-                   original_cells=self._original_cells,
-                   with_dos=with_dos,
-                   mesh=mesh,
+                   rotation_matrices=rotation_matrices,
                    band_labels=band_labels,
                    segment_qpoints=segment_qpoints,
-                   is_auto=is_auto,
                    xscale=xscale,
                    npoints=npoints,
+                   with_dos=with_dos,
+                   mesh=mesh,
                    cs=cs,
                    alphas=alphas,
                    linewidths=linewidths,

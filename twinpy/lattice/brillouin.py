@@ -7,21 +7,6 @@ brillouin zone
 import numpy as np
 from seekpath.brillouinzone.brillouinzone import get_BZ
 
-def get_labels_for_twin():
-    label_qpoints = {
-      'GAMMA': [0, 0, 0],
-      'M_1'  : [1/2, 0, 0],
-      'M_2'  : [-1/2, 1/2, 0],
-      'K_1'  : [1/3, 1/3, 0],
-      'K_2'  : [-1/3, 2/3, 0],
-      'A'    : [0, 0, 1/2],
-      'L_1'  : [1/2, 0, 1/2],
-      'L_2'  : [-1/2, 1/2, 1/2],
-      'H_1'  : [1/3, 1/3, 1/2],
-      'H_2'  : [-1/3, 2/3, 1/2],
-    }
-    return label_qpoints
-
 def show_brillouin_zone(reciprocal_lattice):
     """
     extract from seekpath's script
