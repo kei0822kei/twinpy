@@ -111,9 +111,7 @@ class BandsPlot(PhonopyBandPlot):
     def __init__(self,
                  fig,
                  phonons,
-                 original_lattices,
-                 input_lattices,
-                 rotation_matrices,
+                 transformation_matrices,
                  band_labels,
                  segment_qpoints,
                  xscale=20,
@@ -132,12 +130,8 @@ class BandsPlot(PhonopyBandPlot):
         self.with_dos = with_dos
         self.mesh = mesh
         self.xscale = xscale
-        self.original_reciprocal_lattices = \
-            [ Lattice(lat).reciprocal_lattice for lat in original_lattices ]
-        self.input_reciprocal_lattices = \
-            [ Lattice(lat).reciprocal_lattice for lat in input_lattices ]
-        self.rotation_matrices = rotation_matrices
 
+        self.transformation_matrices = transformation_matrices
         self.segment_qpoints = segment_qpoints
 
         self.band_labels = None
@@ -227,23 +221,18 @@ class BandsPlot(PhonopyBandPlot):
 
     def _fix_segment_qpoints(
             self,
-            idx,
+            base_transformation_matrix,
+            transformation_matrix,
             ):
         """
         Fix segment qpoints.
         """
         seg_frac = []
-        print("aho")
+        print("fuga")
         for qpt in self.segment_qpoints:
-
-
-            qpt_frac = np.dot(np.linalg.inv(self.input_reciprocal_lattices[idx].T),
-                              np.dot(self.rotation_matrices[idx],
-                                     np.dot(self.original_reciprocal_lattices[idx].T,
-                                            np.dot(np.linalg.inv(self.original_reciprocal_lattices[0].T),
-                                                   np.dot(self.rotation_matrices[0],
-                                                          np.dot(self.input_reciprocal_lattices[0].T,
-                                                                 qpt.T)))))).T
+            qpt_frac = np.dot(np.linalg.inv(transformation_matrix.T),
+                              np.dot(base_transformation_matrix.T,
+                                     qpt.T)).T
             # qpt_frac = np.dot(transformation_matrix,
             #                   np.dot(np.linalg.inv(base_transformation_matrix),
             #                          qpt.T)).T
@@ -255,7 +244,10 @@ class BandsPlot(PhonopyBandPlot):
                   segment_qpoints,
                   npoints):
         for i, phonon in enumerate(self.phonons):
-            fixed_segment_qpoints = self._fix_segment_qpoints(idx=i)
+            fixed_segment_qpoints = self._fix_segment_qpoints(
+                    base_transformation_matrix=self.transformation_matrices[0],
+                    transformation_matrix=self.transformation_matrices[i],
+                    )
             run_band_calc(phonon=phonon,
                           band_labels=band_labels,
                           segment_qpoints=fixed_segment_qpoints,
@@ -337,7 +329,7 @@ class BandsPlot(PhonopyBandPlot):
                       label=labels[i])
                 base_distances = deepcopy(distances)
             else:
-                # distances = self._revise_distances(distances, base_distances)
+                distances = self._revise_distances(distances, base_distances)
                 _plot(distances=distances,
                       frequencies=frequencies,
                       connections=self.connections,
@@ -384,9 +376,7 @@ class BandsPlot(PhonopyBandPlot):
 
 def bands_plot(fig,
                phonons:list,
-               input_lattices,
-               original_lattices,
-               rotation_matrices,
+               transformation_matrices:list,
                band_labels,
                segment_qpoints,
                xscale=20,
@@ -405,9 +395,7 @@ def bands_plot(fig,
     bp = BandsPlot(
             fig=fig,
             phonons=phonons,
-            rotation_matrices=rotation_matrices,
-            input_lattices=input_lattices,
-            original_lattices=original_lattices,
+            transformation_matrices=transformation_matrices,
             band_labels=band_labels,
             segment_qpoints=segment_qpoints,
             xscale=xscale,
