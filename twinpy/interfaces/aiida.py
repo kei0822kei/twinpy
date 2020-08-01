@@ -5,7 +5,6 @@
 Aiida interface for twinpy.
 """
 import numpy as np
-from twinpy.api_twinpy import get_twinpy_from_cell
 from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from twinpy.interfaces.phonopy import get_phonopy_structure
 from aiida.cmdline.utils.decorators import with_dbenv
@@ -304,7 +303,7 @@ class PhonopyWorkChain():
 @with_dbenv()
 class ShearWorkChain():
     """
-    shear work chain class
+    Shear work chain class.
     """
 
     def __init__(
@@ -491,3 +490,105 @@ class ShearWorkChain():
                 'phonon_pks': self._phonon_pks,
               }
         return pks
+
+
+@with_dbenv()
+class TwinBoudnaryRelaxWorkChain():
+    """
+    TwinBoundaryRelax work chain class.
+    """
+
+    def __init__(
+            self,
+            pk:int,
+            ):
+        """
+        Args:
+            relax_pk (int): relax pk
+        """
+        node = load_node(pk)
+        check_process_class(node, 'TwinBoundaryRelaxWorkChain')
+
+        self._pk = pk
+        self._node = node
+        self._relax_times = None
+        self._input_structure_pk = None
+        self._twinboundary_relax_conf = None
+        self._set_input_data()
+        self._relax_pks = None
+        self._set_relax_pks()
+        self._relax = None
+        self._set_relax()
+
+    @property
+    def pk(self):
+        """
+        TwinBoundaryRelaxWorkChain pk.
+        """
+        return self._pk
+
+    @property
+    def node(self):
+        """
+        TwinBoundaryRelaxWorkChain node.
+        """
+        return self._node
+
+    @property
+    def relax_times(self):
+        """
+        Relax times.
+        """
+        return self._relax_times
+
+    @property
+    def twinboundary_relax_conf(self):
+        """
+        TwinBoundary relax conf.
+        """
+        return self._twinboundary_relax_conf
+
+    def _set_input_data(self):
+        """
+        Set calculation input data.
+        """
+        self._relax_times = self._node.inputs.relax_times.value
+        self._input_structure_pk = self._node.inputs.structure.pk
+        self._twinboundary_relax_conf = \
+                self._node.inputs.twinboundary_relax_conf
+
+    def _set_relax_pks(self):
+        """
+        Set relax pks.
+        """
+        rlx_qb = QueryBuilder()
+        rlx_qb.append(Node, filters={'id':{'==': self._pk}}, tag='wf')
+        rlx_qb.append(RELAX_WF, with_incoming='wf', project=['id'])
+        relaxes = rlx_qb.all()
+        self._relax_pks = [ relax[0] for relax in relaxes ]
+
+    def _set_relax(self):
+        """
+        Set relax.
+        """
+        self._relax = [ RelaxWorkChain(load_node(pk))
+                            for pk in self._relax_pks ]
+
+    def get_pks(self) -> dict:
+        """
+        Get pks.
+
+        Returns:
+            dict: various pks
+        """
+        relax_pks = np.array(self._relax_pks)
+        isif2_pks = relax_pks[[ 2*i for i in range(len(self._relax_times)) ]]
+        isif7_pks = relax_pks[[ 2*i+1 for i in range(len(self._relax_times)) ]]
+        dic = {
+                'twinboudnary_relax_pk': self._pk,
+                'input_structure_pk': self._input_structure_pk,
+                'relax_pks': self._relax_pks,
+                'relax_isif2_pks': isif2_pks,
+                'relax_isif7_pks': isif7_pks,
+                }
+        return dic
