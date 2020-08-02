@@ -283,9 +283,7 @@ class ShearAnalyzer():
                 [ std.transformation_matrix for std in self._standardizes ]
         bands_plot(fig=fig,
                    phonons=self._phonons,
-                   rotation_matrices=[ std.rotation_matrix for std in self.standardizes ],
-                   original_lattices=[ cell[0] for cell in self._original_cells ],
-                   input_lattices=[ cell[0] for cell in self._input_cells ],
+                   transformation_matrices=transformation_matrices,
                    band_labels=band_labels,
                    segment_qpoints=segment_qpoints,
                    xscale=xscale,

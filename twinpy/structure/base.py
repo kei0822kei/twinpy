@@ -11,7 +11,26 @@ from phonopy.structure.atoms import PhonopyAtoms
 from phonopy.structure.cells import Supercell
 from twinpy.properties.hexagonal import get_atom_positions
 from twinpy.properties.twinmode import TwinIndices
-from twinpy.lattice.lattice import Lattice
+from twinpy.lattice.lattice import get_hexagonal_lattice_from_a_c, Lattice
+
+
+def get_hexagonal_cell(a:float,
+                       c:float,
+                       symbol:str,
+                       wyckoff:str='c'):
+    """
+    get hexagonal cell
+
+    Args:
+        a (float): the norm of a axis
+        c (float): the norm of c axis
+        symbol (str): element symbol
+        wyckoff (str): wyckoff letter
+    """
+    lattice = get_hexagonal_lattice_from_a_c(a=a, c=c)
+    scaled_positions = get_atom_positions(wyckoff=wyckoff)
+    symbols = [symbol] * len(scaled_positions)
+    return (lattice, scaled_positions, symbols)
 
 
 def is_hcp(lattice:np.array,
