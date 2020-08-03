@@ -10,10 +10,10 @@ import itertools
 from twinpy.lattice.lattice import Lattice
 
 
-def get_neighbor(cell:tuple,
-                 idx:int,
-                 distance_cutoff:float,
-                 get_distances:bool=False) -> list:
+def get_neighbors(cell:tuple,
+                  idx:int,
+                  distance_cutoff:float,
+                  get_distances:bool=False) -> list:
     """
     Get neighboring atoms from idx th atom.
 
@@ -56,8 +56,40 @@ def get_neighbor(cell:tuple,
         return neighbors
 
 
-def common_neighbor_analysis(cell:tuple,
-                             cutoff:float):
+def get_nth_neighbor_distance(cell:tuple,
+                              idx:int,
+                              n:int,
+                              max_distance:float) -> float:
+    """
+    Check atoms within max_distance and get n th neighbor distance.
+
+    Args:
+        cell (tuple): cell
+        idx (int): index of specific atom
+        n (int): n th neighbor
+        max_distance (float): distance cutoff
+
+    Returns:
+        float: n th neighbor distance
+
+    Todo:
+        results may become different depends on the values of
+        distance_cutoff and decimals
+        Calculation takes a lot of time.
+    """
+    assert n > 0, "n must be positive integer"
+    _, distances = get_neighbors(cell=cell,
+                                 idx=idx,
+                                 distance_cutoff=max_distance,
+                                 get_distances=True)
+    try:
+        nth_distance = np.sort(np.unique(np.round(distances, decimals=1)))[n-1]
+    except IndexError:
+        raise RuntimeError("Please use greater max_distance")
+    return nth_distance
+
+
+def common_neighbor_analysis(cell:tuple) -> list:
     """
     Common neighbor analysis.
 
@@ -65,13 +97,16 @@ def common_neighbor_analysis(cell:tuple,
         cell (tuple): cell
         cutoff (float): bonding cutoff
 
+    Returns:
+        list: states
+
     Todo:
-        cutoff is not unique, which means it is needed to use
-        different cutoff distance when, for exaple, checking hcp status and bcc
-        status.
+        results may become different depends on the values of
+        distance_cutoff and decimals
     """
-    def _get_bonding_state(bondings):
+    def _get_label(bondings):
         state = 'unknown'
+        print(len(bondings))
         if len(bondings) == 12:
             status_1 = len([ bond for bond in bondings if bond == [1,4,2,1] ])
             status_2 = len([ bond for bond in bondings if bond == [1,4,2,2] ])
@@ -86,32 +121,48 @@ def common_neighbor_analysis(cell:tuple,
                 state = 'bcc'
         return state
 
-    atoms_num = len(cell[1])
-    all_neighbors = []
-    all_distances = []
-    for i in range(atoms_num):
-        neighbors, distances = get_neighbor(cell=cell,
-                                            idx=i,
-                                            distance_cutoff=cutoff,
-                                            get_distances=True)
-        all_neighbors.append(neighbors)
-        all_distances.append(distances)
-
-    states = []
-    for i in range(atoms_num):
-        j_atoms = all_neighbors[i]
+    def _get_bonding_state(cell, idx, n):
+        max_distance = 3.
+        flag = True
+        while flag:
+            try:
+                cutoff = get_nth_neighbor_distance(cell=cell,
+                                                   idx=idx,
+                                                   n=n,
+                                                   max_distance=max_distance)
+                flag = False
+            except IndexError:
+                max_distance += 0.5
+        distance_cutoff = cutoff + 0.5
+        j_atoms = get_neighbors(cell=cell,
+                                idx=idx,
+                                distance_cutoff=distance_cutoff,
+                                get_distances=False)
         i_common_neighbors = []
         for j_atom in j_atoms:
             j, a, b, c = j_atom
-            j_atom_neighbors = list(map(tuple,
-                np.array(all_neighbors[j]) + np.array([0,a,b,c])))
+            prim_j_atom_neighbors = \
+                    get_neighbors(cell=cell,
+                                  idx=j,
+                                  distance_cutoff=distance_cutoff,
+                                  get_distances=False)
+            j_atom_neighbors = \
+                list(map(tuple,
+                         np.array(prim_j_atom_neighbors)
+                             + np.array([0,a,b,c])))
             k_atoms = set(j_atoms) & set(j_atom_neighbors)
             k_total_bonds = 0
             bond_nums = [0]
             for k_atom in k_atoms:
                 k, a, b, c = k_atom
+                prim_k_atom_neighbors = \
+                        get_neighbors(cell=cell,
+                                      idx=k,
+                                      distance_cutoff=distance_cutoff,
+                                      get_distances=False)
                 k_atom_neighbors = list(map(tuple,
-                    np.array(all_neighbors[k]) + np.array([0,a,b,c])))
+                                            np.array(prim_k_atom_neighbors)
+                                                + np.array([0,a,b,c])))
                 num = len(set(k_atoms) & set(k_atom_neighbors))
                 k_total_bonds += num
                 bond_nums.append(num)
@@ -123,40 +174,15 @@ def common_neighbor_analysis(cell:tuple,
                 fourth_label = 1
             i_common_neighbors.append(
                     [1, len(k_atoms), k_total_bonds, fourth_label])
-        print(len(i_common_neighbors))
-        state = _get_bonding_state(i_common_neighbors)
+        state = _get_label(i_common_neighbors)
+        return state
+
+    atoms_num = len(cell[1])
+    states = []
+    for i in range(atoms_num):
+        state = _get_bonding_state(cell, i, 1)
+        if state == 'unknown':
+            state = _get_bonding_state(cell, i, 2)
         states.append(state)
 
     return states
-
-    # common_neighbors = np.zeros([atoms_num, atoms_num, 4]).astype(int)
-    # idx_list = [ i for i in range(atoms_num) ]
-    # for i, j in itertools.product(idx_list, idx_list):
-    #     print(i,j)
-    #     if j not in all_neighbors[i][:,0]:
-    #         common_neighbors[i,j] = [2,0,0,0]
-    #     else:
-    #         share_idx_set = set(map(tuple, all_neighbors[i])) \
-    #                             and set(map(tuple, all_neighbors[j]))
-    #         bond_num = 0
-    #         bond_shares = []
-    #         print(share_idx_set)
-    #         for idx_set in share_idx_set:
-    #             fixed_neighbors = all_neighbors[idx_set[0]]
-    #             _, a, b, c = idx_set
-    #             fixed_neighbors = np.array(fixed_neighbors) \
-    #                     + np.array([0, a, b, c])
-    #             fixed_neighbors_set = set(map(tuple, fixed_neighbors))
-    #             num = len(share_idx_set & fixed_neighbors_set)
-    #             bond_num += num
-    #             bond_shares.append(num)
-    #         bn_among_cn = int(bond_num / 2)
-
-    #         if len(share_idx_set) == 4 and bn_among_cn == 2:
-    #             max_bond = max(bond_shares)
-    #             common_neighbors[i,j] = \
-    #                     [1, len(share_idx_set), bn_among_cn, max_bond]
-    #         else:
-    #             common_neighbors[i,j] = \
-    #                     [1, len(share_idx_set), bn_among_cn, 1]
-    # return common_neighbors

@@ -33,6 +33,27 @@ def get_hexagonal_cell(a:float,
     return (lattice, scaled_positions, symbols)
 
 
+def is_cells_are_same(first_cell:tuple,
+                      second_cell:tuple) -> bool:
+    """
+    Check first cell and second cell are same.
+
+    Args:
+        first_cell (tuple): first cell
+        second_cell (tuple): second cell
+
+    Returns:
+        bool: return True if two cells are same
+    """
+    is_lattice_same = np.allclose(first_cell[0], second_cell[0])
+    is_scaled_positions_same = np.allclose(first_cell[1], second_cell[1])
+    is_symbols_same = (first_cell[2] == second_cell[2])
+    is_same = (is_lattice_same
+               and is_scaled_positions_same
+               and is_symbols_same)
+    return is_same
+
+
 def is_hcp(lattice:np.array,
            symbols:list,
            positions:np.array=None,

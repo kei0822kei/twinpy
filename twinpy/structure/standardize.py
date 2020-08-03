@@ -224,7 +224,7 @@ class StandardizeCell():
                        in np.round(x_p, decimals=8), \
                        'x_p != P_c^{-1} x_s, check script'
 
-        atol = 1e-8
+        atol = 1e-5
 
         conv_orig = self.get_standardized_cell(to_primitive=False,
                                                no_idealize=True)

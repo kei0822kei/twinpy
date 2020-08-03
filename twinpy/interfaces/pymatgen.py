@@ -43,7 +43,8 @@ def get_hexagonal_cell_wyckoff_from_pymatgen(pmgstructure:Structure) -> tuple:
     Returns:
         tuple: (lattice, scaled_positions, symbol, wyckoff)
     """
-    lattice, scaled_positions, symbols = get_pymatgen_structure(pmgstructure)
+    lattice, scaled_positions, symbols = \
+            get_cell_from_pymatgen_structure(pmgstructure)
     wyckoff = is_hcp(lattice=lattice,
                      scaled_positions=scaled_positions,
                      symbols=symbols,

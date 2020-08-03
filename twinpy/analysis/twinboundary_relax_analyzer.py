@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Analize shear calculation.
+Analize twinboudnary relax calculation.
 """
 import numpy as np
-from twinpy.structure.base import is_cells_are_same
 from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.plot.base import get_plot_properties_for_trajectory

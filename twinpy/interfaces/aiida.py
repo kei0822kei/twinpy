@@ -517,8 +517,8 @@ class TwinBoudnaryRelaxWorkChain():
         self._set_input_data()
         self._relax_pks = None
         self._set_relax_pks()
-        self._relax = None
-        self._set_relax()
+        self._relaxes = None
+        self._set_relaxes()
 
     @property
     def pk(self):
@@ -567,12 +567,19 @@ class TwinBoudnaryRelaxWorkChain():
         relaxes = rlx_qb.all()
         self._relax_pks = [ relax[0] for relax in relaxes ]
 
-    def _set_relax(self):
+    def _set_relaxes(self):
         """
-        Set relax.
+        Set relaxes.
         """
-        self._relax = [ RelaxWorkChain(load_node(pk))
-                            for pk in self._relax_pks ]
+        self._relaxes = [ RelaxWorkChain(load_node(pk))
+                              for pk in self._relax_pks ]
+
+    @property
+    def relaxes(self):
+        """
+        TwinBoundary relax conf.
+        """
+        return self._relaxes
 
     def get_pks(self) -> dict:
         """
