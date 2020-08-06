@@ -39,12 +39,16 @@ def get_structure_diff(cells:list,
     scaled_posi_diffs = [ cell[1] - base_scaled_posi for cell in cells ]
     cart_posi_diffs = [ cart_posis[i] - base_cart_posi
                             for i in range(len(cells)) ]
+    cart_norm_diffs = [ np.linalg.norm(cart_posi_diff, axis=1)
+                            for cart_posi_diff in cart_posi_diffs ]
     if not include_base:
         del lattice_diffs[base_index]
         del scaled_posi_diffs[base_index]
         del cart_posi_diffs[base_index]
+        del cart_norm_diffs[base_index]
     return {
-            'lattice_diffs': lattice_diffs,
-            'scaled_posi_diffs': scaled_posi_diffs,
-            'cart_posi_diffs': cart_posi_diffs,
+            'lattice_diffs': np.array(lattice_diffs),
+            'scaled_posi_diffs': np.array(scaled_posi_diffs),
+            'cart_posi_diffs': np.array(cart_posi_diffs),
+            'cart_norm_diffs': np.array(cart_norm_diffs),
            }
