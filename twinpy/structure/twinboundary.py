@@ -173,49 +173,29 @@ class TwinBoundaryStructure(_BaseStructure):
                                p_cart_points.T).T
         t_frac_points = np.round(np.dot(np.linalg.inv(crop_tb_frame.T),
                                         t_cart_points.T).T, decimals=8)
+        crop_p_tb_frac_points = np.array(
+                [ frac for frac in p_frac_points if 0. == frac[2] ]) % 1
         crop_p_frac_points = np.array(
-                [ frac for frac in p_frac_points if 0. <= frac[2] < 0.5 ]) % 1
+                [ frac for frac in p_frac_points if 0. < frac[2] < 0.5 ]) % 1
+        crop_t_tb_frac_points = np.array(
+                [ frac for frac in t_frac_points if -0.5 == frac[2] ]) % 1
         crop_t_frac_points = np.array(
-                [ frac for frac in t_frac_points if -0.5 <= frac[2] < 0. ]) % 1
+                [ frac for frac in t_frac_points if -0.5 < frac[2] < 0. ]) % 1
 
 
         p_shift = np.array([-xshift/2, -yshift/2, 0.])
         t_shift = np.array([ xshift/2,  yshift/2, 0.])
-        scaled_positions = np.vstack([crop_p_frac_points+p_shift,
+        scaled_positions = np.vstack([crop_p_tb_frac_points+p_shift,
+                                      crop_p_frac_points+p_shift,
+                                      crop_t_tb_frac_points+t_shift,
                                       crop_t_frac_points+t_shift])
 
-        num = len(crop_p_frac_points)
-        symbols = ['white'] * num + ['black'] * num
+        symbols = ['white_tb'] * len(crop_p_tb_frac_points) \
+                + ['white'] * len(crop_p_frac_points) \
+                + ['black_tb'] * len(crop_t_tb_frac_points) \
+                + ['black'] * len(crop_t_frac_points)
 
         return (crop_tb_frame, scaled_positions, symbols)
-
-    def _make_twinboundary_flat(self,
-                                output_structure:dict):
-        """
-        Make twinboundary flat.
-        """
-        white_lp = output_structure['lattice_points']['white']
-        black_lp = output_structure['lattice_points']['black']
-        white_ix = np.where(white_lp[:,2] != 0.)[0]
-        white_tb_ix = np.where(white_lp[:,2] == 0.)[0]
-        black_ix = np.where(black_lp[:,2] != 0.5)[0]
-        black_tb_ix = np.where(black_lp[:,2] == 0.5)[0]
-        lattice_points = {'white': white_lp[white_ix],
-                          'white_tb': white_lp[white_tb_ix],
-                          'black': black_lp[black_ix],
-                          'black_tb': black_lp[black_tb_ix]}
-        atoms_from_lp = output_structure['atoms_from_lattice_points']
-        atoms_from_lp['white_tb'] = \
-                atoms_from_lp['white'] * np.array([1.,1.,0. ])
-        atoms_from_lp['black_tb'] = \
-                atoms_from_lp['black'] * np.array([1.,1.,0. ])
-        flat_structure = {
-                'lattice': output_structure['lattice'],
-                'lattice_points': lattice_points,
-                'atoms_from_lattice_points': atoms_from_lp,
-                'symbols': output_structure['symbols'],
-                }
-        return flat_structure
 
     def run(self,
             layers,
@@ -237,8 +217,6 @@ class TwinBoundaryStructure(_BaseStructure):
         Note:
             the structure built is set self.output_structure
         """
-        # tb_frame, lat_points, dichs = self.get_twinboudnary_lattice(
-        #         dim=dim, xshift=xshift, yshift=yshift)
         tb_frame, lat_points, dichs = self.get_twinboudnary_lattice(
                 layers=layers, delta=delta, xshift=xshift, yshift=yshift)
 
@@ -253,25 +231,31 @@ class TwinBoundaryStructure(_BaseStructure):
         twin_frac_atoms = np.dot(np.linalg.inv(tb_frame.T),
                                  twin_cart_atoms.T).T
 
+        white_tb_ix = [ i for i in range(len(dichs)) if dichs[i] == 'white_tb' ]
         white_ix = [ i for i in range(len(dichs)) if dichs[i] == 'white' ]
+        black_tb_ix = [ i for i in range(len(dichs)) if dichs[i] == 'black_tb' ]
         black_ix = [ i for i in range(len(dichs)) if dichs[i] == 'black' ]
         symbols = [ self._symbol ] * len(lat_points) * len(parent_frac_atoms)
         tb_shear_frame = self._get_shear_twinboundary_lattice(
                 tb_lattice=tb_frame,
                 shear_strain_ratio=shear_strain_ratio)
-        output_structure = \
-                {'lattice': tb_shear_frame,
-                 'lattice_points': {
-                     'white': lat_points[white_ix],
-                     'black': lat_points[black_ix],
-                                   },
-                 'atoms_from_lattice_points': {
-                      'white': parent_frac_atoms,
-                      'black': twin_frac_atoms,
-                                              },
-                 'symbols': symbols}
 
-        output_structure = self._make_twinboundary_flat(output_structure)
+        lattice_points = {'white_tb': lat_points[white_tb_ix],
+                          'white': lat_points[white_ix],
+                          'black_tb': lat_points[black_tb_ix],
+                          'black': lat_points[black_ix]}
+
+        atoms_from_lp = {'white_tb': parent_frac_atoms * np.array([1., 1., 0.]),
+                         'white': parent_frac_atoms,
+                         'black_tb': twin_frac_atoms * np.array([1., 1., 0.]),
+                         'black': twin_frac_atoms}
+
+        output_structure = {
+                'lattice': tb_shear_frame,
+                'lattice_points': lattice_points,
+                'atoms_from_lattice_points': atoms_from_lp,
+                'symbols': symbols,
+                }
 
         self._output_structure = output_structure
         self._natoms = len(self._output_structure['symbols'])
