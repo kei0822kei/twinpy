@@ -58,6 +58,29 @@ def get_shear_strain_function(twinmode:str):
     return func
 
 
+def get_number_of_layers(twinmode:str) -> int:
+    """
+    Get the number of layers.
+
+    Args:
+        twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
+                        (which are supported)
+
+    Returns:
+        int: the number of layes
+    """
+    check_supported_twinmode(twinmode)
+    if twinmode == '10-12':
+        layers = 4
+    elif twinmode == '10-11':
+        layers = 8
+    elif twinmode == '11-22':
+        layers = 6
+    elif twinmode == '11-21':
+        layers = 2
+    return layers
+
+
 def get_twin_indices_by_Yoo() -> dict:
     """
     Get twin indices Yoo showed in his paper.
@@ -156,6 +179,7 @@ class TwinIndices():
         check_supported_twinmode(twinmode)
         self._lattice = lattice
         self._twinmode = twinmode
+        self._layers = get_number_of_layers(twinmode)
         self._wyckoff = wyckoff
         self._indices_Yoo = self._get_indices_Yoo(self._lattice.lattice,
                                                   self._twinmode)
@@ -178,6 +202,13 @@ class TwinIndices():
         Twinmode.
         """
         return self._twinmode
+
+    @property
+    def layers(self):
+        """
+        Number of layers.
+        """
+        return self._layers
 
     @property
     def wyckoff(self):
