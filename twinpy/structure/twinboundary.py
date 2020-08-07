@@ -7,6 +7,7 @@ HexagonalStructure
 
 import numpy as np
 from copy import deepcopy
+import math
 from twinpy.structure.base import _BaseStructure
 from twinpy.structure.shear import ShearStructure
 
@@ -118,8 +119,8 @@ class TwinBoundaryStructure(_BaseStructure):
         return output_structure
 
     def _get_shear_twinboundary_lattice(self,
-                                      tb_lattice:np.array,
-                                      shear_strain_ratio:float):
+                                        tb_lattice:np.array,
+                                        shear_strain_ratio:float):
         """
         Get shear twinboudnary lattice.
         """
@@ -133,7 +134,8 @@ class TwinBoundaryStructure(_BaseStructure):
         return lat
 
     def get_twinboudnary_lattice(self,
-                                 dim:np.array=np.ones(3, dtype='intc'),
+                                 layers,
+                                 delta,
                                  xshift:float=0.,
                                  yshift:float=0.):
         """
@@ -144,40 +146,48 @@ class TwinBoundaryStructure(_BaseStructure):
             xshift (float): x shift
             yshift (float): y shift
         """
-        multi_dim = np.array(dim) * np.array([1,1,2])
+        prim_layers = self._indices.layers
+        zdim = math.ceil(layers / prim_layers)
+        multi_dim = np.array([1,1,2*zdim])
+        zratio = layers / (zdim * prim_layers)
         p_orig_structure = self._get_parent_structure(dim=multi_dim)
+
         p_frame = np.dot(self._rotation_matrix,
                          p_orig_structure['lattice'].T).T
-        p_cart_points = np.dot(p_frame.T,
-                               p_orig_structure['lattice_points']['white'].T).T
         t_frame = np.dot(self._dichromatic_operation,
                          p_frame.T).T
-        t_cart_points = np.dot(self._dichromatic_operation,
-                               p_cart_points.T).T
         tb_frame = np.array([
             p_frame[0],
             p_frame[1],
             (p_frame[2] - t_frame[2]) / 2
             ])
+        crop_tb_frame = tb_frame * np.array([1., 1., zratio])
 
-        p_frac_points = np.dot(np.linalg.inv(tb_frame.T),
+        p_cart_points = np.dot(p_frame.T,
+                               p_orig_structure['lattice_points']['white'].T).T
+
+        p_frac_points = np.round(np.dot(np.linalg.inv(crop_tb_frame.T),
+                                        p_cart_points.T).T, decimals=8)
+
+        t_cart_points = np.dot(self._dichromatic_operation,
                                p_cart_points.T).T
-        p_frac_points = np.round(p_frac_points, decimals=8) % 1.
-        t_frac_points = np.dot(np.linalg.inv(tb_frame.T),
-                               t_cart_points.T).T
-        t_frac_points = np.round(t_frac_points, decimals=8) % 1.
+        t_frac_points = np.round(np.dot(np.linalg.inv(crop_tb_frame.T),
+                                        t_cart_points.T).T, decimals=8)
+        crop_p_frac_points = np.array(
+                [ frac for frac in p_frac_points if 0. <= frac[2] < 0.5 ]) % 1
+        crop_t_frac_points = np.array(
+                [ frac for frac in t_frac_points if -0.5 <= frac[2] < 0. ]) % 1
 
-        p_ix = np.where(p_frac_points[:,2] < 0.5)[0]
-        t_ix = np.where(t_frac_points[:,2] >= 0.5)[0]
-        p_shift = np.array([-xshift/2/dim[0], -yshift/2/dim[1], 0.])
-        t_shift = np.array([ xshift/2/dim[0],  yshift/2/dim[1], 0.])
-        scaled_positions = np.vstack([p_frac_points[p_ix]+p_shift,
-                                      t_frac_points[t_ix]+t_shift])
 
-        num = len(p_ix)
+        p_shift = np.array([-xshift/2, -yshift/2, 0.])
+        t_shift = np.array([ xshift/2,  yshift/2, 0.])
+        scaled_positions = np.vstack([crop_p_frac_points+p_shift,
+                                      crop_t_frac_points+t_shift])
+
+        num = len(crop_p_frac_points)
         symbols = ['white'] * num + ['black'] * num
 
-        return (tb_frame, scaled_positions, symbols)
+        return (crop_tb_frame, scaled_positions, symbols)
 
     def _make_twinboundary_flat(self,
                                 output_structure:dict):
@@ -208,11 +218,11 @@ class TwinBoundaryStructure(_BaseStructure):
         return flat_structure
 
     def run(self,
-            dim:np.array=np.ones(3, dtype='intc'),
+            layers,
+            delta=0.1,
             xshift:float=0.,
             yshift:float=0.,
             shear_strain_ratio:float=0.,
-            make_tb_flat:bool=False,
             ):
         """
         Build structure.
@@ -227,14 +237,17 @@ class TwinBoundaryStructure(_BaseStructure):
         Note:
             the structure built is set self.output_structure
         """
+        # tb_frame, lat_points, dichs = self.get_twinboudnary_lattice(
+        #         dim=dim, xshift=xshift, yshift=yshift)
+        tb_frame, lat_points, dichs = self.get_twinboudnary_lattice(
+                layers=layers, delta=delta, xshift=xshift, yshift=yshift)
+
         W = self._dichromatic_operation
         R = self._rotation_matrix
         orig_cart_atoms = np.dot(self._hexagonal_lattice.lattice.T,
                                  self._atoms_from_lattice_points.T).T
         parent_cart_atoms = np.dot(R, orig_cart_atoms.T).T
         twin_cart_atoms = np.dot(W, parent_cart_atoms.T).T
-        tb_frame, lat_points, dichs = self.get_twinboudnary_lattice(
-                dim=dim, xshift=xshift, yshift=yshift)
         parent_frac_atoms = np.dot(np.linalg.inv(tb_frame.T),
                                    parent_cart_atoms.T).T
         twin_frac_atoms = np.dot(np.linalg.inv(tb_frame.T),
@@ -258,12 +271,10 @@ class TwinBoundaryStructure(_BaseStructure):
                                               },
                  'symbols': symbols}
 
-        if make_tb_flat:
-            output_structure = self._make_twinboundary_flat(output_structure)
+        output_structure = self._make_twinboundary_flat(output_structure)
 
         self._output_structure = output_structure
         self._natoms = len(self._output_structure['symbols'])
-        self._dim = dim
         self._xshift = xshift
         self._yshift = yshift
         self._shear_strain_ratio = shear_strain_ratio
@@ -272,13 +283,13 @@ class TwinBoundaryStructure(_BaseStructure):
 def get_twinboundary(lattice:np.array,
                      symbol:str,
                      twinmode:str,
+                     layers:int,
                      wyckoff:str='c',
+                     delta:float=0.,
                      twintype:int=1,
                      xshift:float=0.,
                      yshift:float=0.,
-                     dim:np.array=np.ones(3, dtype='intc'),
                      shear_strain_ratio:float=0.,
-                     make_tb_flat:bool=False,
                      ):
     """
     Get twinboudnary structure object.
@@ -300,9 +311,9 @@ def get_twinboundary(lattice:np.array,
                                twinmode=twinmode,
                                twintype=twintype,
                                wyckoff=wyckoff)
-    tb.run(dim=dim,
+    tb.run(layers=layers,
+           delta=delta,
            xshift=xshift,
            yshift=yshift,
-           shear_strain_ratio=shear_strain_ratio,
-           make_tb_flat=make_tb_flat)
+           shear_strain_ratio=shear_strain_ratio)
     return tb
