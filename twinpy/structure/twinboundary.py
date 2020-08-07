@@ -41,6 +41,8 @@ class TwinBoundaryStructure(_BaseStructure):
         self._rotation_matrix = None
         self._set_rotation_matrix()
         self._dichromatic_operation = None
+        self._layers = None
+        self._delta = None
         self._set_dichromatic_operation()
 
     def _set_rotation_matrix(self):
@@ -104,6 +106,20 @@ class TwinBoundaryStructure(_BaseStructure):
         """
         return self._dichromatic_operation
 
+    @property
+    def layers(self):
+        """
+        The number of layers.
+        """
+        return self._layers
+
+    @property
+    def delta(self):
+        """
+        Delta.
+        """
+        return self._delta
+
     def _get_parent_structure(self,
                               dim:np.array):
         """
@@ -136,7 +152,9 @@ class TwinBoundaryStructure(_BaseStructure):
     def _add_delta(self,
                    lat_cell:tuple,
                    delta:float):
-        dichs = lat_cell[2]
+        """
+        Add delta interval to the twin boundary lattce.
+        """
         ld = np.array([0., 0., delta])
         frame = lat_cell[0].copy()
         frame[2,:] = frame[2,:] + 4 * ld
@@ -156,7 +174,6 @@ class TwinBoundaryStructure(_BaseStructure):
 
         return (frame, np.array(frac_coords), lat_cell[2])
 
-
     def get_twinboudnary_lattice(self,
                                  layers,
                                  delta,
@@ -166,7 +183,8 @@ class TwinBoundaryStructure(_BaseStructure):
         Get twinboundary lattice.
 
         Args:
-            dim (np.array): dimension
+            layers (int): the number of layers
+            delta (float): additional interval both sites of twin boundary
             xshift (float): x shift
             yshift (float): y shift
         """
@@ -189,14 +207,13 @@ class TwinBoundaryStructure(_BaseStructure):
 
         p_cart_points = np.dot(p_frame.T,
                                p_orig_structure['lattice_points']['white'].T).T
-
         p_frac_points = np.round(np.dot(np.linalg.inv(crop_tb_frame.T),
                                         p_cart_points.T).T, decimals=8)
-
         t_cart_points = np.dot(self._dichromatic_operation,
                                p_cart_points.T).T
         t_frac_points = np.round(np.dot(np.linalg.inv(crop_tb_frame.T),
                                         t_cart_points.T).T, decimals=8)
+
         crop_p_tb_frac_points = np.array(
                 [ frac for frac in p_frac_points if 0. == frac[2] ]) % 1
         crop_p_frac_points = np.array(
@@ -205,7 +222,6 @@ class TwinBoundaryStructure(_BaseStructure):
                 [ frac for frac in t_frac_points if -0.5 == frac[2] ]) % 1
         crop_t_frac_points = np.array(
                 [ frac for frac in t_frac_points if -0.5 < frac[2] < 0. ]) % 1
-
 
         p_shift = np.array([-xshift/2, -yshift/2, 0.])
         t_shift = np.array([ xshift/2,  yshift/2, 0.])
@@ -221,6 +237,7 @@ class TwinBoundaryStructure(_BaseStructure):
 
         lat_cell = (crop_tb_frame, scaled_positions, symbols)
         delta_lat_cell = self._add_delta(lat_cell, delta)
+
         return delta_lat_cell
 
     def run(self,
@@ -234,11 +251,11 @@ class TwinBoundaryStructure(_BaseStructure):
         Build structure.
 
         Args:
-            dim (np.array): dimension
+            layers (int): the number of layers
+            delta (float): additional interval both sites of twin boundary
             xshift (float): x shift
             yshift (float): y shift
             shear_strain_ratio (float): shear strain ratio
-            make_tb_flat (bool): whether make twin boundary flat
 
         Note:
             the structure built is set self.output_structure
@@ -257,24 +274,32 @@ class TwinBoundaryStructure(_BaseStructure):
         twin_frac_atoms = np.dot(np.linalg.inv(tb_frame.T),
                                  twin_cart_atoms.T).T
 
-        white_tb_ix = [ i for i in range(len(dichs)) if dichs[i] == 'white_tb' ]
-        white_ix = [ i for i in range(len(dichs)) if dichs[i] == 'white' ]
-        black_tb_ix = [ i for i in range(len(dichs)) if dichs[i] == 'black_tb' ]
-        black_ix = [ i for i in range(len(dichs)) if dichs[i] == 'black' ]
+        white_tb_ix = \
+                [ i for i in range(len(dichs)) if dichs[i] == 'white_tb' ]
+        white_ix = \
+                [ i for i in range(len(dichs)) if dichs[i] == 'white' ]
+        black_tb_ix = \
+                [ i for i in range(len(dichs)) if dichs[i] == 'black_tb' ]
+        black_ix = \
+                [ i for i in range(len(dichs)) if dichs[i] == 'black' ]
         symbols = [ self._symbol ] * len(lat_points) * len(parent_frac_atoms)
         tb_shear_frame = self._get_shear_twinboundary_lattice(
                 tb_lattice=tb_frame,
                 shear_strain_ratio=shear_strain_ratio)
 
-        lattice_points = {'white_tb': lat_points[white_tb_ix],
-                          'white': lat_points[white_ix],
-                          'black_tb': lat_points[black_tb_ix],
-                          'black': lat_points[black_ix]}
+        lattice_points = {
+                'white_tb': lat_points[white_tb_ix],
+                'white': lat_points[white_ix],
+                'black_tb': lat_points[black_tb_ix],
+                'black': lat_points[black_ix]
+                }
 
-        atoms_from_lp = {'white_tb': parent_frac_atoms * np.array([1., 1., 0.]),
-                         'white': parent_frac_atoms,
-                         'black_tb': twin_frac_atoms * np.array([1., 1., 0.]),
-                         'black': twin_frac_atoms}
+        atoms_from_lp = {
+                'white_tb': parent_frac_atoms * np.array([1., 1., 0.]),
+                'white': parent_frac_atoms,
+                'black_tb': twin_frac_atoms * np.array([1., 1., 0.]),
+                'black': twin_frac_atoms
+                }
 
         output_structure = {
                 'lattice': tb_shear_frame,
@@ -288,6 +313,8 @@ class TwinBoundaryStructure(_BaseStructure):
         self._xshift = xshift
         self._yshift = yshift
         self._shear_strain_ratio = shear_strain_ratio
+        self._layers = layers
+        self._delta = delta
 
 
 def get_twinboundary(lattice:np.array,
@@ -308,13 +335,14 @@ def get_twinboundary(lattice:np.array,
         lattice (np.array): lattice
         symbol (str): element symbol
         twinmode (str): twinmode
+        layers (int): the number of layers
         wyckoff (str): No.194 Wycoff position ('c' or 'd')
+        delta (float): additional interval both sites of twin boundary
         twintype (int): twintype, choose from 1 and 2
         xshift (float): x shift
         yshift (float): y shift
         dim (np.array): dimension
         shear_strain_ratio (float): shear twinboundary ratio
-        make_tb_flat (bool): whether make twin boundary flat
     """
     tb = TwinBoundaryStructure(lattice=lattice,
                                symbol=symbol,

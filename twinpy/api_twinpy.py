@@ -60,7 +60,6 @@ class Twinpy():
         self._shear = None
         self._twinboundary = None
         self._shear_is_primitive = None
-        self._twinboundary_make_tb_flat = None
 
     @property
     def shear(self):
@@ -106,23 +105,23 @@ class Twinpy():
         return self._shear_is_primitive
 
     def set_twinboundary(self,
+                         layers:int,
+                         delta:float=0.,
                          twintype:int=1,
                          xshift:float=0.,
                          yshift:float=0.,
-                         dim:np.array=np.ones(3, dtype='intc'),
                          shear_strain_ratio:float=0.,
-                         make_tb_flat=True,
                          ):
         """
         Set twinboundary structure object.
 
         Args:
+            layers (int): the number of layers
+            delta (float): additional interval both sites of twin boundary
             twintype (int): twintype, choose from 1 and 2
             xshift (float): x shift
             yshift (float): y shift
-            dim (np.array): dimension
             shear_strain_ratio (float): shear twinboundary ratio
-            make_tb_flat (bool): whether make twin boundary flat
         """
         self._twinboundary = get_twinboundary(
                 lattice=self._hcp_matrix,
@@ -132,9 +131,9 @@ class Twinpy():
                 twintype=twintype,
                 xshift=xshift,
                 yshift=yshift,
-                dim=dim,
                 shear_strain_ratio=shear_strain_ratio,
-                make_tb_flat=make_tb_flat)
+                layers=layers,
+                delta=delta)
 
     @property
     def twinboundary(self):
@@ -142,13 +141,6 @@ class Twinpy():
         Twinboundary structure object.
         """
         return self._twinboundary
-
-    @property
-    def twinboundary_make_tb_flat(self):
-        """
-        Twinboundary make_tb_flat
-        """
-        return self._twinboundary_make_tb_flat
 
     def _shear_structure_is_not_set(self):
         """
@@ -241,7 +233,8 @@ class Twinpy():
             tb['yshift'] = self._twinboundary.yshift
             tb['twintype'] = self._twinboundary.twintype
             tb['shear_strain_ratio'] = self._twinboundary.shear_strain_ratio
-            tb['make_tb_flat'] = self._twinboundary_make_tb_flat
+            tb['layers'] = self._twinboundary.layers
+            tb['delta'] = self._twinboundary.delta
 
         dic = {}
         dic['hcp_matrix'] = self._hcp_matrix
@@ -302,6 +295,7 @@ class Twinpy():
                     xshift=tb['xshift'],
                     yshift=tb['yshift'],
                     shear_strain_ratio=tb['shear_strain_ratio'],
-                    make_tb_flat=tb['make_tb_flat'])
+                    delta=tb['delta'],
+                    layers=tb['layers'])
 
         return twinpy
