@@ -133,6 +133,30 @@ class TwinBoundaryStructure(_BaseStructure):
                   * e_b
         return lat
 
+    def _add_delta(self,
+                   lat_cell:tuple,
+                   delta:float):
+        dichs = lat_cell[2]
+        ld = np.array([0., 0., delta])
+        frame = lat_cell[0].copy()
+        frame[2,:] = frame[2,:] + 4 * ld
+
+        multi = {
+                'white_tb': 0,
+                'white': 1,
+                'black_tb': 2,
+                'black': 3,
+                }
+        orig_cart_coords = np.dot(lat_cell[0].T, lat_cell[1].T).T
+        frac_coords = []
+        for i in range(len(lat_cell[1])):
+            cart_coord = orig_cart_coords[i] + multi[lat_cell[2][i]] * ld
+            frac_coord = np.dot(cart_coord, np.linalg.inv(frame))
+            frac_coords.append(frac_coord)
+
+        return (frame, np.array(frac_coords), lat_cell[2])
+
+
     def get_twinboudnary_lattice(self,
                                  layers,
                                  delta,
@@ -195,7 +219,9 @@ class TwinBoundaryStructure(_BaseStructure):
                 + ['black_tb'] * len(crop_t_tb_frac_points) \
                 + ['black'] * len(crop_t_frac_points)
 
-        return (crop_tb_frame, scaled_positions, symbols)
+        lat_cell = (crop_tb_frame, scaled_positions, symbols)
+        delta_lat_cell = self._add_delta(lat_cell, delta)
+        return delta_lat_cell
 
     def run(self,
             layers,
