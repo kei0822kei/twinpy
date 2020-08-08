@@ -53,7 +53,7 @@ class Twinpy():
             symbol (str): element symbol
             wyckoff (str): No.194 Wycoff position ('c' or 'd')
         """
-        self._hcp_matrix = lattice
+        self._hexagonal_lattice = lattice
         self._twinmode = twinmode
         self._symbol = symbol
         self._wyckoff = wyckoff
@@ -86,7 +86,7 @@ class Twinpy():
             is_primitive (bool): if True, output shear structure is primitive
         """
         self._shear = get_shear(
-                lattice=self._hcp_matrix,
+                lattice=self._hexagonal_lattice,
                 twinmode=self._twinmode,
                 symbol=self._symbol,
                 wyckoff=self._wyckoff,
@@ -124,7 +124,7 @@ class Twinpy():
             shear_strain_ratio (float): shear twinboundary ratio
         """
         self._twinboundary = get_twinboundary(
-                lattice=self._hcp_matrix,
+                lattice=self._hexagonal_lattice,
                 twinmode=self._twinmode,
                 wyckoff=self._wyckoff,
                 symbol=self._symbol,
@@ -237,7 +237,7 @@ class Twinpy():
             tb['delta'] = self._twinboundary.delta
 
         dic = {}
-        dic['hcp_matrix'] = self._hcp_matrix
+        dic['hexagonal_lattice'] = self._hexagonal_lattice
         dic['twinmode'] = self._twinmode
         dic['symbol'] = self._symbol
         dic['wyckoff'] = self._wyckoff
@@ -274,7 +274,7 @@ class Twinpy():
         Returns:
             Twinpy: Twinpy object
         """
-        twinpy = Twinpy(lattice=dic['hcp_matrix'],
+        twinpy = Twinpy(lattice=dic['hexagonal_lattice'],
                         twinmode=dic['twinmode'],
                         symbol=dic['symbol'],
                         wyckoff=dic['wyckoff'])

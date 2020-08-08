@@ -17,9 +17,9 @@ from twinpy.lattice.lattice import get_hexagonal_lattice_from_a_c, Lattice
 def get_hexagonal_cell(a:float,
                        c:float,
                        symbol:str,
-                       wyckoff:str='c'):
+                       wyckoff:str='c') -> tuple:
     """
-    get hexagonal cell
+    Get hexagonal cell.
 
     Args:
         a (float): the norm of a axis
@@ -33,8 +33,8 @@ def get_hexagonal_cell(a:float,
     return (lattice, scaled_positions, symbols)
 
 
-def is_cells_are_same(first_cell:tuple,
-                      second_cell:tuple) -> bool:
+def check_same_cells(first_cell:tuple,
+                     second_cell:tuple) -> bool:
     """
     Check first cell and second cell are same.
 
@@ -104,6 +104,7 @@ def get_atom_positions_from_lattice_points(lattice_points:np.array,
                                            atoms_from_lp:np.array) -> np.array:
     """
     Get atom positions from lattice points.
+    Both lattice points and atom positions must be cartesian coordinates.
 
     Args:
         lattice_points (np.array): lattice points
@@ -165,6 +166,7 @@ class _BaseStructure():
     Base structure class which is inherited
     ShearStructure class and TwinBoundaryStructure class.
     """
+
     def __init__(
            self,
            lattice:np.array,
@@ -193,7 +195,6 @@ class _BaseStructure():
                 get_atom_positions(wyckoff=self._wyckoff)
         self._hexagonal_lattice = Lattice(lattice)
         self._natoms = 2
-        self._dim = None
         self._twinmode = None
         self._indices = None
         self._set_twinmode(twinmode=twinmode)
@@ -231,13 +232,6 @@ class _BaseStructure():
         return self._r
 
     @property
-    def hcp_lattice(self):
-        """
-        Base HCP lattice.
-        """
-        return self._hcp_lattice
-
-    @property
     def symbol(self):
         """
         Symbol.
@@ -250,13 +244,6 @@ class _BaseStructure():
         Wyckoff position.
         """
         return self._wyckoff
-
-    @property
-    def dim(self):
-        """
-        Dimension.
-        """
-        return self._dim
 
     @property
     def atoms_from_lattice_points(self):

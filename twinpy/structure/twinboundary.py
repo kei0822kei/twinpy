@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-HexagonalStructure
+Hexagonal Twinboudnary Structure.
 """
 
 import numpy as np
@@ -41,9 +41,9 @@ class TwinBoundaryStructure(_BaseStructure):
         self._rotation_matrix = None
         self._set_rotation_matrix()
         self._dichromatic_operation = None
+        self._set_dichromatic_operation()
         self._layers = None
         self._delta = None
-        self._set_dichromatic_operation()
 
     def _set_rotation_matrix(self):
         """
@@ -83,7 +83,7 @@ class TwinBoundaryStructure(_BaseStructure):
         Set dichromatic operation.
 
         Raises:
-            ValueError: twintype != 1 nor 2
+            ValueError: twintype not equal 1 nor 2
         """
         twintype = self._twintype
         if twintype == 1:
@@ -121,7 +121,7 @@ class TwinBoundaryStructure(_BaseStructure):
         return self._delta
 
     def _get_parent_structure(self,
-                              dim:np.array):
+                              dim:np.array) -> dict:
         """
         Get parent.
         """
@@ -136,7 +136,7 @@ class TwinBoundaryStructure(_BaseStructure):
 
     def _get_shear_twinboundary_lattice(self,
                                         tb_lattice:np.array,
-                                        shear_strain_ratio:float):
+                                        shear_strain_ratio:float) -> np.array:
         """
         Get shear twinboudnary lattice.
         """
@@ -327,7 +327,7 @@ def get_twinboundary(lattice:np.array,
                      xshift:float=0.,
                      yshift:float=0.,
                      shear_strain_ratio:float=0.,
-                     ):
+                     ) -> TwinBoundaryStructure:
     """
     Get twinboudnary structure object.
 
@@ -341,7 +341,6 @@ def get_twinboundary(lattice:np.array,
         twintype (int): twintype, choose from 1 and 2
         xshift (float): x shift
         yshift (float): y shift
-        dim (np.array): dimension
         shear_strain_ratio (float): shear twinboundary ratio
     """
     tb = TwinBoundaryStructure(lattice=lattice,
