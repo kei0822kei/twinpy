@@ -96,7 +96,7 @@ def main(structure,
 
     move_atoms_into_unitcell = True
     symprec = 1e-5
-    no_idealize = True
+    no_idealize = False
     no_sort = True
     get_sort_list = False
 
@@ -142,7 +142,8 @@ def main(structure,
                                 xshift=xshift,
                                 yshift=yshift,
                                 layers=layers,
-                                delta=delta)
+                                delta=delta,
+                                shear_strain_ratio=shear_strain_ratio)
         std = twinpy.get_twinboundary_standardize(
                 get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,

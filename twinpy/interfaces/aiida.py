@@ -5,18 +5,23 @@
 Aiida interface for twinpy.
 """
 import numpy as np
+import warnings
 from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from twinpy.interfaces.phonopy import get_phonopy_structure
+from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
 from aiida.orm import (load_node,
                        Node,
                        QueryBuilder,
                        StructureData,
-                       CalcFunctionNode)
+                       CalcFunctionNode,
+                       WorkChainNode)
 from aiida.plugins import WorkflowFactory
+from aiida.common.exceptions import NotExistentAttributeError
 from phonopy import Phonopy
 
+VASP_WF = WorkflowFactory('vasp.vasp')
 RELAX_WF = WorkflowFactory('vasp.relax')
 PHONOPY_WF = WorkflowFactory('phonopy.phonopy')
 
@@ -76,33 +81,9 @@ def get_cell_from_aiida(structure:StructureData,
     return (lattice, positions, symbols)
 
 
-def get_workflow_pks(pk:int,
-                     workflow_name:str) -> dict:
+class _WorkChain():
     """
-    Get workflow pk in the specified pk.
-
-    Args:
-        pk (int): input pk
-        workflow_name (str): workflow name such as 'vasp.relax',
-                             'phonopy.phonopy'
-
-    Returns:
-        dict: workflow pks in input pk
-    """
-    wf = WorkflowFactory(workflow_name)
-    node_qb = QueryBuilder()
-    node_qb.append(Node, filters={'id':{'==': pk}}, tag='wf')
-    node_qb.append(wf, with_incoming='wf', project=['id'])
-    nodes = node_qb.all()
-    node_pks = [ node[0] for node in nodes ]
-    node_pks.reverse()
-    return node_pks
-
-
-@with_dbenv()
-class RelaxWorkChain():
-    """
-    Relax work chain class.
+    Aiida WorkChain class.
     """
 
     def __init__(
@@ -112,36 +93,98 @@ class RelaxWorkChain():
         """
         Args:
             pk (int): relax pk
+            process_class (str): process class
         """
         node = load_node(pk)
-        check_process_class(node, 'RelaxWorkChain')
-
         self._node = node
+        self._process_class = self._node.process_class.get_name()
         self._pk = pk
-        self._initial_structure_pk = node.inputs.structure.pk
-        self._initial_cell = get_cell_from_aiida(
-                load_node(self._initial_structure_pk))
-        self._final_structure_pk = node.outputs.relax__structure.pk
-        self._final_cell = get_cell_from_aiida(
-                load_node(self._final_structure_pk))
-        self._stress = None
-        self._set_stress()
-        self._forces = None
-        self._set_forces()
+        self._label = self._node.label
+        self._description = self._node.description
+        self._exit_status = self._node.exit_status
+        if self._exit_status != 0:
+            warnings.warn("Warning: exit status was %d" % self._exit_status)
+
+    @property
+    def process_class(self):
+        """
+        Process class.
+        """
+        return self._process_class
 
     @property
     def node(self):
         """
-        RelaxWorkChain node.
+        WorkChain node.
         """
         return self._node
 
     @property
     def pk(self):
         """
-        RelaxWorkChain pk.
+        WorkChain pk.
         """
         return self._pk
+
+    @property
+    def label(self):
+        """
+        Label.
+        """
+        return self._label
+
+    @property
+    def description(self):
+        """
+        Description.
+        """
+        return self._description
+
+    @property
+    def exit_status(self):
+        """
+        Exit status.
+        """
+        return self._exit_status
+
+
+class _AiidaVaspWorkChain(_WorkChain):
+    """
+    Aiida-Vasp base work chain class.
+    """
+
+    def __init__(
+            self,
+            pk:int,
+            ):
+        """
+        Args:
+            pk (int): relax pk
+            process_class (str): process class
+        """
+        super().__init__(pk=pk)
+        self._initial_structure_pk = None
+        self._initial_cell = None
+        self._set_initial_structure()
+        self._stress = None
+        self._set_stress()
+        self._forces = None
+        self._set_forces()
+
+    def _set_initial_structure(self):
+        """
+        Set initial structure.
+        """
+        self._initial_structure_pk = self._node.inputs.structure.pk
+        self._initial_cell = get_cell_from_aiida(
+                load_node(self._initial_structure_pk))
+
+    @property
+    def initial_cell(self):
+        """
+        Initial cell.
+        """
+        return self._initial_cell
 
     def _set_forces(self):
         """
@@ -175,12 +218,90 @@ class RelaxWorkChain():
         """
         return self._stress
 
-    @property
-    def initial_cell(self):
+    def get_kpoints_info(self) -> dict:
         """
-        Initial cell.
+        Get sampling kpoints information.
+
+        Returns:
+            dict: kpoints information
         """
-        return self._initial_cell
+        mesh, offset = self._node.inputs.kpoints.get_kpoints_mesh()
+        sampling_kpoints = self._node.outputs.kpoints.get_array('kpoints')
+        weights = self._node.outputs.kpoints.get_array('weights')
+        total_mesh = mesh[0] * mesh[1] * mesh[2]
+        weights_num = (weights * total_mesh).astype(int)
+        twinpy_kpoints = get_mesh_offset_from_direct_lattice(
+                lattice=self._initial_cell[0],
+                mesh=mesh)
+        kpts = {
+                'mesh': mesh,
+                'offset': offset,
+                'sampling_kpoints': sampling_kpoints,
+                'weights': weights_num,
+                'reciprocal_lattice': twinpy_kpoints['reciprocal_lattice'],
+                'reciprocal_abc': twinpy_kpoints['abc'],
+                'intervals': twinpy_kpoints['intervals'],
+                'include_two_pi': twinpy_kpoints['include_two_pi'],
+                }
+        return kpts
+
+    def get_vasp_settings(self) -> dict:
+        """
+        Get input parameters.
+
+        Returns:
+            dict: input parameters
+        """
+        potcar = {
+          'potential_family': self._node.inputs.potential_family.value,
+          'potential_mapping': self._node.inputs.potential_mapping.get_dict(),
+          }
+
+        settings = {
+                'incar': self._node.inputs.parameters.get_dict(),
+                'potcar': potcar,
+                'kpoints': self._node.inputs.kpoints.get_kpoints_mesh(),
+                }
+        return settings
+
+    def get_misc(self) -> dict:
+        """
+        Get misc.
+        """
+        return self._node.outputs.misc.get_dict()
+
+
+@with_dbenv()
+class AiidaVaspWorkChain(_AiidaVaspWorkChain):
+    """
+    Vasp work chain class.
+    """
+
+    def __init__(
+            self,
+            pk:int,
+            ):
+        """
+        Args:
+            pk (int): relax pk
+        """
+        process_class = 'VaspWorkChain'
+        check_process_class(load_node(pk), process_class)
+        super().__init__(pk=pk)
+        self._final_structure_pk = None
+        self._final_cell = None
+        self._set_final_structure()
+
+    def _set_final_structure(self):
+        """
+        Set final structure.
+        """
+        try:
+            self._final_structure_pk = self._node.outputs.structure.pk
+            self._final_cell = get_cell_from_aiida(
+                    load_node(self._final_structure_pk))
+        except NotExistentAttributeError:
+            warnings.warn("Final structure could not find.")
 
     @property
     def final_cell(self):
@@ -194,17 +315,114 @@ class RelaxWorkChain():
         Get pks.
 
         Returns:
-            dict: containing relax pk and structure pk
+            dict: containing vasp pk and structure pk
         """
         return {
-                 'relax_pk': self._pk,
+                 'vasp_pk': self._pk,
                  'initial_structure_pk': self._initial_structure_pk,
                  'final_structure_pk': self._final_structure_pk,
                }
 
 
 @with_dbenv()
-class PhonopyWorkChain():
+class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
+    """
+    Relax work chain class.
+    """
+
+    def __init__(
+            self,
+            pk:int,
+            ):
+        """
+        Args:
+            pk (int): relax pk
+        """
+        process_class = 'RelaxWorkChain'
+        check_process_class(load_node(pk), process_class)
+        super().__init__(pk=pk)
+        self._final_structure_pk = None
+        self._final_cell = None
+        self._set_final_structure()
+
+    def _set_final_structure(self):
+        """
+        Set final structure.
+        """
+        try:
+            self._final_structure_pk = self._node.outputs.relax__structure.pk
+            self._final_cell = get_cell_from_aiida(
+                    load_node(self._final_structure_pk))
+        except NotExistentAttributeError:
+            warnings.warn("Final structure could not find.")
+
+    @property
+    def final_cell(self):
+        """
+        Final cell.
+        """
+        return self._final_cell
+
+    def get_relax_settings(self) -> dict:
+        """
+        Get relax settings.
+
+        Returns:
+            dict: relax settings
+        """
+        keys = [ key for key in self._node.inputs._get_keys()
+                     if 'relax' in key ]
+        settings = {}
+        for key in keys:
+            name = key.replace('relax__', '')
+            settings[name] = self._node.inputs.__getattr__(key).value
+        return settings
+
+    def get_vasp_calculation_pks(self) -> tuple:
+        """
+        Get VaspWorkChain pks.
+
+        Returns:
+            tuple: (relax_calcs, static_calc)
+        """
+        qb = QueryBuilder()
+        qb.append(Node, filters={'id':{'==': self._pk}})
+        qb.append(WorkChainNode)  # extract vasp.verify WorkChainNodes
+        qb.append(WorkChainNode,
+                  project=['id'])  # extract vasp.vasp WorkChainNodes
+        qb.order_by({WorkChainNode: {'id': 'asc'}})
+        vasp_pks = qb.all()
+
+        relax_pks = None
+        static_pk = None
+        if 'relax' not in \
+                load_node(vasp_pks[-1][0]).inputs.parameters.get_dict().keys():
+            static_pk = vasp_pks[-1][0]
+            relax_pks = [ pk[0] for pk in vasp_pks[:-1] ]
+        else:
+            warnings.warn("Could not find final static_pk calculation.")
+            relax_pks = vasp_pks
+        return (relax_pks, static_pk)
+
+    def get_pks(self) -> dict:
+        """
+        Get pks.
+
+        Returns:
+            dict: containing relax pk and structure pk
+        """
+        relax_pks, static_pk = self.get_vasp_calculation_pks()
+        return {
+                 'relax_pk': self._pk,
+                 'initial_structure_pk': self._initial_structure_pk,
+                 'final_structure_pk': self._final_structure_pk,
+                 'vasp_relax_pks': relax_pks,
+                 'static_pk': static_pk,
+               }
+
+
+@with_dbenv()
+class AiidaPhonopyWorkChain():
     """
     Phononpy work chain class.
     """
@@ -217,16 +435,25 @@ class PhonopyWorkChain():
         Args:
             pk (int): phonopy pk
         """
+        process_class = 'PhonopyWorkChain'
         node = load_node(pk)
-        check_process_class(node, 'PhonopyWorkChain')
+        check_process_class(node, process_class)
 
         self._node = node
+        self._process_class = process_class
         self._pk = pk
         self._unitcell = get_cell_from_aiida(
                 load_node(node.inputs.structure.pk))
         self._phonon_settings = node.inputs.phonon_settings.get_dict()
         self._phonon_setting_info = node.outputs.phonon_setting_info.get_dict()
         self._force_sets = node.outputs.force_sets.get_array('force_sets')
+
+    @property
+    def process_class(self):
+        """
+        Process class.
+        """
+        return self._process_class
 
     @property
     def node(self):
@@ -301,7 +528,7 @@ class PhonopyWorkChain():
 
 
 @with_dbenv()
-class ShearWorkChain():
+class AiidaShearWorkChain():
     """
     Shear work chain class.
     """
@@ -493,7 +720,7 @@ class ShearWorkChain():
 
 
 @with_dbenv()
-class TwinBoudnaryRelaxWorkChain():
+class AiidaTwinBoudnaryRelaxWorkChain():
     """
     TwinBoundaryRelax work chain class.
     """
@@ -599,3 +826,27 @@ class TwinBoudnaryRelaxWorkChain():
                 'relax_isif7_pks': isif7_pks,
                 }
         return dic
+
+
+
+# def get_workflow_pks(pk:int,
+#                      workflow_name:str) -> dict:
+#     """
+#     Get workflow pk in the specified pk.
+# 
+#     Args:
+#         pk (int): input pk
+#         workflow_name (str): workflow name such as 'vasp.relax',
+#                              'phonopy.phonopy'
+# 
+#     Returns:
+#         dict: workflow pks in input pk
+#     """
+#     wf = WorkflowFactory(workflow_name)
+#     node_qb = QueryBuilder()
+#     node_qb.append(Node, filters={'id':{'==': pk}}, tag='wf')
+#     node_qb.append(wf, with_incoming='wf', project=['id'])
+#     nodes = node_qb.all()
+#     node_pks = [ node[0] for node in nodes ]
+#     node_pks.reverse()
+#     return node_pks

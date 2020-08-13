@@ -183,15 +183,16 @@ class TwinBoundaryStructure(_BaseStructure):
         Get twinboundary lattice.
 
         Args:
-            layers (int): the number of layers
+            layers (int): the number of layers in bulk
             delta (float): additional interval both sites of twin boundary
             xshift (float): x shift
             yshift (float): y shift
         """
+        tot_layers = layers + 1
         prim_layers = self._indices.layers
-        zdim = math.ceil(layers / prim_layers)
+        zdim = math.ceil(tot_layers / prim_layers)
         multi_dim = np.array([1,1,2*zdim])
-        zratio = layers / (zdim * prim_layers)
+        zratio = tot_layers / (zdim * prim_layers)
         p_orig_structure = self._get_parent_structure(dim=multi_dim)
 
         p_frame = np.dot(self._rotation_matrix,

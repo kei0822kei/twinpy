@@ -128,6 +128,7 @@ def get_mesh_offset_from_direct_lattice(lattice:np.array,
 
     kpts = _get_intervals_from_mesh(
                lattice=recip_lat.lattice, mesh=mesh)
+    kpts['reciprocal_lattice'] = recip_lat.lattice
     kpts['mesh'] = fixed_mesh
     kpts['offset'] = offset
     kpts['is_hexagonal'] = is_hexagonal
