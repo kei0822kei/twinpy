@@ -12,6 +12,7 @@ from twinpy.structure.base import check_same_cells
 from twinpy.structure.diff import get_structure_diff
 from twinpy.api_twinpy import get_twinpy_from_cell
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
+from twinpy.lattice.lattice import Lattice
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
 from aiida.orm import (load_node,
@@ -741,29 +742,44 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         self._structures = None
         self._structure_pks = None
         self._set_twinboundary()
+        self._twinpy = None
+        self._standardize = None
+        self._set_twinpy()
         self._check_structures()
 
     def _set_twinboundary(self):
         """
-        Set twinboundary settings
+        Set twinboundary from vasp.
         """
         parameters = self._node.called[-1].outputs.parameters.get_dict()
-        hexagonal = self._node.inputs.structure
-        tb = self._node.called[-1].outputs.twinboundary
-        tb_original = self._node.called[-1].outputs.twinboundary_orig
-        tb_relax = self._node.called[-2].outputs.relax__structure
+        aiida_hexagonal = self._node.inputs.structure
+        aiida_tb = self._node.called[-1].outputs.twinboundary
+        aiida_tb_original = self._node.called[-1].outputs.twinboundary_orig
+        aiida_tb_relax = self._node.called[-2].outputs.relax__structure
+        tb = get_cell_from_aiida(aiida_tb)
+        tb_original = get_cell_from_aiida(aiida_tb_original)
+        tb_relax = get_cell_from_aiida(aiida_tb_relax)
+
+        round_cells = []
+        for cell in [ tb, tb_original, tb_relax ]:
+            round_lattice = np.round(cell[0], decimals=8)
+            round_lattice = cell[0]
+            round_atoms = np.round(cell[1], decimals=8) % 1
+            round_cell = (round_lattice, round_atoms, cell[2])
+            round_cells.append(round_cell)
+
         self._twinboundary_settings = parameters
         self._structures = {
-                'hexagonal': get_cell_from_aiida(hexagonal),
-                'twinboundary': get_cell_from_aiida(tb),
-                'twinboundary_original': get_cell_from_aiida(tb_original),
-                'twinboundary_relax': get_cell_from_aiida(tb_relax),
+                'hexagonal': get_cell_from_aiida(aiida_hexagonal),
+                'twinboundary': round_cells[0],
+                'twinboundary_original': round_cells[1],
+                'twinboundary_relax': round_cells[2],
                 }
         self._structure_pks = {
-                'hexagonal_pk': hexagonal.pk,
-                'twinboundary_pk': tb.pk,
-                'twinboundary_original_pk': tb_original.pk,
-                'twinboundary_relax_pk': tb_relax.pk,
+                'hexagonal_pk': aiida_hexagonal.pk,
+                'twinboundary_pk': aiida_tb.pk,
+                'twinboundary_original_pk': aiida_tb_original.pk,
+                'twinboundary_relax_pk': aiida_tb_relax.pk,
                 }
 
     @property
@@ -787,13 +803,30 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         return self._structure_pks
 
-    def _check_structures(self):
+    def _set_twinpy(self):
         """
-        Check structures by reconstucting twinboundary.
+        Set twinpy structure object and standardize object.
         """
+        def __set_relax_twinboudnary_original_frame(rlx_cell, std):
+            M_bar_p = rlx_cell[0].T
+            x_p = rlx_cell[1].T
+            P_c = std.conventional_to_primitive_matrix
+            R = std.rotation_matrix
+            P = std.transformation_matrix
+            p = std.origin_shift.reshape(3,1)
+
+            M_p = np.dot(np.linalg.inv(R), M_bar_p)
+            M_s = np.dot(M_p, np.linalg.inv(P_c))
+            M = np.dot(M_s, P)
+            x_s = np.dot(P_c, x_p)
+            x = np.round(np.dot(np.linalg.inv(P), x_s)
+                    - np.dot(np.linalg.inv(P), p), decimals=8) % 1
+            cell = (M.T, x.T, rlx_cell[2])
+            return cell
+
+        params = self._twinboundary_settings
         cell = get_cell_from_aiida(
                 load_node(self._structure_pks['hexagonal_pk']))
-        params = self._twinboundary_settings
         twinpy = get_twinpy_from_cell(
                 cell=cell,
                 twinmode=params['twinmode'])
@@ -809,8 +842,35 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 get_lattice=params['get_lattice'],
                 move_atoms_into_unitcell=params['move_atoms_into_unitcell'],
                 )
-        tb_orig_cell = std.cell
-        tb_std_cell = std.get_standardized_cell(
+        tb_relax_orig = __set_relax_twinboudnary_original_frame(
+                rlx_cell=self._structures['twinboundary_relax'],
+                std=std,
+                )
+        self._structures['twinboundary_relax_original'] = tb_relax_orig
+        self._twinpy = twinpy
+        self._standardize = std
+
+    @property
+    def twinpy(self):
+        """
+        Twinpy structure object.
+        """
+        return self._twinpy
+
+    @property
+    def standardize(self):
+        """
+        Stadardize object of twinpy original cell.
+        """
+        return self._standardize
+
+    def _check_structures(self):
+        """
+        Check structures by reconstucting twinboundary.
+        """
+        params = self._twinboundary_settings
+        tb_orig_cell = self._standardize.cell
+        tb_std_cell = self._standardize.get_standardized_cell(
                 to_primitive=params['to_primitive'],
                 no_idealize=params['no_idealize'],
                 symprec=params['symprec'],
@@ -821,6 +881,10 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                          second_cell=tb_orig_cell)
         check_same_cells(first_cell=self._structures['twinboundary'],
                          second_cell=tb_std_cell)
+        np.testing.assert_allclose(
+                self._structures['twinboundary_original'][0],
+                self._structures['twinboundary_relax_original'][0],
+                atol=1e-6)
 
     def get_pks(self):
         """
@@ -831,9 +895,12 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         pks['relax_pk'] = relax_pk
         return pks
 
-    def get_diff(self):
+    def get_diff(self) -> dict:
         """
         Get diff between vasp input and output twinboundary structure.
+
+        Returns:
+            dict: diff between vasp input and output twinboundary structure.
 
         Raises:
             AssertionError: lattice matrix is not identical
@@ -849,24 +916,65 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                                    err_msg="lattice matrix is not identical")
         return diff
 
-# def get_workflow_pks(pk:int,
-#                      workflow_name:str) -> dict:
-#     """
-#     Get workflow pk in the specified pk.
-# 
-#     Args:
-#         pk (int): input pk
-#         workflow_name (str): workflow name such as 'vasp.relax',
-#                              'phonopy.phonopy'
-# 
-#     Returns:
-#         dict: workflow pks in input pk
-#     """
-#     wf = WorkflowFactory(workflow_name)
-#     node_qb = QueryBuilder()
-#     node_qb.append(Node, filters={'id':{'==': pk}}, tag='wf')
-#     node_qb.append(wf, with_incoming='wf', project=['id'])
-#     nodes = node_qb.all()
-#     node_pks = [ node[0] for node in nodes ]
-#     node_pks.reverse()
-#     return node_pks
+    def get_planes(self, is_fractional:bool=False) -> dict:
+        """
+        Get plane coords from lower plane to upper plane.
+        Return list of z coordinates of original cell frame.
+
+        Args:
+            is_fractional (bool): if True, return with fractional coordinate
+
+        Returns:
+            dict: plane coords of input and output twinboundary structures.
+        """
+        lattice = Lattice(self._structures['twinboundary_original'][0])
+        input_atoms = self._structures['twinboundary_original'][1]
+        output_atoms = self._structures['twinboundary_relax_original'][1]
+        c_norm = lattice.abc[2]
+        coords_list = []
+        k_1 = np.array([0,0,1])
+        for atoms in [ input_atoms, output_atoms ]:
+            sort_atoms = atoms[np.argsort(atoms[:,2])]
+            coords = [ lattice.dot(np.array(atom), k_1) / c_norm
+                    for atom in sort_atoms ]
+            num = len(coords)
+            ave_coords = np.sum(
+                    np.array(coords).reshape(int(num/2), 2), axis=1) / 2
+
+            epsilon = 1e-9    # to remove '-0.0'
+            if is_fractional:
+                d = np.round(ave_coords+epsilon, decimals=8) / c_norm
+            else:
+                d = np.round(ave_coords+epsilon, decimals=8)
+            coords_list.append(list(d))
+        return {
+                'before': coords_list[0],
+                'relax': coords_list[1],
+                }
+
+    def get_distances(self, is_fractional:bool=False) -> dict:
+        """
+        Get distances from the result of 'get_planes'.
+
+        Args:
+            is_fractional (bool): if True, return with fractional coordinate
+
+        Returns:
+            dict: distances between planes of input and output
+                  twinboundary structures.
+        """
+        lattice = Lattice(self._structures['twinboundary_original'][0])
+        c_norm = lattice.abc[2]
+        planes = self.get_planes(is_fractional=is_fractional)
+        keys = ['before', 'relax']
+        dic = {}
+        for key in keys:
+            coords = planes[key]
+            if is_fractional:
+                coords.append(1.)
+            else:
+                coords.append(c_norm)
+            distances = [ coords[i+1] - coords[i]
+                    for i in range(len(coords)-1) ]
+            dic[key] = distances
+        return dic
