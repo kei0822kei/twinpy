@@ -11,7 +11,7 @@ from twinpy.plot.base import get_plot_properties_for_trajectory
 from twinpy.plot.band import bands_plot
 
 
-class ShearAnalyzer():
+class TwinBoundaryAnalyzer():
     """
     Analize shear result.
     """

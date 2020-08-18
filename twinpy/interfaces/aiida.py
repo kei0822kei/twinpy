@@ -8,6 +8,9 @@ import numpy as np
 import warnings
 from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from twinpy.interfaces.phonopy import get_phonopy_structure
+from twinpy.structure.base import check_same_cells
+from twinpy.structure.diff import get_structure_diff
+from twinpy.api_twinpy import get_twinpy_from_cell
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
@@ -21,9 +24,7 @@ from aiida.plugins import WorkflowFactory
 from aiida.common.exceptions import NotExistentAttributeError
 from phonopy import Phonopy
 
-VASP_WF = WorkflowFactory('vasp.vasp')
 RELAX_WF = WorkflowFactory('vasp.relax')
-PHONOPY_WF = WorkflowFactory('phonopy.phonopy')
 
 
 def check_process_class(node,
@@ -88,22 +89,21 @@ class _WorkChain():
 
     def __init__(
             self,
-            pk:int,
+            node:Node,
             ):
         """
         Args:
-            pk (int): relax pk
-            process_class (str): process class
+            node: aiida Node
         """
-        node = load_node(pk)
         self._node = node
         self._process_class = self._node.process_class.get_name()
-        self._pk = pk
+        self._pk = node.pk
         self._label = self._node.label
         self._description = self._node.description
         self._exit_status = self._node.exit_status
         if self._exit_status != 0:
-            warnings.warn("Warning: exit status was %d" % self._exit_status)
+            warnings.warn(
+                    "Warning: exit status was {}".format(self._exit_status))
 
     @property
     def process_class(self):
@@ -155,14 +155,13 @@ class _AiidaVaspWorkChain(_WorkChain):
 
     def __init__(
             self,
-            pk:int,
+            node:Node,
             ):
         """
         Args:
-            pk (int): relax pk
-            process_class (str): process class
+            node: aiida Node
         """
-        super().__init__(pk=pk)
+        super().__init__(node=node)
         self._initial_structure_pk = None
         self._initial_cell = None
         self._set_initial_structure()
@@ -235,10 +234,12 @@ class _AiidaVaspWorkChain(_WorkChain):
                 mesh=mesh)
         kpts = {
                 'mesh': mesh,
+                'total_mesh': twinpy_kpoints['total_mesh'],
                 'offset': offset,
                 'sampling_kpoints': sampling_kpoints,
                 'weights': weights_num,
                 'reciprocal_lattice': twinpy_kpoints['reciprocal_lattice'],
+                'reciprocal_volume': twinpy_kpoints['reciprocal_volume'],
                 'reciprocal_abc': twinpy_kpoints['abc'],
                 'intervals': twinpy_kpoints['intervals'],
                 'include_two_pi': twinpy_kpoints['include_two_pi'],
@@ -279,15 +280,15 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
 
     def __init__(
             self,
-            pk:int,
+            node:Node,
             ):
         """
         Args:
-            pk (int): relax pk
+            node: aiida Node
         """
         process_class = 'VaspWorkChain'
-        check_process_class(load_node(pk), process_class)
-        super().__init__(pk=pk)
+        check_process_class(node, process_class)
+        super().__init__(node=node)
         self._final_structure_pk = None
         self._final_cell = None
         self._set_final_structure()
@@ -332,15 +333,15 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
 
     def __init__(
             self,
-            pk:int,
+            node:Node,
             ):
         """
         Args:
-            pk (int): relax pk
+            node: aiida Node
         """
         process_class = 'RelaxWorkChain'
-        check_process_class(load_node(pk), process_class)
-        super().__init__(pk=pk)
+        check_process_class(node, process_class)
+        super().__init__(node=node)
         self._final_structure_pk = None
         self._final_cell = None
         self._set_final_structure()
@@ -720,114 +721,133 @@ class AiidaShearWorkChain():
 
 
 @with_dbenv()
-class AiidaTwinBoudnaryRelaxWorkChain():
+class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
     """
     TwinBoundaryRelax work chain class.
     """
 
     def __init__(
             self,
-            pk:int,
+            node:Node,
             ):
         """
         Args:
             relax_pk (int): relax pk
         """
-        node = load_node(pk)
-        check_process_class(node, 'TwinBoundaryRelaxWorkChain')
+        process_class = 'TwinBoundaryRelaxWorkChain'
+        check_process_class(node, process_class)
+        super().__init__(node=node)
+        self._twinboundary_settings = None
+        self._structures = None
+        self._structure_pks = None
+        self._set_twinboundary()
+        self._check_structures()
 
-        self._pk = pk
-        self._node = node
-        self._relax_times = None
-        self._input_structure_pk = None
-        self._twinboundary_relax_conf = None
-        self._set_input_data()
-        self._relax_pks = None
-        self._set_relax_pks()
-        self._relaxes = None
-        self._set_relaxes()
-
-    @property
-    def pk(self):
+    def _set_twinboundary(self):
         """
-        TwinBoundaryRelaxWorkChain pk.
+        Set twinboundary settings
         """
-        return self._pk
-
-    @property
-    def node(self):
-        """
-        TwinBoundaryRelaxWorkChain node.
-        """
-        return self._node
-
-    @property
-    def relax_times(self):
-        """
-        Relax times.
-        """
-        return self._relax_times
+        parameters = self._node.called[-1].outputs.parameters.get_dict()
+        hexagonal = self._node.inputs.structure
+        tb = self._node.called[-1].outputs.twinboundary
+        tb_original = self._node.called[-1].outputs.twinboundary_orig
+        tb_relax = self._node.called[-2].outputs.relax__structure
+        self._twinboundary_settings = parameters
+        self._structures = {
+                'hexagonal': get_cell_from_aiida(hexagonal),
+                'twinboundary': get_cell_from_aiida(tb),
+                'twinboundary_original': get_cell_from_aiida(tb_original),
+                'twinboundary_relax': get_cell_from_aiida(tb_relax),
+                }
+        self._structure_pks = {
+                'hexagonal_pk': hexagonal.pk,
+                'twinboundary_pk': tb.pk,
+                'twinboundary_original_pk': tb_original.pk,
+                'twinboundary_relax_pk': tb_relax.pk,
+                }
 
     @property
-    def twinboundary_relax_conf(self):
+    def twinboundary_settings(self):
         """
-        TwinBoundary relax conf.
+        Twinboundary settings.
         """
-        return self._twinboundary_relax_conf
-
-    def _set_input_data(self):
-        """
-        Set calculation input data.
-        """
-        self._relax_times = self._node.inputs.relax_times.value
-        self._input_structure_pk = self._node.inputs.structure.pk
-        self._twinboundary_relax_conf = \
-                self._node.inputs.twinboundary_relax_conf
-
-    def _set_relax_pks(self):
-        """
-        Set relax pks.
-        """
-        rlx_qb = QueryBuilder()
-        rlx_qb.append(Node, filters={'id':{'==': self._pk}}, tag='wf')
-        rlx_qb.append(RELAX_WF, with_incoming='wf', project=['id'])
-        relaxes = rlx_qb.all()
-        self._relax_pks = [ relax[0] for relax in relaxes ]
-
-    def _set_relaxes(self):
-        """
-        Set relaxes.
-        """
-        self._relaxes = [ RelaxWorkChain(load_node(pk))
-                              for pk in self._relax_pks ]
+        return self._twinboundary_settings
 
     @property
-    def relaxes(self):
+    def structures(self):
         """
-        TwinBoundary relax conf.
+        Twinboundary structures
         """
-        return self._relaxes
+        return self._structures
 
-    def get_pks(self) -> dict:
+    @property
+    def structure_pks(self):
+        """
+        Twinboundary structure pks
+        """
+        return self._structure_pks
+
+    def _check_structures(self):
+        """
+        Check structures by reconstucting twinboundary.
+        """
+        cell = get_cell_from_aiida(
+                load_node(self._structure_pks['hexagonal_pk']))
+        params = self._twinboundary_settings
+        twinpy = get_twinpy_from_cell(
+                cell=cell,
+                twinmode=params['twinmode'])
+        twinpy.set_twinboundary(
+                layers=params['layers'],
+                delta=params['delta'],
+                twintype=params['twintype'],
+                xshift=params['xshift'],
+                yshift=params['yshift'],
+                shear_strain_ratio=params['shear_strain_ratio'],
+                )
+        std = twinpy.get_twinboundary_standardize(
+                get_lattice=params['get_lattice'],
+                move_atoms_into_unitcell=params['move_atoms_into_unitcell'],
+                )
+        tb_orig_cell = std.cell
+        tb_std_cell = std.get_standardized_cell(
+                to_primitive=params['to_primitive'],
+                no_idealize=params['no_idealize'],
+                symprec=params['symprec'],
+                no_sort=params['no_sort'],
+                get_sort_list=params['get_sort_list'],
+                )
+        check_same_cells(first_cell=self._structures['twinboundary_original'],
+                         second_cell=tb_orig_cell)
+        check_same_cells(first_cell=self._structures['twinboundary'],
+                         second_cell=tb_std_cell)
+
+    def get_pks(self):
         """
         Get pks.
-
-        Returns:
-            dict: various pks
         """
-        relax_pks = np.array(self._relax_pks)
-        isif2_pks = relax_pks[[ 2*i for i in range(len(self._relax_times)) ]]
-        isif7_pks = relax_pks[[ 2*i+1 for i in range(len(self._relax_times)) ]]
-        dic = {
-                'twinboudnary_relax_pk': self._pk,
-                'input_structure_pk': self._input_structure_pk,
-                'relax_pks': self._relax_pks,
-                'relax_isif2_pks': isif2_pks,
-                'relax_isif7_pks': isif7_pks,
-                }
-        return dic
+        relax_pk = self._node.called[-2].pk
+        pks = self._structure_pks.copy()
+        pks['relax_pk'] = relax_pk
+        return pks
 
+    def get_diff(self):
+        """
+        Get diff between vasp input and output twinboundary structure.
 
+        Raises:
+            AssertionError: lattice matrix is not identical
+        """
+        cells = (self._structures['twinboundary'],
+                 self._structures['twinboundary_relax'])
+        diff = get_structure_diff(cells=cells,
+                                  base_index=0,
+                                  include_base=False)
+        np.testing.assert_allclose(diff['lattice_diffs'][0],
+                                   np.zeros((3,3)),
+                                   atol=1e-8,
+                                   err_msg="lattice matrix is not identical")
+        return diff
 
 # def get_workflow_pks(pk:int,
 #                      workflow_name:str) -> dict:
