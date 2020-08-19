@@ -8,7 +8,7 @@ import numpy as np
 import warnings
 from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from twinpy.interfaces.phonopy import get_phonopy_structure
-from twinpy.structure.base import check_same_cells
+from twinpy.structure.base import check_same_cells, check_same_cells
 from twinpy.structure.diff import get_structure_diff
 from twinpy.api_twinpy import get_twinpy_from_cell
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
@@ -975,6 +975,37 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             else:
                 coords.append(c_norm)
             distances = [ coords[i+1] - coords[i]
-                    for i in range(len(coords)-1) ]
+                              for i in range(len(coords)-1) ]
             dic[key] = distances
         return dic
+
+    def get_formation_energy(self, bulk_relax_pk:int):
+        """
+        Get formation energy. Unit [mJ/m^(-2)]
+
+        Args:
+            bulk_relax_pk: relax pk of bulk relax calculation
+        """
+        def __get_excess_energy():
+            rlx_pks = [ self.get_pks()['relax_pk'], bulk_relax_pk ]
+            energies = []
+            natoms = []
+            for i, rlx_pk in enumerate(rlx_pks):
+                rlx = load_node(rlx_pk)
+                cell = get_cell_from_aiida(rlx.inputs.structure)
+                if i == 1:
+                    check_same_cells(cell, self._structures['hexagonal'])
+                energy = rlx.outputs.energies.get_array('energy_no_entropy')[0]
+                energies.append(energy)
+                natoms.append(len(cell[2]))
+            excess_energy = energies[0] - energies[1] * (natoms[0] / natoms[1])
+            return excess_energy
+
+        eV = 1.6022 * 10 ** (-16)
+        ang = 10 ** (-10)
+        unit = eV / ang ** 2
+        orig_lattice = self._structures['twinboundary_original'][0]
+        A = orig_lattice[0,0] * orig_lattice[1,1]
+        excess_energy = __get_excess_energy()
+        formation_energy = np.array(excess_energy) / (2*A) * unit
+        return formation_energy
