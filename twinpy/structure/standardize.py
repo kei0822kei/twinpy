@@ -211,7 +211,8 @@ class StandardizeCell():
 
         def __check_atom_positions(P, p, P_c, x, x_s, x_p):
             # check x_s = P x + p
-            x_s_ = (np.dot(P, np.transpose(x)).T + p) % 1
+            x_s_ = np.round((np.dot(P, np.transpose(x)).T + p),
+                            decimals=8) % 1
             for i in range(len(x_s_)):
                 # assert x_s_[i] in x_s, \
                 assert np.round(x_s_[i], decimals=8) \
@@ -224,7 +225,7 @@ class StandardizeCell():
                        in np.round(x_p, decimals=8), \
                        'x_p != P_c^{-1} x_s, check script'
 
-        atol = 1e-8
+        atol = 1e-5
 
         conv_orig = self.get_standardized_cell(to_primitive=False,
                                                no_idealize=True)

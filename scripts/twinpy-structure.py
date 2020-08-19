@@ -33,8 +33,10 @@ def get_argparse():
                         help="y shift")
     parser.add_argument('--dim', type=str, default='1 1 1',
                         help="dimension")
-    parser.add_argument('--make_tb_flat', action='store_true',
-                        help="make twin boundary flat")
+    parser.add_argument('--layers', type=int,
+                        help="layers for twin boundary structure")
+    parser.add_argument('--delta', type=float, default=0.,
+                        help="delta")
     parser.add_argument('-c', '--posfile', default=None,
                         help="POSCAR file")
     parser.add_argument('--get_poscar', action='store_true',
@@ -80,11 +82,12 @@ def main(structure,
          xshift,
          yshift,
          dim,
+         layers,
+         delta,
          posfile,
          get_poscar,
          get_lattice,
          output,
-         make_tb_flat,
          is_primitive,
          get_primitive_standardized,
          get_conventional_standardized,
@@ -93,7 +96,7 @@ def main(structure,
 
     move_atoms_into_unitcell = True
     symprec = 1e-5
-    no_idealize = True
+    no_idealize = False
     no_sort = True
     get_sort_list = False
 
@@ -138,9 +141,9 @@ def main(structure,
         twinpy.set_twinboundary(twintype=twintype,
                                 xshift=xshift,
                                 yshift=yshift,
-                                dim=dim,
-                                shear_strain_ratio=shear_strain_ratio,
-                                make_tb_flat=make_tb_flat)
+                                layers=layers,
+                                delta=delta,
+                                shear_strain_ratio=shear_strain_ratio)
         std = twinpy.get_twinboundary_standardize(
                 get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
@@ -184,11 +187,12 @@ if __name__ == '__main__':
          xshift=args.xshift,
          yshift=args.yshift,
          dim=dimension,
+         layers=args.layers,
+         delta=args.delta,
          posfile=args.posfile,
          get_poscar=args.get_poscar,
          get_lattice=args.get_lattice,
          output=args.output,
-         make_tb_flat=args.make_tb_flat,
          is_primitive=args.is_primitive,
          get_primitive_standardized=args.get_primitive_standardized,
          get_conventional_standardized=args.get_conventional_standardized,

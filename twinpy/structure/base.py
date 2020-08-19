@@ -17,9 +17,9 @@ from twinpy.lattice.lattice import get_hexagonal_lattice_from_a_c, Lattice
 def get_hexagonal_cell(a:float,
                        c:float,
                        symbol:str,
-                       wyckoff:str='c'):
+                       wyckoff:str='c') -> tuple:
     """
-    get hexagonal cell
+    Get hexagonal cell.
 
     Args:
         a (float): the norm of a axis
@@ -31,6 +31,27 @@ def get_hexagonal_cell(a:float,
     scaled_positions = get_atom_positions(wyckoff=wyckoff)
     symbols = [symbol] * len(scaled_positions)
     return (lattice, scaled_positions, symbols)
+
+
+def check_same_cells(first_cell:tuple,
+                     second_cell:tuple) -> bool:
+    """
+    Check first cell and second cell are same.
+
+    Args:
+        first_cell (tuple): first cell
+        second_cell (tuple): second cell
+
+    Returns:
+        bool: return True if two cells are same
+    """
+    is_lattice_same = np.allclose(first_cell[0], second_cell[0])
+    is_scaled_positions_same = np.allclose(first_cell[1], second_cell[1])
+    is_symbols_same = (first_cell[2] == second_cell[2])
+    is_same = (is_lattice_same
+               and is_scaled_positions_same
+               and is_symbols_same)
+    return is_same
 
 
 def is_hcp(lattice:np.array,
@@ -83,6 +104,7 @@ def get_atom_positions_from_lattice_points(lattice_points:np.array,
                                            atoms_from_lp:np.array) -> np.array:
     """
     Get atom positions from lattice points.
+    Both lattice points and atom positions must be cartesian coordinates.
 
     Args:
         lattice_points (np.array): lattice points
@@ -144,6 +166,7 @@ class _BaseStructure():
     Base structure class which is inherited
     ShearStructure class and TwinBoundaryStructure class.
     """
+
     def __init__(
            self,
            lattice:np.array,
@@ -172,7 +195,6 @@ class _BaseStructure():
                 get_atom_positions(wyckoff=self._wyckoff)
         self._hexagonal_lattice = Lattice(lattice)
         self._natoms = 2
-        self._dim = None
         self._twinmode = None
         self._indices = None
         self._set_twinmode(twinmode=twinmode)
@@ -210,13 +232,6 @@ class _BaseStructure():
         return self._r
 
     @property
-    def hcp_lattice(self):
-        """
-        Base HCP lattice.
-        """
-        return self._hcp_lattice
-
-    @property
     def symbol(self):
         """
         Symbol.
@@ -229,13 +244,6 @@ class _BaseStructure():
         Wyckoff position.
         """
         return self._wyckoff
-
-    @property
-    def dim(self):
-        """
-        Dimension.
-        """
-        return self._dim
 
     @property
     def atoms_from_lattice_points(self):

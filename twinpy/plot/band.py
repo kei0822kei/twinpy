@@ -131,7 +131,6 @@ class BandsPlot(PhonopyBandPlot):
         self.phonons = deepcopy(phonons)
         self.with_dos = with_dos
         self.mesh = mesh
-        self.xscale = xscale
         self.original_reciprocal_lattices = \
             [ Lattice(lat).reciprocal_lattice for lat in original_lattices ]
         self.input_reciprocal_lattices = \
@@ -150,6 +149,8 @@ class BandsPlot(PhonopyBandPlot):
         self.axs = None
         self._set_axs()
         super().__init__(axs=self.axs)
+        self.xscale = xscale
+        print(self.xscale)
         self._set_frame()
 
     def _set_axs(self):
@@ -233,7 +234,6 @@ class BandsPlot(PhonopyBandPlot):
         Fix segment qpoints.
         """
         seg_frac = []
-        print("aho")
         for qpt in self.segment_qpoints:
 
 
@@ -326,6 +326,7 @@ class BandsPlot(PhonopyBandPlot):
             distances = phonon.band_structure.get_distances()
             frequencies = phonon.band_structure.get_frequencies()
             if i == 0:
+                gamma_distance = distances[3][0]
                 _plot(distances=distances,
                       frequencies=frequencies,
                       connections=self.connections,
@@ -338,6 +339,8 @@ class BandsPlot(PhonopyBandPlot):
                 base_distances = deepcopy(distances)
             else:
                 # distances = self._revise_distances(distances, base_distances)
+                sub = distances[3][0] - gamma_distance
+                distances = [ dis - sub for dis in distances ]
                 _plot(distances=distances,
                       frequencies=frequencies,
                       connections=self.connections,

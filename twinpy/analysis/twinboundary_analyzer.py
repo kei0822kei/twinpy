@@ -2,17 +2,16 @@
 # -*- coding: utf-8 -*-
 
 """
-Analize shear calculation.
+Analize twinboudnary relax calculation.
 """
 import numpy as np
-from twinpy.structure.base import check_same_cells
 from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.plot.base import get_plot_properties_for_trajectory
 from twinpy.plot.band import bands_plot
 
 
-class ShearAnalyzer():
+class TwinBoundaryAnalyzer():
     """
     Analize shear result.
     """
@@ -114,8 +113,8 @@ class ShearAnalyzer():
                     no_sort=no_sort,
                     get_sort_list=get_sort_list,
                     )
-            cells_are_same = check_same_cells(self._input_cells[i],
-                                              std_cell)
+            cells_are_same = is_cells_are_same(self._input_cells[i],
+                                               std_cell)
             if not cells_are_same:
                 raise RuntimeError("standardized cell do not match "
                                    "with input cell")

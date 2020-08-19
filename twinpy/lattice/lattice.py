@@ -180,6 +180,24 @@ class Lattice():
                                    self._metric),
                             second))
 
+    def get_distance(self,
+                     frac_coord_first:np.array,
+                     frac_coord_second:np.array) -> float:
+        """
+        Return cartesian distance between two fractional coordinate.
+
+        Args:
+            frac_coord_first (np.array): frac coord
+            frac_coord_second (np.array): frac coord
+
+        Returns:
+            float: distance
+        """
+        sub = frac_coord_first - frac_coord_second
+        distance = np.linalg.norm(np.dot(self._lattice.T,
+                                         sub.reshape(3,1)))
+        return distance
+
     def is_hexagonal_lattice(self) -> bool:
         """
         Check that lattice is hexagonal.

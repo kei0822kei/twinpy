@@ -20,11 +20,13 @@ def line_chart(ax,
                ylabel:str,
                label:str=None,
                alpha=1.,
+               sort_by='x',
                **kwargs):
     """
     Plot line chart in ax.
 
     Args:
+        sort_by (str): if sort_by == 'y', sort by y data
         kwargs: c, marker, facecolor
     """
     if 'c' in kwargs.keys():
@@ -49,7 +51,10 @@ def line_chart(ax,
             facecolor = c
 
     raw = np.array([xdata, ydata])
-    idx = np.array(xdata).argsort()
+    if sort_by == 'y':
+        idx = np.array(ydata).argsort()
+    else:
+        idx = np.array(xdata).argsort()
     sort = raw[:,idx]
     ax.plot(sort[0,:], sort[1,:], linestyle='--', linewidth=0.5, c=c,
             alpha=alpha, label=label)
