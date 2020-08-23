@@ -48,6 +48,10 @@ def get_neighbors(cell:tuple,
                 neighbors.append([i, l, m, n])
                 distances.append(distance)
 
+    # sort
+    sort_idx = np.argsort(distances)
+    distances = list(np.array(distances)[sort_idx])
+    neighbors = list(np.array(neighbors)[sort_idx])
     neighbors = list(map(tuple, neighbors))
 
     if get_distances:

@@ -10,6 +10,20 @@ import math
 from decimal import Decimal, ROUND_HALF_UP
 
 
+def print_header(string):
+    """
+    Print heading with specified string.
+
+    Raises:
+        TypeError: input is not str object
+    """
+    if type(string) is not str:
+        raise TypeError("input must be str object not %s" % type(string))
+    print("# " + '-' * len(string))
+    print("# %s" % string)
+    print("# " + '-' * len(string))
+
+
 def float2frac(var, accuracy=3, denominator=10) -> str:
     """
     Transform float to fractional (str object).

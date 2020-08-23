@@ -5,6 +5,7 @@
 Aiida interface for twinpy.
 """
 import numpy as np
+from pprint import pprint
 import warnings
 from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from twinpy.interfaces.phonopy import get_phonopy_structure
@@ -12,6 +13,7 @@ from twinpy.structure.base import check_same_cells, check_same_cells
 from twinpy.structure.diff import get_structure_diff
 from twinpy.api_twinpy import get_twinpy_from_cell
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
+from twinpy.common.utils import print_header
 from twinpy.lattice.lattice import Lattice
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
@@ -98,12 +100,16 @@ class _WorkChain():
         """
         self._node = node
         self._process_class = self._node.process_class.get_name()
+        self._process_state = self._node.process_state.value
         self._pk = node.pk
         self._label = self._node.label
         self._description = self._node.description
         self._exit_status = self._node.exit_status
-        if self._exit_status != 0:
-            warnings.warn(
+        if self._process_state != 'finished':
+            warnings.warn("process state: %s" % self._process_state)
+        else:
+            if self._exit_status != 0:
+                warnings.warn(
                     "Warning: exit status was {}".format(self._exit_status))
 
     @property
@@ -112,6 +118,13 @@ class _WorkChain():
         Process class.
         """
         return self._process_class
+
+    @property
+    def process_state(self):
+        """
+        Process state.
+        """
+        return self._process_state
 
     @property
     def node(self):
@@ -148,6 +161,16 @@ class _WorkChain():
         """
         return self._exit_status
 
+    def _print_common_information(self):
+        print_header('About This Node')
+        print("process class:%s" % self._process_class)
+        print("process state:%s" % self._process_state)
+        print("pk:%s" % self._pk)
+        print("label:%s" % self._label)
+        print("description:%s" % self._description)
+        print("exit status:%s" % self._exit_status)
+        print("\n\n")
+
 
 class _AiidaVaspWorkChain(_WorkChain):
     """
@@ -167,9 +190,10 @@ class _AiidaVaspWorkChain(_WorkChain):
         self._initial_cell = None
         self._set_initial_structure()
         self._stress = None
-        self._set_stress()
         self._forces = None
-        self._set_forces()
+        if self._process_state == 'finished':
+            self._set_stress()
+            self._set_forces()
 
     def _set_initial_structure(self):
         """
@@ -201,6 +225,13 @@ class _AiidaVaspWorkChain(_WorkChain):
         Forces acting on atoms after relax.
         """
         return self._forces
+
+    def get_max_force(self) -> float:
+        """
+        Get maximum force acting on atoms.
+        """
+        max_force = float(np.linalg.norm(self._forces, axis=1).max())
+        return max_force
 
     def _set_stress(self):
         """
@@ -255,9 +286,9 @@ class _AiidaVaspWorkChain(_WorkChain):
             dict: input parameters
         """
         potcar = {
-          'potential_family': self._node.inputs.potential_family.value,
-          'potential_mapping': self._node.inputs.potential_mapping.get_dict(),
-          }
+            'potential_family': self._node.inputs.potential_family.value,
+            'potential_mapping': self._node.inputs.potential_mapping.get_dict()
+            }
 
         settings = {
                 'incar': self._node.inputs.parameters.get_dict(),
@@ -271,6 +302,24 @@ class _AiidaVaspWorkChain(_WorkChain):
         Get misc.
         """
         return self._node.outputs.misc.get_dict()
+
+    def _print_vasp_results(self):
+        """
+        Print VASP run results.
+        """
+        print_header('VASP settings')
+        pprint(self.get_vasp_settings())
+        print("\n\n")
+        if self._process_state == 'finished':
+            print_header("kpoints information")
+            pprint(self.get_kpoints_info())
+            print("\n\n")
+            print_header('VASP outputs')
+            print("stress")
+            pprint(self._stress)
+            print("\n")
+            print("max force acting on atoms")
+            print(str(self.get_max_force())+"\n")
 
 
 @with_dbenv()
@@ -325,6 +374,16 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
                  'final_structure_pk': self._final_structure_pk,
                }
 
+    def get_description(self):
+        """
+        Get description.
+        """
+        self._print_common_information()
+        print_header('PKs')
+        pprint(self.get_pks())
+        print("\n\n")
+        self._print_vasp_results()
+
 
 @with_dbenv()
 class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
@@ -345,7 +404,8 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         super().__init__(node=node)
         self._final_structure_pk = None
         self._final_cell = None
-        self._set_final_structure()
+        if self._process_state == 'finished':
+            self._set_final_structure()
 
     def _set_final_structure(self):
         """
@@ -403,7 +463,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
             relax_pks = [ pk[0] for pk in vasp_pks[:-1] ]
         else:
             warnings.warn("Could not find final static_pk calculation.")
-            relax_pks = vasp_pks
+            relax_pks = [ pk[0] for pk in vasp_pks ]
         return (relax_pks, static_pk)
 
     def get_pks(self) -> dict:
@@ -421,6 +481,19 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                  'vasp_relax_pks': relax_pks,
                  'static_pk': static_pk,
                }
+
+    def get_description(self):
+        """
+        Get description.
+        """
+        self._print_common_information()
+        print_header('PKs')
+        pprint(self.get_pks())
+        print("\n\n")
+        print_header("relax settings")
+        pprint(self.get_relax_settings())
+        print("\n\n")
+        self._print_vasp_results()
 
 
 @with_dbenv()
@@ -820,7 +893,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             M = np.dot(M_s, P)
             x_s = np.dot(P_c, x_p)
             x = np.round(np.dot(np.linalg.inv(P), x_s)
-                    - np.dot(np.linalg.inv(P), p), decimals=8) % 1
+                           - np.dot(np.linalg.inv(P), p), decimals=8) % 1
             cell = (M.T, x.T, rlx_cell[2])
             return cell
 
@@ -936,7 +1009,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         for atoms in [ input_atoms, output_atoms ]:
             sort_atoms = atoms[np.argsort(atoms[:,2])]
             coords = [ lattice.dot(np.array(atom), k_1) / c_norm
-                    for atom in sort_atoms ]
+                           for atom in sort_atoms ]
             num = len(coords)
             ave_coords = np.sum(
                     np.array(coords).reshape(int(num/2), 2), axis=1) / 2
