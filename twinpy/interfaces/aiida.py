@@ -7,6 +7,7 @@ Aiida interface for twinpy.
 import numpy as np
 from pprint import pprint
 import warnings
+from matplotlib import pyplot as plt
 from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from twinpy.interfaces.phonopy import get_phonopy_structure
 from twinpy.structure.base import check_same_cells, check_same_cells
@@ -14,6 +15,7 @@ from twinpy.structure.diff import get_structure_diff
 from twinpy.api_twinpy import get_twinpy_from_cell
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from twinpy.common.utils import print_header
+from twinpy.plot.base import line_chart, DEFAULT_COLORS
 from twinpy.lattice.lattice import Lattice
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
@@ -466,6 +468,24 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
             relax_pks = [ pk[0] for pk in vasp_pks ]
         return (relax_pks, static_pk)
 
+    def get_vasp_calculation_nodes(self) -> tuple:
+        """
+        Get VaspWorkChain nodes.
+
+        Returns:
+            tuple: (relax_calcs, static_calc)
+        """
+        relax_pks, static_pk = self.get_vasp_calculation_pks()
+        if self._exit_status == 0:
+            relax_nodes = [ AiidaVaspWorkChain(load_node(pk))
+                                for pk in relax_pks ]
+            static_nodes = AiidaVaspWorkChain(load_node(static_pk))
+        else:
+            relax_nodes = [ AiidaVaspWorkChain(load_node(pk))
+                                for pk in relax_pks[:-1] ]
+            static_nodes = None
+        return (relax_nodes, static_nodes)
+
     def get_pks(self) -> dict:
         """
         Get pks.
@@ -494,6 +514,87 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         pprint(self.get_relax_settings())
         print("\n\n")
         self._print_vasp_results()
+
+    def plot_convergence(self):
+        """
+        Plot convergence.
+        """
+        plt.rcParams["font.size"] = 14
+        relax_nodes, _ = self.get_vasp_calculation_nodes()
+        dic = {}
+        dic['max_force'] = np.array(
+                [ node.get_max_force() for node in relax_nodes ])
+        dic['stress'] = np.array([ node.stress.flatten()[[0,4,8,5,6,1]]
+                              for node in relax_nodes ])  # xx yy zz yz zx xy
+        dic['energy'] = np.array(
+                [ node.get_misc()['total_energies']['energy_no_entropy']
+                      for node in relax_nodes ])
+        dic['abc'] = np.array([ Lattice(node.final_cell[0]).abc
+                           for node in relax_nodes ])
+        dic['steps'] = np.array([ i+1 for i in range(len(relax_nodes)) ])
+        static_x_val = len(dic['steps']) + 0.1
+
+        fig = plt.figure(figsize=(16,13))
+        ax1 = fig.add_axes((0.15, 0.1, 0.35,  0.35))
+        ax2 = fig.add_axes((0.63, 0.1, 0.35, 0.35))
+        ax3 = fig.add_axes((0.15, 0.55, 0.35, 0.35))
+        ax4 = fig.add_axes((0.63, 0.55, 0.35, 0.35))
+        line_chart(
+                ax1,
+                dic['steps'],
+                dic['max_force'],
+                'relax times',
+                'max force')
+        line_chart(
+                ax2,
+                dic['steps'],
+                dic['energy'],
+                'relax times',
+                'energy')
+        stress_labels = ['xx', 'yy', 'zz', 'yz', 'zx', 'xy']
+        for i in range(6):
+            line_chart(
+                    ax3,
+                    dic['steps'],
+                    dic['stress'][:,i],
+                    'relax times',
+                    'stress',
+                    label=stress_labels[i])
+        ax3.legend(loc='lower right')
+        abc_labels = ['a', 'b', 'c']
+        for i in range(3):
+            line_chart(
+                    ax4,
+                    dic['steps'],
+                    dic['abc'][:,i],
+                    'relax times',
+                    'lattice abc',
+                    label=abc_labels[i])
+        ax4.legend(loc='lower right')
+        ax4.set_ylim((0, None))
+
+        if self._exit_status == 0:
+            ax1.scatter(static_x_val, self.get_max_force(),
+                        c=DEFAULT_COLORS[0], marker='*', s=150)
+            ax2.scatter(static_x_val,
+                        self.get_misc()['total_energies']['energy_no_entropy'],
+                        c=DEFAULT_COLORS[0], marker='*', s=150)
+            rlx_stress = self.stress.flatten()[[0,4,8,5,6,1]]
+            for i in range(6):
+                ax3.scatter(static_x_val, rlx_stress[i], c=DEFAULT_COLORS[i],
+                            marker='*', s=150)
+            for i in range(3):
+                rlx_abc = Lattice(self.final_cell[0]).abc
+                ax4.scatter(static_x_val, rlx_abc[i], c=DEFAULT_COLORS[i],
+                            marker='*', s=150)
+        else:
+            strings = "WARNING: RelaxWorkChain pk={} is still working".format(self._pk)
+            print('+'*len(strings))
+            print(strings)
+            print('+'*len(strings))
+
+        fig.suptitle('relux result pk: %s' % self._pk, fontsize=30)
+        plt.show()
 
 
 @with_dbenv()
