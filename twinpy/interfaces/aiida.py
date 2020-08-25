@@ -15,7 +15,7 @@ from twinpy.structure.diff import get_structure_diff
 from twinpy.api_twinpy import get_twinpy_from_cell
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from twinpy.common.utils import print_header
-from twinpy.plot.base import line_chart, DEFAULT_COLORS
+from twinpy.plot.base import line_chart, DEFAULT_COLORS, DEFAULT_MARKERS
 from twinpy.lattice.lattice import Lattice
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
@@ -408,6 +408,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         self._final_cell = None
         if self._process_state == 'finished':
             self._set_final_structure()
+        self._additional_relax_pks = None
 
     def _set_final_structure(self):
         """
@@ -426,6 +427,47 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         Final cell.
         """
         return self._final_cell
+
+    def set_additional_relax(self, aiida_relax_pks:list):
+        """
+        Set additional_relax_pks in the case final structure of
+        RelaxWorkChain is further relaxed.
+
+        Args:
+            aiida_relaxes (list): list of relax pks
+
+        Raises:
+            RuntimeError: Input node is not RelaxWorkChain
+            RuntimeError: Output structure and next input structue does not match.
+        """
+        previous_rlx = self.pk
+        structure_pk = self._final_structure_pk
+        aiida_relaxes = [ load_node(relax_pk) for relax_pk in aiida_relax_pks ]
+        for aiida_relax in aiida_relaxes:
+            if aiida_relax.process_class.get_name() != 'RelaxWorkChain':
+                raise RuntimeError(
+                        "Input node (pk={}) is not RelaxWorkChain".format(
+                            aiida_relax.pk))
+            if structure_pk == aiida_relax.inputs.structure.pk:
+                if aiida_relax.process_state.value == 'finished':
+                    structure_pk = aiida_relax.outputs.relax__structure.pk
+                else:
+                    warnings.warn("RelaxWorkChain (pk={}) state is {}".format(
+                        aiida_relax.pk, aiida_relax.process_state.value))
+                previous_rlx = aiida_relax.pk
+            else:
+                print("previous relax: pk={}".format(previous_rlx))
+                print("next relax: pk={}".format(aiida_relax.pk))
+                raise RuntimeError("Output structure and next input structure "
+                                   "does not match.")
+        self._additional_relax_pks = aiida_relax_pks
+
+    @property
+    def additional_relax_pks(self):
+        """
+        Additional relax pks.
+        """
+        return self._additional_relax_pks
 
     def get_relax_settings(self) -> dict:
         """
@@ -515,11 +557,10 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         print("\n\n")
         self._print_vasp_results()
 
-    def plot_convergence(self):
+    def _get_dic_for_plot_convergence(self) -> dict:
         """
-        Plot convergence.
+        Get dictionary for plot convergence
         """
-        plt.rcParams["font.size"] = 14
         relax_nodes, _ = self.get_vasp_calculation_nodes()
         dic = {}
         dic['max_force'] = np.array(
@@ -532,69 +573,105 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         dic['abc'] = np.array([ Lattice(node.final_cell[0]).abc
                            for node in relax_nodes ])
         dic['steps'] = np.array([ i+1 for i in range(len(relax_nodes)) ])
-        static_x_val = len(dic['steps']) + 0.1
+        return dic
+
+    def plot_convergence(self):
+        """
+        Plot convergence.
+        """
+        plt.rcParams["font.size"] = 14
+        aiida_relax_pks = [ self.get_pks()['relax_pk'] ]
+        aiida_relax_pks.extend(self._additional_relax_pks)
 
         fig = plt.figure(figsize=(16,13))
         ax1 = fig.add_axes((0.15, 0.1, 0.35,  0.35))
         ax2 = fig.add_axes((0.63, 0.1, 0.35, 0.35))
         ax3 = fig.add_axes((0.15, 0.55, 0.35, 0.35))
         ax4 = fig.add_axes((0.63, 0.55, 0.35, 0.35))
-        line_chart(
-                ax1,
-                dic['steps'],
-                dic['max_force'],
-                'relax times',
-                'max force')
-        line_chart(
-                ax2,
-                dic['steps'],
-                dic['energy'],
-                'relax times',
-                'energy')
-        stress_labels = ['xx', 'yy', 'zz', 'yz', 'zx', 'xy']
-        for i in range(6):
-            line_chart(
-                    ax3,
-                    dic['steps'],
-                    dic['stress'][:,i],
-                    'relax times',
-                    'stress',
-                    label=stress_labels[i])
-        ax3.legend(loc='lower right')
-        abc_labels = ['a', 'b', 'c']
-        for i in range(3):
-            line_chart(
-                    ax4,
-                    dic['steps'],
-                    dic['abc'][:,i],
-                    'relax times',
-                    'lattice abc',
-                    label=abc_labels[i])
-        ax4.legend(loc='lower right')
-        ax4.set_ylim((0, None))
 
-        if self._exit_status == 0:
-            ax1.scatter(static_x_val, self.get_max_force(),
-                        c=DEFAULT_COLORS[0], marker='*', s=150)
-            ax2.scatter(static_x_val,
-                        self.get_misc()['total_energies']['energy_no_entropy'],
-                        c=DEFAULT_COLORS[0], marker='*', s=150)
-            rlx_stress = self.stress.flatten()[[0,4,8,5,6,1]]
+        x_val_fix = 0
+        for j, rlx_pk in enumerate(aiida_relax_pks):
+            aiida_relax = AiidaRelaxWorkChain(load_node(rlx_pk))
+            dic = aiida_relax._get_dic_for_plot_convergence()
+            dic['steps'] = dic['steps'] + x_val_fix
+            static_x_val = dic['steps'][-1] + 0.1
+            x_val_fix = dic['steps'][-1]
+
+            line_chart(
+                    ax1,
+                    dic['steps'],
+                    dic['max_force'],
+                    'relax times',
+                    'max force',
+                    c=DEFAULT_COLORS[0],
+                    marker=DEFAULT_MARKERS[0],
+                    facecolor='white')
+            line_chart(
+                    ax2,
+                    dic['steps'],
+                    dic['energy'],
+                    'relax times',
+                    'energy',
+                    c=DEFAULT_COLORS[0],
+                    marker=DEFAULT_MARKERS[0],
+                    facecolor='white')
+            stress_labels = ['xx', 'yy', 'zz', 'yz', 'zx', 'xy']
             for i in range(6):
-                ax3.scatter(static_x_val, rlx_stress[i], c=DEFAULT_COLORS[i],
-                            marker='*', s=150)
+                if j == 0:
+                    label = stress_labels[i]
+                else:
+                    label = None
+                line_chart(
+                        ax3,
+                        dic['steps'],
+                        dic['stress'][:,i],
+                        'relax times',
+                        'stress',
+                        c=DEFAULT_COLORS[i],
+                        marker=DEFAULT_MARKERS[i],
+                        facecolor='white',
+                        label=label)
+            ax3.legend(loc='lower right')
+            abc_labels = ['a', 'b', 'c']
             for i in range(3):
-                rlx_abc = Lattice(self.final_cell[0]).abc
-                ax4.scatter(static_x_val, rlx_abc[i], c=DEFAULT_COLORS[i],
-                            marker='*', s=150)
-        else:
-            strings = "WARNING: RelaxWorkChain pk={} is still working".format(self._pk)
-            print('+'*len(strings))
-            print(strings)
-            print('+'*len(strings))
+                if j == 0:
+                    label = abc_labels[i]
+                else:
+                    label = None
+                line_chart(
+                        ax4,
+                        dic['steps'],
+                        dic['abc'][:,i],
+                        'relax times',
+                        'lattice abc',
+                        c=DEFAULT_COLORS[i],
+                        marker=DEFAULT_MARKERS[i],
+                        facecolor='white',
+                        label=label)
+            ax4.legend(loc='lower right')
+            ax4.set_ylim((0, None))
 
-        fig.suptitle('relux result pk: %s' % self._pk, fontsize=30)
-        plt.show()
+            if aiida_relax._exit_status == 0:
+                ax1.scatter(static_x_val, aiida_relax.get_max_force(),
+                            c=DEFAULT_COLORS[0], marker='*', s=150)
+                ax2.scatter(static_x_val,
+                            aiida_relax.get_misc()\
+                                    ['total_energies']['energy_no_entropy'],
+                            c=DEFAULT_COLORS[0], marker='*', s=150)
+                rlx_stress = aiida_relax.stress.flatten()[[0,4,8,5,6,1]]
+                for i in range(6):
+                    ax3.scatter(static_x_val, rlx_stress[i], c=DEFAULT_COLORS[i],
+                                marker='*', s=150)
+                for i in range(3):
+                    rlx_abc = Lattice(aiida_relax.final_cell[0]).abc
+                    ax4.scatter(static_x_val, rlx_abc[i], c=DEFAULT_COLORS[i],
+                                marker='*', s=150)
+            else:
+                strings = "WARNING: RelaxWorkChain pk={} is still working"\
+                        .format(aiida_relax._pk)
+                print('+'*len(strings))
+                print(strings)
+                print('+'*len(strings))
 
 
 @with_dbenv()
@@ -920,6 +997,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         self._standardize = None
         self._set_twinpy()
         self._check_structures()
+        self._additional_relax_pks = []
 
     def _set_twinboundary(self):
         """
@@ -1060,6 +1138,49 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 self._structures['twinboundary_relax_original'][0],
                 atol=1e-6)
 
+    def set_additional_relax(self, aiida_relax_pks:list):
+        """
+        Set additional_relax_pks in the case final structure of
+        TwinBoundaryRelax WorkChain is further relaxed.
+
+        Args:
+            aiida_relaxes (list): list of relax pks
+
+        Raises:
+            RuntimeError: Input node is not RelaxWorkChain
+            RuntimeError: Output structure and next input structue does not match.
+        """
+        previous_rlx = self.get_pks()['relax_pk']
+        structure_pk = self._structure_pks['twinboundary_relax_pk']
+        aiida_relaxes = [ load_node(relax_pk) for relax_pk in aiida_relax_pks ]
+        for aiida_relax in aiida_relaxes:
+            if aiida_relax.process_class.get_name() != 'RelaxWorkChain':
+                raise RuntimeError(
+                        "Input node (pk={}) is not RelaxWorkChain".format(
+                            aiida_relax.pk))
+            print(structure_pk)
+            print(aiida_relax.inputs.structure.pk)
+            if structure_pk == aiida_relax.inputs.structure.pk:
+                if aiida_relax.process_state.value == 'finished':
+                    structure_pk = aiida_relax.outputs.relax__structure.pk
+                else:
+                    warnings.warn("RelaxWorkChain (pk={}) state is {}".format(
+                        aiida_relax.pk, aiida_relax.process_state.value))
+                previous_rlx = aiida_relax.pk
+            else:
+                print("previous relax: pk={}".format(previous_rlx))
+                print("next relax: pk={}".format(aiida_relax.pk))
+                raise RuntimeError("Output structure and next input structure "
+                                   "does not match.")
+        self._additional_relax_pks = aiida_relax_pks
+
+    @property
+    def additional_relax_pks(self):
+        """
+        Additional relax pks.
+        """
+        return self._additional_relax_pks
+
     def get_pks(self):
         """
         Get pks.
@@ -1183,3 +1304,12 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         excess_energy = __get_excess_energy()
         formation_energy = np.array(excess_energy) / (2*A) * unit
         return formation_energy
+
+    def plot_convergence(self):
+        """
+        Plot convergence.
+        """
+        relax_pk = self.get_pks()['relax_pk']
+        aiida_relax = AiidaRelaxWorkChain(load_node(relax_pk))
+        aiida_relax.set_additional_relax(self._additional_relax_pks)
+        aiida_relax.plot_convergence()
