@@ -198,6 +198,44 @@ class Lattice():
                                          sub.reshape(3,1)))
         return distance
 
+    def get_norm(self, frac_coord:np.array):
+        """
+        Return distance between frac_coord and origin.
+
+        Args:
+            frac_coord (np.array): frac coord
+        """
+        origin = np.array([0.,0.,0.])
+        norm = self.get_distance(frac_coord, origin)
+        return norm
+
+    def get_angle(self,
+                  frac_coord_first:np.array,
+                  frac_coord_second:np.array,
+                  get_acute:bool=False) -> float:
+        """
+        Return angle between two fractional coordinate.
+
+        Args:
+            frac_coord_first (np.array): frac coord
+            frac_coord_second (np.array): frac coord
+            get_acute (bool): if True, get acute angle
+
+        Returns:
+            float: angle
+        """
+        origin = np.array([0.,0.,0.])
+        norm_first = self.get_distance(frac_coord_first, origin)
+        norm_second = self.get_distance(frac_coord_second, origin)
+        inner_product = self.dot(frac_coord_first=frac_coord_first,
+                                 frac_coord_second=frac_coord_second)
+        cos_angle = np.round(inner_product / (norm_first * norm_second),
+                             decimals=8)
+        angle = np.arccos(cos_angle) * 180 / np.pi
+        if get_acute:
+            angle = min(angle, 180.-angle)
+        return angle
+
     def is_hexagonal_lattice(self) -> bool:
         """
         Check that lattice is hexagonal.

@@ -110,7 +110,6 @@ def common_neighbor_analysis(cell:tuple) -> list:
     """
     def _get_label(bondings):
         state = 'unknown'
-        print(len(bondings))
         if len(bondings) == 12:
             status_1 = len([ bond for bond in bondings if bond == [1,4,2,1] ])
             status_2 = len([ bond for bond in bondings if bond == [1,4,2,2] ])

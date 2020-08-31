@@ -16,6 +16,7 @@ from twinpy.api_twinpy import get_twinpy_from_cell
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from twinpy.common.utils import print_header
 from twinpy.plot.base import line_chart, DEFAULT_COLORS, DEFAULT_MARKERS
+# from twinpy.plot.twinboundary import plane_diff
 from twinpy.lattice.lattice import Lattice
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
@@ -259,10 +260,7 @@ class _AiidaVaspWorkChain(_WorkChain):
             dict: kpoints information
         """
         mesh, offset = self._node.inputs.kpoints.get_kpoints_mesh()
-        sampling_kpoints = self._node.outputs.kpoints.get_array('kpoints')
-        weights = self._node.outputs.kpoints.get_array('weights')
         total_mesh = mesh[0] * mesh[1] * mesh[2]
-        weights_num = (weights * total_mesh).astype(int)
         twinpy_kpoints = get_mesh_offset_from_direct_lattice(
                 lattice=self._initial_cell[0],
                 mesh=mesh)
@@ -270,14 +268,18 @@ class _AiidaVaspWorkChain(_WorkChain):
                 'mesh': mesh,
                 'total_mesh': twinpy_kpoints['total_mesh'],
                 'offset': offset,
-                'sampling_kpoints': sampling_kpoints,
-                'weights': weights_num,
                 'reciprocal_lattice': twinpy_kpoints['reciprocal_lattice'],
                 'reciprocal_volume': twinpy_kpoints['reciprocal_volume'],
                 'reciprocal_abc': twinpy_kpoints['abc'],
                 'intervals': twinpy_kpoints['intervals'],
                 'include_two_pi': twinpy_kpoints['include_two_pi'],
                 }
+        if self._exit_status is not None:
+            sampling_kpoints = self._node.outputs.kpoints.get_array('kpoints')
+            weights = self._node.outputs.kpoints.get_array('weights')
+            weights_num = (weights * total_mesh).astype(int)
+            kpts['sampling_kpoints'] = sampling_kpoints
+            kpts['weights'] = weights_num
         return kpts
 
     def get_vasp_settings(self) -> dict:
@@ -312,9 +314,9 @@ class _AiidaVaspWorkChain(_WorkChain):
         print_header('VASP settings')
         pprint(self.get_vasp_settings())
         print("\n\n")
+        print_header("kpoints information")
+        pprint(self.get_kpoints_info())
         if self._process_state == 'finished':
-            print_header("kpoints information")
-            pprint(self.get_kpoints_info())
             print("\n\n")
             print_header('VASP outputs')
             print("stress")
@@ -354,7 +356,9 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
             self._final_cell = get_cell_from_aiida(
                     load_node(self._final_structure_pk))
         except NotExistentAttributeError:
-            warnings.warn("Final structure could not find.")
+            warnings.warn("Final structure could not find.\n"
+                          "process state:{} (pk={})".format(
+                self.process_state, self._node.pk))
 
     @property
     def final_cell(self):
@@ -406,9 +410,10 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         super().__init__(node=node)
         self._final_structure_pk = None
         self._final_cell = None
-        if self._process_state == 'finished':
-            self._set_final_structure()
-        self._additional_relax_pks = None
+        self._current_final_structure_pk = None
+        self._current_final_cell = None
+        self._set_final_structure()
+        self._additional_relax_pks = []
 
     def _set_final_structure(self):
         """
@@ -418,8 +423,28 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
             self._final_structure_pk = self._node.outputs.relax__structure.pk
             self._final_cell = get_cell_from_aiida(
                     load_node(self._final_structure_pk))
+            self._current_final_structure_pk = self._final_structure_pk
+            self._current_final_cell = self._final_cell
         except NotExistentAttributeError:
-            warnings.warn("Final structure could not find.")
+            warnings.warn("Final structure could not find.\n"
+                          "process state:{} (pk={})".format(
+                self.process_state, self._node.pk))
+
+            relax_pks, static_pk = self.get_vasp_calculation_pks()
+            if relax_pks is None:
+                self._current_final_structure_pk = self._initial_structure_pk
+                self._current_final_cell = self._initial_cell
+            else:
+                if static_pk is not None:
+                    self._current_final_structure_pk = \
+                            load_node(static_pk).inputs.structure.pk
+                    self._current_final_cell = get_cell_from_aiida(
+                            load_node(static_pk).inputs.structure)
+                else:
+                    aiida_vasp = AiidaVaspWorkChain(load_node(relax_pks[-1]))
+                    self._current_final_structure_pk = \
+                            aiida_vasp._initial_structure_pk
+                    self._current_final_cell = aiida_vasp._initial_cell
 
     @property
     def final_cell(self):
@@ -540,6 +565,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                  'relax_pk': self._pk,
                  'initial_structure_pk': self._initial_structure_pk,
                  'final_structure_pk': self._final_structure_pk,
+                 'current_final_structure_pk': self._current_final_structure_pk,
                  'vasp_relax_pks': relax_pks,
                  'static_pk': static_pk,
                }
@@ -606,6 +632,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     c=DEFAULT_COLORS[0],
                     marker=DEFAULT_MARKERS[0],
                     facecolor='white')
+            ax1.set_ylim((0, None))
             line_chart(
                     ax2,
                     dic['steps'],
@@ -675,52 +702,45 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
 
 
 @with_dbenv()
-class AiidaPhonopyWorkChain():
+class AiidaPhonopyWorkChain(_WorkChain):
     """
     Phononpy work chain class.
     """
-
     def __init__(
             self,
-            pk:int,
+            node:Node,
             ):
         """
         Args:
-            pk (int): phonopy pk
+            node: aiida Node
         """
         process_class = 'PhonopyWorkChain'
-        node = load_node(pk)
         check_process_class(node, process_class)
-
-        self._node = node
-        self._process_class = process_class
-        self._pk = pk
+        super().__init__(node=node)
         self._unitcell = get_cell_from_aiida(
                 load_node(node.inputs.structure.pk))
         self._phonon_settings = node.inputs.phonon_settings.get_dict()
         self._phonon_setting_info = node.outputs.phonon_setting_info.get_dict()
-        self._force_sets = node.outputs.force_sets.get_array('force_sets')
+        self._unitcell = None
+        self._primitive = None
+        self._supercell = None
+        self._structure_pks = None
+        self._set_structures()
+        self._force_sets = None
+        self._set_force_sets()
 
-    @property
-    def process_class(self):
+    def _set_structures(self):
         """
-        Process class.
+        Set structures.
         """
-        return self._process_class
-
-    @property
-    def node(self):
-        """
-        Get PhonopyWorkChain node.
-        """
-        return self._node
-
-    @property
-    def pk(self):
-        """
-        PhonopyWorkChain pk.
-        """
-        return self._pk
+        self._unitcell = get_cell_from_aiida(self._node.inputs.structure)
+        self._primitive = get_cell_from_aiida(self._node.outputs.primitive)
+        self._supercell = get_cell_from_aiida(self._node.outputs.supercell)
+        self._structure_pks = {
+                'unitcell_pk': self._node.inputs.structure.pk,
+                'primitive_pk': self._node.outputs.primitive.pk,
+                'supercell_pk': self._node.outputs.supercell.pk,
+                }
 
     @property
     def unitcell(self):
@@ -728,6 +748,40 @@ class AiidaPhonopyWorkChain():
         Input unitcell.
         """
         return self._unitcell
+
+    @property
+    def primitive(self):
+        """
+        Output primitive cell.
+        """
+        return self._primitive
+
+    @property
+    def supercell(self):
+        """
+        Output supercell.
+        """
+        return self._supercell
+
+    @property
+    def structure_pks(self):
+        """
+        Structure pks.
+        """
+        return self._structure_pks
+
+    def _set_force_sets(self):
+        """
+        Set force_sets.
+        """
+        try:
+            self._force_sets = \
+                    self._node.outputs.force_sets.get_array('force_sets')
+        except NotExistentAttributeError:
+            warnings.warn("Could not find force sets. Probably, "
+                          "this job still running or finished improperly.\n"
+                          "process state: {} (pk={})".format(
+                              self._process_state, self._pk))
 
     @property
     def phonon_settings(self):
@@ -757,10 +811,9 @@ class AiidaPhonopyWorkChain():
         Returns:
             dict: containing relax pk and structure pk
         """
-        return {
-                 'phonopy_pk': self._pk,
-                 'input_structure_pk': self._node.inputs.structure.pk,
-               }
+        pks = self._structure_pks.copy()
+        pks.update({'phonopy_pk': self._pk})
+        return pks
 
     def get_phonon(self) -> Phonopy:
         """
@@ -778,6 +831,30 @@ class AiidaPhonopyWorkChain():
         phonon.set_forces(self._force_sets)
         phonon.produce_force_constants()
         return phonon
+
+    def export_phonon(self, filename:str=None):
+        """
+        Export phonopy object to yaml file.
+
+        Args:
+            filename (str): Output filename. If None, filename becomes
+                            pk<number>_phonopy.yaml.
+        """
+        phonon = self.get_phonon()
+        if filename is None:
+            filename = 'pk%d_phonopy.yaml' % self._pk
+        phonon.save(filename)
+
+    def get_description(self):
+        """
+        Get description.
+        """
+        self._print_common_information()
+        print_header('PKs')
+        pprint(self.get_pks())
+        print("\n\n")
+        print_header('phonopy settings')
+        pprint(self._phonon_settings)
 
 
 @with_dbenv()
@@ -1055,27 +1132,31 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         return self._structure_pks
 
+    def __get_relax_twinboudnary_original_frame(self, rlx_cell, std):
+        """
+        Todo:
+            Future replace convert_to_original_frame in standardize.py
+        """
+        M_bar_p = rlx_cell[0].T
+        x_p = rlx_cell[1].T
+        P_c = std.conventional_to_primitive_matrix
+        R = std.rotation_matrix
+        P = std.transformation_matrix
+        p = std.origin_shift.reshape(3,1)
+
+        M_p = np.dot(np.linalg.inv(R), M_bar_p)
+        M_s = np.dot(M_p, np.linalg.inv(P_c))
+        M = np.dot(M_s, P)
+        x_s = np.dot(P_c, x_p)
+        x = np.round(np.dot(np.linalg.inv(P), x_s)
+                       - np.dot(np.linalg.inv(P), p), decimals=8) % 1
+        cell = (M.T, x.T, rlx_cell[2])
+        return cell
+
     def _set_twinpy(self):
         """
         Set twinpy structure object and standardize object.
         """
-        def __set_relax_twinboudnary_original_frame(rlx_cell, std):
-            M_bar_p = rlx_cell[0].T
-            x_p = rlx_cell[1].T
-            P_c = std.conventional_to_primitive_matrix
-            R = std.rotation_matrix
-            P = std.transformation_matrix
-            p = std.origin_shift.reshape(3,1)
-
-            M_p = np.dot(np.linalg.inv(R), M_bar_p)
-            M_s = np.dot(M_p, np.linalg.inv(P_c))
-            M = np.dot(M_s, P)
-            x_s = np.dot(P_c, x_p)
-            x = np.round(np.dot(np.linalg.inv(P), x_s)
-                           - np.dot(np.linalg.inv(P), p), decimals=8) % 1
-            cell = (M.T, x.T, rlx_cell[2])
-            return cell
-
         params = self._twinboundary_settings
         cell = get_cell_from_aiida(
                 load_node(self._structure_pks['hexagonal_pk']))
@@ -1094,7 +1175,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 get_lattice=params['get_lattice'],
                 move_atoms_into_unitcell=params['move_atoms_into_unitcell'],
                 )
-        tb_relax_orig = __set_relax_twinboudnary_original_frame(
+        tb_relax_orig = self.__get_relax_twinboudnary_original_frame(
                 rlx_cell=self._structures['twinboundary_relax'],
                 std=std,
                 )
@@ -1158,8 +1239,6 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 raise RuntimeError(
                         "Input node (pk={}) is not RelaxWorkChain".format(
                             aiida_relax.pk))
-            print(structure_pk)
-            print(aiida_relax.inputs.structure.pk)
             if structure_pk == aiida_relax.inputs.structure.pk:
                 if aiida_relax.process_state.value == 'finished':
                     structure_pk = aiida_relax.outputs.relax__structure.pk
@@ -1190,46 +1269,95 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         pks['relax_pk'] = relax_pk
         return pks
 
-    def get_diff(self) -> dict:
+    def _get_additional_relax_final_cell(self):
+        """
+        Get additional relax final structure.
+        """
+        if self._additional_relax_pks == []:
+            raise RuntimeError("additional_relax_pks is not set.")
+        else:
+            aiida_relax = AiidaRelaxWorkChain(
+                    load_node(self._additional_relax_pks[-1]))
+            final_cell = get_cell_from_aiida(load_node(
+                aiida_relax.get_pks()['current_final_structure_pk']))
+        return final_cell
+
+    def get_diff(self, get_additional_relax:bool=False) -> dict:
         """
         Get diff between vasp input and output twinboundary structure.
 
+        Args:
+            get_additional_relax (bool): if True, output twinboundary structure
+                                         becomes the final structure of
+                                         additional_relax
+
         Returns:
-            dict: diff between vasp input and output twinboundary structure.
+            dict: diff between vasp input and output twinboundary structure
 
         Raises:
             AssertionError: lattice matrix is not identical
         """
+        if get_additional_relax:
+            final_cell = self._get_additional_relax_final_cell()
+        else:
+            final_cell = self._structures['twinboundary_relax']
         cells = (self._structures['twinboundary'],
-                 self._structures['twinboundary_relax'])
+                 final_cell)
         diff = get_structure_diff(cells=cells,
                                   base_index=0,
                                   include_base=False)
-        np.testing.assert_allclose(diff['lattice_diffs'][0],
-                                   np.zeros((3,3)),
-                                   atol=1e-8,
-                                   err_msg="lattice matrix is not identical")
+        if not get_additional_relax:
+            np.testing.assert_allclose(
+                    diff['lattice_diffs'][0],
+                    np.zeros((3,3)),
+                    atol=1e-8,
+                    err_msg="lattice matrix is not identical")
         return diff
 
-    def get_planes(self, is_fractional:bool=False) -> dict:
+    def get_planes_angles(self,
+                          is_fractional:bool=False,
+                          get_additional_relax:bool=False) -> dict:
         """
         Get plane coords from lower plane to upper plane.
         Return list of z coordinates of original cell frame.
 
         Args:
             is_fractional (bool): if True, return with fractional coordinate
+            get_additional_relax (bool): if True, output twinboundary structure
+                                         becomes the final structure of
+                                         additional_relax
 
         Returns:
             dict: plane coords of input and output twinboundary structures.
         """
-        lattice = Lattice(self._structures['twinboundary_original'][0])
-        input_atoms = self._structures['twinboundary_original'][1]
-        output_atoms = self._structures['twinboundary_relax_original'][1]
-        c_norm = lattice.abc[2]
+        if not is_fractional and get_additional_relax:
+            raise RuntimeError(
+                    "is_fractional=False and get_additional_relax=True "
+                    "is not allowed because in the case "
+                    "get_additional_relax=True, c norm changes.")
+
+
+        if get_additional_relax:
+            final_cell = self._get_additional_relax_final_cell()
+            orig_final_cell = \
+                    self.__get_relax_twinboudnary_original_frame(
+                            rlx_cell=final_cell,
+                            std=self._standardize)
+        else:
+            orig_final_cell = self._structures['twinboundary_relax_original']
+        cells = [self._structures['twinboundary_original'],
+                 orig_final_cell]
+
         coords_list = []
-        k_1 = np.array([0,0,1])
-        for atoms in [ input_atoms, output_atoms ]:
+        angles_list = []
+        for cell in cells:
+            lattice = Lattice(cell[0])
+            atoms = cell[1]
+            c_norm = lattice.abc[2]
+            k_1 = np.array([0,0,1])
             sort_atoms = atoms[np.argsort(atoms[:,2])]
+
+            # planes
             coords = [ lattice.dot(np.array(atom), k_1) / c_norm
                            for atom in sort_atoms ]
             num = len(coords)
@@ -1242,25 +1370,60 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             else:
                 d = np.round(ave_coords+epsilon, decimals=8)
             coords_list.append(list(d))
+
+            # angles
+            sub_coords_orig = sort_atoms[[i for i in range(1,num,2)]] \
+                                  - sort_atoms[[i for i in range(0,num,2)]]
+            sub_coords_plus = sort_atoms[[i for i in range(1,num,2)]]+np.array([0,1,0]) \
+                                  - sort_atoms[[i for i in range(0,num,2)]]
+            sub_coords_minus = sort_atoms[[i for i in range(1,num,2)]]-np.array([0,1,0]) \
+                                  - sort_atoms[[i for i in range(0,num,2)]]
+            coords = []
+            for i in range(len(sub_coords_orig)):
+                norm_orig = lattice.get_norm(sub_coords_orig[i])
+                norm_plus = lattice.get_norm(sub_coords_plus[i])
+                norm_minus = lattice.get_norm(sub_coords_minus[i])
+                norms = [norm_orig, norm_plus, norm_minus]
+                if min(norms) == norm_orig:
+                    coords.append(sub_coords_orig[i])
+                elif min(norms) == norm_plus:
+                    coords.append(sub_coords_plus[i])
+                else:
+                    coords.append(sub_coords_minus[i])
+
+            angles = [ lattice.get_angle(frac_coord_first=coord,
+                                         frac_coord_second=np.array([0,1,0]),
+                                         get_acute=True)
+                       for coord in coords ]
+            angles_list.append(np.array(angles))
+
         return {
-                'before': coords_list[0],
-                'relax': coords_list[1],
+                'planes': {'before': coords_list[0],
+                           'relax': coords_list[1]},
+                'angles': {'before': angles_list[0],
+                           'relax': angles_list[1]},
                 }
 
-    def get_distances(self, is_fractional:bool=False) -> dict:
+    def get_distances(self,
+                      is_fractional:bool=False,
+                      get_additional_relax:bool=False) -> dict:
         """
         Get distances from the result of 'get_planes'.
 
         Args:
             is_fractional (bool): if True, return with fractional coordinate
+            get_additional_relax (bool): if True, output twinboundary structure
+                                         becomes the final structure of
+                                         additional_relax
 
         Returns:
             dict: distances between planes of input and output
                   twinboundary structures.
         """
+        planes = self.get_planes_angles(is_fractional=is_fractional,
+                                        get_additional_relax=get_additional_relax)['planes']
         lattice = Lattice(self._structures['twinboundary_original'][0])
         c_norm = lattice.abc[2]
-        planes = self.get_planes(is_fractional=is_fractional)
         keys = ['before', 'relax']
         dic = {}
         for key in keys:
@@ -1313,3 +1476,164 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         aiida_relax = AiidaRelaxWorkChain(load_node(relax_pk))
         aiida_relax.set_additional_relax(self._additional_relax_pks)
         aiida_relax.plot_convergence()
+
+    def plot_plane_diff(self,
+                        is_fractional:bool=False,
+                        is_decorate:bool=True):
+        """
+        Plot plane diff.
+
+        Args:
+            is_fractional (bool): if True, z coords with fractional coordinate
+            is_decorate (bool): if True, decorate figure
+        """
+        def _get_data(get_additional_relax):
+            c_norm = self.structures['twinboundary_original'][0][2,2]
+            distances = self.get_distances(
+                    is_fractional=is_fractional,
+                    get_additional_relax=get_additional_relax)
+            planes = self.get_planes_angles(
+                    is_fractional=is_fractional,
+                    get_additional_relax=get_additional_relax)['planes']
+            before_distances = distances['before'].copy()
+            bulk_interval = before_distances[1]
+            rlx_distances = distances['relax'].copy()
+            z_coords = planes['before'].copy()
+            z_coords.insert(0, z_coords[0] - before_distances[-1])
+            z_coords.append(z_coords[-1] + before_distances[0])
+            rlx_distances.insert(0, rlx_distances[-1])
+            rlx_distances.append(rlx_distances[0])
+            ydata = np.array(z_coords) + bulk_interval / 2
+            if is_fractional:
+                rlx_distances = np.array(rlx_distances) * c_norm
+            return (rlx_distances, ydata, z_coords, bulk_interval)
+
+        if self.additional_relax_pks == []:
+            datas = [ _get_data(False) ]
+            labels = ['isif7']
+        else:
+            datas = [ _get_data(bl) for bl in [False, True] ]
+            labels = ['isif7', 'isif3']
+
+        fig = plt.figure(figsize=(8,13))
+        ax = fig.add_subplot(111)
+        for i in range(len(datas)):
+            xdata, ydata, z_coords, bulk_interval = datas[i]
+            line_chart(ax=ax,
+                       xdata=xdata,
+                       ydata=ydata,
+                       xlabel='distance',
+                       ylabel='z coords',
+                       sort_by='y',
+                       label=labels[i])
+
+        if is_decorate:
+            num = len(z_coords)
+            tb_idx = [1, int(num/2), num-1]
+            xmax = max([ max(data[0]) for data in datas ])
+            xmin = min([ min(data[0]) for data in datas ])
+            ymax = max([ max(data[1]) for data in datas ])
+            ymin = min([ min(data[1]) for data in datas ])
+            for idx in tb_idx:
+                ax.hlines(z_coords[idx],
+                          xmin=xmin-0.005,
+                          xmax=xmax+0.005,
+                          linestyle='--',
+                          linewidth=1.5)
+            yrange = ymax - ymin
+            if is_fractional:
+                c_norm = self.structures['twinboundary_original'][0][2,2]
+                vline_x = bulk_interval * c_norm
+            else:
+                vline_x = bulk_interval
+            ax.vlines(vline_x,
+                      ymin=ymin-yrange*0.01,
+                      ymax=ymax+yrange*0.01,
+                      linestyle='--',
+                      linewidth=0.5)
+            ax.legend()
+
+    def plot_angle_diff(self,
+                        is_fractional:bool=False,
+                        is_decorate:bool=True):
+        """
+        Plot angle diff.
+
+        Args:
+            is_fractional (bool): if True, z coords with fractional coordinate
+            is_decorate (bool): if True, decorate figure
+        """
+        def _get_data(get_additional_relax):
+            c_norm = self.structures['twinboundary_original'][0][2,2]
+            distances = self.get_distances(
+                    is_fractional=is_fractional,
+                    get_additional_relax=get_additional_relax)
+            planes_angles = self.get_planes_angles(
+                    is_fractional=is_fractional,
+                    get_additional_relax=get_additional_relax)
+            planes = planes_angles['planes']
+            before_distances = distances['before'].copy()
+            z_coords = planes['before'].copy()
+            z_coords.insert(0, z_coords[0] - before_distances[-1])
+            z_coords.append(z_coords[-1] + before_distances[0])
+
+            angles = planes_angles['angles']
+            rlx_angles = list(angles['relax'])
+            bulk_angle = angles['before'][1]
+            rlx_angles.insert(0, rlx_angles[-1])
+            rlx_angles.append(rlx_angles[1])
+            ydata = np.array(z_coords)
+            rlx_angles = np.array(rlx_angles)
+            return (rlx_angles, ydata, z_coords, bulk_angle)
+
+        if self.additional_relax_pks == []:
+            datas = [ _get_data(False) ]
+            labels = ['isif7']
+        else:
+            datas = [ _get_data(bl) for bl in [False, True] ]
+            labels = ['isif7', 'isif3']
+
+        fig = plt.figure(figsize=(8,13))
+        ax = fig.add_subplot(111)
+        for i in range(len(datas)):
+            xdata, ydata, z_coords, bulk_angle = datas[i]
+            line_chart(ax=ax,
+                       xdata=xdata,
+                       ydata=ydata,
+                       xlabel='angle',
+                       ylabel='z coords',
+                       sort_by='y',
+                       label=labels[i])
+
+        if is_decorate:
+            num = len(z_coords)
+            tb_idx = [1, int(num/2), num-1]
+            xmax = max([ max(data[0]) for data in datas ])
+            xmin = min([ min(data[0]) for data in datas ])
+            ymax = max([ max(data[1]) for data in datas ])
+            ymin = min([ min(data[1]) for data in datas ])
+            for idx in tb_idx:
+                ax.hlines(z_coords[idx],
+                          xmin=xmin-0.005,
+                          xmax=xmax+0.005,
+                          linestyle='--',
+                          linewidth=1.5)
+            yrange = ymax - ymin
+            vline_x = bulk_angle
+            ax.vlines(vline_x,
+                      ymin=ymin-yrange*0.01,
+                      ymax=ymax+yrange*0.01,
+                      linestyle='--',
+                      linewidth=0.5)
+            ax.legend()
+
+    def get_description(self):
+        """
+        Get description.
+        """
+        self._print_common_information()
+        print_header('PKs')
+        pprint(self.get_pks())
+        print("\n\n")
+        print_header('twinboudnary settings')
+        pprint(self.twinboundary_settings)
