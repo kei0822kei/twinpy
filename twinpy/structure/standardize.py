@@ -274,7 +274,8 @@ class StandardizeCell():
         """
         spg_cell = spglib.standardize_cell(self._cell_for_spglib,
                                            to_primitive=to_primitive,
-                                           no_idealize=no_idealize)
+                                           no_idealize=no_idealize,
+                                           symprec=symprec)
         symbols = get_chemical_symbols(spg_cell[2])
         std_cell = (spg_cell[0], spg_cell[1], symbols)
         if no_sort:

@@ -6,9 +6,12 @@ Analize twinboudnary relax calculation.
 """
 import numpy as np
 from twinpy.structure.diff import get_structure_diff
+from twinpy.structure.twinboundary import TwinBoundaryStructure
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.plot.base import get_plot_properties_for_trajectory
 from twinpy.plot.band import bands_plot
+from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
+from phonopy import Phonopy
 
 
 class TwinBoundaryAnalyzer():
@@ -18,262 +21,156 @@ class TwinBoundaryAnalyzer():
 
     def __init__(
            self,
-           original_cells:list,
-           input_cells:list,
-           relax_cells:list,
+           twinboundary_structure:TwinBoundaryStructure,
+           hexagonal_phonon:Phonopy,
+           twinboundary_phonon:Phonopy,
            ):
         """
         Args:
-            original_cells (list): primitivie original cells, which is output
-                               cells of ShearStructure class
-            input_cells (list): input cells for vasp
-            relax_cells (list): relax cells of vasp
-
-        Raises:
-            RuntimeError: The number of atoms changes between original cells
-                          and input cells, which is not supported.
-
-        Todo:
-            Currently not supported the case the number of original_cells
-            and input_cells changes because it is difficult to construct
-            the relax cells in the original frame. But future fix this
-            problem. One solution is to make attribute
-            'self._original_primitive' which contains two atoms
-            in the unit cell and original basis.
+            twinboundary_structure:TwinBoundaryStructure object.
+            hexagonal_phonon: hexagonal Phonopy object
+            twinboundary_phonon: twinboundary Phonopy object
         """
-        def __check_number_of_atoms_not_changed(original_cells,
-                                                input_cells):
-            for original_cell, input_cell in zip(original_cells, input_cells):
-                if not len(original_cell) == len(input_cell):
-                    raise RuntimeError(
-                            "The number of atoms changes between "
-                            "original cells and input cells, "
-                            "which is not supported.")
+        self._twinboundary_structure = twinboundary_structure
+        self._hexagonal_phonon = hexagonal_phonon
+        self._twinboundary_phonon = twinboundary_phonon
+        self._standardize = None
+        self._set_standardize()
+        self._hexagonal_to_original_rotation_matrix = None
+        self._twinboundary_to_original_rotation_matrix = None
+        self._set_rotation_matrices()
 
-        __check_number_of_atoms_not_changed(original_cells, input_cells)
-        self._original_cells = original_cells
-        self._input_cells = input_cells
-        self._relax_cells = None
-        self._set_relax_cells(input_cells, relax_cells)
-        self._standardizes = None
-        self._set_standardizes()
-        self._relax_cells_original_frame = None
-        self._set_relax_cells_in_original_frame()
-        self._phonons = None
+    def _set_standardize(self):
+        """
+        Set standardize.
+        """
+        cell = self._twinboundary_structure.get_cell_for_export()
+        self._standardize = StandardizeCell(cell)
+
+    def _set_rotation_matrices(self):
+        """
+        Set rotation matrix.
+        """
+        self._hexagonal_to_original_rotation_matrix = \
+                self._twinboundary_structure.rotation_matrix
+        self._twinboundary_to_original_rotation_matrix = \
+                np.linalg.inv(self._standardize.rotation_matrix)
 
     @property
-    def original_cells(self):
+    def twinboundary_structure(self):
         """
-        Original cells, which are output of ShearStructure.
+        TwinBoundaryStructure object
         """
-        return self._original_cells
+        return self._twinboundary_structure
 
     @property
-    def input_cells(self):
+    def hexagonal_phonon(self):
         """
-        Relax input cells.
+        Bulk phonon.
         """
-        return self._input_cells
-
-    def _set_relax_cells(self, input_cells, relax_cells):
-        """
-        Check lattice does not change in relaxation and
-        set relax_cells.
-        """
-        for input_cell, relax_cell in zip(input_cells, relax_cells):
-            np.testing.assert_allclose(input_cell[0], relax_cell[0],
-                                       atol=1e-5)
-        self._relax_cells = relax_cells
+        return self._hexagonal_phonon
 
     @property
-    def relax_cells(self):
+    def twinboundary_phonon(self):
         """
-        Relax output cells.
+        Twinboundary phonon.
         """
-        return self._relax_cells
-
-    def _set_standardizes(self):
-        """
-        Set standardizes.
-        """
-        to_primitive = True
-        no_idealize = False
-        symprec = 1e-5
-        no_sort = False
-        get_sort_list = False
-
-        standardizes = [ StandardizeCell(cell)
-                             for cell in self._original_cells ]
-
-        for i, standardize in enumerate(standardizes):
-            std_cell = standardize.get_standardized_cell(
-                    to_primitive=to_primitive,
-                    no_idealize=no_idealize,
-                    symprec=symprec,
-                    no_sort=no_sort,
-                    get_sort_list=get_sort_list,
-                    )
-            cells_are_same = is_cells_are_same(self._input_cells[i],
-                                               std_cell)
-            if not cells_are_same:
-                raise RuntimeError("standardized cell do not match "
-                                   "with input cell")
-
-        self._standardizes = standardizes
+        return self._twinboundary_phonon
 
     @property
-    def standardizes(self):
+    def hexagonal_to_original_rotation_matrix(self):
         """
-        Standardizes.
+        Hexagonal to original rotation matrix.
         """
-        return self._standardizes
-
-    def _set_relax_cells_in_original_frame(self) -> list:
-        """
-        Set relax cells in original frame which is not
-        conventional and its angles are close to (90., 90., 120.).
-
-        Returns:
-            list: relax cells in original frame
-
-        Note:
-            For variable definitions in this definition,
-            see Eq.(1.8) and (1.17) in Crystal Structure documention.
-            Note that by crystal body rotation, fractional
-            coordinate of atom positions are not changed.
-        """
-        def __get_relax_atoms_in_original_frame(prim_atoms,
-                                                conv_to_prim_matrix,
-                                                transformation_matrix,
-                                                origin_shift):
-            X_p = prim_atoms.T
-            P_c = conv_to_prim_matrix
-            P = transformation_matrix
-            p = origin_shift.reshape(3,1)
-
-            X_s = np.dot(P_c, X_p)
-            X = np.dot(np.linalg.inv(P), X_s) \
-                    - np.dot(np.linalg.inv(P), p)
-            orig_atoms = np.round(X.T, decimals=8) % 1.
-            return orig_atoms
-
-        relax_orig_cells = []
-        for i in range(len(self._relax_cells)):
-            lattice = self._original_cells[i][0]
-            conv_to_prim_matrix = \
-                self._standardizes[i].conventional_to_primitive_matrix
-            transformation_matrix = \
-                self._standardizes[i].transformation_matrix
-            origin_shift = self._standardizes[i].origin_shift
-            scaled_positions = __get_relax_atoms_in_original_frame(
-                    prim_atoms=self._relax_cells[i][1],
-                    conv_to_prim_matrix=conv_to_prim_matrix,
-                    transformation_matrix=transformation_matrix,
-                    origin_shift=origin_shift,
-                    )
-            symbols = self._original_cells[i][2]
-            relax_orig_cell = (lattice, scaled_positions, symbols)
-            relax_orig_cells.append(relax_orig_cell)
-
-        self._relax_cells_in_original_frame = relax_orig_cells
+        return self._hexagonal_to_original_rotation_matrix
 
     @property
-    def relax_cells_in_original_frame(self):
+    def twinboundary_to_original_rotation_matrix(self):
         """
-        Relax cells in original frame
+        Twinboundary to original rotation matrix.
         """
-        return self._relax_cells_in_original_frame
+        return self._twinboundary_to_original_rotation_matrix
 
-    def set_phonons(self, phonons):
+    def run_mesh(self, interval:float=0.1):
         """
-        Set phonons.
-        """
-        self._phonons = phonons
-
-    @property
-    def phonons(self):
-        """
-        Phonons.
-        """
-        return self._phonons
-
-    def get_relax_diffs(self):
-        """
-        Get structure diffs between input and relax cells
-        IN ORIGINAL FRAME.
-        """
-        diffs = []
-        for input_cell, relax_cell in \
-                zip(self._original_cells, self._relax_cells_in_original_frame):
-            cells = (input_cell, relax_cell)
-            diff = get_structure_diff(cells=cells,
-                                      base_index=0,
-                                      include_base=False)
-            diffs.append(diff)
-
-        return diffs
-
-    def get_shear_diffs(self):
-        """
-        Get structure diffs between original and sheared structures
-        IN ORIGINAL FRAME.
-        """
-        cells = self._relax_cells_in_original_frame
-        diffs = get_structure_diff(cells=cells,
-                                   base_index=0,
-                                   include_base=True)
-        return diffs
-
-    def plot_bands(self,
-                   fig,
-                   with_dos=False,
-                   mesh=None,
-                   band_labels=None,
-                   segment_qpoints=None,
-                   xscale=20,
-                   npoints=51,
-                   labels=None,):
-        """
-        plot phonon bands
+        Run mesh for both hexagonal and twinboundary phonon.
 
         Args:
-            arg1 (str): description
-            arg2 (np.array): (3x3 numpy array) description
-
-        Returns:
-            dict: description
-
-        Raises:
-            ValueError: description
-
-        Examples:
-            description
-
-            >>> print_test ("test", "message")
-              test message
-
-        Note:
-            description
+            interval (float): mesh interval
         """
-        cs, alphas, linewidths, linestyles = \
-                get_plot_properties_for_trajectory(
-                        plot_nums=len(self._phonons))
-        transformation_matrices = \
-                [ std.transformation_matrix for std in self._standardizes ]
-        bands_plot(fig=fig,
-                   phonons=self._phonons,
-                   rotation_matrices=[ std.rotation_matrix for std in self.standardizes ],
-                   original_lattices=[ cell[0] for cell in self._original_cells ],
-                   input_lattices=[ cell[0] for cell in self._input_cells ],
-                   band_labels=band_labels,
-                   segment_qpoints=segment_qpoints,
-                   xscale=xscale,
-                   npoints=npoints,
-                   with_dos=with_dos,
-                   mesh=mesh,
-                   cs=cs,
-                   alphas=alphas,
-                   linewidths=linewidths,
-                   linestyles=linestyles,
-                   labels=labels,
-                   )
+        phonons = (self._hexagonal_phonon, self._twinboundary_phonon)
+        structure_types = ['hexagonal', 'twinboundary']
+        for structure_type, phonon in zip(structure_types, phonons):
+            lattice = phonon.primitive.get_cell()
+            kpt = get_mesh_offset_from_direct_lattice(
+                    lattice=lattice,
+                    interval=interval,
+                    )
+            print("run mesh with {} ({})".format(
+                kpt['mesh'], structure_type))
+            phonon.run_mesh
+            phonon.set_mesh(
+                mesh=kpt['mesh'],
+                shift=None,
+                is_time_reversal=True,
+                is_mesh_symmetry=False,  # necessary for calc ellipsoid
+                is_eigenvectors=True,
+                is_gamma_center=False,
+                run_immediately=True)
+
+    def get_thermal_displacement_matrices(
+            self,
+            t_step:int=100,
+            t_max:int=1000,
+            t_min:int=0,
+            with_original_cart:bool=True,
+            def_cif:bool=False,
+            ):
+        """
+        Get ThermalDisplacementMatrices object for
+        both hexagonal and twinboundary.
+
+        Args:
+            t_step (int): temperature interval
+            t_max (int): max temperature
+            t_min (int): minimum temperature
+            with_original_cart (bool): if True, use twinboundary
+                                       original frame
+            def_cif (bool): if True, use cif definition
+
+        Todo:
+            I do not know how to rotate 4d array (temp, atoms, 3, 3).
+        """
+        phonons = (self._hexagonal_phonon, self._twinboundary_phonon)
+        tdm_matrices = []
+        rotation_matrices = (self._hexagonal_to_original_rotation_matrix,
+                             self._twinboundary_to_original_rotation_matrix)
+        for phonon, rotation_matrix in zip(phonons, rotation_matrices):
+            phonon.set_thermal_displacement_matrices(
+                t_step=t_step,
+                t_max=t_max,
+                t_min=t_min,
+                freq_min=None,
+                freq_max=None,
+                t_cif=None)
+            tdm = phonon.thermal_displacement_matrices
+            if def_cif:
+                matrix = tdm.thermal_displacement_matrices_cif
+            else:
+                matrix = tdm.thermal_displacement_matrices
+            if with_original_cart:
+                rot_matrices = []
+                shape = matrix.shape
+                lst = []
+                for i in range(shape[0]):
+                    atom_lst = []
+                    for j in range(shape[1]):
+                        mat = np.dot(rotation_matrix,
+                                     np.dot(matrix[i,j],
+                                            rotation_matrix.T))
+                        atom_lst.append(mat)
+                    lst.append(atom_lst)
+                tdm_matrices.append(np.array(lst))
+            else:
+                tdm_matrices.append(tdm.thermal_displacement_matrices)
+        return tuple(tdm_matrices)

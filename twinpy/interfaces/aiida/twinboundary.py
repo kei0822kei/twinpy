@@ -23,6 +23,28 @@ from twinpy.lattice.lattice import Lattice
 from twinpy.plot.base import line_chart
 
 
+def _get_twinboudnary_original_frame_cell(cell, std):
+    """
+    Todo:
+        Future replace convert_to_original_frame in standardize.py
+    """
+    M_bar_p = cell[0].T
+    x_p = cell[1].T
+    P_c = std.conventional_to_primitive_matrix
+    R = std.rotation_matrix
+    P = std.transformation_matrix
+    p = std.origin_shift.reshape(3,1)
+
+    M_p = np.dot(np.linalg.inv(R), M_bar_p)
+    M_s = np.dot(M_p, np.linalg.inv(P_c))
+    M = np.dot(M_s, P)
+    x_s = np.dot(P_c, x_p)
+    x = np.round(np.dot(np.linalg.inv(P), x_s)
+                   - np.dot(np.linalg.inv(P), p), decimals=8) % 1
+    cell = (M.T, x.T, cell[2])
+    return cell
+
+
 @with_dbenv()
 class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
     """
@@ -106,27 +128,6 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         return self._structure_pks
 
-    def __get_relax_twinboudnary_original_frame(self, rlx_cell, std):
-        """
-        Todo:
-            Future replace convert_to_original_frame in standardize.py
-        """
-        M_bar_p = rlx_cell[0].T
-        x_p = rlx_cell[1].T
-        P_c = std.conventional_to_primitive_matrix
-        R = std.rotation_matrix
-        P = std.transformation_matrix
-        p = std.origin_shift.reshape(3,1)
-
-        M_p = np.dot(np.linalg.inv(R), M_bar_p)
-        M_s = np.dot(M_p, np.linalg.inv(P_c))
-        M = np.dot(M_s, P)
-        x_s = np.dot(P_c, x_p)
-        x = np.round(np.dot(np.linalg.inv(P), x_s)
-                       - np.dot(np.linalg.inv(P), p), decimals=8) % 1
-        cell = (M.T, x.T, rlx_cell[2])
-        return cell
-
     def _set_twinpy(self):
         """
         Set twinpy structure object and standardize object.
@@ -149,8 +150,8 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 get_lattice=params['get_lattice'],
                 move_atoms_into_unitcell=params['move_atoms_into_unitcell'],
                 )
-        tb_relax_orig = self.__get_relax_twinboudnary_original_frame(
-                rlx_cell=self._structures['twinboundary_relax'],
+        tb_relax_orig = _get_twinboudnary_original_frame_cell(
+                cell=self._structures['twinboundary_relax'],
                 std=std,
                 )
         self._structures['twinboundary_relax_original'] = tb_relax_orig
@@ -193,6 +194,18 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 self._structures['twinboundary_relax_original'][0],
                 atol=1e-6)
 
+    def _get_additional_relax_final_structure_pk(self):
+        """
+        Get additional relax final structure.
+        """
+        if self._additional_relax_pks == []:
+            raise RuntimeError("additional_relax_pks is not set.")
+        else:
+            aiida_relax = AiidaRelaxWorkChain(
+                    load_node(self._additional_relax_pks[-1]))
+            final_pk = aiida_relax.get_pks()['current_final_structure_pk']
+        return final_pk
+
     def set_additional_relax(self, aiida_relax_pks:list):
         """
         Set additional_relax_pks in the case final structure of
@@ -220,6 +233,9 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 else:
                     warnings.warn("RelaxWorkChain (pk={}) state is {}".format(
                         aiida_relax.pk, aiida_relax.process_state.value))
+                    if aiida_relax.process_state.value == 'excepted':
+                        structure_pk = \
+                          aiida_relax.called[1].called[0].outputs.structure.pk
                 previous_rlx = aiida_relax.pk
             else:
                 print("previous relax: pk={}".format(previous_rlx))
@@ -227,6 +243,18 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 raise RuntimeError("Output structure and next input structure "
                                    "does not match.")
         self._additional_relax_pks = aiida_relax_pks
+        rlx_structure_pk = self._get_additional_relax_final_structure_pk()
+        rlx_cell = get_cell_from_aiida(load_node(rlx_structure_pk))
+        self._structure_pks['twinboundary_additional_relax_pk'] = \
+                rlx_structure_pk
+        self._structures['twinboundary_additional_relax'] = \
+                rlx_cell
+        orig_rlx_structure = \
+                _get_twinboudnary_original_frame_cell(
+                        cell=rlx_cell,
+                        std=self._standardize)
+        self._structures['twinboundary_additional_relax_original'] = \
+                orig_rlx_structure
 
     @property
     def additional_relax_pks(self):
@@ -242,20 +270,8 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         relax_pk = self._node.called[-2].pk
         pks = self._structure_pks.copy()
         pks['relax_pk'] = relax_pk
+        pks['additional_relax_pks'] = self._additional_relax_pks
         return pks
-
-    def _get_additional_relax_final_cell(self):
-        """
-        Get additional relax final structure.
-        """
-        if self._additional_relax_pks == []:
-            raise RuntimeError("additional_relax_pks is not set.")
-        else:
-            aiida_relax = AiidaRelaxWorkChain(
-                    load_node(self._additional_relax_pks[-1]))
-            final_cell = get_cell_from_aiida(load_node(
-                aiida_relax.get_pks()['current_final_structure_pk']))
-        return final_cell
 
     def get_diff(self, get_additional_relax:bool=False) -> dict:
         """
@@ -273,7 +289,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             AssertionError: lattice matrix is not identical
         """
         if get_additional_relax:
-            final_cell = self._get_additional_relax_final_cell()
+            final_cell = self._structures['twinboundary_additional_relax']
         else:
             final_cell = self._structures['twinboundary_relax']
         cells = (self._structures['twinboundary'],
@@ -312,11 +328,8 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                     "get_additional_relax=True, c norm changes.")
 
         if get_additional_relax:
-            final_cell = self._get_additional_relax_final_cell()
             orig_final_cell = \
-                    self.__get_relax_twinboudnary_original_frame(
-                            rlx_cell=final_cell,
-                            std=self._standardize)
+                    self._structures['twinboundary_additional_relax_original']
         else:
             orig_final_cell = self._structures['twinboundary_relax_original']
         cells = [self._structures['twinboundary_original'],

@@ -328,6 +328,9 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                 else:
                     warnings.warn("RelaxWorkChain (pk={}) state is {}".format(
                         aiida_relax.pk, aiida_relax.process_state.value))
+                    if aiida_relax.process_state.value == 'excepted':
+                        structure_pk = \
+                          aiida_relax.called[1].called[0].outputs.structure.pk
                 previous_rlx = aiida_relax.pk
             else:
                 print("previous relax: pk={}".format(previous_rlx))
@@ -482,7 +485,8 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     c=DEFAULT_COLORS[0],
                     marker=DEFAULT_MARKERS[0],
                     facecolor='white')
-            ax1.set_ylim((0, None))
+            # ax1.set_ylim((0, None))
+            ax1.set_yscale('log')
             line_chart(
                     ax2,
                     dic['steps'],
