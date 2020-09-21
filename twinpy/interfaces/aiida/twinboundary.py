@@ -5,18 +5,26 @@
 Aiida interface for twinpy.
 """
 import numpy as np
+from copy import deepcopy
 from pprint import pprint
 import warnings
 from matplotlib import pyplot as plt
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.orm import (load_node,
-                       Node)
+                       Node,
+                       KpointsData,
+                       Float,
+                       Int,
+                       Bool)
 from twinpy.interfaces.aiida import (check_process_class,
+                                     get_aiida_structure,
                                      get_cell_from_aiida,
                                      _WorkChain,
                                      AiidaRelaxWorkChain)
 from twinpy.structure.base import check_same_cells
 from twinpy.structure.diff import get_structure_diff
+from twinpy.structure.standardize import (get_standardized_cell,
+                                          StandardizeCell)
 from twinpy.api_twinpy import get_twinpy_from_cell
 from twinpy.common.utils import print_header
 from twinpy.lattice.lattice import Lattice
@@ -268,7 +276,9 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         Get pks.
         """
         relax_pk = self._node.called[-2].pk
-        pks = self._structure_pks.copy()
+        # pks = self._structure_pks.copy()
+        pks = {}
+        pks['twinboundary_pk'] = self._pk
         pks['relax_pk'] = relax_pk
         pks['additional_relax_pks'] = self._additional_relax_pks
         return pks
@@ -627,3 +637,94 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         print("\n\n")
         print_header('twinboudnary settings')
         pprint(self.twinboundary_settings)
+
+    def _get_shear_twinboundary_lattice(self,
+                                        tb_lattice:np.array,
+                                        shear_strain_ratio:float) -> np.array:
+        """
+        Get shear twinboudnary lattice.
+        """
+        lat = deepcopy(tb_lattice)
+        e_b = lat[1] / np.linalg.norm(lat[1])
+        shear_func = self._twinpy.twinboundary.indices.get_shear_strain_function()
+        lat[2] += np.linalg.norm(lat[2]) \
+                  * shear_func(self._twinpy.twinboundary.r) \
+                  * shear_strain_ratio \
+                  * e_b
+        return lat
+
+    def get_shear_cell(self,
+                       shear_strain_ratio:float,
+                       is_standardize:bool=True) -> tuple:
+        """
+        Get shear introduced twinboundary cell.
+
+        Args:
+            shear_strain_ratio (float): shear strain ratio
+            is_standardize (bool): if True, standardize cell
+
+        Returns:
+            tuple: shear introduced cell
+        """
+        try:
+            rlx_cell = self._structures['twinboundary_additional_relax_original']
+            print("get cell (twinboundary_additional_relax_original cell)")
+        except KeyError:
+            print("could not find twinboundary_additional_relax cell")
+            print("so get cell (twinboundary_relax_original cell)")
+            rlx_cell = self._structures['twinboundary_relax_original']
+        shear_lat = self._get_shear_twinboundary_lattice(
+            tb_lattice=rlx_cell[0],
+            shear_strain_ratio=shear_strain_ratio)
+        shear_cell = (shear_lat, rlx_cell[1], rlx_cell[2])
+        if is_standardize:
+            std_cell = get_standardized_cell(
+                    cell=shear_cell,
+                    to_primitive=True,
+                    no_idealize=False,
+                    no_sort=True)
+            return std_cell
+        else:
+            return shear_cell
+
+    def get_shear_relax_builder(self,
+                                shear_strain_ratio:float):
+        """
+        Get relax builder for shear introduced relax twinboundary structure.
+
+        Args:
+            shear_strain_ratio (float): shear strain ratio
+        """
+        cell = self.get_shear_cell(
+                shear_strain_ratio=shear_strain_ratio,
+                is_standardize=False)  # in order to get rotation matrix
+        std = StandardizeCell(cell=cell)
+        std_cell = std.get_standardized_cell(to_primitive=True,
+                                             no_idealize=False,
+                                             no_sort=True)
+        try:
+            rlx_pk = self._additional_relax_pks[-1]
+        except KeyError:
+            rlx_pk = self.get_pks()['relax_pk']
+        rlx_node = load_node(rlx_pk)
+        builder = rlx_node.get_builder_restart()
+        mesh, offset = map(np.array, builder.kpoints.get_kpoints_mesh())
+        orig_mesh = np.abs(np.dot(np.linalg.inv(self._standardize.transformation_matrix), mesh).astype(int))
+        orig_offset = np.round(np.abs(np.dot(np.linalg.inv(std.transformation_matrix), offset)), decimals=2)
+        std_mesh = np.abs(np.dot(std.transformation_matrix, orig_mesh).astype(int))
+        std_offset = np.round(np.abs(np.dot(std.transformation_matrix, orig_offset)), decimals=2)
+        kpt = KpointsData()
+        kpt.set_kpoints_mesh(std_mesh, offset=std_offset)
+        builder.kpoints = kpt
+        builder.structure = get_aiida_structure(cell=std_cell)
+        builder.relax.convergence_max_iterations = Int(100)
+        builder.relax.positions = Bool(True)
+        builder.relax.shape = Bool(False)
+        builder.relax.volume = Bool(False)
+        builder.relax.convergence_positions = Float(1e-4)
+        builder.relax.force_cutoff = Float(AiidaRelaxWorkChain(node=rlx_node).get_max_force())
+        builder.metadata.label = "tbr:{} rlx:{} shr:{} std:{}".format(
+                self._pk, rlx_node.pk, shear_strain_ratio, True)
+        builder.metadata.description = "twinboundary_relax_pk:{} relax_pk:{} shear_strain_ratio:{} standardize:{}".format(
+                self._pk, rlx_node.pk, shear_strain_ratio, True)
+        return builder

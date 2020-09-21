@@ -146,6 +146,7 @@ class _AiidaVaspWorkChain(_WorkChain):
                 'incar': self._node.inputs.parameters.get_dict(),
                 'potcar': potcar,
                 'kpoints': self._node.inputs.kpoints.get_kpoints_mesh(),
+                'parser_settings': self._node.inputs.settings.get_dict()['parser_settings'],
                 }
         return settings
 
