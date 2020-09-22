@@ -7,7 +7,8 @@ Aiida interface for twinpy.
 from pprint import pprint
 import warnings
 from twinpy.interfaces.aiida import (check_process_class,
-                                     get_cell_from_aiida)
+                                     get_cell_from_aiida,
+                                     AiidaRelaxWorkChain)
 from twinpy.interfaces.phonopy import get_phonopy_structure
 from twinpy.common.utils import print_header
 from aiida.cmdline.utils.decorators import with_dbenv
@@ -46,6 +47,7 @@ class AiidaPhonopyWorkChain(_WorkChain):
         self._set_structures()
         self._force_sets = None
         self._set_force_sets()
+        self._relax = None
 
     def _set_structures(self):
         """
@@ -121,6 +123,28 @@ class AiidaPhonopyWorkChain(_WorkChain):
         Output force sets.
         """
         return self._force_sets
+
+    def set_relax(relax):
+        """
+        Set relax
+
+        Args:
+            relax: AiidaRelaxWorkChain class object.
+        """
+        relax_structure_pk = relax.get_pks()['current_final_structure_pk']
+        phonopy_structure_pk = self._structure_pks['unitcell_pk']
+        assert relax_structure_pk == phonopy_structure_pk, \
+                 "relax structure and phonopy input structure is not match. " \
+                 "relax structure: {}, phonopy structure: {}".format(
+                     relax_structure_pk, phonopy_structure_pk)
+        self._relax = relax
+
+    @property
+    def relax(self):
+        """
+        Output AiidaRelaxWorkChain class.
+        """
+        return self._relax
 
     def get_pks(self) -> dict:
         """

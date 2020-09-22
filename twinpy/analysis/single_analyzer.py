@@ -1,4 +1,4 @@
-#!/usr/bin/env pythoo
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """

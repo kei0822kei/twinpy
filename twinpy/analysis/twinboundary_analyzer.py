@@ -11,6 +11,7 @@ from twinpy.structure.standardize import StandardizeCell
 from twinpy.plot.base import get_plot_properties_for_trajectory
 from twinpy.plot.band import bands_plot
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
+from twinpy.interfaces.aiida import AiidaPhonopyWorkChain
 from phonopy import Phonopy
 
 
@@ -39,6 +40,7 @@ class TwinBoundaryAnalyzer():
         self._hexagonal_to_original_rotation_matrix = None
         self._twinboundary_to_original_rotation_matrix = None
         self._set_rotation_matrices()
+        self._shears = None
 
     def _set_standardize(self):
         """
@@ -90,6 +92,22 @@ class TwinBoundaryAnalyzer():
         Twinboundary to original rotation matrix.
         """
         return self._twinboundary_to_original_rotation_matrix
+
+    def set_shears(self, shears:list):
+        """
+        Set shear phonons.
+
+        Args:
+            shears: list of AiidaPhonopyWorkChain
+        """
+        self._shears = shears
+
+    @property
+    def shears(self):
+        """
+        Shears, list of AiidaPhonopyWorkChain objects.
+        """
+        return self._twinboundary_structure
 
     def run_mesh(self, interval:float=0.1):
         """

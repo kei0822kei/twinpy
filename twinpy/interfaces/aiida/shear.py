@@ -39,12 +39,15 @@ class AiidaShearWorkChain():
 
     def __init__(
             self,
-            pk:int,
+            node:Node,
             ):
         """
         Args:
             relax_pk (int): relax pk
         """
+        process_class = 'ShearWorkChain'
+        check_process_class(node, process_class)
+        super().__init__(node=node)
         node = load_node(pk)
         check_process_class(node, 'ShearWorkChain')
         is_phonon = node.inputs.is_phonon.value

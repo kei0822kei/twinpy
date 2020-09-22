@@ -10,7 +10,7 @@ from aiida.orm import Node, StructureData
 from twinpy.common.utils import print_header
 
 
-def check_process_class(node,
+def check_process_class(node:Node,
                         expected_process_class:str):
     """
     Check process class of node is the same as the expected.
@@ -58,10 +58,10 @@ def get_cell_from_aiida(structure:StructureData,
         tuple: cell
     """
     lattice = np.array(structure.cell)
-    positions = np.array([site.position for site in structure.sites])
+    positions = np.array([ site.position for site in structure.sites ])
     if get_scaled_positions:
         positions = np.dot(np.linalg.inv(lattice.T), positions.T).T
-    symbols = [site.kind_name for site in structure.sites]
+    symbols = [ site.kind_name for site in structure.sites ]
     return (lattice, positions, symbols)
 
 

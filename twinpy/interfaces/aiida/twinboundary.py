@@ -65,7 +65,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             ):
         """
         Args:
-            relax_pk (int): relax pk
+            node: TwinBoundaryRelaxWorkChain node
         """
         process_class = 'TwinBoundaryRelaxWorkChain'
         check_process_class(node, process_class)

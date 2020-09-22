@@ -143,11 +143,12 @@ class _AiidaVaspWorkChain(_WorkChain):
             }
 
         settings = {
-                'incar': self._node.inputs.parameters.get_dict(),
-                'potcar': potcar,
-                'kpoints': self._node.inputs.kpoints.get_kpoints_mesh(),
-                'parser_settings': self._node.inputs.settings.get_dict()['parser_settings'],
-                }
+            'incar': self._node.inputs.parameters.get_dict(),
+            'potcar': potcar,
+            'kpoints': self._node.inputs.kpoints.get_kpoints_mesh(),
+            'parser_settings':
+                self._node.inputs.settings.get_dict()['parser_settings'],
+            }
         return settings
 
     def get_misc(self) -> dict:
@@ -330,8 +331,8 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     warnings.warn("RelaxWorkChain (pk={}) state is {}".format(
                         aiida_relax.pk, aiida_relax.process_state.value))
                     if aiida_relax.process_state.value == 'excepted':
-                        structure_pk = \
-                          aiida_relax.called[1].called[0].outputs.structure.pk
+                        final_vasp = aiida_relax.called[1].called[0]
+                        structure_pk = final_vasp.outputs.structure.pk
                 previous_rlx = aiida_relax.pk
             else:
                 print("previous relax: pk={}".format(previous_rlx))
