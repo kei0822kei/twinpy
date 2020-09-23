@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Aiida interface for twinpy.
+Interface for Aiida-Vasp.
 """
 import numpy as np
 from pprint import pprint
@@ -185,6 +185,7 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
     def __init__(
             self,
             node:Node,
+            ignore_warning:bool=False,
             ):
         """
         Args:
@@ -195,9 +196,9 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
         super().__init__(node=node)
         self._final_structure_pk = None
         self._final_cell = None
-        self._set_final_structure()
+        self._set_final_structure(ignore_warning=ignore_warning)
 
-    def _set_final_structure(self):
+    def _set_final_structure(self, ignore_warning):
         """
         Set final structure.
         """
@@ -206,9 +207,10 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
             self._final_cell = get_cell_from_aiida(
                     load_node(self._final_structure_pk))
         except NotExistentAttributeError:
-            warnings.warn("Final structure could not find.\n"
-                          "process state:{} (pk={})".format(
-                              self.process_state, self._node.pk))
+            if not ignore_warning:
+                warnings.warn("Final structure could not find.\n"
+                              "process state:{} (pk={})".format(
+                                  self.process_state, self._node.pk))
 
     @property
     def final_cell(self):
@@ -250,6 +252,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
     def __init__(
             self,
             node:Node,
+            ignore_warning:bool=False,
             ):
         """
         Args:
@@ -262,10 +265,10 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         self._final_cell = None
         self._current_final_structure_pk = None
         self._current_final_cell = None
-        self._set_final_structure()
+        self._set_final_structure(ignore_warning)
         self._additional_relax_pks = []
 
-    def _set_final_structure(self):
+    def _set_final_structure(self, ignore_warning):
         """
         Set final structure.
         """
@@ -275,10 +278,12 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     load_node(self._final_structure_pk))
             self._current_final_structure_pk = self._final_structure_pk
             self._current_final_cell = self._final_cell
+
         except NotExistentAttributeError:
-            warnings.warn("Final structure could not find.\n"
-                          "process state:{} (pk={})".format(
-                              self.process_state, self._node.pk))
+            if not ignore_warning:
+                warnings.warn("Final structure could not find.\n"
+                              "process state:{} (pk={})".format(
+                                  self.process_state, self._node.pk))
 
             relax_pks, static_pk = self.get_vasp_calculation_pks()
             if relax_pks is None:
@@ -400,7 +405,8 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         if self._exit_status == 0:
             relax_nodes = [ AiidaVaspWorkChain(load_node(pk))
                                 for pk in relax_pks ]
-            static_nodes = AiidaVaspWorkChain(load_node(static_pk))
+            static_nodes = AiidaVaspWorkChain(load_node(static_pk),
+                                              ignore_warning=True)
         else:
             relax_nodes = [ AiidaVaspWorkChain(load_node(pk))
                                 for pk in relax_pks[:-1] ]
@@ -551,8 +557,9 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     ax4.scatter(static_x_val, rlx_abc[i], c=DEFAULT_COLORS[i],
                                 marker='*', s=150)
             else:
-                strings = "WARNING: RelaxWorkChain pk={} is still working"\
-                        .format(aiida_relax._pk)
+                strings = "WARNING: Exit state RelaxWorkChain pk={} is {}."\
+                        .format(aiida_relax._pk, aiida_relax._exit_status)
                 print('+'*len(strings))
                 print(strings)
+                print("         Skip plotting.")
                 print('+'*len(strings))

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Aiida interface for twinpy.
+Interface for Aiida Node.
 """
 import numpy as np
 import warnings
@@ -27,7 +27,7 @@ def check_process_class(node:Node,
             format(node.process_class, expected_process_class)
 
 
-def get_aiida_structure(cell:tuple):
+def get_aiida_structure(cell:tuple) -> StructureData:
     """
     Get aiida structure from input cell.
 
