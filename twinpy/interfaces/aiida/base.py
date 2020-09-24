@@ -6,7 +6,7 @@ Interface for Aiida Node.
 """
 import numpy as np
 import warnings
-from aiida.orm import Node, StructureData
+from aiida.orm import Node, QueryBuilder, StructureData
 from twinpy.common.utils import print_header
 
 
@@ -43,6 +43,22 @@ def get_aiida_structure(cell:tuple) -> StructureData:
                           scaled_position.reshape(3,1)).reshape(3)
         structure.append_atom(position=position, symbols=symbol)
     return structure
+
+
+def get_workflow_pks(node, workflow):
+    """
+    Get workflow pks in the node.
+
+    Args:
+        node: node
+        workflow: workflow, ex. workflow = WorkflowFactory('vasp.relax')
+    """
+    qb = QueryBuilder()
+    qb.append(Node, filters={'id':{'==': node.pk}}, tag='wf')
+    qb.append(workflow, with_incoming='wf', project=['id'])
+    pks = [ wf[0] for wf in qb.all() ]
+    pks.sort(key=lambda x: x)
+    return pks
 
 
 def get_cell_from_aiida(structure:StructureData,
