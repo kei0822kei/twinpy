@@ -71,7 +71,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         check_process_class(node, process_class)
         super().__init__(node=node)
         self._twinboundary_settings = None
-        self._structures = None
+        self._cells = None
         self._structure_pks = None
         self._set_twinboundary()
         self._twinpy = None
@@ -102,7 +102,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             round_cells.append(round_cell)
 
         self._twinboundary_settings = parameters
-        self._structures = {
+        self._cells = {
                 'hexagonal': get_cell_from_aiida(aiida_hexagonal),
                 'twinboundary': round_cells[0],
                 'twinboundary_original': round_cells[1],
@@ -123,11 +123,11 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         return self._twinboundary_settings
 
     @property
-    def structures(self):
+    def cells(self):
         """
-        Twinboundary structures
+        cells.
         """
-        return self._structures
+        return self._cells
 
     @property
     def structure_pks(self):
@@ -159,10 +159,10 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 move_atoms_into_unitcell=params['move_atoms_into_unitcell'],
                 )
         tb_relax_orig = _get_twinboudnary_original_frame_cell(
-                cell=self._structures['twinboundary_relax'],
+                cell=self._cells['twinboundary_relax'],
                 std=std,
                 )
-        self._structures['twinboundary_relax_original'] = tb_relax_orig
+        self._cells['twinboundary_relax_original'] = tb_relax_orig
         self._twinpy = twinpy
         self._standardize = std
 
@@ -193,13 +193,13 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 no_sort=params['no_sort'],
                 get_sort_list=params['get_sort_list'],
                 )
-        check_same_cells(first_cell=self._structures['twinboundary_original'],
+        check_same_cells(first_cell=self._cells['twinboundary_original'],
                          second_cell=tb_orig_cell)
-        check_same_cells(first_cell=self._structures['twinboundary'],
+        check_same_cells(first_cell=self._cells['twinboundary'],
                          second_cell=tb_std_cell)
         np.testing.assert_allclose(
-                self._structures['twinboundary_original'][0],
-                self._structures['twinboundary_relax_original'][0],
+                self._cells['twinboundary_original'][0],
+                self._cells['twinboundary_relax_original'][0],
                 atol=1e-6)
 
     def _get_additional_relax_final_structure_pk(self):
@@ -230,24 +230,24 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         previous_rlx = self.get_pks()['relax_pk']
         structure_pk = self._structure_pks['twinboundary_relax_pk']
         aiida_relaxes = [ load_node(relax_pk) for relax_pk in aiida_relax_pks ]
-        for aiida_relax in aiida_relaxes:
-            if aiida_relax.process_class.get_name() != 'RelaxWorkChain':
+        for relax in aiida_relaxes:
+            if relax.process_class.get_name() != 'RelaxWorkChain':
                 raise RuntimeError(
                         "Input node (pk={}) is not RelaxWorkChain".format(
-                            aiida_relax.pk))
-            if structure_pk == aiida_relax.inputs.structure.pk:
-                if aiida_relax.process_state.value == 'finished':
-                    structure_pk = aiida_relax.outputs.relax__structure.pk
+                            relax.pk))
+            if structure_pk == relax.inputs.structure.pk:
+                if relax.process_state.value == 'finished':
+                    structure_pk = relax.outputs.relax__structure.pk
                 else:
                     warnings.warn("RelaxWorkChain (pk={}) state is {}".format(
-                        aiida_relax.pk, aiida_relax.process_state.value))
-                    if aiida_relax.process_state.value == 'excepted':
+                        relax.pk, relax.process_state.value))
+                    if relax.process_state.value == 'excepted':
                         structure_pk = \
-                          aiida_relax.called[1].called[0].outputs.structure.pk
-                previous_rlx = aiida_relax.pk
+                            relax.called[1].called[0].outputs.structure.pk
+                previous_rlx = relax.pk
             else:
                 print("previous relax: pk={}".format(previous_rlx))
-                print("next relax: pk={}".format(aiida_relax.pk))
+                print("next relax: pk={}".format(relax.pk))
                 raise RuntimeError("Output structure and next input structure "
                                    "does not match.")
         self._additional_relax_pks = aiida_relax_pks
@@ -255,13 +255,13 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         rlx_cell = get_cell_from_aiida(load_node(rlx_structure_pk))
         self._structure_pks['twinboundary_additional_relax_pk'] = \
                 rlx_structure_pk
-        self._structures['twinboundary_additional_relax'] = \
+        self._cells['twinboundary_additional_relax'] = \
                 rlx_cell
         orig_rlx_structure = \
                 _get_twinboudnary_original_frame_cell(
                         cell=rlx_cell,
                         std=self._standardize)
-        self._structures['twinboundary_additional_relax_original'] = \
+        self._cells['twinboundary_additional_relax_original'] = \
                 orig_rlx_structure
 
     @property
@@ -276,19 +276,18 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         Get pks.
         """
         relax_pk = self._node.called[-2].pk
-        # pks = self._structure_pks.copy()
         pks = {}
         pks['twinboundary_pk'] = self._pk
         pks['relax_pk'] = relax_pk
         pks['additional_relax_pks'] = self._additional_relax_pks
         return pks
 
-    def get_diff(self, get_additional_relax:bool=False) -> dict:
+    def get_diff(self, use_additional_relax:bool=False) -> dict:
         """
         Get diff between vasp input and output twinboundary structure.
 
         Args:
-            get_additional_relax (bool): if True, output twinboundary structure
+            use_additional_relax (bool): if True, output twinboundary structure
                                          becomes the final structure of
                                          additional_relax
 
@@ -298,16 +297,16 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         Raises:
             AssertionError: lattice matrix is not identical
         """
-        if get_additional_relax:
-            final_cell = self._structures['twinboundary_additional_relax']
+        if use_additional_relax:
+            final_cell = self._cells['twinboundary_additional_relax']
         else:
-            final_cell = self._structures['twinboundary_relax']
-        cells = (self._structures['twinboundary'],
+            final_cell = self._cells['twinboundary_relax']
+        cells = (self._cells['twinboundary'],
                  final_cell)
         diff = get_structure_diff(cells=cells,
                                   base_index=0,
                                   include_base=False)
-        if not get_additional_relax:
+        if not use_additional_relax:
             np.testing.assert_allclose(
                     diff['lattice_diffs'][0],
                     np.zeros((3,3)),
@@ -317,32 +316,32 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
 
     def get_planes_angles(self,
                           is_fractional:bool=False,
-                          get_additional_relax:bool=False) -> dict:
+                          use_additional_relax:bool=False) -> dict:
         """
         Get plane coords from lower plane to upper plane.
         Return list of z coordinates of original cell frame.
 
         Args:
             is_fractional (bool): if True, return with fractional coordinate
-            get_additional_relax (bool): if True, output twinboundary structure
+            use_additional_relax (bool): if True, output twinboundary structure
                                          becomes the final structure of
                                          additional_relax
 
         Returns:
             dict: plane coords of input and output twinboundary structures.
         """
-        if not is_fractional and get_additional_relax:
+        if not is_fractional and use_additional_relax:
             raise RuntimeError(
-                    "is_fractional=False and get_additional_relax=True "
+                    "is_fractional=False and use_additional_relax=True "
                     "is not allowed because in the case "
-                    "get_additional_relax=True, c norm changes.")
+                    "use_additional_relax=True, c norm changes.")
 
-        if get_additional_relax:
+        if use_additional_relax:
             orig_final_cell = \
-                    self._structures['twinboundary_additional_relax_original']
+                    self._cells['twinboundary_additional_relax_original']
         else:
-            orig_final_cell = self._structures['twinboundary_relax_original']
-        cells = [self._structures['twinboundary_original'],
+            orig_final_cell = self._cells['twinboundary_relax_original']
+        cells = [self._cells['twinboundary_original'],
                  orig_final_cell]
 
         coords_list = []
@@ -406,13 +405,13 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
 
     def get_distances(self,
                       is_fractional:bool=False,
-                      get_additional_relax:bool=False) -> dict:
+                      use_additional_relax:bool=False) -> dict:
         """
         Get distances from the result of 'get_planes'.
 
         Args:
             is_fractional (bool): if True, return with fractional coordinate
-            get_additional_relax (bool): if True, output twinboundary structure
+            use_additional_relax (bool): if True, output twinboundary structure
                                          becomes the final structure of
                                          additional_relax
 
@@ -422,8 +421,8 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         planes = self.get_planes_angles(
                 is_fractional=is_fractional,
-                get_additional_relax=get_additional_relax)['planes']
-        lattice = Lattice(self._structures['twinboundary_original'][0])
+                use_additional_relax=use_additional_relax)['planes']
+        lattice = Lattice(self._cells['twinboundary_original'][0])
         c_norm = lattice.abc[2]
         keys = ['before', 'relax']
         dic = {}
@@ -453,7 +452,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 rlx = load_node(rlx_pk)
                 cell = get_cell_from_aiida(rlx.inputs.structure)
                 if i == 1:
-                    check_same_cells(cell, self._structures['hexagonal'])
+                    check_same_cells(cell, self._cells['hexagonal'])
                 energy = rlx.outputs.energies.get_array('energy_no_entropy')[0]
                 energies.append(energy)
                 natoms.append(len(cell[2]))
@@ -463,7 +462,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         eV = 1.6022 * 10 ** (-16)
         ang = 10 ** (-10)
         unit = eV / ang ** 2
-        orig_lattice = self._structures['twinboundary_original'][0]
+        orig_lattice = self._cells['twinboundary_original'][0]
         A = orig_lattice[0,0] * orig_lattice[1,1]
         excess_energy = __get_excess_energy()
         formation_energy = np.array(excess_energy) / (2*A) * unit
@@ -480,22 +479,26 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
 
     def plot_plane_diff(self,
                         is_fractional:bool=False,
-                        is_decorate:bool=True):
+                        is_decorate:bool=True,
+                        use_additional_relax=False):
         """
         Plot plane diff.
 
         Args:
             is_fractional (bool): if True, z coords with fractional coordinate
             is_decorate (bool): if True, decorate figure
+            use_additional_relax (bool): if True, output twinboundary structure
+                                         becomes the final structure of
+                                         additional_relax
         """
-        def _get_data(get_additional_relax):
-            c_norm = self.structures['twinboundary_original'][0][2,2]
+        def _get_data(bl):
+            c_norm = self.cells['twinboundary_original'][0][2,2]
             distances = self.get_distances(
                     is_fractional=is_fractional,
-                    get_additional_relax=get_additional_relax)
+                    use_additional_relax=bl)
             planes = self.get_planes_angles(
                     is_fractional=is_fractional,
-                    get_additional_relax=get_additional_relax)['planes']
+                    use_additional_relax=bl)['planes']
             before_distances = distances['before'].copy()
             bulk_interval = before_distances[1]
             rlx_distances = distances['relax'].copy()
@@ -509,12 +512,12 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 rlx_distances = np.array(rlx_distances) * c_norm
             return (rlx_distances, ydata, z_coords, bulk_interval)
 
-        if self.additional_relax_pks == []:
-            datas = [ _get_data(False) ]
-            labels = ['isif7']
-        else:
+        if use_additional_relax:
             datas = [ _get_data(bl) for bl in [False, True] ]
             labels = ['isif7', 'isif3']
+        else:
+            datas = [ _get_data(False) ]
+            labels = ['isif7']
 
         fig = plt.figure(figsize=(8,13))
         ax = fig.add_subplot(111)
@@ -543,7 +546,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                           linewidth=1.5)
             yrange = ymax - ymin
             if is_fractional:
-                c_norm = self.structures['twinboundary_original'][0][2,2]
+                c_norm = self.cells['twinboundary_original'][0][2,2]
                 vline_x = bulk_interval * c_norm
             else:
                 vline_x = bulk_interval
@@ -556,21 +559,25 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
 
     def plot_angle_diff(self,
                         is_fractional:bool=False,
-                        is_decorate:bool=True):
+                        is_decorate:bool=True,
+                        use_additional_relax:bool=False):
         """
         Plot angle diff.
 
         Args:
             is_fractional (bool): if True, z coords with fractional coordinate
             is_decorate (bool): if True, decorate figure
+            use_additional_relax (bool): if True, output twinboundary structure
+                                         becomes the final structure of
+                                         additional_relax
         """
-        def _get_data(get_additional_relax):
+        def _get_data(bl):
             distances = self.get_distances(
                     is_fractional=is_fractional,
-                    get_additional_relax=get_additional_relax)
+                    use_additional_relax=bl)
             planes_angles = self.get_planes_angles(
                     is_fractional=is_fractional,
-                    get_additional_relax=get_additional_relax)
+                    use_additional_relax=bl)
             planes = planes_angles['planes']
             before_distances = distances['before'].copy()
             z_coords = planes['before'].copy()
@@ -586,12 +593,12 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             rlx_angles = np.array(rlx_angles)
             return (rlx_angles, ydata, z_coords, bulk_angle)
 
-        if self.additional_relax_pks == []:
-            datas = [ _get_data(False) ]
-            labels = ['isif7']
-        else:
+        if use_additional_relax:
             datas = [ _get_data(bl) for bl in [False, True] ]
             labels = ['isif7', 'isif3']
+        else:
+            datas = [ _get_data(False) ]
+            labels = ['isif7']
 
         fig = plt.figure(figsize=(8,13))
         ax = fig.add_subplot(111)
@@ -646,7 +653,8 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         lat = deepcopy(tb_lattice)
         e_b = lat[1] / np.linalg.norm(lat[1])
-        shear_func = self._twinpy.twinboundary.indices.get_shear_strain_function()
+        shear_func = \
+                self._twinpy.twinboundary.indices.get_shear_strain_function()
         lat[2] += np.linalg.norm(lat[2]) \
                   * shear_func(self._twinpy.twinboundary.r) \
                   * shear_strain_ratio \
@@ -655,24 +663,24 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
 
     def get_shear_cell(self,
                        shear_strain_ratio:float,
-                       is_standardize:bool=True) -> tuple:
+                       is_standardize:bool=False) -> tuple:
         """
         Get shear introduced twinboundary cell.
 
         Args:
             shear_strain_ratio (float): shear strain ratio
-            is_standardize (bool): if True, standardize cell
+            is_standardize (bool): if True, get standardized cell
 
         Returns:
             tuple: shear introduced cell
         """
         try:
-            rlx_cell = self._structures['twinboundary_additional_relax_original']
+            rlx_cell = self._cells['twinboundary_additional_relax_original']
             print("get cell (twinboundary_additional_relax_original cell)")
         except KeyError:
             print("could not find twinboundary_additional_relax cell")
             print("so get cell (twinboundary_relax_original cell)")
-            rlx_cell = self._structures['twinboundary_relax_original']
+            rlx_cell = self._cells['twinboundary_relax_original']
         shear_lat = self._get_shear_twinboundary_lattice(
             tb_lattice=rlx_cell[0],
             shear_strain_ratio=shear_strain_ratio)
@@ -708,23 +716,36 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             rlx_pk = self.get_pks()['relax_pk']
         rlx_node = load_node(rlx_pk)
         builder = rlx_node.get_builder_restart()
+
+        # fix kpoints
         mesh, offset = map(np.array, builder.kpoints.get_kpoints_mesh())
-        orig_mesh = np.abs(np.dot(np.linalg.inv(self._standardize.transformation_matrix), mesh).astype(int))
-        orig_offset = np.round(np.abs(np.dot(np.linalg.inv(std.transformation_matrix), offset)), decimals=2)
-        std_mesh = np.abs(np.dot(std.transformation_matrix, orig_mesh).astype(int))
-        std_offset = np.round(np.abs(np.dot(std.transformation_matrix, orig_offset)), decimals=2)
+        orig_mesh = np.abs(np.dot(np.linalg.inv(
+            self._standardize.transformation_matrix), mesh).astype(int))
+        orig_offset = np.round(np.abs(np.dot(np.linalg.inv(
+            std.transformation_matrix), offset)), decimals=2)
+        std_mesh = np.abs(np.dot(std.transformation_matrix,
+                                 orig_mesh).astype(int))
+        std_offset = np.round(np.abs(np.dot(std.transformation_matrix,
+                                            orig_offset)), decimals=2)
         kpt = KpointsData()
         kpt.set_kpoints_mesh(std_mesh, offset=std_offset)
         builder.kpoints = kpt
+
+        # fix structure
         builder.structure = get_aiida_structure(cell=std_cell)
+
+        # fix relax conf
         builder.relax.convergence_max_iterations = Int(100)
         builder.relax.positions = Bool(True)
         builder.relax.shape = Bool(False)
         builder.relax.volume = Bool(False)
         builder.relax.convergence_positions = Float(1e-4)
-        builder.relax.force_cutoff = Float(AiidaRelaxWorkChain(node=rlx_node).get_max_force())
+        builder.relax.force_cutoff = \
+                Float(AiidaRelaxWorkChain(node=rlx_node).get_max_force())
         builder.metadata.label = "tbr:{} rlx:{} shr:{} std:{}".format(
                 self._pk, rlx_node.pk, shear_strain_ratio, True)
-        builder.metadata.description = "twinboundary_relax_pk:{} relax_pk:{} shear_strain_ratio:{} standardize:{}".format(
-                self._pk, rlx_node.pk, shear_strain_ratio, True)
+        builder.metadata.description = \
+                "twinboundary_relax_pk:{} relax_pk:{} " \
+                "shear_strain_ratio:{} standardize:{}".format(
+                    self._pk, rlx_node.pk, shear_strain_ratio, True)
         return builder

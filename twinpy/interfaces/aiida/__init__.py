@@ -4,6 +4,7 @@
 from twinpy.interfaces.aiida.base import (check_process_class,
                                           get_aiida_structure,
                                           get_cell_from_aiida,
+                                          get_workflow_pks,
                                           _WorkChain)
 from twinpy.interfaces.aiida.vasp import (AiidaVaspWorkChain,
                                           AiidaRelaxWorkChain)
