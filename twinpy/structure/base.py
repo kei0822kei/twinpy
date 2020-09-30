@@ -7,11 +7,33 @@ HexagonalStructure
 
 import numpy as np
 import spglib
-from phonopy.structure.atoms import PhonopyAtoms
+from phonopy.structure.atoms import PhonopyAtoms, atom_data, symbol_map
 from phonopy.structure.cells import Supercell
 from twinpy.properties.hexagonal import get_atom_positions
 from twinpy.properties.twinmode import TwinIndices
 from twinpy.lattice.lattice import get_hexagonal_lattice_from_a_c, Lattice
+
+
+def get_numbers_from_symbols(symbols):
+    """
+    Get atomic numbers from symbols.
+
+    Args:
+        symbols (list): Atomic symbols.
+    """
+    numbers = [ symbol_map[symbol] for symbol in symbols ]
+    return numbers
+
+
+def get_symbols_from_numbers(numbers):
+    """
+    Get symbols from atomic numbers.
+
+    Args:
+        numbers (list): Atomic numbers.
+    """
+    symbols = [ atom_data[number][1] for number in numbers ]
+    return symbols
 
 
 def get_hexagonal_cell(a:float,

@@ -9,15 +9,16 @@ from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.twinboundary import TwinBoundaryStructure
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.plot.base import get_plot_properties_for_trajectory
-from twinpy.plot.band import bands_plot
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
-from twinpy.interfaces.aiida import AiidaPhonopyWorkChain
+from twinpy.interfaces.aiida import (AiidaRelaxWorkChain,
+                                     AiidaPhonopyWorkChain)
+from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from phonopy import Phonopy
 
 
 class TwinBoundaryAnalyzer():
     """
-    Analize shear result.
+    Analyze shear result.
     """
 
     def __init__(
@@ -40,7 +41,8 @@ class TwinBoundaryAnalyzer():
         self._hexagonal_to_original_rotation_matrix = None
         self._twinboundary_to_original_rotation_matrix = None
         self._set_rotation_matrices()
-        self._shears = None
+        self._shear_relaxes = None
+        self._shear_phonons = None
 
     def _set_standardize(self):
         """
@@ -93,21 +95,38 @@ class TwinBoundaryAnalyzer():
         """
         return self._twinboundary_to_original_rotation_matrix
 
-    def set_shears(self, shears:list):
+    def set_shears(self, shear_relaxes:list, shear_phonons:list=None):
         """
-        Set shear phonons.
+        Set shear relaxes and corresponding shear phonons
 
         Args:
-            shears: list of AiidaPhonopyWorkChain
+            shear_relaxes: list of AiidaRelaxWorkChain
+            shear_phonons: list of AiidaPhonopyWorkChain
         """
-        self._shears = shears
+        self._shear_phonons = shear_phonons
+        self._shear_phonons = shear_phonons
 
     @property
-    def shears(self):
+    def shear_relaxes(self):
         """
-        Shears, list of AiidaPhonopyWorkChain objects.
+        Shear relaxes, list of AiidaRelaxWorkChain objects.
         """
-        return self._twinboundary_structure
+        return self._shear_phonons
+
+    @property
+    def shear_phonons(self):
+        """
+        Shear phonons, list of AiidaPhonopyWorkChain objects.
+        """
+        return self._shear_phonons
+
+    def get_shear_analyzer(self):
+        """
+        Get ShearAnalyzer class object.
+
+        Returns:
+            ShearAnalyzer: ShearAnalyzer class object.
+        """
 
     def run_mesh(self, interval:float=0.1):
         """

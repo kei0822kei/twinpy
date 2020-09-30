@@ -175,3 +175,39 @@ def get_plot_properties_for_trajectory(plot_nums:int,
     linestyles.append('solid')
     cs = [ base_color for _ in range(plot_nums) ]
     return (cs, alphas, linewidths, linestyles)
+
+
+def create_figure_axes(ratios:list=[1.],
+                       axes_pad:float=0.,
+                       figsize:tuple=(8,6)):
+    """
+    Create figure and axes.
+
+    Args:
+        ratios (list): Axes ratios.
+        axes_pad (float): Space between figures.
+        figsize (tuple): Figure size.
+
+    Returns:
+        plt.figure: Figure.
+        list: Axes.
+    """
+    bottom = 0.15
+    hight = 0.75
+    left = 0.15
+    width = 0.8
+
+    fig_num = len(ratios)
+    fig_width = width - axes_pad * (fig_num - 1)
+    normalized_ratios = np.array(ratios) / np.array(ratios).sum()
+    each_fig_widths = normalized_ratios * fig_width
+
+    fig = plt.figure(figsize=figsize)
+    ax_left = left
+    axes = []
+    for wdt in each_fig_widths:
+        ax = fig.add_axes((ax_left, bottom, wdt, hight))
+        axes.append(ax)
+        ax_left += wdt + axes_pad
+
+    return fig, axes
