@@ -24,14 +24,22 @@ def get_phonopy_structure(cell:tuple) -> PhonopyAtoms:
     return ph_structure
 
 
-def get_cell_from_phonopy_structure(ph_structure:PhonopyAtoms) -> tuple:
+def get_cell_from_phonopy_structure(ph_structure:PhonopyAtoms,
+                                    use_atomic_number:bool=False) -> tuple:
     """
     Get cell from phonopy structure
+
+    Args:
+        ph_structure: PhonopyAtoms object
+        use_atomic_number: if True, use atomic number intead of atomic symbol
 
     Returns:
         tuple: cell
     """
     lattice = ph_structure.get_cell()
     scaled_positions = ph_structure.get_scaled_positions()
-    symbols = ph_structure.get_chemical_symbols()
-    return (lattice, scaled_positions, symbols)
+    if use_atomic_number:
+        elements = list(ph_structure.get_atomic_numbers())
+    else:
+        elements = ph_structure.get_chemical_symbols()
+    return (lattice, scaled_positions, elements)
