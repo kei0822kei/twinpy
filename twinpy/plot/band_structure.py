@@ -396,6 +396,7 @@ class BandPlot():
             self.plot_vline(ax, i)
             self.plot_hline(ax)
             ax.set_ylim(self._ylim)
+
         return fig, axes
 
 

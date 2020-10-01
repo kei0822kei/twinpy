@@ -4,6 +4,8 @@
 """
 Aiida interface for twinpy.
 """
+from twinpy.api_twinpy import get_twinpy_from_cell
+from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from twinpy.interfaces.aiida import (check_process_class,
                                      get_cell_from_aiida,
@@ -33,6 +35,10 @@ class AiidaShearWorkChain(_WorkChain):
         """
         Args:
             node: ShearWorkChain node
+
+        Todo:
+            Replace shear_conf ot shear_settings as
+            AiidaTwinBoundaryRelaxWorkChain class.
         """
         process_class = 'ShearWorkChain'
         check_process_class(node, process_class)
@@ -48,6 +54,8 @@ class AiidaShearWorkChain(_WorkChain):
         self._cells = None
         self._structure_pks = None
         self._set_shear()
+        self._twinpy = None
+        self._set_twinpy()
 
         self._relax_pks = None
         self._relaxes = None
@@ -57,6 +65,18 @@ class AiidaShearWorkChain(_WorkChain):
         self._phonons = None
         if self._is_phonon:
             self._set_phonons()
+
+    def _set_twinpy(self):
+        """
+        Set twinpy structure object.
+        """
+        twinmode = self._shear_conf['twinmode']
+        cell = self._cells['hexagonal']
+        twinpy = get_twinpy_from_cell(
+                cell=cell,
+                twinmode=twinmode)
+        twinpy.set_shear(is_primitive=True)
+        self._twinpy = twinpy
 
     @property
     def shear_conf(self):
@@ -92,6 +112,13 @@ class AiidaShearWorkChain(_WorkChain):
         Cells.
         """
         return self._cells
+
+    @property
+    def twinpy(self):
+        """
+        Twinpy structure class object.
+        """
+        return self._twinpy
 
     @property
     def structure_pks(self):
@@ -182,18 +209,20 @@ class AiidaShearWorkChain(_WorkChain):
         """
         return self._phonons
 
-    def get_analyzer(self) -> ShearAnalyzer:
+    def get_shear_analyzer(self) -> ShearAnalyzer:
         """
         Get ShearAnalyzer class object.
         """
         original_cells = self._cells['shear_original']
-        input_cells = [ relax.initial_cell for relax in self._relaxes ]
-        relax_cells = [ relax.final_cell for relax in self._relaxes ]
-        analyzer = ShearAnalyzer(original_cells=original_cells,
-                                 input_cells=input_cells,
-                                 relax_cells=relax_cells)
+        relax_analyzers = []
+        for i, relax in enumerate(self._relaxes):
+            relax_analyzer = relax.get_relax_analyzer(
+                    original_cell=original_cells[i])
+            relax_analyzers.append(relax_analyzer)
         phns = [ phonon_wf.get_phonon() for phonon_wf in self._phonons ]
-        analyzer.set_phonons(phonons=phns)
+        analyzer = ShearAnalyzer(shear_structure=self._twinpy,
+                                 relax_analyzers=relax_analyzers,
+                                 phonons=phns)
         return analyzer
 
     def get_pks(self) -> dict:

@@ -15,6 +15,7 @@ from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from twinpy.common.utils import print_header
 from twinpy.plot.base import line_chart, DEFAULT_COLORS, DEFAULT_MARKERS
 from twinpy.lattice.lattice import Lattice
+from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
 from aiida.orm import (load_node,
@@ -232,6 +233,24 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
                  'final_structure_pk': self._final_structure_pk,
                }
 
+    def get_relax_analyzer(self, original_cell:tuple=None):
+        """
+        Get RelaxAnalyzer class object.
+
+        Args:
+            original_cell (tuple): Original cell whose standardized cell
+                                   is initail_cell.
+
+        Returns:
+            RelaxAnalyzer: RelaxAnalyzer class object.
+        """
+        analyzer = RelaxAnalyzer(initial_cell=self._initial_cell,
+                                 final_cell=self._final_cell,
+                                 original_cell=original_cell,
+                                 forces=self._forces,
+                                 stress=self._stress)
+        return analyzer
+
     def get_description(self):
         """
         Get description.
@@ -257,6 +276,12 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         """
         Args:
             node: aiida Node
+
+        Todo:
+            Fix names. Name 'final_cell' 'final_structure_pk' 'cuurent-'
+            are strange because final_cell and final_structure_pk
+            the result from first relax pk. Therefore, 'current-'
+            is truely final structure pk and final cell.
         """
         process_class = 'RelaxWorkChain'
         check_process_class(node, process_class)
@@ -302,11 +327,11 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     self._current_final_cell = aiida_vasp._initial_cell
 
     @property
-    def final_cell(self):
+    def current_final_cell(self):
         """
         Final cell.
         """
-        return self._final_cell
+        return self._current_final_cell
 
     def set_additional_relax(self, aiida_relax_pks:list):
         """
@@ -430,6 +455,24 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                 'static_pk': static_pk,
                }
 
+    def get_relax_analyzer(self, original_cell:tuple=None):
+        """
+        Get RelaxAnalyzer class object.
+
+        Args:
+            original_cell (tuple): Original cell whose standardized cell
+                                   is initail_cell.
+
+        Returns:
+            RelaxAnalyzer: RelaxAnalyzer class object.
+        """
+        analyzer = RelaxAnalyzer(initial_cell=self._initial_cell,
+                                 final_cell=self._final_cell,
+                                 original_cell=original_cell,
+                                 forces=self._forces,
+                                 stress=self._stress)
+        return analyzer
+
     def get_description(self):
         """
         Get description.
@@ -465,6 +508,9 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
     def plot_convergence(self):
         """
         Plot convergence.
+
+        Todo:
+            This function must be moved in plot directory.
         """
         plt.rcParams["font.size"] = 14
         aiida_relax_pks = [ self.get_pks()['relax_pk'] ]
