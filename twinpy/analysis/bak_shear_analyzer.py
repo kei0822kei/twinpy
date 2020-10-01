@@ -5,16 +5,17 @@
 Analize shear calculation.
 """
 import numpy as np
+from phonopy.phonon.band_structure import (get_band_qpoints_and_path_connections,
+                                           BandStructure)
 from twinpy.structure.base import check_same_cells
 from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.plot.base import get_plot_properties_for_trajectory
-from twinpy.plot.band import bands_plot
 
 
-class _SingleAnalyzer():
+class ShearAnalyzer():
     """
-    Base of ShearSingleAnalyzer and TwinboundarySingleAnalyzer.
+    Analize shear result.
     """
 
     def __init__(
@@ -24,11 +25,13 @@ class _SingleAnalyzer():
            relax_cells:list,
            ):
         """
+        Init.
+
         Args:
-            original_cells (list): primitivie original cells, which is output
-                               cells of ShearStructure class
-            input_cells (list): input cells for vasp
-            relax_cells (list): relax cells of vasp
+            original_cells (list): Primitivie original cells, which is output
+                                   cells of ShearStructure class.
+            input_cells (list): Input cells for vasp
+            relax_cells (list): Relax cells of vasp
 
         Raises:
             RuntimeError: The number of atoms changes between original cells
@@ -58,7 +61,7 @@ class _SingleAnalyzer():
         self._set_relax_cells(input_cells, relax_cells)
         self._standardizes = None
         self._set_standardizes()
-        self._relax_cells_original_frame = None
+        self._relax_cells_in_original_frame = None
         self._set_relax_cells_in_original_frame()
         self._phonons = None
 
@@ -216,7 +219,7 @@ class _SingleAnalyzer():
 
     def get_shear_diffs(self):
         """
-        Get structure diffs between original and sheared structures
+        Get structure diffs between original relax and sheared relax cells
         IN ORIGINAL FRAME.
         """
         cells = self._relax_cells_in_original_frame
@@ -225,56 +228,112 @@ class _SingleAnalyzer():
                                    include_base=True)
         return diffs
 
-    def plot_bands(self,
-                   fig,
-                   with_dos=False,
-                   mesh=None,
-                   band_labels=None,
-                   segment_qpoints=None,
-                   xscale=20,
-                   npoints=51,
-                   labels=None,):
+    def get_band_paths(self, base_band_paths:list) -> list:
         """
-        plot phonon bands
+        Get band paths for all shear cells from band paths for first cell.
 
         Args:
-            arg1 (str): description
-            arg2 (np.array): (3x3 numpy array) description
-
-        Returns:
-            dict: description
-
-        Raises:
-            ValueError: description
+            base_band_paths (np.array): Path connections for first
+                                             primitive standardized structure.
 
         Examples:
-            description
-
-            >>> print_test ("test", "message")
-              test message
+            >>> base_band_paths = [[[  0, 0, 0.5],
+                                    [  0, 0, 0  ]],
+                                   [[0.5, 0,   0],
+                                    [0.5, 0, 0.5],
+                                    [  0, 0, 0.5]]]
 
         Note:
-            description
+            Get path_connections for each shear structure considering
+            structure body rotation.
         """
-        cs, alphas, linewidths, linestyles = \
-                get_plot_properties_for_trajectory(
-                        plot_nums=len(self._phonons))
-        transformation_matrices = \
-                [ std.transformation_matrix for std in self._standardizes ]
-        bands_plot(fig=fig,
-                   phonons=self._phonons,
-                   rotation_matrices=[ std.rotation_matrix for std in self.standardizes ],
-                   original_lattices=[ cell[0] for cell in self._original_cells ],
-                   input_lattices=[ cell[0] for cell in self._input_cells ],
-                   band_labels=band_labels,
-                   segment_qpoints=segment_qpoints,
-                   xscale=xscale,
-                   npoints=npoints,
-                   with_dos=with_dos,
-                   mesh=mesh,
-                   cs=cs,
-                   alphas=alphas,
-                   linewidths=linewidths,
-                   linestyles=linestyles,
-                   labels=labels,
-                   )
+        def _get_band_paths_cart(base_bps, base_lat, rotation):
+            bps_orig_cart = []
+            for bp in base_bps:
+                qmat = np.array(bp).T
+                rec_mat = np.linalg.inv(base_lat)
+                qmat_cart = np.dot(rec_mat, qmat)
+                qmat_orig_cart = np.dot(np.linalg.inv(rotation), qmat_cart)
+                bps_orig_cart.append(qmat_orig_cart.T)
+            return bps_orig_cart
+
+        def _get_rotated_band_paths(bps_cart, lat, rotation):
+            rot_bps = []
+            for bp in bps_cart:
+                qmat_cart = np.array(bp).T
+                rec_mat = np.linalg.inv(lat)
+                qmat_rot_cart = np.dot(rotation, qmat_cart)
+                qmat_rot = np.dot(np.linalg.inv(rec_mat), qmat_rot_cart)
+                rot_bps.append(qmat_rot.T)
+            return rot_bps
+
+        bps_orig_cart = _get_band_paths_cart(
+                base_bps=base_band_paths,
+                base_lat=self._phonons[0].get_primitive().get_cell(),
+                rotation=self._standardizes[0].rotation_matrix)
+        band_paths_for_all = []
+        for phonon, standardize in zip(self._phonons, self._standardizes):
+            lattice = phonon.get_primitive().get_cell()
+            rotation = standardize.rotation_matrix
+            rot_bps = _get_rotated_band_paths(
+                    bps_cart=bps_orig_cart,
+                    lat=lattice,
+                    rotation=rotation)
+            band_paths_for_all.append(rot_bps)
+
+        return band_paths_for_all
+
+    def get_band_paths_by_seekpath(self):
+        """
+        Get band paths for all shear cells from band paths for first cell
+        by using seekpath toward first cell.
+        """
+        import seekpath
+
+    def get_band_structures(self,
+                           base_band_paths:list,
+                           labels:list=None,
+                           npoints:int=51,
+                           with_eigenvectors:bool=False) -> list:
+        """
+        Get BandStructure objects.
+
+        Args:
+            base_band_paths (np.array): Path connections for first
+                                             primitive standardized structure.
+            labels (list): Band labels for first band paths.
+            npoints (int): The number of qpoints along the band path.
+            with_eigenvectors (bool): If True, compute eigenvectors.
+
+        Notes:
+            Reciprocal lattices for each structure are set automatically.
+            For more detail, see 'get_band_qpoints_and_path_connections'
+            in phonopy.phonon.band_structure.
+        """
+        band_paths_for_all = self.get_band_paths(
+                base_band_paths=base_band_paths)
+        band_structures = []
+        for i in range(len(self._phonons)):
+            phonon = self._phonons[i]
+            band_paths = band_paths_for_all[i]
+            lattice = phonon.get_primitive().get_cell()
+            rec_lattice = np.linalg.inv(lattice)
+            qpoints, connections = get_band_qpoints_and_path_connections(
+                    band_paths=band_paths,
+                    npoints=npoints,
+                    rec_lattice=rec_lattice)
+            if i == 0:
+                lbs = labels
+            else:
+                lbs = None
+            band_structure = BandStructure(
+                    paths=qpoints,
+                    dynamical_matrix=phonon.get_dynamical_matrix(),
+                    with_eigenvectors=with_eigenvectors,
+                    is_band_connection=False,
+                    group_velocity=None,
+                    path_connections=connections,
+                    labels=lbs,
+                    is_legacy_plot=False)
+            band_structures.append(band_structure)
+        return band_structures
