@@ -11,7 +11,8 @@ from twinpy.interfaces.aiida import (check_process_class,
 from twinpy.interfaces.phonopy import get_phonopy_structure
 from twinpy.interfaces.aiida import AiidaRelaxWorkChain
 from twinpy.common.utils import print_header
-from twinpy.analysis.phonon_analyzer import PhononAnalyzer
+from twinpy.analysis.phonon_analyzer import (RelaxAnalyzer,
+                                             PhononAnalyzer)
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
 from aiida.orm import (load_node,
@@ -155,22 +156,13 @@ class AiidaPhonopyWorkChain(_WorkChain):
         return phonon
 
     def get_phonon_analyzer(self,
-                            relax_pk:int=None,
-                            original_cell:tuple=None):
+                            relax_analyzer:RelaxAnalyzer=None):
         """
         Get PhononAnalyzer class object.
 
         Args:
-            relax_pk (int): Relax pk.
-            original_cell (tuple): Original cell.
+            relax_analyzer: RelaxAnalyzer class object.
         """
-        if relax_pk is not None:
-            aiida_relax = AiidaRelaxWorkChain(load_node(relax_pk))
-            relax_analyzer = aiida_relax.get_relax_analyzer(
-                    original_cell=original_cell)
-        else:
-            relax_analyzer = None
-
         analyzer = PhononAnalyzer(phonon=self.get_phonon(),
                                   relax_analyzer=relax_analyzer)
         return analyzer

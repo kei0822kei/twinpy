@@ -9,74 +9,25 @@ from twinpy.structure.diff import get_structure_diff
 from twinpy.analysis.phonon_analyzer import PhononAnalyzer
 
 
-class ShearAnalyzer():
+class _BaseShearAnalyzer():
     """
-    Analize shear result.
+    Base for ShearAnalyzer and TwinboundaryShearAnalyzer.
     """
 
     def __init__(
            self,
-           relax_analyzers:list,
-           shear_structure:ShearStructure=None,
-           phonons:list=None,
+           phonon_analyzers:list
            ):
         """
-        Init.
-
         Args:
-            shear_structure: ShearStructure class object.
-            relax_analyzers (list): List of RelaxAnalyzer class object which
-                                    contains original, initial final cell
-                                    in each shear structure.
-
-        Todo:
-            Currently not supported the case the number of original_cells
-            and input_cells changes because it is difficult to construct
-            the relax cells in the original frame. But future fix this
-            problem. One solution is to make attribute
-            'self._original_primitive' which contains two atoms
-            in the unit cell and original basis.
-            Twinboundary shaer structure also use this class.
-            If this is inconvenient, I have to create
-            _BaseShaerAnalyzer, ShearAnalyzer TwinboundaryShearAnalyzer
-            classes separately.
+            phonon_analyzers (list): List of PhononAnalyzer class object.
         """
-        self._shear_structure = shear_structure
-        self._relax_analyzers = relax_analyzers
-        self._phonon_analyzers = None
-        if phonons is not None:
-            self.set_phonon_analyzers(phonons)
-
-    @property
-    def shear_structure(self):
-        """
-        Shear structure.
-        """
-        return self._shear_structure
-
-    @property
-    def relax_analyzers(self):
-        """
-        Relax analyzers.
-        """
-        return self._relax_analyzers
-
-    def set_phonon_analyzers(self, phonons:list):
-        """
-        Set phonons.
-
-        Args:
-            phonons: List of Phonopy class object.
-        """
-        phonon_analyzers = [ PhononAnalyzer(phonon, relax_analyzer)
-                                 for phonon, relax_analyzer
-                                     in zip(phonons, self._relax_analyzers) ]
         self._phonon_analyzers = phonon_analyzers
 
     @property
     def phonon_analyzers(self):
         """
-        Phonon analyzers.
+        List of phonon analyzers.
         """
         return self._phonon_analyzers
 
@@ -85,9 +36,11 @@ class ShearAnalyzer():
         Get structure diffs between original relax and sheared relax cells
         IN ORIGINAL FRAME.
         """
+        relax_analyzers = [ phonon_analyzer.relax_analyzer
+                                for relax_analyzer in relax_analyzers ]
         relax_cells_original_frame = \
                 [ relax_analyzer.final_cell_in_original_frame
-                      for relax_analyzer in self._relax_analyzers ]
+                      for relax_analyzer in relax_analyzers ]
         diffs = get_structure_diff(cells=relax_cells_original_frame,
                                    base_index=0,
                                    include_base=True)
@@ -166,3 +119,70 @@ class ShearAnalyzer():
             band_structures.append(band_structure)
 
         return band_structures
+
+
+class ShearAnalyzer(_BaseShearAnalyzer):
+    """
+    Analize shear result.
+    """
+
+    def __init__(
+           self,
+           shear_structure:ShearStructure,
+           phonon_analyzers:list,
+           ):
+        """
+        Init.
+
+        Args:
+            shear_structure: ShearStructure class object.
+            phonon_analyzers (list): List of PhononAnalyzer class object.
+
+        Todo:
+            Currently not supported the case the number of original_cells
+            and input_cells changes because it is difficult to construct
+            the relax cells in the original frame. But future fix this
+            problem. One solution is to make attribute
+            'self._original_primitive' which contains two atoms
+            in the unit cell and original basis.
+            Twinboundary shaer structure also use this class.
+            If this is inconvenient, I have to create
+            _BaseShaerAnalyzer, ShearAnalyzer TwinboundaryShearAnalyzer
+            classes separately.
+        """
+        super().__init__(phonon_analyzers=phonon_analyzers)
+        self._shear_structure = shear_structure
+
+    @property
+    def shear_structure(self):
+        """
+        Shear structure.
+        """
+        return self._shear_structure
+
+
+class TwinboundaryShearAnalyzer(_BaseShearAnalyzer):
+    """
+    Analize twinboundary shear result.
+    """
+
+    def __init__(
+           self,
+           phonon_analyzers:list,
+           shear_strain_ratios:list,
+           ):
+        """
+        Init.
+
+        Args:
+            phonon_analyzers (list): List of PhononAnalyzer class object.
+        """
+        super().__init__(phonon_analyzers=phonon_analyzers)
+        self._shear_strain_ratios = shear_strain_ratios
+
+    @property
+    def shear_strain_ratios(self):
+        """
+        Shear structure.
+        """
+        return self._shear_strain_ratios
