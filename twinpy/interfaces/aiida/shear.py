@@ -54,8 +54,8 @@ class AiidaShearWorkChain(_WorkChain):
         self._cells = None
         self._structure_pks = None
         self._set_shear()
-        self._twinpy = None
-        self._set_twinpy()
+        self._shear_structure = None
+        self._set_shear_structure()
 
         self._relax_pks = None
         self._relaxes = None
@@ -66,7 +66,7 @@ class AiidaShearWorkChain(_WorkChain):
         if self._is_phonon:
             self._set_phonons()
 
-    def _set_twinpy(self):
+    def _set_shear_structure(self):
         """
         Set twinpy structure object.
         """
@@ -76,7 +76,7 @@ class AiidaShearWorkChain(_WorkChain):
                 cell=cell,
                 twinmode=twinmode)
         twinpy.set_shear(is_primitive=True)
-        self._twinpy = twinpy
+        self._shear_structure = twinpy.shear
 
     @property
     def shear_conf(self):
@@ -114,11 +114,11 @@ class AiidaShearWorkChain(_WorkChain):
         return self._cells
 
     @property
-    def twinpy(self):
+    def shear_structure(self):
         """
         Twinpy structure class object.
         """
-        return self._twinpy
+        return self._shear_structure
 
     @property
     def structure_pks(self):
@@ -220,7 +220,7 @@ class AiidaShearWorkChain(_WorkChain):
                     original_cell=original_cells[i])
             relax_analyzers.append(relax_analyzer)
         phns = [ phonon_wf.get_phonon() for phonon_wf in self._phonons ]
-        analyzer = ShearAnalyzer(shear_structure=self._twinpy,
+        analyzer = ShearAnalyzer(shear_structure=self._shear_structure,
                                  relax_analyzers=relax_analyzers,
                                  phonons=phns)
         return analyzer

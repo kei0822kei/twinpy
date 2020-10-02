@@ -21,7 +21,8 @@ from twinpy.interfaces.aiida import (check_process_class,
                                      get_cell_from_aiida,
                                      _WorkChain,
                                      AiidaRelaxWorkChain,
-                                     AiidaPhonopyWorkChain)
+                                     AiidaPhonopyWorkChain,
+                                     AiidaRelaxCollection)
 from twinpy.structure.base import check_same_cells
 from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.standardize import (get_standardized_cell,
@@ -56,10 +57,9 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         self._cells = None
         self._structure_pks = None
         self._set_twinboundary()
-        self._twinpy = None
+        self._twinboundary_structure = None
         self._standardize = None
-        self._set_twinpy()
-        self._additional_relax_pks = []
+        self._set_twinboundary_structure()
 
     def _set_twinboundary(self):
         """
@@ -117,7 +117,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         return self._structure_pks
 
-    def _set_twinpy(self):
+    def _set_twinboundary_structure(self):
         """
         Set twinpy structure object and standardize object.
         """
@@ -135,14 +135,16 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 yshift=params['yshift'],
                 shear_strain_ratio=params['shear_strain_ratio'],
                 )
-        self._twinpy = twinpy
+        self._twinboundary_structure = twinpy.twinboundary
+        self._standardize = twinpy.get_twinboundary_standardize(
+                get_lattice=False, move_atoms_into_unitcell=True)
 
     @property
-    def twinpy(self):
+    def twinboundary_structure(self):
         """
         Twinpy structure object.
         """
-        return self._twinpy
+        return self._twinboundary_structure
 
     @property
     def standardize(self):
@@ -150,69 +152,6 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         Stadardize object of twinpy original cell.
         """
         return self._standardize
-
-    def _get_additional_relax_final_structure_pk(self):
-        """
-        Get additional relax final structure.
-        """
-        if self._additional_relax_pks == []:
-            raise RuntimeError("additional_relax_pks is not set.")
-        else:
-            aiida_relax = AiidaRelaxWorkChain(
-                    load_node(self._additional_relax_pks[-1]))
-            final_pk = aiida_relax.get_pks()['current_final_structure_pk']
-        return final_pk
-
-    def set_additional_relax(self, aiida_relax_pks:list):
-        """
-        Set additional_relax_pks in the case final structure of
-        TwinBoundaryRelax WorkChain is further relaxed.
-
-        Args:
-            aiida_relaxes (list): list of relax pks
-
-        Raises:
-            RuntimeError: Input node is not RelaxWorkChain
-            RuntimeError: Output structure and next input structure
-                          does not match.
-        """
-        previous_rlx = self.get_pks()['relax_pk']
-        structure_pk = self._structure_pks['twinboundary_relax_pk']
-        aiida_relaxes = [ load_node(relax_pk) for relax_pk in aiida_relax_pks ]
-        for relax in aiida_relaxes:
-            if relax.process_class.get_name() != 'RelaxWorkChain':
-                raise RuntimeError(
-                        "Input node (pk={}) is not RelaxWorkChain".format(
-                            relax.pk))
-            if structure_pk == relax.inputs.structure.pk:
-                if relax.process_state.value == 'finished':
-                    structure_pk = relax.outputs.relax__structure.pk
-                else:
-                    warnings.warn("RelaxWorkChain (pk={}) state is {}".format(
-                        relax.pk, relax.process_state.value))
-                    if relax.process_state.value == 'excepted':
-                        structure_pk = \
-                            relax.called[1].called[0].outputs.structure.pk
-                previous_rlx = relax.pk
-            else:
-                print("previous relax: pk={}".format(previous_rlx))
-                print("next relax: pk={}".format(relax.pk))
-                raise RuntimeError("Output structure and next input structure "
-                                   "does not match.")
-        self._additional_relax_pks = aiida_relax_pks
-        rlx_structure_pk = self._get_additional_relax_final_structure_pk()
-        rlx_cell = get_cell_from_aiida(load_node(rlx_structure_pk))
-        self._structure_pks['twinboundary_additional_relax_pk'] = \
-                rlx_structure_pk
-        self._cells['twinboundary_additional_relax'] = \
-                rlx_cell
-
-    @property
-    def additional_relax_pks(self):
-        """
-        Additional relax pks.
-        """
-        return self._additional_relax_pks
 
     def get_pks(self):
         """
@@ -222,53 +161,117 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         pks = {}
         pks['twinboundary_pk'] = self._pk
         pks['relax_pk'] = relax_pk
-        pks['additional_relax_pks'] = self._additional_relax_pks
         return pks
 
     def get_twinboundary_analyzer(self,
-                                  twinboundary_phonon_pk:int,
+                                  twinboundary_phonon_pk:int=None,
+                                  additional_relax_pks:list=None,
+                                  hexagonal_relax_pk:int=None,
                                   hexagonal_phonon_pk:int=None):
         """
         Get TwinBoundaryAnalyzer class object.
 
         Args:
-            twinboundary_phonon_pk (int): Twinboundary phonon pk.
-            hexagonal_phonon_pk (int): Hexagonal phonon pk.
+            twinboudnary_phonon_pk (int): Twinboundary phonon calculation pk.
+            additional_relax_pks (list): List of additinal relax calculation
+                                         pks.
+            hexagonal_relax_pk (int): Hexagonal relax calculation pk.
+            hexagonal_phonon_pk (int): Hexagonal phonon calculation pk.
         """
-        def __get_twinboundary_relax_original_cell(relax_cell):
-            std = self._twinpy.get_twinboundary_standardize(
-                      get_lattice=False,
-                      move_atoms_into_unitcell=True,
-                      )
-            rotation_matrix = std.rotation_matrix
-            lattice = relax_cell[0]
-            orig_lattice = np.dot(np.linalg.inv(rotation_matrix),
-                                  lattice.T).T
-            orig_relax_cell = (orig_lattice, relax_cell[1], relax_cell[2])
-            return orig_relax_cell
+        twinboundary_structure = self._twinboundary_structure
+        original_cell = self.cells['twinboundary_original']
+        relax_pk = self.get_pks()['relax_pk']
 
-        tb_aiida_relax = AiidaRelaxWorkChain(
-                load_node(self.get_pks()['relax_pk']))
-        tb_aiida_relax.set_additional_relax(
-                aiida_relax_pks=self._additional_relax_pks)
-        relax_cell = tb_aiida_relax.current_final_cell
-        print(tb_aiida_relax.get_pks())
-        orig_relax_cell = __get_twinboundary_relax_original_cell(
-                relax_cell=relax_cell)
-        tb_aiida_phonopy = AiidaPhonopyWorkChain(
-                load_node(twinboundary_phonon_pk))
-        relax_analyzer = tb_aiida_relax.get_relax_analyzer(
-                original_cell=orig_relax_cell)
-        tb_phonon_analyzer = PhononAnalyzer(
-                phonon=tb_aiida_phonopy.get_phonon(),
-                relax_analyzer=relax_analyzer)
+        if additional_relax_pks is None:
+            aiida_relax = AiidaRelaxWorkChain(load_node(relax_pk))
+            relax_analyzer = aiida_relax.get_relax_analyzer(
+                                 original_cell=original_cell)
+        else:
+            relax_pks = deepcopy(additional_relax_pks)
+            relax_pks.insert(0, relax_pk)
+            aiida_relaxes = \
+                    [ AiidaRelaxWorkChain(load_node(pk)) for pk in relax_pks ]
+            relax_collection = AiidaRelaxCollection(aiida_relaxes)
+            relax_analyzer = relax_collection.get_relax_analyzer(
+                                 original_cell=original_cell)
 
-        hex_aiida_phonopy = AiidaPhonopyWorkChain(
-                load_node(hexagonal_phonon_pk))
+        if twinboundary_phonon_pk is not None:
+            aiida_phonopy = AiidaPhonopyWorkChain(load_node(twinboundary_phonon_pk))
+            phonon_analyzer = \
+                    aiida_phonopy.get_phonon_analyzer(relax_analyzer=relax_analyzer)
+        else:
+            phonon_analyzer = None
 
+        if hexagonal_relax_pk is not None and hexagonal_phonon_pk is not None:
+            aiida_hex_relax = AiidaRelaxWorkChain(load_node(hexagonal_relax_pk))
+            aiida_hex_phonopy = AiidaPhonopyWorkChain(load_node(hexagonal_phonon_pk))
+            hex_relax_analyzer = aiida_hex_relax.get_relax_analyzer()
+            hex_phonon_analyzer = aiida_hex_phonopy.get_phonon_analyzer(
+                    relax_analyzer=hex_relax_analyzer)
+        else:
+            hex_phonon_analyzer = None
         twinboundary_analyzer = TwinBoundaryAnalyzer(
-                twinboundary_structure=self._twinpy,
-                twinboundary_phonon_analyzer=tb_phonon_analyzer,
-                hexagonal_phonon_analyzer=hex_phonon_analyzer)
-
+                twinboundary_structure=twinboundary_structure,
+                twinboundary_relax_analyzer=relax_analyzer,
+                twinboundary_phonon_analyzer=phonon_analyzer,
+                hexagonal_phonon_analyzer=hex_phonon_analyzer,
+                )
         return twinboundary_analyzer
+
+    def get_shear_relax_builder(self,
+                                shear_strain_ratio:float,
+                                additional_relax_pks:list=None):
+        """
+        Get relax builder for shear introduced relax twinboundary structure.
+
+        Args:
+            shear_strain_ratio (float): shear strain ratio
+        """
+        twinboundary_analyzer = self.get_twinboundary_analyzer(
+                additional_relax_pks=additional_relax_pks)
+        cell = twinboundary_analyzer.get_shear_cell(
+                shear_strain_ratio=shear_strain_ratio,
+                is_standardize=False)  # in order to get rotation matrix
+        std = StandardizeCell(cell=cell)
+        std_cell = std.get_standardized_cell(to_primitive=True,
+                                             no_idealize=False,
+                                             no_sort=True)
+        if additional_relax_pks is None:
+            rlx_pk = self.get_pks()['relax_pk']
+        else:
+            rlx_pk = additional_relax_pks[-1]
+        rlx_node = load_node(rlx_pk)
+        builder = rlx_node.get_builder_restart()
+
+        # fix kpoints
+        mesh, offset = map(np.array, builder.kpoints.get_kpoints_mesh())
+        orig_mesh = np.abs(np.dot(np.linalg.inv(
+            self._standardize.transformation_matrix), mesh).astype(int))
+        orig_offset = np.round(np.abs(np.dot(np.linalg.inv(
+            std.transformation_matrix), offset)), decimals=2)
+        std_mesh = np.abs(np.dot(std.transformation_matrix,
+                                 orig_mesh).astype(int))
+        std_offset = np.round(np.abs(np.dot(std.transformation_matrix,
+                                            orig_offset)), decimals=2)
+        kpt = KpointsData()
+        kpt.set_kpoints_mesh(std_mesh, offset=std_offset)
+        builder.kpoints = kpt
+
+        # fix structure
+        builder.structure = get_aiida_structure(cell=std_cell)
+
+        # fix relax conf
+        builder.relax.convergence_max_iterations = Int(100)
+        builder.relax.positions = Bool(True)
+        builder.relax.shape = Bool(False)
+        builder.relax.volume = Bool(False)
+        builder.relax.convergence_positions = Float(1e-4)
+        builder.relax.force_cutoff = \
+                Float(AiidaRelaxWorkChain(node=rlx_node).get_max_force())
+        builder.metadata.label = "tbr:{} rlx:{} shr:{} std:{}".format(
+                self._pk, rlx_node.pk, shear_strain_ratio, True)
+        builder.metadata.description = \
+                "twinboundary_relax_pk:{} relax_pk:{} " \
+                "shear_strain_ratio:{} standardize:{}".format(
+                    self._pk, rlx_node.pk, shear_strain_ratio, True)
+        return builder

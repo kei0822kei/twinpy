@@ -24,6 +24,7 @@ class RelaxAnalyzer():
            original_cell:tuple=None,
            forces:np.array=None,
            stress:np.array=None,
+           energy:float=None,
            ):
         """
         Args:
@@ -37,12 +38,12 @@ class RelaxAnalyzer():
         self._initial_cell = initial_cell
         self._final_cell = final_cell
         self._original_cell = None
-        self._standardize = None
         self._final_cell_in_original_frame = None
-        if original_cell is not None:
-            self.set_original_cell(original_cell=original_cell)
+        self._standardize = None
+        self.set_original_cell(original_cell=original_cell)
         self._forces = forces
         self._stress = stress
+        self._energy = energy
 
     @property
     def initial_cell(self):
@@ -66,25 +67,27 @@ class RelaxAnalyzer():
             original_cell (tuple): Original cell whose standardized cell
                                    is initail_cell.
         """
-        if not len(original_cell[2]) == len(self._initial_cell[2]):
-            raise RuntimeError(
-                    "The number of atoms changes between "
-                    "original cell and initial cell, "
-                    "which is not supported.")
+        if original_cell is None:
+            _original_cell = self._initial_cell
+        else:
+            if not len(original_cell[2]) == len(self._initial_cell[2]):
+                raise RuntimeError(
+                        "The number of atoms changes between "
+                        "original cell and initial cell, "
+                        "which is not supported.")
+            _original_cell = original_cell
 
-        std = StandardizeCell(cell=original_cell)
+        std = StandardizeCell(cell=_original_cell)
         primitive_cell = std.get_standardized_cell(
                 to_primitive=True,
                 no_idealize=False,
                 symprec=1e-5,
                 get_sort_list=False)
-        print(primitive_cell)
-        print(self._initial_cell)
         if not check_same_cells(first_cell=primitive_cell,
                                 second_cell=self._initial_cell):
             raise RuntimeError("Standardized original cell does not "
                                "the same as initial cell.")
-        self._original_cell = original_cell
+        self._original_cell = _original_cell
         self._standardize = std
         self._set_final_cell_in_original_frame()
 
@@ -98,6 +101,20 @@ class RelaxAnalyzer():
             Note that by crystal body rotation, fractional
             coordinate of atom positions are not changed.
         """
+        def __get_original_lattice(lattice,
+                                   conv_to_prim_matrix,
+                                   rotation_matrix,
+                                   transformation_matrix):
+            M_p_bar = lattice.T
+            P_c = conv_to_prim_matrix
+            P = transformation_matrix
+            R = rotation_matrix
+
+            M_p = np.dot(np.linalg.inv(R), M_p_bar)
+            M_s = np.dot(M_p, np.linalg.inv(P_c))
+            M = np.dot(M_s, P)
+            return M.T
+
         def __get_final_atoms_in_original_frame(prim_atoms,
                                                 conv_to_prim_matrix,
                                                 transformation_matrix,
@@ -113,12 +130,17 @@ class RelaxAnalyzer():
             orig_atoms = np.round(X.T, decimals=8) % 1.
             return orig_atoms
 
-        lattice = self._original_cell[0]
+        lattice = self._final_cell[0]
         conv_to_prim_matrix = \
             self._standardize.conventional_to_primitive_matrix
         transformation_matrix = \
             self._standardize.transformation_matrix
         origin_shift = self._standardize.origin_shift
+        orig_lattice =__get_original_lattice(
+                lattice=lattice,
+                conv_to_prim_matrix=conv_to_prim_matrix,
+                rotation_matrix=self._standardize.rotation_matrix,
+                transformation_matrix=transformation_matrix)
         scaled_positions = __get_final_atoms_in_original_frame(
                 prim_atoms=self._final_cell[1],
                 conv_to_prim_matrix=conv_to_prim_matrix,
@@ -126,7 +148,8 @@ class RelaxAnalyzer():
                 origin_shift=origin_shift,
                 )
         symbols = self._original_cell[2]
-        final_orig_cell = (lattice, scaled_positions, symbols)
+
+        final_orig_cell = (orig_lattice, scaled_positions, symbols)
 
         self._final_cell_in_original_frame = final_orig_cell
 
@@ -175,6 +198,13 @@ class RelaxAnalyzer():
         Stress acting on atoms.
         """
         return self._stress
+
+    @property
+    def energy(self):
+        """
+        Total energy.
+        """
+        return self._energy
 
     def get_diff(self,
                  is_original_frame:bool=False):
