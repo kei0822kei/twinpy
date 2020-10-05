@@ -13,7 +13,7 @@ from twinpy.interfaces.aiida import (check_process_class,
                                      _WorkChain)
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from twinpy.common.utils import print_header
-from twinpy.plot.base import line_chart, DEFAULT_COLORS, DEFAULT_MARKERS
+from twinpy.plot.relax import RelaxPlot
 from twinpy.lattice.lattice import Lattice
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 from aiida.cmdline.utils.decorators import with_dbenv
@@ -68,7 +68,8 @@ class _AiidaVaspWorkChain(_WorkChain):
         """
         self._forces = self._node.outputs.forces.get_array('final')
         self._stress = self._node.outputs.stress.get_array('final')
-        self._energy = self._node.outputs.energies.get_array('energy_no_entropy')[0]
+        self._energy = \
+                self._node.outputs.energies.get_array('energy_no_entropy')[0]
 
     @property
     def forces(self):
@@ -371,24 +372,24 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
             relax_pks = [ pk[0] for pk in vasp_pks ]
         return (relax_pks, static_pk)
 
-    def get_vasp_calculation_nodes(self) -> tuple:
+    def get_vasp_calculations(self) -> tuple:
         """
-        Get VaspWorkChain nodes.
+        Get AiidaVaspWorkChain class objects.
 
         Returns:
             tuple: (relax_calcs, static_calc)
         """
         relax_pks, static_pk = self.get_vasp_calculation_pks()
         if self._exit_status == 0:
-            relax_nodes = [ AiidaVaspWorkChain(load_node(pk))
+            relax = [ AiidaVaspWorkChain(load_node(pk))
                                 for pk in relax_pks ]
-            static_nodes = AiidaVaspWorkChain(load_node(static_pk),
+            static = AiidaVaspWorkChain(load_node(static_pk),
                                               ignore_warning=True)
         else:
-            relax_nodes = [ AiidaVaspWorkChain(load_node(pk))
+            relax = [ AiidaVaspWorkChain(load_node(pk))
                                 for pk in relax_pks[:-1] ]
-            static_nodes = None
-        return (relax_nodes, static_nodes)
+            static = None
+        return (relax, static)
 
     def get_pks(self) -> dict:
         """
@@ -399,12 +400,12 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         """
         relax_pks, static_pk = self.get_vasp_calculation_pks()
         pks = {
-                 'relax_pk': self._pk,
-                 'initial_structure_pk': self._initial_structure_pk,
-                 'final_structure_pk': self._final_structure_pk,
-                 'current_final_structure_pk': self._current_final_structure_pk,
-                 'vasp_relax_pks': relax_pks,
-                 'static_pk': static_pk,
+                'relax_pk': self._pk,
+                'initial_structure_pk': self._initial_structure_pk,
+                'final_structure_pk': self._final_structure_pk,
+                'current_final_structure_pk': self._current_final_structure_pk,
+                'vasp_relax_pks': relax_pks,
+                'static_pk': static_pk,
               }
         return pks
 
@@ -440,129 +441,62 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         print("\n\n")
         self._print_vasp_results()
 
-    # def _get_dic_for_plot_convergence(self) -> dict:
-    #     """
-    #     Get dictionary for plot convergence
-    #     """
-    #     relax_nodes, _ = self.get_vasp_calculation_nodes()
-    #     dic = {}
-    #     dic['max_force'] = np.array(
-    #             [ node.get_max_force() for node in relax_nodes ])
-    #     # stress xx yy zz yz zx xy
-    #     dic['stress'] = np.array([ node.stress.flatten()[[0,4,8,5,6,1]]
-    #                                for node in relax_nodes ])
-    #     dic['energy'] = np.array(
-    #             [ node.get_misc()['total_energies']['energy_no_entropy']
-    #                   for node in relax_nodes ])
-    #     dic['abc'] = np.array([ Lattice(node.final_cell[0]).abc
-    #                             for node in relax_nodes ])
-    #     dic['steps'] = np.array([ i+1 for i in range(len(relax_nodes)) ])
-    #     return dic
+    def get_relaxplot(self) -> dict:
+        """
+        Get RelaxPlot class object.
+        """
+        relax_vasps, static_vasp = self.get_vasp_calculations()
+        relax_data = {}
+        relax_data['max_force'] = np.array(
+                [ relax_vasp.get_max_force() for relax_vasp in relax_vasps ])
+        # stress xx yy zz yz zx xy
+        relax_data['stress'] = \
+                np.array([ relax_vasp.stress.flatten()[[0,4,8,5,6,1]]
+                               for relax_vasp in relax_vasps ])
+        relax_data['energy'] = np.array([ relax_vasp.energy
+                                              for relax_vasp in relax_vasps ])
+        relax_data['abc'] = np.array([ Lattice(relax_vasp.final_cell[0]).abc
+                                           for relax_vasp in relax_vasps ])
+        relax_data['steps'] = \
+                np.array([ i+1 for i in range(len(relax_vasps)) ])
 
-    # def plot_convergence(self):
-    #     """
-    #     Plot convergence.
+        if static_vasp is None:
+            static_data = None
+        else:
+            static_data = {
+                    'max_force': static_vasp.get_max_force(),
+                    'stress': static_vasp.stress.flatten()[[0,4,8,5,6,1]] ,
+                    'energy': static_vasp.energy,
+                    'abc': Lattice(static_vasp.initial_cell[0]).abc,
+                    }
 
-    #     Todo:
-    #         This function must be moved in plot directory.
-    #     """
-    #     plt.rcParams["font.size"] = 14
-    #     aiida_relax_pks = [ self.get_pks()['relax_pk'] ]
-    #     aiida_relax_pks.extend(self._additional_relax_pks)
+        relax_plot = RelaxPlot(relax_data=relax_data,
+                               static_data=static_data)
 
-    #     fig = plt.figure(figsize=(16,13))
-    #     ax1 = fig.add_axes((0.15, 0.1, 0.35,  0.35))
-    #     ax2 = fig.add_axes((0.63, 0.1, 0.35, 0.35))
-    #     ax3 = fig.add_axes((0.15, 0.55, 0.35, 0.35))
-    #     ax4 = fig.add_axes((0.63, 0.55, 0.35, 0.35))
+        return relax_plot
 
-    #     x_val_fix = 0
-    #     for j, rlx_pk in enumerate(aiida_relax_pks):
-    #         aiida_relax = AiidaRelaxWorkChain(load_node(rlx_pk))
-    #         dic = aiida_relax._get_dic_for_plot_convergence()
-    #         dic['steps'] = dic['steps'] + x_val_fix
-    #         static_x_val = dic['steps'][-1] + 0.1
-    #         x_val_fix = dic['steps'][-1]
+    def plot_convergence(self):
+        """
+        Plot convergence.
 
-    #         line_chart(
-    #                 ax1,
-    #                 dic['steps'],
-    #                 dic['max_force'],
-    #                 'relax times',
-    #                 'max force',
-    #                 c=DEFAULT_COLORS[0],
-    #                 marker=DEFAULT_MARKERS[0],
-    #                 facecolor='white')
-    #         # ax1.set_ylim((0, None))
-    #         ax1.set_yscale('log')
-    #         line_chart(
-    #                 ax2,
-    #                 dic['steps'],
-    #                 dic['energy'],
-    #                 'relax times',
-    #                 'energy',
-    #                 c=DEFAULT_COLORS[0],
-    #                 marker=DEFAULT_MARKERS[0],
-    #                 facecolor='white')
-    #         stress_labels = ['xx', 'yy', 'zz', 'yz', 'zx', 'xy']
-    #         for i in range(6):
-    #             if j == 0:
-    #                 label = stress_labels[i]
-    #             else:
-    #                 label = None
-    #             line_chart(
-    #                     ax3,
-    #                     dic['steps'],
-    #                     dic['stress'][:,i],
-    #                     'relax times',
-    #                     'stress',
-    #                     c=DEFAULT_COLORS[i],
-    #                     marker=DEFAULT_MARKERS[i],
-    #                     facecolor='white',
-    #                     label=label)
-    #         ax3.legend(loc='lower right')
-    #         abc_labels = ['a', 'b', 'c']
-    #         for i in range(3):
-    #             if j == 0:
-    #                 label = abc_labels[i]
-    #             else:
-    #                 label = None
-    #             line_chart(
-    #                     ax4,
-    #                     dic['steps'],
-    #                     dic['abc'][:,i],
-    #                     'relax times',
-    #                     'lattice abc',
-    #                     c=DEFAULT_COLORS[i],
-    #                     marker=DEFAULT_MARKERS[i],
-    #                     facecolor='white',
-    #                     label=label)
-    #         ax4.legend(loc='lower right')
-    #         ax4.set_ylim((0, None))
+        Todo:
+            This function must be moved in plot directory.
+        """
+        plt.rcParams["font.size"] = 14
 
-    #         if aiida_relax._exit_status == 0:
-    #             ax1.scatter(static_x_val, aiida_relax.get_max_force(),
-    #                         c=DEFAULT_COLORS[0], marker='*', s=150)
-    #             ax2.scatter(static_x_val,
-    #                         aiida_relax.get_misc()
-    #                                 ['total_energies']['energy_no_entropy'],
-    #                         c=DEFAULT_COLORS[0], marker='*', s=150)
-    #             rlx_stress = aiida_relax.stress.flatten()[[0,4,8,5,6,1]]
-    #             for i in range(6):
-    #                 ax3.scatter(static_x_val, rlx_stress[i],
-    #                             c=DEFAULT_COLORS[i],
-    #                             marker='*', s=150)
-    #             for i in range(3):
-    #                 rlx_abc = Lattice(aiida_relax.final_cell[0]).abc
-    #                 ax4.scatter(static_x_val, rlx_abc[i], c=DEFAULT_COLORS[i],
-    #                             marker='*', s=150)
-    #         else:
-    #             strings = "WARNING: Exit state RelaxWorkChain pk={} is {}."\
-    #                     .format(aiida_relax._pk, aiida_relax._exit_status)
-    #             print('+'*len(strings))
-    #             print(strings)
-    #             print("         Skip plotting.")
-    #             print('+'*len(strings))
+        fig = plt.figure(figsize=(16,13))
+        ax1 = fig.add_axes((0.15, 0.1, 0.35,  0.35))
+        ax2 = fig.add_axes((0.63, 0.1, 0.35, 0.35))
+        ax3 = fig.add_axes((0.15, 0.55, 0.35, 0.35))
+        ax4 = fig.add_axes((0.63, 0.55, 0.35, 0.35))
+
+        relax_plot = self.get_relaxplot()
+        relax_plot.plot_max_force(ax1)
+        relax_plot.plot_energy(ax2)
+        relax_plot.plot_stress(ax3)
+        relax_plot.plot_abc(ax4)
+
+        return fig
 
 
 class AiidaRelaxCollection():
@@ -573,7 +507,7 @@ class AiidaRelaxCollection():
     def __init__(
            self,
            aiida_relaxes:list,
-       ):
+           ):
         """
         Args:
             aiida_relaxes (list): List of AiidaRelaxWorkChain.
@@ -700,3 +634,42 @@ class AiidaRelaxCollection():
                 energy=energy,
                 )
         return relax_analyzer
+
+    def get_relaxplots(self) -> list:
+        """
+        Get RelaxPlot class objects.
+        """
+        relax_plots = []
+        for relax in self._aiida_relaxes:
+            relax_plots.append(relax.get_relaxplot())
+
+        start_step = 1
+        for relax_plot in relax_plots:
+            relax_plot.set_steps(start_step=start_step)
+            start_step = relax_plot._relax_data['steps'][-1]
+
+        return relax_plots
+
+    def plot_convergence(self) -> list:
+        """
+        Get RelaxPlot class objects.
+        """
+        fig = plt.figure(figsize=(16,13))
+        ax1 = fig.add_axes((0.15, 0.1, 0.35,  0.35))
+        ax2 = fig.add_axes((0.63, 0.1, 0.35, 0.35))
+        ax3 = fig.add_axes((0.15, 0.55, 0.35, 0.35))
+        ax4 = fig.add_axes((0.63, 0.55, 0.35, 0.35))
+
+        relax_plots = self.get_relaxplots()
+
+        for i, relax_plot in enumerate(relax_plots):
+            if i == 0:
+                decorate = True
+            else:
+                decorate = False
+            relax_plot.plot_max_force(ax1, decorate=decorate)
+            relax_plot.plot_energy(ax2, decorate=decorate)
+            relax_plot.plot_stress(ax3, decorate=decorate)
+            relax_plot.plot_abc(ax4, decorate=decorate)
+
+        return fig

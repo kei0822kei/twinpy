@@ -231,7 +231,8 @@ class PhononAnalyzer():
                            band_paths:list,
                            labels:list=None,
                            npoints:int=51,
-                           with_eigenvectors:bool=False):
+                           with_eigenvectors:bool=False,
+                           use_reciprocal_lattice:bool=True):
         """
         Get BandStructure class object.
 
@@ -241,10 +242,16 @@ class PhononAnalyzer():
             npoints (int): The number of sampling points.
             with_eigenvectors (bool): If True, calculte eigenvectors.
         """
+        if use_reciprocal_lattice:
+            rec_lattice = self._reciprocal_lattice
+        else:
+            rec_lattice = None
+
+
         qpoints, connections = get_band_qpoints_and_path_connections(
                 band_paths=band_paths,
                 npoints=npoints,
-                rec_lattice=self._reciprocal_lattice)
+                rec_lattice=rec_lattice)
         band_structure = BandStructure(
                 paths=qpoints,
                 dynamical_matrix=self._phonon.get_dynamical_matrix(),
@@ -256,3 +263,92 @@ class PhononAnalyzer():
                 is_legacy_plot=False)
 
         return band_structure
+
+
+
+
+    # def run_mesh(self, interval:float=0.1):
+    #     """
+    #     Run mesh for both hexagonal and twinboundary phonon.
+
+    #     Args:
+    #         interval (float): mesh interval
+    #     """
+    #     phonons = (self._hexagonal_phonon, self._twinboundary_phonon)
+    #     structure_types = ['hexagonal', 'twinboundary']
+    #     for structure_type, phonon in zip(structure_types, phonons):
+    #         lattice = phonon.primitive.get_cell()
+    #         kpt = get_mesh_offset_from_direct_lattice(
+    #                 lattice=lattice,
+    #                 interval=interval,
+    #                 )
+    #         print("run mesh with {} ({})".format(
+    #             kpt['mesh'], structure_type))
+    #         phonon.run_mesh
+    #         phonon.set_mesh(
+    #             mesh=kpt['mesh'],
+    #             shift=None,
+    #             is_time_reversal=True,
+    #             is_mesh_symmetry=False,  # necessary for calc ellipsoid
+    #             is_eigenvectors=True,
+    #             is_gamma_center=False,
+    #             run_immediately=True)
+
+    # def get_thermal_displacement_matrices(
+    #         self,
+    #         t_step:int=100,
+    #         t_max:int=1000,
+    #         t_min:int=0,
+    #         with_original_cart:bool=True,
+    #         def_cif:bool=False,
+    #         ):
+    #     """
+    #     Get ThermalDisplacementMatrices object for
+    #     both hexagonal and twinboundary.
+
+    #     Args:
+    #         t_step (int): temperature interval
+    #         t_max (int): max temperature
+    #         t_min (int): minimum temperature
+    #         with_original_cart (bool): if True, use twinboundary
+    #                                    original frame
+    #         def_cif (bool): if True, use cif definition
+
+    #     Todo:
+    #         I do not know how to rotate 4d array (temp, atoms, 3, 3).
+    #     """
+    #     phonons = (self._hexagonal_phonon, self._twinboundary_phonon)
+    #     tdm_matrices = []
+    #     rotation_matrices = (self._hexagonal_to_original_rotation_matrix,
+    #                          self._twinboundary_to_original_rotation_matrix)
+    #     for phonon, rotation_matrix in zip(phonons, rotation_matrices):
+    #         phonon.set_thermal_displacement_matrices(
+    #             t_step=t_step,
+    #             t_max=t_max,
+    #             t_min=t_min,
+    #             freq_min=None,
+    #             freq_max=None,
+    #             t_cif=None)
+    #         tdm = phonon.thermal_displacement_matrices
+    #         if def_cif:
+    #             matrix = tdm.thermal_displacement_matrices_cif
+    #         else:
+    #             matrix = tdm.thermal_displacement_matrices
+    #         if with_original_cart:
+    #             rot_matrices = []
+    #             shape = matrix.shape
+    #             lst = []
+    #             for i in range(shape[0]):
+    #                 atom_lst = []
+    #                 for j in range(shape[1]):
+    #                     mat = np.dot(rotation_matrix,
+    #                                  np.dot(matrix[i,j],
+    #                                         rotation_matrix.T))
+    #                     atom_lst.append(mat)
+    #                 lst.append(atom_lst)
+    #             tdm_matrices.append(np.array(lst))
+    #         else:
+    #             tdm_matrices.append(tdm.thermal_displacement_matrices)
+    #     return tuple(tdm_matrices)
+
+

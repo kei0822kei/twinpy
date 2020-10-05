@@ -46,7 +46,8 @@ def line_chart(ax,
     else:
         facecolor_num = len(ax.get_lines()) % 2
         if facecolor_num == 0:
-            facecolor = 'white'
+            # facecolor = 'white'
+            facecolor = 'None'
         else:
             facecolor = c
 
