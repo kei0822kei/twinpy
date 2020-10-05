@@ -4,12 +4,14 @@
 """
 Analize phonopy calculation.
 """
+from copy import deepcopy
 import numpy as np
 from phonopy import Phonopy
 from phonopy.phonon.band_structure import (
         get_band_qpoints_and_path_connections,
         BandStructure)
 from twinpy.interfaces.phonopy import get_cell_from_phonopy_structure
+from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from twinpy.structure.base import check_same_cells
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 
@@ -247,7 +249,6 @@ class PhononAnalyzer():
         else:
             rec_lattice = None
 
-
         qpoints, connections = get_band_qpoints_and_path_connections(
                 band_paths=band_paths,
                 npoints=npoints,
@@ -264,91 +265,101 @@ class PhononAnalyzer():
 
         return band_structure
 
+    def run_mesh(self,
+                 interval:float=0.1,
+                 is_store:bool=True,
+                 get_phonon:bool=False,
+                 dry_run:bool=False,
+                 is_eigenvectors:bool=False):
+        """
+        Run mesh for both hexagonal and twinboundary phonon.
 
+        Args:
+            interval (float): mesh interval
+            is_store (bool): If True, result is stored in self._phonon.
+            get_phonon (bool): If True, return Phonopy class obejct,
+                               which is independent from self._phonon.
+            dry_run (bool): If True, show sampling mesh information
+                            and not run.
+        """
+        kpt = get_mesh_offset_from_direct_lattice(
+                lattice=self._primitive_cell[0],
+                interval=interval,
+                )
+        if dry_run:
+            print("# interval: {}".format(interval))
+            print("# sampling mesh: {}".format(kpt['mesh']))
+            print("# dry_run is evoked.")
 
+        else:
+            print("run mesh with {}".format(kpt['mesh']))
+            if is_store:
+                _phonon = self._phonon
+            else:
+                _phonon = deepcopy(self._phonon)
+            _phonon.set_mesh(
+                    mesh=kpt['mesh'],
+                    shift=None,
+                    is_time_reversal=True,
+                    is_mesh_symmetry=False,  # necessary for calc ellipsoid
+                    is_eigenvectors=is_eigenvectors,
+                    is_gamma_center=False,
+                    run_immediately=True)
 
-    # def run_mesh(self, interval:float=0.1):
-    #     """
-    #     Run mesh for both hexagonal and twinboundary phonon.
+        if get_phonon:
+            return _phonon
 
-    #     Args:
-    #         interval (float): mesh interval
-    #     """
-    #     phonons = (self._hexagonal_phonon, self._twinboundary_phonon)
-    #     structure_types = ['hexagonal', 'twinboundary']
-    #     for structure_type, phonon in zip(structure_types, phonons):
-    #         lattice = phonon.primitive.get_cell()
-    #         kpt = get_mesh_offset_from_direct_lattice(
-    #                 lattice=lattice,
-    #                 interval=interval,
-    #                 )
-    #         print("run mesh with {} ({})".format(
-    #             kpt['mesh'], structure_type))
-    #         phonon.run_mesh
-    #         phonon.set_mesh(
-    #             mesh=kpt['mesh'],
-    #             shift=None,
-    #             is_time_reversal=True,
-    #             is_mesh_symmetry=False,  # necessary for calc ellipsoid
-    #             is_eigenvectors=True,
-    #             is_gamma_center=False,
-    #             run_immediately=True)
+    def get_thermal_displacement_matrices(self,
+                                          t_step:int=100,
+                                          t_max:int=1000,
+                                          t_min:int=0,
+                                          with_original_cart:bool=True,
+                                          def_cif:bool=False,
+                                          ):
+        """
+        Get ThermalDisplacementMatrices object for
+        both hexagonal and twinboundary.
 
-    # def get_thermal_displacement_matrices(
-    #         self,
-    #         t_step:int=100,
-    #         t_max:int=1000,
-    #         t_min:int=0,
-    #         with_original_cart:bool=True,
-    #         def_cif:bool=False,
-    #         ):
-    #     """
-    #     Get ThermalDisplacementMatrices object for
-    #     both hexagonal and twinboundary.
+        Args:
+            t_step (int): temperature interval
+            t_max (int): max temperature
+            t_min (int): minimum temperature
+            with_original_cart (bool): if True, use twinboundary
+                                       original frame
+            def_cif (bool): if True, use cif definition
 
-    #     Args:
-    #         t_step (int): temperature interval
-    #         t_max (int): max temperature
-    #         t_min (int): minimum temperature
-    #         with_original_cart (bool): if True, use twinboundary
-    #                                    original frame
-    #         def_cif (bool): if True, use cif definition
+        Todo:
+            I do not know how to rotate 4d array (temp, atoms, 3, 3).
+        """
+        phonon = self._phonon
+        inv_rotation_matrix = self._rotation_matrix.T
 
-    #     Todo:
-    #         I do not know how to rotate 4d array (temp, atoms, 3, 3).
-    #     """
-    #     phonons = (self._hexagonal_phonon, self._twinboundary_phonon)
-    #     tdm_matrices = []
-    #     rotation_matrices = (self._hexagonal_to_original_rotation_matrix,
-    #                          self._twinboundary_to_original_rotation_matrix)
-    #     for phonon, rotation_matrix in zip(phonons, rotation_matrices):
-    #         phonon.set_thermal_displacement_matrices(
-    #             t_step=t_step,
-    #             t_max=t_max,
-    #             t_min=t_min,
-    #             freq_min=None,
-    #             freq_max=None,
-    #             t_cif=None)
-    #         tdm = phonon.thermal_displacement_matrices
-    #         if def_cif:
-    #             matrix = tdm.thermal_displacement_matrices_cif
-    #         else:
-    #             matrix = tdm.thermal_displacement_matrices
-    #         if with_original_cart:
-    #             rot_matrices = []
-    #             shape = matrix.shape
-    #             lst = []
-    #             for i in range(shape[0]):
-    #                 atom_lst = []
-    #                 for j in range(shape[1]):
-    #                     mat = np.dot(rotation_matrix,
-    #                                  np.dot(matrix[i,j],
-    #                                         rotation_matrix.T))
-    #                     atom_lst.append(mat)
-    #                 lst.append(atom_lst)
-    #             tdm_matrices.append(np.array(lst))
-    #         else:
-    #             tdm_matrices.append(tdm.thermal_displacement_matrices)
-    #     return tuple(tdm_matrices)
+        phonon.set_thermal_displacement_matrices(
+            t_step=t_step,
+            t_max=t_max,
+            t_min=t_min,
+            freq_min=None,
+            freq_max=None,
+            t_cif=None)
+        tdm = phonon.thermal_displacement_matrices
+        if def_cif:
+            _matrix = tdm.thermal_displacement_matrices_cif
+        else:
+            _matrix = tdm.thermal_displacement_matrices
 
+        if with_original_cart:
+            shape = _matrix.shape
+            lst = []
+            for i in range(shape[0]):
+                atom_lst = []
+                for j in range(shape[1]):
+                    mat = np.dot(inv_rotation_matrix,
+                                 np.dot(_matrix[i,j],
+                                        inv_rotation_matrix.T))
+                    atom_lst.append(mat)
+                lst.append(atom_lst)
+            matrix = np.array(lst)
+        else:
+            matrix = _matrix
 
+        return matrix

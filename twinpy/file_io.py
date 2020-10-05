@@ -109,11 +109,15 @@ def write_thermal_ellipsoid(cell:tuple,
     lines.append(cell_str)
     lines.append("")
     lines.append("ATOM")
-    ### crystal maker => xx yy zz xy xz yz
+
+    # crystal maker => xx yy zz xy xz yz
     tensor_idx = [[0,0], [1,1], [2,2], [0,1], [0,2], [1,2]]
+
     for i in range(len(cell[2])):
         frac_str = ' '.join(map(str, list(cell[1][i])))
-        lines.append("{} {} {}".format(cell[2][i], cell[2][i]+str(i+1), frac_str))
+        lines.append("{} {} {}".format(cell[2][i],
+                                       cell[2][i]+str(i+1),
+                                       frac_str))
     lines.append("")
     lines.append("UANI")
     for i, temp in enumerate(temperatures):
