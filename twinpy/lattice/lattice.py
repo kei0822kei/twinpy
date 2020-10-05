@@ -5,7 +5,56 @@
 Lattice class
 """
 
+from copy import deepcopy
 import numpy as np
+
+
+def check_hexagonal_lattice(lattice:np.array):
+    """
+    Check input lattice is hexagonal lattice.
+
+    Args:
+        lattice (np.array): lattice
+
+    Raises:
+        AssertionError: the angles are not (90, 90, 120)
+
+    Note:
+        Check the angles of input lattice are (90, 90, 120).
+
+    TODO:
+        Add tolerance of assert_allclose.
+    """
+    hexagonal = Lattice(lattice)
+    expected = np.array([90., 90., 120.])
+    actual = hexagonal.angles
+    np.testing.assert_allclose(
+            actual,
+            expected,
+            err_msg="angles of lattice was {}, which is not hexagonal".
+                    format(actual),
+            )
+
+
+def get_hexagonal_lattice_from_a_c(a:float, c:float) -> np.array:
+    """
+    Get hexagonal lattice from the norms of a and c axes.
+
+    Args:
+        a (str): the norm of a axis
+        c (str): the norm of c axis
+
+    Returns:
+        np.array: hexagonal lattice
+
+    Raises:
+        AssertionError: either a or c is negative value
+    """
+    assert a > 0. and c > 0., "input 'a' and 'c' must be positive value"
+    lattice = np.array([[  1.,           0., 0.],
+                        [-0.5, np.sqrt(3)/2, 0.],
+                        [  0.,           0., 1.]]) * np.array([a,a,c])
+    return lattice
 
 
 class Lattice():
@@ -35,6 +84,7 @@ class Lattice():
         self._set_abc()
 
         self._angles = None
+        self._sin_angles = None
         self._cos_angles = None
         self._set_angles()
 
@@ -102,14 +152,17 @@ class Lattice():
         lat = self.lattice
         abc = self.abc
         cos_angles = []
+        sin_angles = []
         angles = []
         for i in range(3):
             j = (i + 1) % 3
             k = (i + 2) % 3
             cos_angle = np.dot(lat[j],lat[k]) / (abc[j] * abc[k])
             cos_angles.append(cos_angle)
-            angles.append(np.arccos((cos_angle)) * 180 / np.pi)
+            angles.append(np.arccos(cos_angle) * 180 / np.pi)
+            sin_angles.append(np.sin(np.arccos(cos_angle)))
         self._cos_angles = tuple(cos_angles)
+        self._sin_angles = tuple(sin_angles)
         self._angles = tuple(angles)
 
     @property
@@ -125,6 +178,13 @@ class Lattice():
         Cosine angles of axes.
         """
         return self._cos_angles
+
+    @property
+    def sin_angles(self):
+        """
+        Sine angles of axes.
+        """
+        return self._sin_angles
 
     def _set_metric(self, is_old_style=False):
         """
@@ -253,68 +313,38 @@ class Lattice():
             flag = False
         return flag
 
+    def get_diff(self,
+                 first_positions:np.array,
+                 second_positions:np.array,
+                 is_cartesian:bool=False,
+                 with_periodic:bool=True):
+        """
+        Get diff between first positions and second positions.
 
-def check_hexagonal_lattice(lattice:np.array):
-    """
-    Check input lattice is hexagonal lattice.
+        Args:
+            first_positions (np.array): Positions
+            second_positions (np.array): Positions
+            is_cartesian (bool): If True input positions are recognized
+                                 as cartesian.
+            with_periodic (bool): If True, consider periodic condition.
 
-    Args:
-        lattice (np.array): lattice
+        Returns:
+            np.array: Atom diff (second_positions - first_positions)
+                      in fractional coordinate.
+        """
+        if is_cartesian:
+            _first_frac = np.dot(np.linalg.inv(self._lattice.T),
+                                 first_positions.T).T
+            _second_frac = np.dot(np.linalg.inv(self._lattice.T),
+                                  second_positions.T).T
+        else:
+            _first_frac = deepcopy(first_positions)
+            _second_frac = deepcopy(second_positions)
 
-    Raises:
-        AssertionError: the angles are not (90, 90, 120)
+        if with_periodic:
+            _diff = np.round((_second_frac - _first_frac) % 1, decimals=8)
+            diff = np.where(_diff>0.5, _diff-1, _diff)
+        else:
+            diff =  _second_frac - _first_frac
 
-    Note:
-        Check the angles of input lattice are (90, 90, 120).
-
-    TODO:
-        Add tolerance of assert_allclose.
-    """
-    hexagonal = Lattice(lattice)
-    expected = np.array([90., 90., 120.])
-    actual = hexagonal.angles
-    np.testing.assert_allclose(
-            actual,
-            expected,
-            err_msg="angles of lattice was {}, which is not hexagonal".
-                    format(actual),
-            )
-
-
-def create_hexagonal_lattice(a:float, c:float) -> np.array:
-    """
-    Create hexagonal lattice.
-
-    Args:
-        a (float): norm of a axis
-        c (float): norm of c axis
-
-    Returns:
-        np.array: hexagonal lattice
-    """
-    lattice = np.array([[  1.,           0., 0.],
-                        [-0.5, np.sqrt(3)/2, 0.],
-                        [  0.,           0., 1.]]) \
-              * np.array([[a,a,c]]).T
-    return lattice
-
-
-def get_hexagonal_lattice_from_a_c(a:float, c:float) -> np.array:
-    """
-    Get hexagonal lattice from the norms of a and c axes.
-
-    Args:
-        a (str): the norm of a axis
-        c (str): the norm of c axis
-
-    Returns:
-        np.array: hexagonal lattice
-
-    Raises:
-        AssertionError: either a or c is negative value
-    """
-    assert a > 0. and c > 0., "input 'a' and 'c' must be positive value"
-    lattice = np.array([[  1.,           0., 0.],
-                        [-0.5, np.sqrt(3)/2, 0.],
-                        [  0.,           0., 1.]]) * np.array([a,a,c])
-    return lattice
+        return diff

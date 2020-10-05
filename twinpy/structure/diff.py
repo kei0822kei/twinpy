@@ -6,6 +6,7 @@ compare structures
 """
 
 import numpy as np
+from twinpy.lattice.lattice import Lattice
 
 def get_structure_diff(cells:list,
                        base_index:int=0,
@@ -34,13 +35,23 @@ def get_structure_diff(cells:list,
     cart_posis = [ np.dot(cells[i][0].T, cells[i][1].T).T
                        for i in range(len(cells)) ]
     base_lat, base_scaled_posi, _ = cells[base_index]
-    base_cart_posi = np.dot(base_lat.T, base_scaled_posi.T).T
+    base_cart_posi = cart_posis[base_index]
     lattice_diffs = [ cell[0] - base_lat for cell in cells ]
-    scaled_posi_diffs = [ cell[1] - base_scaled_posi for cell in cells ]
-    cart_posi_diffs = [ cart_posis[i] - base_cart_posi
-                            for i in range(len(cells)) ]
+    _scaled_posi_diffs = [ np.round(cell[1] - base_scaled_posi, decimals=8) for cell in cells ]
+    scaled_posi_diffs = [ np.where(diff>0.5, diff-1, diff) for diff in _scaled_posi_diffs ]
+
+    cart_posi_diffs = []
+    for cell, cart_posi in zip(cells, cart_posis):
+        lattice = Lattice(lattice=cell[0])
+        diff = lattice.get_diff(first_positions=base_cart_posi,
+                                second_positions=cart_posi,
+                                is_cartesian=True,
+                                with_periodic=True)
+        cart_posi_diffs.append(np.dot(lattice.lattice.T, diff.T).T)
+
     cart_norm_diffs = [ np.linalg.norm(cart_posi_diff, axis=1)
                             for cart_posi_diff in cart_posi_diffs ]
+
     if not include_base:
         del lattice_diffs[base_index]
         del scaled_posi_diffs[base_index]

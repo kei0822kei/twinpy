@@ -5,8 +5,9 @@
 Aiida interface for twinpy.
 """
 from twinpy.api_twinpy import get_twinpy_from_cell
-from twinpy.analysis.relax_analyzer import RelaxAnalyzer
-from twinpy.analysis.shear_analyzer import ShearAnalyzer
+from twinpy.analysis import (RelaxAnalyzer,
+                             PhononAnalyzer,
+                             ShearAnalyzer)
 from twinpy.interfaces.aiida import (check_process_class,
                                      get_cell_from_aiida,
                                      get_workflow_pks,
@@ -214,16 +215,17 @@ class AiidaShearWorkChain(_WorkChain):
         Get ShearAnalyzer class object.
         """
         original_cells = self._cells['shear_original']
-        relax_analyzers = []
+        phonon_analyzers = []
         for i, relax in enumerate(self._relaxes):
             relax_analyzer = relax.get_relax_analyzer(
                     original_cell=original_cells[i])
-            relax_analyzers.append(relax_analyzer)
-        phns = [ phonon_wf.get_phonon() for phonon_wf in self._phonons ]
-        analyzer = ShearAnalyzer(shear_structure=self._shear_structure,
-                                 relax_analyzers=relax_analyzers,
-                                 phonons=phns)
-        return analyzer
+            phn = self._phonons[i].get_phonon()
+            phonon_analyzer = PhononAnalyzer(phonon=phn,
+                                             relax_analyzer=relax_analyzer)
+            phonon_analyzers.append(phonon_analyzer)
+        shear_analyzer = ShearAnalyzer(shear_structure=self._shear_structure,
+                                       phonon_analyzers=phonon_analyzers)
+        return shear_analyzer
 
     def get_pks(self) -> dict:
         """
