@@ -4,9 +4,7 @@
 """
 Aiida interface for twinpy.
 """
-from twinpy.api_twinpy import get_twinpy_from_cell
-from twinpy.analysis import (RelaxAnalyzer,
-                             PhononAnalyzer,
+from twinpy.analysis import (PhononAnalyzer,
                              ShearAnalyzer)
 from twinpy.interfaces.aiida import (check_process_class,
                                      get_cell_from_aiida,
@@ -14,6 +12,8 @@ from twinpy.interfaces.aiida import (check_process_class,
                                      _WorkChain,
                                      AiidaRelaxWorkChain,
                                      AiidaPhonopyWorkChain)
+from twinpy.structure.base import is_hcp
+from twinpy.structure.shear import get_shear
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.plugins import WorkflowFactory
 from aiida.orm import (load_node,
@@ -72,12 +72,21 @@ class AiidaShearWorkChain(_WorkChain):
         Set twinpy structure object.
         """
         twinmode = self._shear_conf['twinmode']
-        cell = self._cells['hexagonal']
-        twinpy = get_twinpy_from_cell(
-                cell=cell,
-                twinmode=twinmode)
-        twinpy.set_shear(is_primitive=True)
-        self._shear_structure = twinpy.shear
+        lattice, scaled_positions, symbols = self._cells['hexagonal']
+        wyckoff = is_hcp(lattice=lattice,
+                         scaled_positions=scaled_positions,
+                         symbols=symbols,
+                         get_wyckoff=True)
+        shear = get_shear(lattice=lattice,
+                          symbol=symbols[0],
+                          twinmode=twinmode,
+                          wyckoff=wyckoff,
+                          xshift=0.,
+                          yshift=0.,
+                          dim=[1,1,1],
+                          shear_strain_ratio=0.0,
+                          is_primitive=True)
+        self._shear_structure = shear
 
     @property
     def shear_conf(self):

@@ -220,7 +220,7 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         Plane coordinates (z coordinates) are fractional.
         """
         orig_cells = [ relax_analyzer.final_cell_in_original_frame
-                      for relax_analyzer in self._relax_analyzers ]
+                           for relax_analyzer in self._relax_analyzers ]
         envs = [ _get_atomic_environment(cell) for cell in orig_cells ]
         return envs
 

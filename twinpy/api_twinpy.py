@@ -11,6 +11,8 @@ from twinpy.structure.shear import get_shear
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
 from twinpy.file_io import read_yaml, write_yaml
+from twinpy.interfaces.aiida import (AiidaShearWorkChain,
+                                     AiidaTwinBoudnaryRelaxWorkChain)
 
 
 def get_twinpy_from_cell(cell:tuple,
@@ -60,6 +62,9 @@ class Twinpy():
         self._shear = None
         self._twinboundary = None
         self._shear_is_primitive = None
+
+        self._shear_analyzer = None
+        self._twinboundary_analyzer = None
 
     @property
     def shear(self):
@@ -142,7 +147,33 @@ class Twinpy():
         """
         return self._twinboundary
 
-    def _shear_structure_is_not_set(self):
+    def _set_shear_analyzer(self, shear_analyzer):
+        """
+        Set shear_analyzer.
+        """
+        self._shear_analyzer = shear_analyzer
+
+    @property
+    def shear_analyzer(self):
+        """
+        Shear anylzer.
+        """
+        return self._shear_analyzer
+
+    def _set_twinboundary_analyzer(self, twinboundary_analyzer):
+        """
+        Set twinboundary_analyzer.
+        """
+        self._twinboundary_analyzer = shear_analyzer
+
+    @property
+    def twinboundary_analyzer(self):
+        """
+        Twinboundary anylzer.
+        """
+        return self._twinboundary_analyzer
+
+    def _check_shear_is_set(self):
         """
         Check shear structure is set.
 
@@ -153,7 +184,7 @@ class Twinpy():
             msg = "shear structure is not set, run please set shear"
             raise RuntimeError(msg)
 
-    def _twinboundary_structure_is_not_set(self):
+    def _check_twinboundary_is_set(self):
         """
         Check twinboudnary is set.
 
@@ -172,7 +203,7 @@ class Twinpy():
         """
         Get shear standardized structure object.
         """
-        self._shear_structure_is_not_set()
+        self._check_shear_is_set()
         cell = self._shear.get_cell_for_export(
                 get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
@@ -186,7 +217,7 @@ class Twinpy():
         """
         Get twinboundary standardized structure object.
         """
-        self._twinboundary_structure_is_not_set()
+        self._check_twinboundary_is_set()
         cell = self._twinboundary.get_cell_for_export(
                 get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
@@ -297,5 +328,62 @@ class Twinpy():
                     shear_strain_ratio=tb['shear_strain_ratio'],
                     delta=tb['delta'],
                     layers=tb['layers'])
+
+        return twinpy
+
+    @staticmethod
+    def initialize_from_aiida_shear(self,
+                                    shear_pk:int,):
+        """
+        Set shear from AiidaShearWorkChain.
+        """
+        aiida_shear = AiidaShearWorkChain(load_node(shear_pk))
+        shear_analyzer = aiida_shear.get_shear_analyzer()
+        twinmode = aiida_shear.shear_conf['twinmode']
+        cell = aiida_shear.cells['hexagonal']
+        twinpy = get_twinpy_from_cell(
+                     cell=cell,
+                     twinmode=twinmode)
+        twinpy.set_shear(xshift=0.,
+                         yshift=0.,
+                         dim=[1,1,1],
+                         shear_strain_ratio=0.,
+                         is_primitive=True)
+        twinpy._set_shear_analyzer(shear_analyzer)
+
+        return twinpy
+
+    @staticmethod
+    def initialize_from_aiida_twinboundary(self,
+                                           twinboundary_relax_pk:int,
+                                           twinboundary_phonon_pk:int=None,
+                                           additional_relax_pks:list=None,
+                                           hexagonal_relax_pk:int=None,
+                                           hexagonal_phonon_pk:int=None):
+        """
+        Set twinboundary from AiidaTwinBoudnaryRelaxWorkChain.
+        """
+        aiida_tb_relax = AiidaTwinBoudnaryRelaxWorkChain(
+                load_node(twinboundary_relax_pk))
+        tb_settings = aiida_tb_relax.twinboundary_settings
+        twinboundary_analyzer = \
+                aiida_tb_relax.get_twinboundary_analyzer(
+                    twinboundary_phonon_pk=twinboundary_phonon_pk,
+                    additional_relax_pks=additional_relax_pks,
+                    hexagonal_relax_pk=hexagonal_relax_pk,
+                    hexagonal_phonon_pk=hexagonal_phonon_pk)
+
+        twinpy = get_twinpy_from_cell(
+                     cell=aiida_tb_relax.cells['hexagonal'],
+                     twinmode=tb_settings['twinmode'])
+        twinpy.set_twinboundary(
+                layers=tb_settings['layers'],
+                delta=tb_settings['delta'],
+                twintype=tb_settings['twintpye'],
+                xshift=tb_settings['xshift'],
+                yshift=tb_settings['yshift'],
+                shear_strain_ratio=tb_settings['shear_strain_ratio'],
+                )
+        twinpy._set_twinboundary_analyzer(twinboundary_analyzer)
 
         return twinpy

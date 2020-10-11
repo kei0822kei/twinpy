@@ -6,9 +6,6 @@ Aiida interface for twinpy.
 """
 import numpy as np
 from copy import deepcopy
-from pprint import pprint
-import warnings
-from matplotlib import pyplot as plt
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.orm import (load_node,
                        Node,
@@ -23,17 +20,10 @@ from twinpy.interfaces.aiida import (check_process_class,
                                      AiidaRelaxWorkChain,
                                      AiidaPhonopyWorkChain,
                                      AiidaRelaxCollection)
-from twinpy.structure.base import check_same_cells
-from twinpy.structure.diff import get_structure_diff
-from twinpy.structure.standardize import (get_standardized_cell,
-                                          StandardizeCell)
-from twinpy.api_twinpy import get_twinpy_from_cell
-from twinpy.common.utils import print_header
-from twinpy.lattice.lattice import Lattice
-from twinpy.plot.base import line_chart
-from twinpy.analysis import (RelaxAnalyzer,
-                             PhononAnalyzer,
-                             TwinBoundaryAnalyzer)
+from twinpy.structure.base import is_hcp
+from twinpy.structure.standardize import StandardizeCell
+from twinpy.structure.twinboundary import get_twinboundary
+from twinpy.analysis import TwinBoundaryAnalyzer
 
 
 @with_dbenv()
@@ -122,22 +112,30 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         Set twinpy structure object and standardize object.
         """
         params = self._twinboundary_settings
-        cell = get_cell_from_aiida(
-                load_node(self._structure_pks['hexagonal_pk']))
-        twinpy = get_twinpy_from_cell(
-                cell=cell,
-                twinmode=params['twinmode'])
-        twinpy.set_twinboundary(
-                layers=params['layers'],
-                delta=params['delta'],
-                twintype=params['twintype'],
-                xshift=params['xshift'],
-                yshift=params['yshift'],
-                shear_strain_ratio=params['shear_strain_ratio'],
-                )
-        self._twinboundary_structure = twinpy.twinboundary
-        self._standardize = twinpy.get_twinboundary_standardize(
-                get_lattice=False, move_atoms_into_unitcell=True)
+        lattice, scaled_positions, symbols = \
+                get_cell_from_aiida(
+                        load_node(self._structure_pks['hexagonal_pk']))
+        wyckoff = is_hcp(lattice=lattice,
+                         scaled_positions=scaled_positions,
+                         symbols=symbols,
+                         get_wyckoff=True)
+        twinboundary = get_twinboundary(
+                           lattice=lattice,
+                           symbol=symbols[0],
+                           twinmode=params['twinmode'],
+                           layers=params['layers'],
+                           wyckoff=wyckoff,
+                           delta=params['delta'],
+                           twintype=params['twintype'],
+                           xshift=params['xshift'],
+                           yshift=params['yshift'],
+                           shear_strain_ratio=params['shear_strain_ratio'])
+        tb_cell = twinboundary.get_cell_for_export(
+                      get_lattice=False,
+                      move_atoms_into_unitcell=True,
+                      )
+        self._twinboundary_structure = twinboundary
+        self._standardize = StandardizeCell(cell=tb_cell)
 
     @property
     def twinboundary_structure(self):
@@ -196,15 +194,18 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                                  original_cell=original_cell)
 
         if twinboundary_phonon_pk is not None:
-            aiida_phonopy = AiidaPhonopyWorkChain(load_node(twinboundary_phonon_pk))
-            phonon_analyzer = \
-                    aiida_phonopy.get_phonon_analyzer(relax_analyzer=relax_analyzer)
+            aiida_phonopy = AiidaPhonopyWorkChain(
+                                load_node(twinboundary_phonon_pk))
+            phonon_analyzer = aiida_phonopy.get_phonon_analyzer(
+                                  relax_analyzer=relax_analyzer)
         else:
             phonon_analyzer = None
 
         if hexagonal_relax_pk is not None and hexagonal_phonon_pk is not None:
-            aiida_hex_relax = AiidaRelaxWorkChain(load_node(hexagonal_relax_pk))
-            aiida_hex_phonopy = AiidaPhonopyWorkChain(load_node(hexagonal_phonon_pk))
+            aiida_hex_relax = AiidaRelaxWorkChain(
+                                  load_node(hexagonal_relax_pk))
+            aiida_hex_phonopy = AiidaPhonopyWorkChain(
+                                    load_node(hexagonal_phonon_pk))
             hex_relax_analyzer = aiida_hex_relax.get_relax_analyzer()
             hex_phonon_analyzer = aiida_hex_phonopy.get_phonon_analyzer(
                     relax_analyzer=hex_relax_analyzer)
