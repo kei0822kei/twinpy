@@ -294,12 +294,3 @@ class StandardizeCell():
                 return (sort_std_cell, sort_list)
             else:
                 return sort_std_cell
-
-    # def convert_to_original_frame(self, cell:tuple, input_is_primitive:bool) -> tuple:
-    #     """
-    #     If you input relaxed cell,
-    #     you can get relaxed cell in original coordinate.
-    #     """
-    #     M_bar_std = cell[0].T
-    #     R = self._rotation_matrix
-    #     M_std = np.dot(np.linalg.inv(R), M_bar_std)

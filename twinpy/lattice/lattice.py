@@ -236,37 +236,33 @@ class Lattice():
         """
         first = frac_coord_first.reshape(3,1)
         second = frac_coord_second.reshape(3,1)
+
         return float(np.dot(np.dot(first.T,
                                    self._metric),
                             second))
 
-    def get_distance(self,
-                     frac_coord_first:np.array,
-                     frac_coord_second:np.array) -> float:
+    def get_norm(self,
+                 frac_coords:np.array,
+                 is_cartesian:bool=False,
+                 with_periodic:bool=True) -> float:
         """
-        Return cartesian distance between two fractional coordinate.
+        Get distance between frac_coord and origin.
 
         Args:
-            frac_coord_first (np.array): frac coord
-            frac_coord_second (np.array): frac coord
+            frac_coords (np.array): Fractional coords.
+            is_cartesian (bool): If True input coords are recognized
+                                 as cartesian.
+            with_periodic (bool): If True, consider periodic condition.
 
         Returns:
-            float: distance
-        """
-        sub = frac_coord_first - frac_coord_second
-        distance = np.linalg.norm(np.dot(self._lattice.T,
-                                         sub.reshape(3,1)))
-        return distance
-
-    def get_norm(self, frac_coord:np.array):
-        """
-        Return distance between frac_coord and origin.
-
-        Args:
-            frac_coord (np.array): frac coord
+            float: Distance in cartesian coordinate.
         """
         origin = np.array([0.,0.,0.])
-        norm = self.get_distance(frac_coord, origin)
+        norm = self.get_distance(frac_first_coords=frac_coords,
+                                 frac_second_coords=origin,
+                                 is_cartesian=is_cartesian,
+                                 with_periodic=with_periodic)
+
         return norm
 
     def get_angle(self,
@@ -294,6 +290,7 @@ class Lattice():
         angle = np.arccos(cos_angle) * 180 / np.pi
         if get_acute:
             angle = min(angle, 180.-angle)
+
         return angle
 
     def is_hexagonal_lattice(self) -> bool:
@@ -311,40 +308,67 @@ class Lattice():
             flag = True
         except AssertionError:
             flag = False
+
         return flag
 
     def get_diff(self,
-                 first_positions:np.array,
-                 second_positions:np.array,
+                 first_coords:np.array,
+                 second_coords:np.array,
                  is_cartesian:bool=False,
-                 with_periodic:bool=True):
+                 with_periodic:bool=True) -> np.array:
         """
-        Get diff between first positions and second positions.
+        Get diff between first coords and second coords.
 
         Args:
-            first_positions (np.array): Positions
-            second_positions (np.array): Positions
-            is_cartesian (bool): If True input positions are recognized
+            first_coords (np.array): Positions.
+            second_coords (np.array): Positions.
+            is_cartesian (bool): If True input coords are recognized
                                  as cartesian.
             with_periodic (bool): If True, consider periodic condition.
 
         Returns:
-            np.array: Atom diff (second_positions - first_positions)
+            np.array: Atom diff (second_coords - first_coords)
                       in fractional coordinate.
         """
         if is_cartesian:
             _first_frac = np.dot(np.linalg.inv(self._lattice.T),
-                                 first_positions.T).T
+                                 first_coords.T).T
             _second_frac = np.dot(np.linalg.inv(self._lattice.T),
-                                  second_positions.T).T
+                                  second_coords.T).T
         else:
-            _first_frac = deepcopy(first_positions)
-            _second_frac = deepcopy(second_positions)
+            _first_frac = deepcopy(first_coords)
+            _second_frac = deepcopy(second_coords)
 
         if with_periodic:
             _diff = np.round((_second_frac - _first_frac) % 1, decimals=8)
             diff = np.where(_diff>0.5, _diff-1, _diff)
         else:
-            diff =  _second_frac - _first_frac
+            diff = _second_frac - _first_frac
 
         return diff
+
+    def get_distance(self,
+                     frac_first_coords:np.array,
+                     frac_second_coords:np.array,
+                     is_cartesian:bool=False,
+                     with_periodic:bool=True) -> float:
+        """
+        Get cartesian distance between two fractional coordinate.
+
+        Args:
+            frac_first_coords (np.array): Fractional coords.
+            frac_second_coords (np.array): Fractional coords.
+            is_cartesian (bool): If True input coords are recognized
+                                 as cartesian.
+            with_periodic (bool): If True, consider periodic condition.
+
+        Returns:
+            float: Distance in cartesian coordinate.
+        """
+        diff = self.get_diff(first_coords=frac_first_coords,
+                             second_coords=frac_second_coords,
+                             is_cartesian=is_cartesian,
+                             with_periodic=with_periodic)
+        distance = np.linalg.norm(np.dot(self.lattice.T, diff.T))
+
+        return distance
