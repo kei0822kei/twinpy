@@ -4,14 +4,14 @@
 """
 Aiida interface for twinpy.
 """
-from twinpy.analysis import (PhononAnalyzer,
-                             ShearAnalyzer)
-from twinpy.interfaces.aiida import (check_process_class,
-                                     get_cell_from_aiida,
-                                     get_workflow_pks,
-                                     _WorkChain,
-                                     AiidaRelaxWorkChain,
-                                     AiidaPhonopyWorkChain)
+from twinpy.analysis.phonon_analyzer import PhononAnalyzer
+from twinpy.analysis.shear_analyzer import ShearAnalyzer
+from twinpy.interfaces.aiida.base import (check_process_class,
+                                          get_cell_from_aiida,
+                                          get_workflow_pks,
+                                          _WorkChain)
+from twinpy.interfaces.aiida.vasp import AiidaRelaxWorkChain
+from twinpy.interfaces.aiida.phonopy import AiidaPhonopyWorkChain
 from twinpy.structure.base import is_hcp
 from twinpy.structure.shear import get_shear
 from aiida.cmdline.utils.decorators import with_dbenv

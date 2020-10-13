@@ -6,10 +6,11 @@ Aiida interface for twinpy.
 """
 from pprint import pprint
 import warnings
-from twinpy.interfaces.aiida import (check_process_class,
-                                     get_cell_from_aiida)
+from twinpy.interfaces.aiida.base import (check_process_class,
+                                          get_cell_from_aiida,
+                                          _WorkChain)
+from twinpy.interfaces.aiida.vasp import AiidaRelaxWorkChain
 from twinpy.interfaces.phonopy import get_phonopy_structure
-from twinpy.interfaces.aiida import AiidaRelaxWorkChain
 from twinpy.common.utils import print_header
 from twinpy.analysis.phonon_analyzer import (RelaxAnalyzer,
                                              PhononAnalyzer)
@@ -18,8 +19,6 @@ from aiida.common import NotExistentAttributeError
 from aiida.orm import (load_node,
                        Node)
 from phonopy import Phonopy
-
-from twinpy.interfaces.aiida import _WorkChain
 
 
 @with_dbenv()

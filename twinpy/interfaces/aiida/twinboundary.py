@@ -13,17 +13,17 @@ from aiida.orm import (load_node,
                        Float,
                        Int,
                        Bool)
-from twinpy.interfaces.aiida import (check_process_class,
-                                     get_aiida_structure,
-                                     get_cell_from_aiida,
-                                     _WorkChain,
-                                     AiidaRelaxWorkChain,
-                                     AiidaPhonopyWorkChain,
-                                     AiidaRelaxCollection)
+from twinpy.interfaces.aiida.base import (check_process_class,
+                                          get_aiida_structure,
+                                          get_cell_from_aiida,
+                                          _WorkChain)
+from twinpy.interfaces.aiida.vasp import (AiidaRelaxWorkChain,
+                                          AiidaRelaxCollection)
+from twinpy.interfaces.aiida.phonopy import AiidaPhonopyWorkChain
 from twinpy.structure.base import is_hcp
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
-from twinpy.analysis import TwinBoundaryAnalyzer
+from twinpy.analysis.twinboundary_analyzer import TwinBoundaryAnalyzer
 
 
 @with_dbenv()

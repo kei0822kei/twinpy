@@ -239,9 +239,9 @@ def _get_atomic_environment(cell) -> tuple:
                 - sort_atoms[[i for i in range(0,natom,2)]]
     bond_coords = []
     for i in range(len(sub_orig)):
-        norm_orig = lattice.get_norm(sub_orig[i])
-        norm_plus = lattice.get_norm(sub_plus[i])
-        norm_minus = lattice.get_norm(sub_minus[i])
+        norm_orig = lattice.get_norm(sub_orig[i], with_periodic=False)
+        norm_plus = lattice.get_norm(sub_plus[i], with_periodic=False)
+        norm_minus = lattice.get_norm(sub_minus[i], with_periodic=False)
         norms = [norm_orig, norm_plus, norm_minus]
         if min(norms) == norm_orig:
             bond_coords.append(sub_orig[i])

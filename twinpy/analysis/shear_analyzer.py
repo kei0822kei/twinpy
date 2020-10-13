@@ -233,17 +233,19 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         fig = plt.figure(figsize=(8,13))
         ax = fig.add_subplot(111)
 
-        cs, alphas, linewidths, linestyles = \
-                get_plot_properties_for_trajectory(plot_nums=len(envs))
-
-        for i in range(len(envs)):
-            if i == 0:
+        for i, ratio in enumerate(self._shear_strain_ratios):
+            if i == len(envs)-1:
                 decorate = True
             else:
                 decorate = False
-            plot_plane(ax, distances=envs[i][1], z_coords=envs[i][0],
-                       decorate=decorate, c=cs[i], alpha=alphas[i],
-                       linewidth=linewidths[i], linestyle=linestyles[i])
+            label = "shear ratio: %1.2f" % ratio
+            plot_plane(ax,
+                       distances=envs[i][1],
+                       z_coords=envs[i][0],
+                       label=label,
+                       decorate=decorate,
+                       )
+            ax.legend()
 
         return fig
 
@@ -251,43 +253,48 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         """
         Plot angle diff.
         """
-        initial_env, final_env = self.get_atomic_environment()
+        envs = self.get_atomic_environment()
 
         fig = plt.figure(figsize=(8,13))
         ax = fig.add_subplot(111)
 
-        plot_angle(ax, angles=initial_env[2], z_coords=initial_env[0],
-                   decorate=False, label='Initial')
-        plot_angle(ax, angles=final_env[2], z_coords=final_env[0],
-                   label='Final')
+        for i, ratio in enumerate(self._shear_strain_ratios):
+            if i == len(envs)-1:
+                decorate = True
+            else:
+                decorate = False
+            label = "shear ratio: %1.2f" % ratio
+            plot_angle(ax,
+                       z_coords=envs[i][0],
+                       angles=envs[i][2],
+                       label=label,
+                       decorate=decorate,
+                       )
+            ax.legend()
 
         return fig
 
-    def plot_atom_diff(self, direction='x', shuffle:bool=False):
+    def plot_atom_diff(self, direction='x', shuffle:bool=True):
         """
         Plot atom diff.
         """
         i_f_cells = [ [ relax_analyzer.original_cell,
                         relax_analyzer.final_cell_in_original_frame]
                             for relax_analyzer in self._relax_analyzers ]
-        cs, alphas, linewidths, linestyles = \
-                get_plot_properties_for_trajectory(plot_nums=len(i_f_cells))
-
         fig = plt.figure(figsize=(8,13))
         ax = fig.add_subplot(111)
 
         for i, cells in enumerate(i_f_cells):
-            if i == 0:
-                continue
+            if i == len(i_f_cells)-1:
+                decorate = True
             else:
                 decorate = False
+            label = "shear ratio: %1.2f" % self._shear_strain_ratios[i]
             plot_atom_diff(ax,
                            initial_cell=cells[0],
                            final_cell=cells[1],
                            decorate=decorate,
                            direction=direction,
+                           label=label,
                            shuffle=shuffle,
-                           c=cs[i],
-                           alpha=alphas[i],
-                           linewidth=linewidths[i],
-                           linestyle=linestyles[i])
+                           )

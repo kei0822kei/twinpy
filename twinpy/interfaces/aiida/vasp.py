@@ -8,9 +8,9 @@ import numpy as np
 from pprint import pprint
 import warnings
 from matplotlib import pyplot as plt
-from twinpy.interfaces.aiida import (check_process_class,
-                                     get_cell_from_aiida,
-                                     _WorkChain)
+from twinpy.interfaces.aiida.base import (check_process_class,
+                                          get_cell_from_aiida,
+                                          _WorkChain)
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from twinpy.common.utils import print_header
 from twinpy.plot.relax import RelaxPlot

@@ -281,15 +281,19 @@ class Lattice():
             float: angle
         """
         origin = np.array([0.,0.,0.])
-        norm_first = self.get_distance(frac_coord_first, origin)
-        norm_second = self.get_distance(frac_coord_second, origin)
+        norm_first = self.get_distance(frac_coord_first,
+                                       origin,
+                                       with_periodic=False)
+        norm_second = self.get_distance(frac_coord_second,
+                                        origin,
+                                        with_periodic=False)
         inner_product = self.dot(frac_coord_first=frac_coord_first,
                                  frac_coord_second=frac_coord_second)
         cos_angle = np.round(inner_product / (norm_first * norm_second),
                              decimals=8)
         angle = np.arccos(cos_angle) * 180 / np.pi
         if get_acute:
-            angle = min(angle, 180.-angle)
+            angle = min(angle, 180-angle)
 
         return angle
 
