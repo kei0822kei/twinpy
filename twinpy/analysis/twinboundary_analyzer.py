@@ -7,13 +7,16 @@ Analize twinboudnary relax calculation.
 import numpy as np
 from copy import deepcopy
 from matplotlib import pyplot as plt
+from aiida.orm import load_node
 from twinpy.structure.bonding import _get_atomic_environment
-from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.twinboundary import TwinBoundaryStructure
 from twinpy.structure.standardize import StandardizeCell, get_standardized_cell
-from twinpy.analysis import (RelaxAnalyzer,
-                             PhononAnalyzer,
-                             TwinBoundaryShearAnalyzer)
+
+from twinpy.interfaces.aiida.vasp import AiidaRelaxWorkChain
+from twinpy.interfaces.aiida.phonopy import AiidaPhonopyWorkChain
+from twinpy.analysis.relax_analyzer import RelaxAnalyzer
+from twinpy.analysis.phonon_analyzer import PhononAnalyzer
+from twinpy.analysis.shear_analyzer import TwinBoundaryShearAnalyzer
 from twinpy.plot.relax import plot_atom_diff
 from twinpy.plot.twinboundary import plot_plane, plot_angle
 
@@ -220,14 +223,42 @@ class TwinBoundaryAnalyzer():
         Args:
             shear_phonon_analyzers (list): List of additional shear
                                            phonon analyzers.
+            shear_strain_ratios (list): Shear shear_strain_ratios.
         """
-        phonon_analyzers = deepcopy(shear_phonon_analyzers)
-        ratios = deepcopy(shear_strain_ratios)
-        phonon_analyzers.insert(0, self._phonon_analyzer)
-        ratios.insert(0, 0.)
+        twinboundary_shear_analyzer = TwinBoundaryShearAnalyzer(
+                phonon_analyzers=shear_phonon_analyzers,
+                shear_strain_ratios=shear_strain_ratios)
+        return twinboundary_shear_analyzer
+
+    def get_twinboundary_shear_analyzer_from_pks(self,
+                                                 shear_relax_pks:list,
+                                                 shear_phonon_pks:list,
+                                                 shear_strain_ratios:list):
+        """
+        Get TwinBoundaryShearAnalyzer class object from pks.
+
+        Args:
+            shear_relax_pks (list): Relaxes for shear structures.
+            shear_phonon_pks (list): Phonon calculations for shear structures.
+            shear_strain_ratios (list): Shear shear_strain_ratios.
+        """
+        original_cells = [ self.get_shear_cell(shear_strain_ratio=ratio,
+                                               is_standardize=False)
+                               for ratio in shear_strain_ratios ]
+        aiida_relaxes = [ AiidaRelaxWorkChain(load_node(pk))
+                              for pk in shear_relax_pks ]
+        relax_analyzers = [ relax.get_relax_analyzer(
+                                    original_cell=original_cells[i])
+                                for i, relax in enumerate(aiida_relaxes) ]
+        aiida_phonons = [ AiidaPhonopyWorkChain(load_node(pk))
+                              for pk in shear_phonon_pks ]
+        phonon_analyzers = [ phonon.get_phonon_analyzer(
+                                     relax_analyzer=relax_analyzers[i])
+                                 for i, phonon in enumerate(aiida_phonons) ]
         twinboundary_shear_analyzer = TwinBoundaryShearAnalyzer(
                 phonon_analyzers=phonon_analyzers,
-                shear_strain_ratios=ratios)
+                shear_strain_ratios=shear_strain_ratios)
+
         return twinboundary_shear_analyzer
 
     def get_atomic_environment(self) -> list:
@@ -278,9 +309,14 @@ class TwinBoundaryAnalyzer():
 
         return fig
 
-    def plot_atom_diff(self):
+    def plot_atom_diff(self,
+                       shuffle:bool=True):
         """
         Plot atom diff.
+
+        Args:
+            shuffle (bool): If True, diffrence of scaled positions,
+                            which ignore lattice shear, are ploted.
         """
         initial_cell = self._relax_analyzer.original_cell
         final_cell = self._relax_analyzer.final_cell_in_original_frame
@@ -288,6 +324,16 @@ class TwinBoundaryAnalyzer():
         fig = plt.figure(figsize=(8,13))
         ax = fig.add_subplot(111)
 
-        plot_atom_diff(ax,
-                       initial_cell=initial_cell,
-                       final_cell=final_cell)
+        for direction in ['x', 'y', 'z']:
+            if direction == 'z':
+                decorate = True
+            else:
+                decorate = False
+            plot_atom_diff(ax,
+                           initial_cell=initial_cell,
+                           final_cell=final_cell,
+                           decorate=decorate,
+                           direction=direction,
+                           shuffle=shuffle,
+                           label=direction,
+                           )

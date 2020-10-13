@@ -227,7 +227,8 @@ def plot_atom_diff(ax,
                    final_cell:tuple,
                    decorate:bool=True,
                    direction:str='x',
-                   shuffle:bool=False,
+                   shuffle:bool=True,
+                   label:str='default',
                    **kwargs):
     """
     Plot atom diff.
@@ -235,6 +236,10 @@ def plot_atom_diff(ax,
     Args:
         initial_cell (tuple): Initial cell.
         final_cell (tuple): Final cell.
+        decorate (bool): If True, decorate figure.
+        direction (str): Diff direction.
+        shuffle (bool): If True, diffrence of scaled positions,
+                        which ignore lattice shear, are ploted.
     """
     diff = get_structure_diff(cells=[initial_cell, final_cell],
                               include_base=False)
@@ -246,14 +251,15 @@ def plot_atom_diff(ax,
 
     z_coords = np.dot(initial_cell[0].T, initial_cell[1].T).T[:,2]
 
+    if label == 'default':
+        label = direction
+
     if decorate:
         xlabel = 'Distance [angstrom]'
         ylabel = 'Initial z coordinate'
-        label = direction
     else:
         xlabel = None
         ylabel = None
-        label = None
 
     dic = {'x': 0, 'y': 1, 'z': 2}
     idx = dic[direction]
