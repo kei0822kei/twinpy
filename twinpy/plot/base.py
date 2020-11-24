@@ -27,7 +27,7 @@ def line_chart(ax,
 
     Args:
         sort_by (str): if sort_by == 'y', sort by y data
-        kwargs: c, marker, facecolor
+        kwargs: c, marker, facecolor, s
     """
     if 'c' in kwargs.keys():
         c = kwargs['c']
@@ -40,6 +40,11 @@ def line_chart(ax,
     else:
         marker_num = len(ax.get_lines()) % len(DEFAULT_MARKERS)
         marker = DEFAULT_MARKERS[marker_num]
+
+    if 's' in kwargs.keys():
+        s = kwargs['s']
+    else:
+        s = None
 
     if 'facecolor' in kwargs.keys():
         facecolor = kwargs['facecolor']
@@ -58,9 +63,9 @@ def line_chart(ax,
         idx = np.array(xdata).argsort()
     sort = raw[:,idx]
     ax.plot(sort[0,:], sort[1,:], linestyle='--', linewidth=0.5, c=c,
-            alpha=alpha, label=label)
+            alpha=alpha)
     ax.scatter(sort[0,:], sort[1,:], facecolor=facecolor, marker=marker,
-               edgecolor=c, alpha=alpha)
+               edgecolor=c, alpha=alpha, label=label, s=s)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
 
@@ -94,7 +99,7 @@ def line_chart_group(ax,
                    ylabel=ylabel,
                    label=label,
                    **kwargs)
-    ax.legend()
+    # ax.legend()
 
 
 def line_chart_group_trajectory(ax,

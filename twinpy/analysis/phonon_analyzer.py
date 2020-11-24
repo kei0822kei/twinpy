@@ -12,6 +12,7 @@ from phonopy.phonon.band_structure import (
         BandStructure)
 from twinpy.interfaces.phonopy import get_cell_from_phonopy_structure
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
+from twinpy.common.band_path import get_seekpath
 from twinpy.structure.base import check_same_cells
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 
@@ -31,6 +32,7 @@ class PhononAnalyzer():
             phonon: Phonopy class object.
         """
         self._phonon = phonon
+        self._symmetrize_fc()
         self._relax_analyzer = None
         if relax_analyzer is not None:
             self.set_relax_analyzer(relax_analyzer)
@@ -41,6 +43,12 @@ class PhononAnalyzer():
         self._reciprocal_lattice = None
         self._original_reciprocal_lattice = None
         self._set_reciprocal_lattice()
+
+    def _symmetrize_fc(self):
+        """
+        Symmetrize force constants.
+        """
+        self._phonon.symmetrize_force_constants()
 
     def _set_primitive_cell(self):
         """
@@ -126,8 +134,24 @@ class PhononAnalyzer():
                             pk<number>_phonopy.yaml.
         """
         if filename is None:
-            filename = 'pk%d_phonopy.yaml' % self._pk
+            filename = "phonopy_params.yaml"
         self._phonon.save(filename)
+
+    def get_reciprocal_high_symmetry_points(self):
+        """
+        Get reciprocal high symmetry points.
+
+        Returns:
+            dict: Contains point coordinates for primitive and original.
+        """
+        point_coords = get_seekpath(cell=self._primitive_cell)['point_coords']
+        point_coords_orig = {}
+        for key in point_coords.keys():
+            orig_qpt = self.get_qpoints_from_primitive_to_original(
+                               qpoints=point_coords[key])
+            point_coords_orig[key] = list(orig_qpt)
+
+        return {'primitive': point_coords, 'original': point_coords_orig}
 
     def get_qpoints_from_original_to_primitive(self,
                                                qpoints:np.array,
@@ -176,6 +200,7 @@ class PhononAnalyzer():
         else:
             qmat_cart = np.dot(recip_mat, np.array(qpoints).T)
         qmat_orig_cart = np.dot(np.linalg.inv(rotation_matrix), qmat_cart)
+
         if output_is_cart:
             output_qpoints = qmat_orig_cart.T
         else:
@@ -270,7 +295,9 @@ class PhononAnalyzer():
                  is_store:bool=True,
                  get_phonon:bool=False,
                  dry_run:bool=False,
-                 is_eigenvectors:bool=False):
+                 is_eigenvectors:bool=False,
+                 is_gamma_center:bool=True,
+                 verbose:bool=True):
         """
         Run mesh for both hexagonal and twinboundary phonon.
 
@@ -281,6 +308,9 @@ class PhononAnalyzer():
                                which is independent from self._phonon.
             dry_run (bool): If True, show sampling mesh information
                             and not run.
+
+        Todo:
+            Fix get_phonon because currenly cannot get thermal_displacement_matrices for gottern phonon object.
         """
         kpt = get_mesh_offset_from_direct_lattice(
                 lattice=self._primitive_cell[0],
@@ -292,7 +322,8 @@ class PhononAnalyzer():
             print("# dry_run is evoked.")
 
         else:
-            print("run mesh with {}".format(kpt['mesh']))
+            if verbose:
+                print("run mesh with {}".format(kpt['mesh']))
             if is_store:
                 _phonon = self._phonon
             else:
@@ -303,11 +334,67 @@ class PhononAnalyzer():
                     is_time_reversal=True,
                     is_mesh_symmetry=False,  # necessary for calc ellipsoid
                     is_eigenvectors=is_eigenvectors,
-                    is_gamma_center=False,
+                    is_gamma_center=is_gamma_center,
                     run_immediately=True)
 
         if get_phonon:
             return _phonon
+
+    def get_total_dos(self,
+                      is_store:bool=True,
+                      sigma=None,
+                      freq_min=None,
+                      freq_max=None,
+                      freq_pitch=None,
+                      use_tetrahedron_method=True):
+        """
+        Get total dos.
+
+        Args:
+            is_store (bool): If True, result is stored in self._phonon.total_dos
+        """
+        if is_store:
+            _phonon = self._phonon
+        else:
+            _phonon = deepcopy(self._phonon)
+
+        _phonon.run_total_dos(sigma=sigma,
+                              freq_min=freq_min,
+                              freq_max=freq_max,
+                              freq_pitch=freq_pitch,
+                              use_tetrahedron_method=use_tetrahedron_method)
+
+        return _phonon.total_dos
+
+    def get_projected_dos(self,
+                        is_store:bool=True,
+                        sigma=None,
+                        freq_min=None,
+                        freq_max=None,
+                        freq_pitch=None,
+                        use_tetrahedron_method=True,
+                        direction=None,
+                        xyz_projection=None):
+        """
+        Get projected dos.
+
+        Args:
+            is_store (bool): If True, result is stored in self._phonon.projected_dos
+        """
+        if is_store:
+            _phonon = self._phonon
+        else:
+            _phonon = deepcopy(self._phonon)
+
+        _phonon.run_projected_dos(sigma=sigma,
+                                  freq_min=freq_min,
+                                  freq_max=freq_max,
+                                  freq_pitch=freq_pitch,
+                                  use_tetrahedron_method=use_tetrahedron_method,
+                                  direction=direction,
+                                  xyz_projection=xyz_projection)
+
+        return _phonon.projected_dos
 
     def get_thermal_displacement_matrices(self,
                                           t_step:int=100,

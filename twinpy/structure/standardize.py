@@ -294,3 +294,18 @@ class StandardizeCell():
                 return (sort_std_cell, sort_list)
             else:
                 return sort_std_cell
+
+    # def add_standardized_to_original_operation(cell:tuple, cell_is_primitve=True):
+    #     """
+    #     Add primitive to original operation toward input cell.
+    #     """
+    #     # lattice
+    #     R = self._rotation_matrix
+    #     P = self._transformation_matrix
+    #     P_c = self._conv_to_prim_matrix
+    #     p = self._origin_shift
+
+    #     if cell_is_primitve:
+    #         M_bar_p = np.transpose(cell[0])
+    #         M_p = np.dot(R.T, M_bar_p)
+    #         M_s = np.dot(M_p, np.linalg.inv(P_c))

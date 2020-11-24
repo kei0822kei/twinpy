@@ -11,6 +11,7 @@ from twinpy.structure.bonding import _get_atomic_environment
 from twinpy.plot.twinboundary import plot_plane, plot_angle
 from twinpy.plot.relax import plot_atom_diff
 from twinpy.plot.base import get_plot_properties_for_trajectory
+from twinpy.file_io import write_poscar
 
 
 class _BaseShearAnalyzer():
@@ -146,6 +147,80 @@ class _BaseShearAnalyzer():
 
         return band_structures
 
+    def run_mesh(self,
+                 interval:float=0.1,
+                 is_store:bool=True,
+                 is_gamma_center:bool=True,
+                 dry_run:bool=False,
+                 is_eigenvectors:bool=False,
+                 verbose:bool=True):
+        """
+        Run mesh.
+
+        Args:
+            interval (float): mesh interval
+            is_store (bool): If True, result is stored in self._phonon.
+            dry_run (bool): If True, show sampling mesh information
+                            and not run.
+        """
+        for phonon in self._phonon_analyzers:
+            phonon.run_mesh(interval=interval,
+                            is_store=is_store,
+                            dry_run=dry_run,
+                            is_eigenvectors=is_eigenvectors,
+                            is_gamma_center=is_gamma_center,
+                            verbose=True)
+
+    def get_total_doses(self,
+                        is_store:bool=True,
+                        sigma=None,
+                        freq_min=None,
+                        freq_max=None,
+                        freq_pitch=None,
+                        use_tetrahedron_method=True):
+        """
+        Get total doses.
+        """
+        tdoses = []
+        for phonon in self._phonon_analyzers:
+            tdos = phonon.get_total_dos(
+                    is_store=is_store,
+                    sigma=sigma,
+                    freq_min=freq_min,
+                    freq_max=freq_max,
+                    freq_pitch=freq_pitch,
+                    use_tetrahedron_method=use_tetrahedron_method)
+            tdoses.append(tdos)
+
+        return tdoses
+
+    def get_projected_doses(self,
+                            is_store:bool=True,
+                            sigma=None,
+                            freq_min=None,
+                            freq_max=None,
+                            freq_pitch=None,
+                            use_tetrahedron_method=True,
+                            direction=None,
+                            xyz_projection=None):
+        """
+        Get projected doses.
+        """
+        pdoses = []
+        for phonon in self._phonon_analyzers:
+            pdos = phonon.get_projected_dos(
+                    is_store=is_store,
+                    sigma=sigma,
+                    freq_min=freq_min,
+                    freq_max=freq_max,
+                    freq_pitch=freq_pitch,
+                    use_tetrahedron_method=use_tetrahedron_method,
+                    direction=direction,
+                    xyz_projection=xyz_projection)
+            pdoses.append(pdos)
+
+        return pdoses
+
 
 class ShearAnalyzer(_BaseShearAnalyzer):
     """
@@ -219,10 +294,17 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         Return list of z coordinates of original cell frame.
         Plane coordinates (z coordinates) are fractional.
         """
-        orig_cells = [ relax_analyzer.final_cell_in_original_frame
-                           for relax_analyzer in self._relax_analyzers ]
+        orig_cells = self.get_final_cells_in_original_frame()
         envs = [ _get_atomic_environment(cell) for cell in orig_cells ]
         return envs
+
+    def get_final_cells_in_original_frame(self) -> list:
+        """
+        Get final cells in original frame.
+        """
+        orig_cells = [ relax_analyzer.final_cell_in_original_frame
+                           for relax_analyzer in self._relax_analyzers ]
+        return orig_cells
 
     def plot_plane_diff(self):
         """
@@ -298,3 +380,18 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
                            label=label,
                            shuffle=shuffle,
                            )
+
+    def write_poscars(self, header:str='', is_original_frame:bool=True):
+        """
+        Write poscars
+
+        Args:
+            header (str): File header.
+            is_original_frame (bool): Poscar is in original frame.
+        """
+        orig_cells = [ relax_analyzer.final_cell_in_original_frame
+                           for relax_analyzer in self._relax_analyzers ]
+        for i, cell in enumerate(orig_cells):
+            filename = header + "{}_s{}.poscar".format(
+                    i, self._shear_strain_ratios[i])
+            write_poscar(cell=cell, filename=filename)

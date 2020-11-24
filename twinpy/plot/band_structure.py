@@ -7,142 +7,9 @@ Band plot.
 
 import numpy as np
 from copy import deepcopy
-import spglib
-from matplotlib import pyplot as plt
-import mpl_toolkits.axes_grid1
-from phonopy.phonon.band_structure import BandPlot as PhonopyBandPlot
 from phonopy.phonon.band_structure import BandStructure
-from phonopy.phonon.dos import TotalDos as PhonopyTotalDos
-from phonopy.phonon.band_structure import get_band_qpoints_and_path_connections
-from mpl_toolkits.axes_grid1 import ImageGrid
-import matplotlib.cm as cm
-import seekpath
-from twinpy.lattice.lattice import Lattice
-from twinpy.interfaces.phonopy import get_cell_from_phonopy_structure
-from twinpy.plot.base import create_figure_axes, get_plot_properties_for_trajectory
-from twinpy.plot.dos import total_doses_plot
-
-
-def get_labels_for_twin() -> dict:
-    """
-    Get labels for hexagonal twin.
-
-    Returns:
-        dict: Contain keys and qpoints.
-
-    Examples:
-        Labels and qpoints for twin is as bellow.
-
-        >>> label_qpoints = {
-                'GAMMA': [0, 0, 0],
-                'M_1'  : [1/2, 0, 0],
-                'M_2'  : [-1/2, 1/2, 0],
-                'K_1'  : [1/3, 1/3, 0],
-                'K_2'  : [-1/3, 2/3, 0],
-                'A'    : [0, 0, 1/2],
-                'L_1'  : [1/2, 0, 1/2],
-                'L_2'  : [-1/2, 1/2, 1/2],
-                'H_1'  : [1/3, 1/3, 1/2],
-                'H_2'  : [-1/3, 2/3, 1/2],
-                }
-    """
-    label_qpoints = {
-        'GAMMA': [0, 0, 0],
-        'M_1'  : [1/2, 0, 0],
-        'M_2'  : [-1/2, 1/2, 0],
-        'K_1'  : [1/3, 1/3, 0],
-        'K_2'  : [-1/3, 2/3, 0],
-        'A'    : [0, 0, 1/2],
-        'L_1'  : [1/2, 0, 1/2],
-        'L_2'  : [-1/2, 1/2, 1/2],
-        'H_1'  : [1/3, 1/3, 1/2],
-        'H_2'  : [-1/3, 2/3, 1/2],
-    }
-    return label_qpoints
-
-
-def get_seekpath(cell:tuple) -> dict:
-    """
-    Get seekpath results.
-
-    Args:
-        cell (tuple): Cell.
-
-    Returns:
-        dict: Labels and corresponding qpoints.
-    """
-    if type(cell[2][0]) is str:
-        from twinpy.structure.base import get_numbers_from_symbols
-        numbers = get_numbers_from_symbols(cell[2])
-        _cell = (cell[0], cell[1], numbers)
-    else:
-        _cell = cell
-    skp = seekpath.get_path(_cell)
-    return skp
-
-
-def get_labels_band_paths_from_seekpath(cell:tuple):
-    """
-    Get labels and band paths from seekpath result.
-
-    Args:
-        cell (tuple): Cell.
-
-    Returns:
-        list: labels
-        np.array: band paths
-    """
-    skp = get_seekpath(cell)
-    paths = skp['path']
-    labels = []
-    for path in paths:
-        try:
-            if labels[-1] != path[0]:
-                labels.extend(['', path[0]])
-        except IndexError:
-            labels.append(path[0])
-        labels.append(path[1])
-    labels_qpoints = skp['point_coords']
-    lb, band_paths = get_band_paths_from_labels(
-            labels=labels,
-            labels_qpoints=labels_qpoints)
-    return lb, band_paths
-
-
-def get_band_paths_from_labels(labels:list=None,
-                               labels_qpoints:dict=None):
-    """
-    Get segment qpoints which is input for phonopy.
-
-    Args:
-        labels (list): List of labels. If you want to separate band structure,
-                       add '' between labels. See Examples.
-        labels_qpoints (dict): Dictionary for labels and corresponding qpoints.
-
-    Returns:
-        list: labels
-        np.array: band paths
-
-    Examples:
-        >>> labels = ['GAMMA', 'M_1', '', 'K_1', 'GAMMA']
-        >>> get_segment_qpoints_from_labels(labels)
-            [[[  0,   0, 0],
-              [1/2,   0, 0]],
-             [[1/3, 1/3, 0],
-              [  0,   0, 0]]]
-    """
-    seg_qpt = []
-    qpt = []
-    lb = []
-    for label in labels:
-        if label == '':
-            seg_qpt.append(qpt)
-            qpt = []
-        else:
-            qpt.append(labels_qpoints[label])
-            lb.append(label)
-    seg_qpt.append(qpt)
-    return lb, seg_qpt
+from twinpy.plot.base import (create_figure_axes,
+                              get_plot_properties_for_trajectory)
 
 
 def decorate_string_for_latex(string):
@@ -250,7 +117,8 @@ class BandPlot():
         distances = self._band_structure.get_distances()
         path_connections = self._band_structure.path_connections
         if self._labels is None:
-            labels = [''] * (len(path_connections) * 2 - path_connections.count(True))
+            labels = [''] * (len(path_connections) * 2
+                                 - path_connections.count(True))
         else:
             labels = self._labels
 
@@ -339,13 +207,27 @@ class BandPlot():
         ax.set_xlim(min(distances), max(distances))
         if show_yscale:
             labelleft = True
-            ax.set_ylabel(decorate_string_for_latex("Frequency [THz]"),
-                          fontsize=20)
         else:
             labelleft = False
         ax.tick_params(axis='y', labelsize=16)
         ax.tick_params(labelbottom=True,
                        labelleft=labelleft,
+                       labelright=False,
+                       labeltop=False,
+                       bottom=True,
+                       left=True,
+                       right=False,
+                       top=False)
+
+    def plot_ylabel(self, ax):
+        """
+        Plot ylabel.
+        """
+        ax.set_ylabel(decorate_string_for_latex("Frequency [THz]"),
+                      fontsize=20)
+        ax.tick_params(axis='y', labelsize=16)
+        ax.tick_params(labelbottom=True,
+                       labelleft=True,
                        labelright=False,
                        labeltop=False,
                        bottom=True,
@@ -374,19 +256,22 @@ class BandPlot():
         """
         Plot horizontal line.
         """
-        ax.axhline(hval, c='b', linestyle='--', linewidth=0.5)
+        ax.axhline(hval, c='grey', linestyle='--', linewidth=0.5)
 
-    def plot_band_structure(self):
+    def plot_band_structure(self, figsize=(8,6)):
         """
         Plot band structure.
         """
-        fig, axes = create_figure_axes(ratios=self._axes_distances,
+        fig, axes = create_figure_axes(figsize=figsize,
+                                       ratios=self._axes_distances,
                                        axes_pad=0.03)
         for i, ax in enumerate(axes):
             if i == 0:
                 show_yscale = True
+                self.plot_ylabel(ax)
             else:
                 show_yscale = False
+
             self.plot_segment_band_structure(
                     ax=ax,
                     frequences=self._segment_frequences[i],
@@ -420,7 +305,7 @@ class BandsPlot():
         self._ylim = None
         self._min_frequency = None
         self._max_frequency = None
-        self.set_ylim(ymin=None, ymax=None)
+        # self.set_ylim(ymin=None, ymax=None)
         self._cs = None
         self._alphas = None
         self._linewidths = None
@@ -436,7 +321,7 @@ class BandsPlot():
                         plot_nums=len(self._bandplots),
                         base_color=base_color)
 
-    def set_ylim(self, ymin:float=None, ymax:float=None):
+    def set_ylim(self, ax, ymin:float=None, ymax:float=None):
         """
         Set ylim.
 
@@ -446,8 +331,10 @@ class BandsPlot():
             ymax (float): If None, max(frequences) +
                           (max(frequences) - min(frequences)) * 1.05 is set.
         """
-        freq_min = min([ bandplot.min_frequency for bandplot in self._bandplots ])
-        freq_max = max([ bandplot.max_frequency for bandplot in self._bandplots ])
+        freq_min = min([ bandplot.min_frequency
+                             for bandplot in self._bandplots ])
+        freq_max = max([ bandplot.max_frequency
+                             for bandplot in self._bandplots ])
         span = freq_max - freq_min
         if ymin is None:
             _ymin = freq_min - span * 0.05
@@ -460,6 +347,7 @@ class BandsPlot():
         self._min_frequency = freq_min
         self._max_frequency = freq_max
         self._ylim = (_ymin, _ymax)
+        ax.set_ylim(self._ylim)
 
     @property
     def band_structures(self):
@@ -489,7 +377,7 @@ class BandsPlot():
         """
         return self._max_frequency
 
-    def plot_band_structures(self):
+    def plot_band_structures(self, figsize=(8,6)):
         """
         Plot band structures.
 
@@ -497,7 +385,8 @@ class BandsPlot():
             fig: Figure.
             axes (list): Axes.
         """
-        fig, axes = create_figure_axes(ratios=self._axes_distances,
+        fig, axes = create_figure_axes(figsize=figsize,
+                                       ratios=self._axes_distances,
                                        axes_pad=0.03)
         for j, bandplot in enumerate(self._bandplots):
             for i, ax in enumerate(axes):
