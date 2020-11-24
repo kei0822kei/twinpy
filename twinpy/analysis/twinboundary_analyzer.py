@@ -231,7 +231,8 @@ class TwinBoundaryAnalyzer():
         strain_ratios.extend(shear_strain_ratios)
         twinboundary_shear_analyzer = TwinBoundaryShearAnalyzer(
                 phonon_analyzers=phonon_analyzers,
-                shear_strain_ratios=strain_ratios)
+                shear_strain_ratios=strain_ratios,
+                layer_indices=self.get_layer_indeces())
         return twinboundary_shear_analyzer
 
     def get_twinboundary_shear_analyzer_from_pks(self,
@@ -278,7 +279,9 @@ class TwinBoundaryAnalyzer():
         initial_cell = self._relax_analyzer.original_cell
         final_cell = self._relax_analyzer.final_cell_in_original_frame
         cells = [ initial_cell, final_cell ]
-        atm_envs = [ _get_atomic_environment(cell) for cell in cells ]
+        layer_indices = self.get_layer_indeces()
+        atm_envs = [ _get_atomic_environment(cell, layer_indices)
+                         for cell in cells ]
         return atm_envs
 
     def plot_plane_diff(self):
@@ -341,3 +344,13 @@ class TwinBoundaryAnalyzer():
                            shuffle=shuffle,
                            label=direction,
                            )
+
+    def get_layer_indeces(self):
+        """
+        Get layzer indices.
+        """
+        orig_atoms = self._relax_analyzer.original_cell[1]
+        sort_indices = np.argsort(orig_atoms[:,2])
+        layer_indices = sort_indices.reshape(int(len(sort_indices)/2), 2)
+
+        return layer_indices
