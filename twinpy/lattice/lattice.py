@@ -351,6 +351,45 @@ class Lattice():
 
         return diff
 
+    def get_midpoint(self,
+                     first_coords:np.array,
+                     second_coords:np.array,
+                     is_cartesian:bool=False,
+                     with_periodic:bool=True) -> np.array:
+        """
+        Get midpoint.
+
+        Args:
+            first_coords (np.array): Positions.
+            second_coords (np.array): Positions.
+            is_cartesian (bool): If True input coords are recognized
+                                 as cartesian.
+            with_periodic (bool): If True, consider periodic condition.
+
+        Returns:
+            np.array: Atom diff (second_coords - first_coords)
+                      in fractional coordinate.
+        """
+        if is_cartesian:
+            _first_frac = np.dot(np.linalg.inv(self._lattice.T),
+                                 first_coords.T).T
+            _second_frac = np.dot(np.linalg.inv(self._lattice.T),
+                                  second_coords.T).T
+        else:
+            _first_frac = deepcopy(first_coords)
+            _second_frac = deepcopy(second_coords)
+
+        if with_periodic:
+            diff = self.get_diff(first_coords=first_coords,
+                                 second_coords=second_coords,
+                                 is_cartesian=is_cartesian,
+                                 with_periodic=with_periodic)
+            midpoint = np.round((_first_frac + diff / 2) % 1, decimals=8)
+        else:
+            midpoint = (_second_frac - _first_frac) / 2
+
+        return midpoint
+
     def get_distance(self,
                      frac_first_coords:np.array,
                      frac_second_coords:np.array,

@@ -28,14 +28,16 @@ def plot_plane(ax,
         xlabel = ylabel = None
 
     _distances = deepcopy(distances)
+    _z_coords = deepcopy(z_coords)
     _distances.insert(0, distances[-1])
     _distances.append(distances[0])
-    _z_coords = deepcopy(z_coords)
     _z_coords.insert(0, -distances[-1])
     _z_coords.append(z_coords[-1]+distances[0])
+    # _distances = distances
 
     c = np.sum(distances)
-    fixed_z_coords = _z_coords + np.array(_distances) / 2 - c / 2
+    # fixed_z_coords = _z_coords[1:] + np.array(_distances) / 2 - c / 2
+    fixed_z_coords = _z_coords + distances[0] / 2 - c / 2
 
     line_chart(ax=ax,
                xdata=_distances,
@@ -46,18 +48,16 @@ def plot_plane(ax,
                sort_by='y',
                **kwargs)
 
-
-
     if decorate:
-        num = len(_z_coords)
+        num = len(fixed_z_coords)
         tb_idx = [1, int(num/2), num-1]
         bulk_distance = _distances[int(num/4)]
         xmin = bulk_distance - 0.025
         xmax = bulk_distance + 0.025
         for idx in tb_idx:
-            ax.hlines(_z_coords[idx],
-                      xmin=xmin-0.005,
-                      xmax=xmax+0.005,
+            ax.hlines(fixed_z_coords[idx]-distances[0]/2,
+                      xmin=xmin-0.01,
+                      xmax=xmax+0.01,
                       linestyle='--',
                       linewidth=1.5)
 

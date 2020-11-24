@@ -271,6 +271,7 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
            self,
            phonon_analyzers:list,
            shear_strain_ratios:list,
+           layer_indices:list,
            ):
         """
         Init.
@@ -280,6 +281,14 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         """
         super().__init__(phonon_analyzers=phonon_analyzers)
         self._shear_strain_ratios = shear_strain_ratios
+        self._layer_indices = layer_indices
+
+    @property
+    def layer_indices(self):
+        """
+        Layer indices.
+        """
+        return self._layer_indices
 
     @property
     def shear_strain_ratios(self):
@@ -295,7 +304,8 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         Plane coordinates (z coordinates) are fractional.
         """
         orig_cells = self.get_final_cells_in_original_frame()
-        envs = [ _get_atomic_environment(cell) for cell in orig_cells ]
+        envs = [ _get_atomic_environment(cell, self._layer_indices)
+                     for cell in orig_cells ]
         return envs
 
     def get_final_cells_in_original_frame(self) -> list:
