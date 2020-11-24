@@ -5,6 +5,7 @@
 API for twinpy
 """
 
+from pprint import pprint
 import numpy as np
 from aiida.orm import load_node
 from aiida import load_profile
@@ -127,12 +128,11 @@ class Twinpy():
             RuntimeError: when twinboundary analyzer is not set
         """
         if self._twinboundary_shear_analyzer is None:
-            msg = "twinboundary shear analyzer is not set, \
-                   please run set_twinboundary_shear_analyzer"
+            msg = "twinboundary shear analyzer is not set, " \
+                  "please run set_twinboundary_shear_analyzer"
             raise RuntimeError(msg)
 
     @staticmethod
-    # @with_dbenv()
     def initialize_from_aiida_shear(shear_pk:int):
         """
         Set shear from AiidaShearWorkChain.
@@ -154,7 +154,6 @@ class Twinpy():
         return twinpy
 
     @staticmethod
-    # @with_dbenv()
     def initialize_from_aiida_twinboundary(twinboundary_relax_pk:int,
                                            twinboundary_phonon_pk:int=None,
                                            additional_relax_pks:list=None,
@@ -499,8 +498,8 @@ class Twinpy():
         """
         cells = self.get_twinboundary_shear_cells()
         for i, cell in enumerate(cells):
-            filename = "twinboundary_shear_%1.2f.poscar" % \
-                           self._twinboundary_shear_analyzer.shear_strain_ratios[i]
+            ratio = self._twinboundary_shear_analyzer.shear_strain_ratios[i]
+            filename = "twinboundary_shear_%1.2f.poscar" % ratio
             write_poscar(cell=cell,
                          filename=filename)
 
@@ -557,3 +556,43 @@ class Twinpy():
                     layers=tb['layers'])
 
         return twinpy
+
+    def plot_twinboundary_shear_bandstructure(
+            self,
+            npoints:int=51,
+            with_eigenvectors:bool=False,
+            use_reciprocal_lattice:bool=True):
+        """
+        Plot twinboundary shear band structure.
+        """
+        from matplotlib import pyplot as plt
+        from twinpy.plot.band_structure \
+                import (get_labels_band_paths_from_seekpath,
+                        BandsPlot)
+
+        self._check_twinboundary_shear_analyzer_is_set()
+
+        tb_shear = self._twinboundary_shear_analyzer
+        base_phn = self._twinboundary_shear_analyzer.phonon_analyzers[0]
+        base_cell = base_phn.primitive_cell
+        labels, base_band_paths = \
+                get_labels_band_paths_from_seekpath(cell=base_cell)
+        band_structures = \
+                tb_shear.get_band_structures(
+                        base_band_paths=base_band_paths,
+                        labels=labels,
+                        npoints=51,
+                        with_eigenvectors=with_eigenvectors,
+                        use_reciprocal_lattice=use_reciprocal_lattice,
+                        )
+        bsp = BandsPlot(band_structures=band_structures)
+        fig, _ = bsp.plot_band_structures()
+        plt.show()
+
+    def show_twinboundary_reciprocal_high_symmetry_points(self):
+        """
+        Show twinboundary reciprocal high symmetry points.
+        """
+        phonon_analyzer = self._twinboundary_analyzer.phonon_analyzer
+        recip_high_sym = phonon_analyzer.get_reciprocal_high_symmetry_points()
+        pprint(recip_high_sym)

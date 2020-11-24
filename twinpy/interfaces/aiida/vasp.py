@@ -250,6 +250,16 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
                                  energy=self._energy)
         return analyzer
 
+    def get_outputs(self):
+        """
+        Get outputs.
+        """
+        dic = self._get_outputs()
+        lattice = Lattice(lattice=self._final_cell[0])
+        dic['abc'] = lattice.abc
+
+        return dic
+
     def get_description(self):
         """
         Get description.
@@ -609,12 +619,12 @@ class AiidaRelaxCollection():
         """
         pks = self.get_pks()
         if pks['final_structure_pk'] is None:
-            warnings.warn("Final structure in Latest RelaxWorkChain (pk={}) "
+            warnings.warn("Final structure in latest RelaxWorkChain (pk={}) "
                            "does not find. So build RelaxAnalyzer with "
                            "previous RelaxWorkChain (pk={}) "
                            " as a final structure.".format(
-                               self._additional_relax_pks[-1],
-                               self._additional_relax_pks[-2],
+                               self._aiida_relaxes[-1].pk,
+                               self._aiida_relaxes[-2].pk,
                                ))
             final_relax = self._aiida_relaxes[-2]
         else:

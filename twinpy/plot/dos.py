@@ -8,169 +8,482 @@ provide various kinds of plot
 """
 
 import numpy as np
-from phonopy.phonon.dos import TotalDos as PhonopyTotalDos
-from twinpy.plot.base import DEFAULT_COLORS
+from phonopy.phonon.dos import TotalDos, PartialDos
+from twinpy.plot.base import (DEFAULT_COLORS,
+                              get_plot_properties_for_trajectory)
 
 
-class TotalDosPlot(PhonopyTotalDos):
+class _DosPlot():
+    """
+    Dos plot.
+    """
+
+    def __init__(self,
+                 min_freq:float,
+                 max_freq:float,
+                 max_dos:float,
+                 flip_xy:bool=False,
+                 ):
+        """
+        Args:
+            flip_xy (bool): Whether to flip x and y.
+                            This cannot change later.
+        """
+        self._min_frequency = min_freq
+        self._max_frequency = max_freq
+        self._max_dos = max_dos
+        self._flip_xy = flip_xy
+
+    @property
+    def min_frequency(self):
+        """
+        Min frequency.
+        """
+        return self._min_frequency
+
+    @property
+    def max_frequency(self):
+        """
+        Max frequency.
+        """
+        return self._max_frequency
+
+    def set_xlim(self, ax, xmin:float=None, xmax:float=None):
+        """
+        Set xlim.
+
+        Args:
+            xmin (float): If None, min(frequences) -
+                          (max(frequences) - min(frequences)) * 1.05 is set.
+            xmax (float): If None, max(frequences) +
+                          (max(frequences) - min(frequences)) * 1.05 is set.
+        """
+        freq_min = self._min_frequency
+        freq_max = self._max_frequency
+        span = freq_max - freq_min
+        if xmin is None:
+            _xmin = freq_min - span * 0.05
+        else:
+            _xmin = xmin
+        if xmax is None:
+            _xmax = freq_max + span * 0.05
+        else:
+            _xmax = xmax
+        ax.set_xlim(_xmin, _xmax)
+
+    def set_ylim(self, ax, ymin:float=0.01, ymax:float=None):
+        """
+        Set ylim.
+
+        Args:
+            ymax (float): If None, max(dos) * 1.05 is set.
+        """
+        dos_max = self._max_dos
+        if ymax is None:
+            _ymax = dos_max * 0.05
+        else:
+            _ymax = ymax
+        ax.set_ylim(ymin, _ymax)
+
+    def plot_xlabel(self, ax):
+        """
+        Show x label.
+        """
+        label = "Frequency [THz]"
+        if self._flip_xy:
+            ax.set_ylabel(label,
+                          fontsize=20)
+            ax.tick_params(axis='y', labelsize=16)
+        else:
+            ax.set_xlabel(label,
+                          fontsize=20)
+            ax.tick_params(axis='x', labelsize=16)
+        ax.tick_params(labelbottom=True,
+                       labelleft=True,
+                       labelright=False,
+                       labeltop=False,
+                       bottom=True,
+                       left=True,
+                       right=False,
+                       top=False)
+
+    def plot_vline(self, ax, hval:float=0.):
+        """
+        Plot virtical line.
+        """
+        if self._flip_xy:
+            ax.axhline(hval, c='grey', linestyle='--', linewidth=0.5)
+        else:
+            ax.axvline(hval, c='grey', linestyle='--', linewidth=0.5)
+
+    def plot_legend(self, ax):
+        """
+        Plot legend.
+        """
+        ax.legend()
+
+
+class TotalDosPlot(_DosPlot):
     """
     Total dos plot.
     """
 
     def __init__(self,
-                 ax,
-                 mesh_object,
-                 sigma=None,
-                 use_tetrahedron_method=False,
+                 total_dos:TotalDos,
+                 flip_xy:bool=False,
                  ):
         """
-        Note:
-            For explanation for input variables, see PhonopyTotalDos.
+        Args:
+            total_dos: Phonopy TotalDos class object.
+            flip_xy (bool): Whether to flip x and y.
+                            This cannot change later.
         """
-        self.ax = ax
-        super().__init__(mesh_object=mesh_object,
-                         sigma=sigma,
-                         use_tetrahedron_method=use_tetrahedron_method)
+        self._total_dos = total_dos
+        min_freq = min(self._total_dos.frequency_points)
+        max_freq = max(self._total_dos.frequency_points)
+        max_dos = max(self._total_dos.dos)
+        super().__init__(min_freq=min_freq,
+                         max_freq=max_freq,
+                         max_dos=max_dos,
+                         flip_xy=flip_xy)
 
-    def plot(self,
-             ax,
-             c,
-             alpha,
-             linestyle,
-             linewidth,
-             xlabel=None,
-             ylabel=None,
-             draw_grid=True,
-             flip_xy=False,
-             label=None,
-             ):
-        if flip_xy:
-            _xlabel = 'Density of states'
-            _ylabel = 'Frequency'
+    @property
+    def total_dos(self):
+        """
+        Total dos.
+        """
+        return self._total_dos
+
+    def plot_total_dos(self, ax, label:str=None, c='r', linestyle='-',
+                       alpha=1., linewidth=1.5):
+        """
+        Plot total dos
+
+        Args:
+            ax: Matplitlib ax.
+        """
+        freq = self._total_dos.frequency_points
+        dos = self._total_dos.dos
+        if self._flip_xy:
+            X = dos
+            Y = freq
         else:
-            _xlabel = 'Frequency'
-            _ylabel = 'Density of states'
+            X = freq
+            Y = dos
 
-        if xlabel is not None:
-            _xlabel = xlabel
-        if ylabel is not None:
-            _ylabel = ylabel
+        ax.plot(X, Y, c=c, linestyle=linestyle, alpha=alpha,
+                linewidth=linewidth)
 
-        _plot_total_dos(ax,
-                        self._frequency_points,
-                        self._dos,
-                        c=c,
-                        alpha=alpha,
-                        linestyle=linestyle,
-                        linewidth=linewidth,
-                        freq_Debye=self._freq_Debye,
-                        Debye_fit_coef=self._Debye_fit_coef,
-                        xlabel=_xlabel,
-                        ylabel=_ylabel,
-                        draw_grid=draw_grid,
-                        flip_xy=flip_xy,
-                        label=label,
-                        )
-
-
-def _plot_total_dos(ax,
-                    frequency_points,
-                    total_dos,
-                    c,
-                    alpha,
-                    linewidth,
-                    linestyle,
-                    freq_Debye=None,
-                    Debye_fit_coef=None,
-                    xlabel=None,
-                    ylabel=None,
-                    draw_grid=True,
-                    flip_xy=False,
-                    label=None,
-                    ):
-    ax.xaxis.set_ticks_position('both')
-    ax.yaxis.set_ticks_position('both')
-    ax.xaxis.set_tick_params(which='both', direction='in')
-    ax.yaxis.set_tick_params(which='both', direction='in')
-
-    if freq_Debye is not None:
-        freq_pitch = frequency_points[1] - frequency_points[0]
-        num_points = int(freq_Debye / freq_pitch)
-        freqs = np.linspace(0, freq_Debye, num_points + 1)
-
-    if flip_xy:
-        ax.plot(total_dos, frequency_points, c=c, alpha=alpha,
-                linewidth=linewidth, linestyle=linestyle, label=label)
-        if freq_Debye:
-            ax.plot(np.append(Debye_fit_coef * freqs**2, 0),
-                    np.append(freqs, freq_Debye), 'b-', linewidth=1)
-    else:
-        ax.plot(frequency_points, total_dos, c=c, alpha=alpha,
-                linewidth=linewidth, linestyle=linestyle, label=label)
-        if freq_Debye:
-            ax.plot(np.append(freqs, freq_Debye),
-                    np.append(Debye_fit_coef * freqs**2, 0), 'b-', linewidth=1)
-
-    if xlabel:
-        ax.set_xlabel(xlabel)
-    if ylabel:
-        ax.set_ylabel(ylabel)
-
-    ax.grid(draw_grid)
+    def plot_ylabel(self, ax):
+        """
+        Show y label.
+        """
+        label = "Total Dos [/THz]"
+        if self._flip_xy:
+            ax.set_xlabel(label,
+                          fontsize=20)
+            ax.tick_params(axis='x', labelsize=16)
+        else:
+            ax.set_ylabel(label,
+                          fontsize=20)
+            ax.tick_params(axis='y', labelsize=16)
+        ax.tick_params(labelbottom=True,
+                       labelleft=True,
+                       labelright=False,
+                       labeltop=False,
+                       bottom=True,
+                       left=True,
+                       right=False,
+                       top=False)
 
 
-def total_doses_plot(ax,
-                     phonons,
-                     mesh,
-                     sigma=None,
-                     freq_min=None,
-                     freq_max=None,
-                     freq_pitch=None,
-                     use_tetrahedron_method=False,
-                     cs=None,
-                     alphas=None,
-                     linewidths=None,
-                     linestyles=None,
-                     draw_grid=True,
-                     flip_xy=False,
-                     labels=None,
-                     **kwargs):
+class PartialDosPlot(_DosPlot):
     """
-    Plot multiple dos.
-
-    Note:
-        For explanation for input variables, see PhonopyTotalDos.
+    Partial dos plot.
     """
-    if cs is None:
-        cs = [ DEFAULT_COLORS[i%len(DEFAULT_COLORS)]
-                   for i in range(len(phonons)) ]
-    if alphas is None:
-        alphas = [ 1. ] * len(phonons)
-    if linestyles is None:
-        linestyles = [ 'solid' ] * len(phonons)
-    if linewidths is None:
-        linewidths = [ 1. ] * len(phonons)
-    if labels is None:
-        labels = [None] * len(phonons)
 
-    total_doses = []
-    for phonon in phonons:
-        phonon.set_mesh(mesh)
-        total_dos = TotalDosPlot(ax,
-                                 mesh_object=phonon.mesh,
-                                 sigma=sigma,
-                                 use_tetrahedron_method=use_tetrahedron_method)
-        total_dos.set_draw_area(freq_min, freq_max, freq_pitch)
-        total_dos.run()
-        total_doses.append(total_dos)
+    def __init__(self,
+                 partial_dos:PartialDos,
+                 flip_xy:bool=False,
+                 ):
+        """
+        Args:
+            partial_dos: Phonopy PartialDos class object.
+            flip_xy (bool): Whether to flip x and y.
+                            This cannot change later.
+        """
+        self._partial_dos = partial_dos
+        min_freq = min(self._partial_dos.frequency_points)
+        max_freq = max(self._partial_dos.frequency_points)
+        max_dos = self._partial_dos.partial_dos.max()
+        super().__init__(min_freq=min_freq,
+                         max_freq=max_freq,
+                         max_dos=max_dos,
+                         flip_xy=flip_xy)
 
-    for i, total_dos in enumerate(total_doses):
-        total_dos.plot(ax=ax,
-                       c=cs[i],
-                       alpha=alphas[i],
-                       linewidth=linewidths[i],
-                       linestyle=linestyles[i],
-                       draw_grid=draw_grid,
-                       flip_xy=flip_xy,
-                       label=labels[i],
-                       )
+    @property
+    def partial_dos(self):
+        """
+        Partial dos.
+        """
+        return self._partial_dos
+
+    def plot_partial_dos(self,
+                         ax,
+                         indices=None,
+                         labels=None,
+                         cs=None,
+                         linestyle='-',
+                         alpha=1.,
+                         linewidth=1.5):
+        """
+        Plot partial dos.
+        """
+        pdos = self._partial_dos
+        num_pdos = len(pdos.partial_dos)  # equal atom num
+
+        if indices is None:
+            indices = []
+            for i in range(num_pdos):
+                indices.append([i])
+                labels.append([str(i)])
+
+        if labels is None:
+            labels = []
+            for i in range(num_pdos):
+                labels.append([str(i)])
+
+        if cs is None:
+            color_nums = [ -(i%len(DEFAULT_COLORS))-1
+                               for i in range(len(indices)) ]
+            cs = [ DEFAULT_COLORS[num] for num in color_nums ]
+
+        for j, set_for_sum in enumerate(indices):
+            pdos_sum = np.zeros_like(pdos.frequency_points)
+            for i in set_for_sum:
+                if i > num_pdos - 1:
+                    print("Index number \'%d\' is specified," % (i + 1))
+                    print("but it is not allowed to be larger than the number "
+                           "of atoms.")
+                    raise ValueError
+                if i < 0:
+                    print("Index number \'%d\' is specified, but it must be "
+                          "positive." % (i + 1))
+                    raise ValueError
+                pdos_sum += pdos.partial_dos[i]
+
+            if self._flip_xy:
+                X = pdos_sum
+                Y = pdos.frequency_points
+            else:
+                X = pdos.frequency_points
+                Y = pdos_sum
+
+            ax.plot(X, Y,
+                    label=labels[j],
+                    c=cs[j],
+                    linestyle=linestyle,
+                    linewidth=linewidth,
+                    alpha=alpha)
+
+    def plot_ylabel(self, ax):
+        """
+        Show y label.
+        """
+        label = "Partial Dos [/THz]"
+        if self._flip_xy:
+            ax.set_xlabel(label,
+                          fontsize=20)
+            ax.tick_params(axis='x', labelsize=16)
+        else:
+            ax.set_ylabel(label,
+                          fontsize=20)
+            ax.tick_params(axis='y', labelsize=16)
+        ax.tick_params(labelbottom=True,
+                       labelleft=True,
+                       labelright=False,
+                       labeltop=False,
+                       bottom=True,
+                       left=True,
+                       right=False,
+                       top=False)
+
+
+class TotalDosesPlot():
+    """
+    Total Doses Plot.
+    """
+
+    def __init__(
+           self,
+           total_doses:list,
+           flip_xy:bool=False,
+           ):
+        """
+        Args:
+            total_doses (list): List of TotalDos class object.
+            flip_xy (bool): Whether to flip x and y.
+                            This cannot change later.
+        """
+        self._total_doses = total_doses
+        self._flip_xy = flip_xy
+        self._dosplots = [ TotalDosPlot(total_dos=tdos, flip_xy=self._flip_xy)
+                               for tdos in self._total_doses ]
+        self._cs = None
+        self._alphas = None
+        self._linewidths = None
+        self._linestyles = None
+        self.set_line_properties(base_color='r')
+
+    @property
+    def total_doses(self):
+        """
+        Total doses.
+        """
+        return self._total_doses
+
+    @property
+    def total_dos_plots(self):
+        """
+        Total dos plots.
+        """
+        return self._dosplots
+
+    def set_line_properties(self, base_color:str='r'):
+        """
+        Set line properties
+        """
+        self._cs, self._alphas, self._linewidths, self._linestyles = \
+                get_plot_properties_for_trajectory(
+                        plot_nums=len(self._dosplots),
+                        base_color=base_color)
+
+    def plot_total_doses(self, ax):
+        for i, dosplot in enumerate(self._dosplots):
+            dosplot.plot_total_dos(ax,
+                                   c=self._cs[i],
+                                   linestyle=self._linestyles[i],
+                                   alpha=self._alphas[i],
+                                   linewidth=self._linewidths[i])
+            if i == len(self._dosplots)-1:
+                dosplot.plot_vline(ax)
+                dosplot.plot_xlabel(ax)
+                dosplot.plot_ylabel(ax)
+
+    def set_xlim(self, ax, xmin:float=None, xmax:float=None):
+        """
+        Set xlim.
+
+        Args:
+            xmin (float): If None, min(frequences) -
+                          (max(frequences) - min(frequences)) * 1.05 is set.
+            xmax (float): If None, max(frequences) +
+                          (max(frequences) - min(frequences)) * 1.05 is set.
+        """
+        freq_min = min([ tdos.min_frequency for tdos in self._dosplots ])
+        freq_max = max([ tdos.max_frequency for tdos in self._dosplots ])
+        span = freq_max - freq_min
+        if xmin is None:
+            _xmin = freq_min - span * 0.05
+        else:
+            _xmin = xmin
+        if xmax is None:
+            _xmax = freq_max + span * 0.05
+        else:
+            _xmax = xmax
+        self._min_frequency = freq_min
+        self._max_frequency = freq_max
+        self._xlim = (_xmin, _xmax)
+        ax.set_xlim(self._xlim)
+
+
+class PartialDosesPlot():
+    """
+    Partial Doses Plot.
+    """
+
+    def __init__(
+           self,
+           partial_doses:list,
+           flip_xy:bool=False,
+           ):
+        """
+        Args:
+            partial_doses (list): List of PartialDos class object.
+            flip_xy (bool): Whether to flip x and y.
+                            This cannot change later.
+        """
+        self._partial_doses = partial_doses
+        self._flip_xy = flip_xy
+        self._pdosplots = [ PartialDosPlot(partial_dos=pdos,
+                                           flip_xy=self._flip_xy)
+                                for pdos in self._partial_doses ]
+
+    @property
+    def partial_doses(self):
+        """
+        Total doses.
+        """
+        return self._partial_doses
+
+    @property
+    def partial_dos_plots(self):
+        """
+        Total dos plots.
+        """
+        return self._pdosplots
+
+    def plot_partial_doses(self,
+                           ax,
+                           indices):
+        """
+        Plot partial doses.
+        """
+        color_nums = [ -(i%len(DEFAULT_COLORS))-1
+                           for i in range(len(indices)) ]
+        plot_nums = len(self._partial_doses)
+        base_cs = [ DEFAULT_COLORS[num] for num in color_nums ]
+        _, alphas, linewidths, linestyles = \
+                get_plot_properties_for_trajectory(
+                        plot_nums=plot_nums,
+                        base_color='r')
+        for i, indice in enumerate(indices):
+            for j, pdosplot in enumerate(self._pdosplots):
+                print(i,j)
+                pdosplot.plot_partial_dos(ax,
+                                          indices=[indice],
+                                          cs=[base_cs[i]],
+                                          alpha=alphas[j],
+                                          linewidth=linewidths[j],
+                                          linestyle=linestyles[j])
+
+                if i == len(indices)-1 and j == len(self._pdosplots)-1:
+                    pdosplot.plot_vline(ax)
+                    pdosplot.plot_xlabel(ax)
+                    pdosplot.plot_ylabel(ax)
+
+    def set_xlim(self, ax, xmin:float=None, xmax:float=None):
+        """
+        Set xlim.
+
+        Args:
+            xmin (float): If None, min(frequences) -
+                          (max(frequences) - min(frequences)) * 1.05 is set.
+            xmax (float): If None, max(frequences) +
+                          (max(frequences) - min(frequences)) * 1.05 is set.
+        """
+        freq_min = min([ pdos.min_frequency for pdos in self._pdosplots ])
+        freq_max = max([ pdos.max_frequency for pdos in self._pdosplots ])
+        span = freq_max - freq_min
+        if xmin is None:
+            _xmin = freq_min - span * 0.05
+        else:
+            _xmin = xmin
+        if xmax is None:
+            _xmax = freq_max + span * 0.05
+        else:
+            _xmax = xmax
+        self._min_frequency = freq_min
+        self._max_frequency = freq_max
+        self._xlim = (_xmin, _xmax)
+        ax.set_xlim(self._xlim)

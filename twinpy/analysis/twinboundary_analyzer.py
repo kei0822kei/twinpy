@@ -225,9 +225,13 @@ class TwinBoundaryAnalyzer():
                                            phonon analyzers.
             shear_strain_ratios (list): Shear shear_strain_ratios.
         """
+        phonon_analyzers = [self.phonon_analyzer]
+        phonon_analyzers.extend(shear_phonon_analyzers)
+        strain_ratios = [0.]
+        strain_ratios.extend(shear_strain_ratios)
         twinboundary_shear_analyzer = TwinBoundaryShearAnalyzer(
-                phonon_analyzers=shear_phonon_analyzers,
-                shear_strain_ratios=shear_strain_ratios)
+                phonon_analyzers=phonon_analyzers,
+                shear_strain_ratios=strain_ratios)
         return twinboundary_shear_analyzer
 
     def get_twinboundary_shear_analyzer_from_pks(self,
@@ -255,8 +259,8 @@ class TwinBoundaryAnalyzer():
         phonon_analyzers = [ phonon.get_phonon_analyzer(
                                      relax_analyzer=relax_analyzers[i])
                                  for i, phonon in enumerate(aiida_phonons) ]
-        twinboundary_shear_analyzer = TwinBoundaryShearAnalyzer(
-                phonon_analyzers=phonon_analyzers,
+        twinboundary_shear_analyzer = self.get_twinboundary_shear_analyzer(
+                shear_phonon_analyzers=phonon_analyzers,
                 shear_strain_ratios=shear_strain_ratios)
 
         return twinboundary_shear_analyzer

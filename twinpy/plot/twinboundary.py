@@ -34,7 +34,8 @@ def plot_plane(ax,
     _z_coords.insert(0, -distances[-1])
     _z_coords.append(z_coords[-1]+distances[0])
 
-    fixed_z_coords = _z_coords + np.array(_distances) / 2
+    c = np.sum(distances)
+    fixed_z_coords = _z_coords + np.array(_distances) / 2 - c / 2
 
     line_chart(ax=ax,
                xdata=_distances,

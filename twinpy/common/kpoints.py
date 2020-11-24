@@ -127,7 +127,7 @@ def get_mesh_offset_from_direct_lattice(lattice:np.array,
     fixed_mesh = mesh + arr
 
     kpts = _get_intervals_from_mesh(
-               lattice=recip_lat.lattice, mesh=mesh)
+               lattice=recip_lat.lattice, mesh=fixed_mesh)
     kpts['reciprocal_lattice'] = recip_lat.lattice
     kpts['reciprocal_volume'] = recip_lat.volume
     kpts['mesh'] = fixed_mesh
