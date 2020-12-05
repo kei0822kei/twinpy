@@ -214,9 +214,16 @@ def _get_atomic_environment(cell, layer_indices) -> tuple:
     distances = []
     previous_z_coord = 0.
     angles = []
+    pair_distances = []
     c_norm = np.linalg.norm(cell[0], axis=1)[2]
     for i, indices in enumerate(layer_indices):
         pair_atoms = cell[1][indices,:]
+        pair_diff = lattice.get_diff(first_coords=pair_atoms[0],
+                                     second_coords=pair_atoms[1],
+                                     with_periodic=True)
+        pair_distance = lattice.get_norm(frac_coords=pair_diff,
+                                         with_periodic=True)
+        pair_distances.append(pair_distance)
         lattice_point = lattice.get_midpoint(
                 first_coords=pair_atoms[0],
                 second_coords=pair_atoms[1],
@@ -252,7 +259,7 @@ def _get_atomic_environment(cell, layer_indices) -> tuple:
     angles = np.abs(angles)
     distances.append(lattice.abc[2] * sine - plane_z_coords[-1])
 
-    return (list(plane_z_coords), list(distances), list(angles))
+    return (list(plane_z_coords), list(distances), list(angles), pair_distances)
 
 
 # def _get_atomic_environment(cell) -> tuple:

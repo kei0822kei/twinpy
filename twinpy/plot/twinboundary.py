@@ -99,3 +99,41 @@ def plot_angle(ax,
                       xmax=bulk_angle+2,
                       linestyle='--',
                       linewidth=1.5)
+
+def plot_pair_distance(ax,
+                       pair_distances:list,
+                       z_coords:list,
+                       label:str=None,
+                       decorate:bool=True):
+    """
+    Plot angle.
+    """
+    if decorate:
+        xlabel = 'Pair Distance'
+        ylabel = 'Hight'
+    else:
+        xlabel = ylabel = None
+
+    _pair_distances = deepcopy(pair_distances)
+    _z_coords = deepcopy(z_coords)
+    _pair_distances.append(pair_distances[0])
+    _z_coords.append(z_coords[-1]+z_coords[1])
+
+    line_chart(ax=ax,
+               xdata=_pair_distances,
+               ydata=_z_coords,
+               xlabel=xlabel,
+               ylabel=ylabel,
+               label=label,
+               sort_by='y')
+
+    if decorate:
+        num = len(_z_coords)
+        tb_idx = [0, int(num/2), num-1]
+        bulk_pair_distance = pair_distances[int(num/4)]
+        for idx in tb_idx:
+            ax.hlines(_z_coords[idx],
+                      xmin=-1,
+                      xmax=bulk_pair_distance+2,
+                      linestyle='--',
+                      linewidth=1.5)

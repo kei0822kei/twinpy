@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from twinpy.structure.shear import ShearStructure
 from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.bonding import _get_atomic_environment
-from twinpy.plot.twinboundary import plot_plane, plot_angle
+from twinpy.plot.twinboundary import plot_plane, plot_angle, plot_pair_distance
 from twinpy.plot.relax import plot_atom_diff
 from twinpy.plot.base import get_plot_properties_for_trajectory
 from twinpy.file_io import write_poscar
@@ -37,7 +37,7 @@ class _BaseShearAnalyzer():
                                "phonon_analyzers do not set.")
 
         if phonon_analyzers is None:
-            self._relax_analyzer = relax_analyzers
+            self._relax_analyzers = relax_analyzers
         else:
             self._relax_analyzers = \
                     [ phonon_analyzer.relax_analyzer
@@ -132,13 +132,14 @@ class _BaseShearAnalyzer():
                 base_band_paths=base_band_paths)
         band_structures = []
         for i, phonon_analyzer in enumerate(self._phonon_analyzers):
-            if i == 0:
-                lbs = labels
-            else:
-                lbs = None
+            # if i == 0:
+            #     lbs = labels
+            # else:
+            #     lbs = None
             band_structure = phonon_analyzer.get_band_structure(
                     band_paths=band_paths_for_all[i],
-                    labels=lbs,
+                    # labels=lbs,
+                    labels=labels,
                     npoints=npoints,
                     with_eigenvectors=with_eigenvectors,
                     use_reciprocal_lattice=use_reciprocal_lattice,
@@ -269,9 +270,10 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
 
     def __init__(
            self,
-           phonon_analyzers:list,
            shear_strain_ratios:list,
            layer_indices:list,
+           relax_analyzers:list=None,
+           phonon_analyzers:list=None,
            ):
         """
         Init.
@@ -279,7 +281,9 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         Args:
             phonon_analyzers (list): List of PhononAnalyzer class object.
         """
-        super().__init__(phonon_analyzers=phonon_analyzers)
+        super().__init__(
+                relax_analyzers=relax_analyzers,
+                phonon_analyzers=phonon_analyzers)
         self._shear_strain_ratios = shear_strain_ratios
         self._layer_indices = layer_indices
 
@@ -337,7 +341,7 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
                        label=label,
                        decorate=decorate,
                        )
-            ax.legend()
+            # ax.legend()
 
         return fig
 
@@ -362,6 +366,31 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
                        label=label,
                        decorate=decorate,
                        )
+            # ax.legend()
+
+        return fig
+
+    def plot_pair_distance(self):
+        """
+        Plot pair distance.
+        """
+        envs = self.get_atomic_environment()
+
+        fig = plt.figure(figsize=(8,13))
+        ax = fig.add_subplot(111)
+
+        for i, ratio in enumerate(self._shear_strain_ratios):
+            if i == len(envs)-1:
+                decorate = True
+            else:
+                decorate = False
+            label = "shear ratio: %1.2f" % ratio
+            plot_pair_distance(ax,
+                               z_coords=envs[i][0],
+                               pair_distances=envs[i][3],
+                               label=label,
+                               decorate=decorate,
+                               )
             ax.legend()
 
         return fig
