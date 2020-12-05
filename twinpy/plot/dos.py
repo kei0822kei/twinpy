@@ -172,7 +172,7 @@ class TotalDosPlot(_DosPlot):
             Y = dos
 
         ax.plot(X, Y, c=c, linestyle=linestyle, alpha=alpha,
-                linewidth=linewidth)
+                linewidth=linewidth, label=label)
 
     def plot_ylabel(self, ax):
         """
@@ -357,6 +357,30 @@ class TotalDosesPlot():
                 get_plot_properties_for_trajectory(
                         plot_nums=len(self._dosplots),
                         base_color=base_color)
+
+    def set_cs(self, cs):
+        """
+        cs
+        """
+        self._cs = cs
+
+    def set_alphas(self, alphas):
+        """
+        cs
+        """
+        self._alphas = alphas
+
+    def set_linewidths(self, linewidths):
+        """
+        cs
+        """
+        self._linewidths = linewidths
+
+    def set_linestyles(self, linestyles):
+        """
+        cs
+        """
+        self._linestyles = linestyles
 
     def plot_total_doses(self, ax):
         for i, dosplot in enumerate(self._dosplots):

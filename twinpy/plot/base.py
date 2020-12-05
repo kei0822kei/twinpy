@@ -172,13 +172,13 @@ def get_plot_properties_for_trajectory(plot_nums:int,
     """
     alphas = [ 1. ]
     linewidths = [ 1.5 ]
-    linestyles = [ 'dashed' ]
-    alphas.extend([ 0.6 for _ in range(plot_nums-2) ])
-    linewidths.extend([ 1. for _ in range(plot_nums-2) ])
+    linestyles = [ 'solid' ]
+    alphas.extend([ 0.8 for _ in range(plot_nums-2) ])
+    linewidths.extend([ 1.5 for _ in range(plot_nums-2) ])
     linestyles.extend([ 'dotted' for _ in range(plot_nums-2) ])
     alphas.append(1.)
     linewidths.append(1.5)
-    linestyles.append('solid')
+    linestyles.append('dashed')
     cs = [ base_color for _ in range(plot_nums) ]
     return (cs, alphas, linewidths, linestyles)
 

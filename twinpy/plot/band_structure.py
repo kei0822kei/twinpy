@@ -209,7 +209,7 @@ class BandPlot():
             labelleft = True
         else:
             labelleft = False
-        ax.tick_params(axis='y', labelsize=16)
+        ax.tick_params(axis='y', labelsize=20)
         ax.tick_params(labelbottom=True,
                        labelleft=labelleft,
                        labelright=False,
@@ -250,7 +250,7 @@ class BandPlot():
         ax.set_xticks(distances)
         decorated_labels = [ decorate_string_for_latex(label)
                                  for label in labels ]
-        ax.set_xticklabels(decorated_labels, fontsize=16)
+        ax.set_xticklabels(decorated_labels, fontsize=20)
 
     def plot_hline(self, ax, hval:float=0.):
         """
@@ -258,29 +258,39 @@ class BandPlot():
         """
         ax.axhline(hval, c='grey', linestyle='--', linewidth=0.5)
 
-    def plot_band_structure(self, figsize=(8,6)):
+    def plot_band_structure(self, figsize=(8,6), dosplot=None, dos_distance=0.3):
         """
         Plot band structure.
         """
+        distances = deepcopy(self._axes_distances)
+        if dosplot is not None:
+            distances.append(dos_distance)
         fig, axes = create_figure_axes(figsize=figsize,
-                                       ratios=self._axes_distances,
+                                       ratios=distances,
                                        axes_pad=0.03)
-        for i, ax in enumerate(axes):
+
+        for i in range(len((self._segment_frequences))):
             if i == 0:
                 show_yscale = True
-                self.plot_ylabel(ax)
+                self.plot_ylabel(axes[i])
             else:
                 show_yscale = False
 
             self.plot_segment_band_structure(
-                    ax=ax,
+                    ax=axes[i],
                     frequences=self._segment_frequences[i],
                     distances=self._segment_distances[i],
                     show_yscale=show_yscale,
                     )
-            self.plot_vline(ax, i)
-            self.plot_hline(ax)
-            ax.set_ylim(self._ylim)
+            self.plot_vline(axes[i], i)
+            self.plot_hline(axes[i])
+            axes[i].set_ylim(self._ylim)
+
+        if dosplot is not None:
+            dosplot.plot_total_dos(ax=axes[-1])
+            axes[-1].tick_params(labelleft=False)
+            axes[-1].set_ylim(self._ylim)
+            self.plot_hline(axes[-1])
 
         return fig, axes
 
@@ -305,7 +315,7 @@ class BandsPlot():
         self._ylim = None
         self._min_frequency = None
         self._max_frequency = None
-        # self.set_ylim(ymin=None, ymax=None)
+        self.set_ylim(ymin=None, ymax=None)
         self._cs = None
         self._alphas = None
         self._linewidths = None
@@ -321,7 +331,32 @@ class BandsPlot():
                         plot_nums=len(self._bandplots),
                         base_color=base_color)
 
-    def set_ylim(self, ax, ymin:float=None, ymax:float=None):
+    def set_cs(self, cs):
+        """
+        cs
+        """
+        self._cs = cs
+
+    def set_alphas(self, alphas):
+        """
+        cs
+        """
+        self._alphas = alphas
+
+    def set_linewidths(self, linewidths):
+        """
+        cs
+        """
+        self._linewidths = linewidths
+
+    def set_linestyles(self, linestyles):
+        """
+        cs
+        """
+        self._linestyles = linestyles
+
+    # def set_ylim(self, ax, ymin:float=None, ymax:float=None):
+    def set_ylim(self, ymin:float=None, ymax:float=None):
         """
         Set ylim.
 
@@ -347,7 +382,7 @@ class BandsPlot():
         self._min_frequency = freq_min
         self._max_frequency = freq_max
         self._ylim = (_ymin, _ymax)
-        ax.set_ylim(self._ylim)
+        # ax.set_ylim(self._ylim)
 
     @property
     def band_structures(self):
@@ -377,7 +412,7 @@ class BandsPlot():
         """
         return self._max_frequency
 
-    def plot_band_structures(self, figsize=(8,6)):
+    def plot_band_structures(self, figsize=(8,6), dosesplot=None, dos_distance=0.3):
         """
         Plot band structures.
 
@@ -385,17 +420,21 @@ class BandsPlot():
             fig: Figure.
             axes (list): Axes.
         """
+        distances = deepcopy(self._axes_distances)
+        if dosesplot is not None:
+            distances.append(dos_distance)
         fig, axes = create_figure_axes(figsize=figsize,
-                                       ratios=self._axes_distances,
+                                       ratios=distances,
                                        axes_pad=0.03)
+
         for j, bandplot in enumerate(self._bandplots):
-            for i, ax in enumerate(axes):
+            for i in range(len((self._bandplots[0]._segment_frequences))):
                 if i == 0:
                     show_yscale = True
                 else:
                     show_yscale = False
                 bandplot.plot_segment_band_structure(
-                        ax=ax,
+                        ax=axes[i],
                         frequences=bandplot.segment_frequences[i],
                         distances=bandplot.segment_distances[i],
                         show_yscale=show_yscale,
@@ -405,7 +444,18 @@ class BandsPlot():
                         linewidth=self._linewidths[j],
                         )
                 if j == 0:
-                    bandplot.plot_vline(ax, i)
-                    bandplot.plot_hline(ax)
-                    ax.set_ylim(self._ylim)
+                    bandplot.plot_vline(axes[i], i)
+                    bandplot.plot_hline(axes[i])
+                    axes[i].set_ylim(self._ylim)
+
+        if dosesplot is not None:
+            dosesplot.set_cs(self._cs)
+            dosesplot.set_alphas(self._alphas)
+            dosesplot.set_linewidths(self._linewidths)
+            dosesplot.set_linestyles(self._linestyles)
+            dosesplot.plot_total_doses(ax=axes[-1])
+            axes[-1].tick_params(labelleft=False)
+            axes[-1].set_ylim(self._ylim)
+            axes[-1].set_ylabel('')
+
         return fig, axes

@@ -18,7 +18,7 @@ from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 from twinpy.analysis.phonon_analyzer import PhononAnalyzer
 from twinpy.analysis.shear_analyzer import TwinBoundaryShearAnalyzer
 from twinpy.plot.relax import plot_atom_diff
-from twinpy.plot.twinboundary import plot_plane, plot_angle
+from twinpy.plot.twinboundary import plot_plane, plot_angle, plot_pair_distance
 
 
 class TwinBoundaryAnalyzer():
@@ -215,8 +215,10 @@ class TwinBoundaryAnalyzer():
             return shear_cell
 
     def get_twinboundary_shear_analyzer(self,
-                                        shear_phonon_analyzers:list,
-                                        shear_strain_ratios:list):
+                                        shear_strain_ratios:list,
+                                        relax_analyzers:list=None,
+                                        shear_phonon_analyzers:list=None,
+                                        ):
         """
         Get TwinBoundaryShearAnalyzer class object.
 
@@ -225,11 +227,18 @@ class TwinBoundaryAnalyzer():
                                            phonon analyzers.
             shear_strain_ratios (list): Shear shear_strain_ratios.
         """
-        phonon_analyzers = [self.phonon_analyzer]
-        phonon_analyzers.extend(shear_phonon_analyzers)
+        if shear_phonon_analyzers is None:
+            _relax_analyzers = [self.phonon_analyzer.relax_analyzer]
+            _relax_analyzers.extend(relax_analyzers)
+            phonon_analyzers = None
+        else:
+            _relax_analyzers = None
+            phonon_analyzers = [self.phonon_analyzer]
+            phonon_analyzers.extend(shear_phonon_analyzers)
         strain_ratios = [0.]
         strain_ratios.extend(shear_strain_ratios)
         twinboundary_shear_analyzer = TwinBoundaryShearAnalyzer(
+                relax_analyzers=_relax_analyzers,
                 phonon_analyzers=phonon_analyzers,
                 shear_strain_ratios=strain_ratios,
                 layer_indices=self.get_layer_indeces())
@@ -237,8 +246,9 @@ class TwinBoundaryAnalyzer():
 
     def get_twinboundary_shear_analyzer_from_pks(self,
                                                  shear_relax_pks:list,
-                                                 shear_phonon_pks:list,
-                                                 shear_strain_ratios:list):
+                                                 shear_strain_ratios:list,
+                                                 shear_phonon_pks:list=None,
+                                                 ):
         """
         Get TwinBoundaryShearAnalyzer class object from pks.
 
@@ -255,12 +265,18 @@ class TwinBoundaryAnalyzer():
         relax_analyzers = [ relax.get_relax_analyzer(
                                     original_cell=original_cells[i])
                                 for i, relax in enumerate(aiida_relaxes) ]
-        aiida_phonons = [ AiidaPhonopyWorkChain(load_node(pk))
-                              for pk in shear_phonon_pks ]
-        phonon_analyzers = [ phonon.get_phonon_analyzer(
-                                     relax_analyzer=relax_analyzers[i])
-                                 for i, phonon in enumerate(aiida_phonons) ]
+        if shear_phonon_pks is None:
+            phonon_analyzers = None
+            _relax_analyzers = relax_analyzers
+        else:
+            aiida_phonons = [ AiidaPhonopyWorkChain(load_node(pk))
+                                  for pk in shear_phonon_pks ]
+            phonon_analyzers = [ phonon.get_phonon_analyzer(
+                                         relax_analyzer=relax_analyzers[i])
+                                     for i, phonon in enumerate(aiida_phonons) ]
+            _relax_analyzers = None
         twinboundary_shear_analyzer = self.get_twinboundary_shear_analyzer(
+                relax_analyzers=_relax_analyzers,
                 shear_phonon_analyzers=phonon_analyzers,
                 shear_strain_ratios=shear_strain_ratios)
 
@@ -312,6 +328,22 @@ class TwinBoundaryAnalyzer():
         plot_angle(ax, angles=initial_env[2], z_coords=initial_env[0],
                    decorate=False, label='Initial')
         plot_angle(ax, angles=final_env[2], z_coords=final_env[0],
+                   label='Final')
+
+        return fig
+
+    def plot_pair_distance(self):
+        """
+        Plot angle diff.
+        """
+        initial_env, final_env = self.get_atomic_environment()
+
+        fig = plt.figure(figsize=(8,13))
+        ax = fig.add_subplot(111)
+
+        plot_pair_distance(ax, pair_distances=initial_env[3], z_coords=initial_env[0],
+                   decorate=False, label='Initial')
+        plot_pair_distance(ax, pair_distances=final_env[3], z_coords=final_env[0],
                    label='Final')
 
         return fig
