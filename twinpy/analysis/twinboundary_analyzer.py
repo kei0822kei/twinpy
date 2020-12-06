@@ -182,28 +182,41 @@ class TwinBoundaryAnalyzer():
 
     def get_shear_cell(self,
                        shear_strain_ratio:float,
+                       atom_positions:np.array=None,
                        is_standardize:bool=False) -> tuple:
         """
         Get shear introduced twinboundary cell.
 
         Args:
-            shear_strain_ratio (float): shear strain ratio
-            is_standardize (bool): if True, get standardized cell
+            shear_strain_ratio (float): Shear strain ratio.
+            atom_positions (np.array): Atom positions in fractional coordinate.
+                                       If atom_positions is None, the ones of
+                                       original relax cell is used.
+            is_standardize (bool): If True, get standardized cell.
 
         Returns:
             tuple: shear introduced cell
 
         Notes:
-            original relax cell is use to create shear cell which is a little
-            bit different shear value with respect to bulk shear value
-            but I expect this is neglectable.
+            If you want to shear structure step by step, you can get next step
+            structure by inputting atom positions of previous step using
+            'atom_positions' input parameter.
         """
         orig_relax_cell = self._relax_analyzer.final_cell_in_original_frame
 
         shear_lat = self._get_shear_twinboundary_lattice(
             tb_lattice=orig_relax_cell[0],
             shear_strain_ratio=shear_strain_ratio)
-        shear_cell = (shear_lat, orig_relax_cell[1], orig_relax_cell[2])
+        if atom_positions is None:
+            frac_coords = orig_relax_cell[1]
+        else:
+            assert orig_relax_cell[1].shape == atom_positions.shape, \
+                    "numpy shape of atom_positions is {} " \
+                    "which is not the same as original relax cell {}.".format(
+                            orig_relax_cell[1].shape, atom_positions.shape)
+            frac_coords = atom_positions
+
+        shear_cell = (shear_lat, frac_coords, orig_relax_cell[2])
         if is_standardize:
             std_cell = get_standardized_cell(
                     cell=shear_cell,
