@@ -20,6 +20,13 @@ def plot_plane(ax,
                **kwargs):
     """
     Plot plane.
+
+    Args:
+        ax: matplotlib ax.
+        distances (list): List of plane intervals.
+        z_coords (list): List of z coordinate of each plane.
+        label (str): Plot label.
+        decorate (bool): If True, ax is decorated.
     """
     if decorate:
         xlabel = 'Distance'
@@ -33,10 +40,8 @@ def plot_plane(ax,
     _distances.append(distances[0])
     _z_coords.insert(0, -distances[-1])
     _z_coords.append(z_coords[-1]+distances[0])
-    # _distances = distances
 
     c = np.sum(distances)
-    # fixed_z_coords = _z_coords[1:] + np.array(_distances) / 2 - c / 2
     fixed_z_coords = _z_coords + distances[0] / 2 - c / 2
 
     line_chart(ax=ax,
@@ -69,6 +74,12 @@ def plot_angle(ax,
                decorate:bool=True):
     """
     Plot angle.
+
+    Args:
+        ax: matplotlib ax.
+        z_coords (list): List of z coordinate of each plane.
+        label (str): Plot label.
+        decorate (bool): If True, ax is decorated.
     """
     if decorate:
         xlabel = 'Angle'
@@ -100,6 +111,7 @@ def plot_angle(ax,
                       linestyle='--',
                       linewidth=1.5)
 
+
 def plot_pair_distance(ax,
                        pair_distances:list,
                        z_coords:list,
@@ -107,6 +119,14 @@ def plot_pair_distance(ax,
                        decorate:bool=True):
     """
     Plot angle.
+
+    Args:
+        ax: matplotlib ax.
+        pair_distances (list): List of A-B pair distances, which is originally
+                               primitive pair in HCP structure.
+        z_coords (list): List of z coordinate of each plane.
+        label (str): Plot label.
+        decorate (bool): If True, ax is decorated.
     """
     if decorate:
         xlabel = 'Pair Distance'

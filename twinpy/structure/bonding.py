@@ -4,8 +4,6 @@
 """
 Bonding base.
 """
-
-from copy import deepcopy
 import numpy as np
 import itertools
 from twinpy.lattice.lattice import Lattice
@@ -192,17 +190,19 @@ def common_neighbor_analysis(cell:tuple) -> list:
     return states
 
 
-def _get_atomic_environment(cell, layer_indices) -> tuple:
+def _get_atomic_environment(cell:tuple, layer_indices:list) -> tuple:
     """
     Get plane coords from lower plane to upper plane.
     Return list of z coordinates of original cell frame.
     Plane coordinates (z coordinates) are fractional.
 
+    Args:
+        cell (np.array): (lattice, symbols, frac_coords).
+        layer_indices (list): List of layer indices.
+
     Returns:
         tuple: (planes, distances, angles)
     """
-    epsilon = 1e-9
-
     lattice = Lattice(cell[0])
     angles = lattice.angles
     np.testing.assert_allclose(
@@ -259,70 +259,7 @@ def _get_atomic_environment(cell, layer_indices) -> tuple:
     angles = np.abs(angles)
     distances.append(lattice.abc[2] * sine - plane_z_coords[-1])
 
-    return (list(plane_z_coords), list(distances), list(angles), pair_distances)
-
-
-# def _get_atomic_environment(cell) -> tuple:
-#     """
-#     Get plane coords from lower plane to upper plane.
-#     Return list of z coordinates of original cell frame.
-#     Plane coordinates (z coordinates) are fractional.
-# 
-#     Returns:
-#         tuple: (planes, distances, angles)
-#     """
-#     epsilon = 1e-9
-# 
-#     lattice = Lattice(cell[0])
-#     angles = lattice.angles
-#     np.testing.assert_allclose(
-#             angles[1:], [90., 90.],
-#             err_msg="Angles of lattice is {}. "
-#                     "Angle beta and gamma must be 90 degree.".format(angles))
-#     sine = lattice.sin_angles[0]
-#     atoms = cell[1]
-#     natom = len(atoms)
-#     c_norm = lattice.abc[2]
-#     sort_atoms = atoms[np.argsort(atoms[:,2])]
-#     atom_c_coords = np.array([ atom[2] * c_norm for atom in sort_atoms ])
-#     atom_z_coords = atom_c_coords * sine
-# 
-#     # planes
-#     plane_z_coords = np.sum(
-#             np.array(atom_z_coords).reshape(int(natom/2), 2), axis=1) / 2
-#     plane_z_coords = np.round(plane_z_coords+epsilon, decimals=8)  # -0 => 0
-# 
-#     # distances
-#     d = list(deepcopy(plane_z_coords))
-#     d.append(c_norm * sine)
-#     distances = np.array(d[1:]) - np.array(d[:-1])
-# 
-#     # angles
-#     sub_orig = \
-#             sort_atoms[[i for i in range(1,natom,2)]] \
-#                 - sort_atoms[[i for i in range(0,natom,2)]]
-#     sub_plus = \
-#             sort_atoms[[i for i in range(1,natom,2)]]+np.array([0,1,0]) \
-#                 - sort_atoms[[i for i in range(0,natom,2)]]
-#     sub_minus = \
-#             sort_atoms[[i for i in range(1,natom,2)]]-np.array([0,1,0]) \
-#                 - sort_atoms[[i for i in range(0,natom,2)]]
-#     bond_coords = []
-#     for i in range(len(sub_orig)):
-#         norm_orig = lattice.get_norm(sub_orig[i], with_periodic=False)
-#         norm_plus = lattice.get_norm(sub_plus[i], with_periodic=False)
-#         norm_minus = lattice.get_norm(sub_minus[i], with_periodic=False)
-#         norms = [norm_orig, norm_plus, norm_minus]
-#         if min(norms) == norm_orig:
-#             bond_coords.append(sub_orig[i])
-#         elif min(norms) == norm_plus:
-#             bond_coords.append(sub_plus[i])
-#         else:
-#             bond_coords.append(sub_minus[i])
-# 
-#     angles = [ lattice.get_angle(frac_coord_first=coord,
-#                                  frac_coord_second=np.array([0,1,0]),
-#                                  get_acute=True)
-#                for coord in bond_coords ]
-# 
-#     return (list(plane_z_coords), list(distances), list(angles))
+    return (list(plane_z_coords),
+            list(distances),
+            list(angles),
+            pair_distances)

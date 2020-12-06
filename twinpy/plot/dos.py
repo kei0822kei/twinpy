@@ -2,9 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-plot
-----
-provide various kinds of plot
+This module is used for plotting phonon density of states.
 """
 
 import numpy as np
@@ -15,7 +13,7 @@ from twinpy.plot.base import (DEFAULT_COLORS,
 
 class _DosPlot():
     """
-    Dos plot.
+    Base for TotalDosPlot and TotalDosesPlot.
     """
 
     def __init__(self,
@@ -351,7 +349,7 @@ class TotalDosesPlot():
 
     def set_line_properties(self, base_color:str='r'):
         """
-        Set line properties
+        Set line properties.
         """
         self._cs, self._alphas, self._linewidths, self._linestyles = \
                 get_plot_properties_for_trajectory(
@@ -360,25 +358,25 @@ class TotalDosesPlot():
 
     def set_cs(self, cs):
         """
-        cs
+        Set cs.
         """
         self._cs = cs
 
     def set_alphas(self, alphas):
         """
-        cs
+        Set alpha.
         """
         self._alphas = alphas
 
     def set_linewidths(self, linewidths):
         """
-        cs
+        Set linewidths.
         """
         self._linewidths = linewidths
 
     def set_linestyles(self, linestyles):
         """
-        cs
+        Set linestyles.
         """
         self._linestyles = linestyles
 
