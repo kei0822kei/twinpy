@@ -9,7 +9,6 @@ import warnings
 from twinpy.interfaces.aiida.base import (check_process_class,
                                           get_cell_from_aiida,
                                           _WorkChain)
-from twinpy.interfaces.aiida.vasp import AiidaRelaxWorkChain
 from twinpy.interfaces.phonopy import get_phonopy_structure
 from twinpy.common.utils import print_header
 from twinpy.analysis.phonon_analyzer import (RelaxAnalyzer,
@@ -32,7 +31,7 @@ class AiidaPhonopyWorkChain(_WorkChain):
             ):
         """
         Args:
-            node: aiida Node
+            node: Aiida Node.
         """
         process_class = 'PhonopyWorkChain'
         check_process_class(node, process_class)

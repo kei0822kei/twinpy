@@ -273,7 +273,7 @@ class TwinBoundaryAnalyzer():
                                   for pk in shear_phonon_pks ]
             phonon_analyzers = [ phonon.get_phonon_analyzer(
                                          relax_analyzer=relax_analyzers[i])
-                                     for i, phonon in enumerate(aiida_phonons) ]
+                                   for i, phonon in enumerate(aiida_phonons) ]
             _relax_analyzers = None
         twinboundary_shear_analyzer = self.get_twinboundary_shear_analyzer(
                 relax_analyzers=_relax_analyzers,
@@ -316,7 +316,7 @@ class TwinBoundaryAnalyzer():
 
         return fig
 
-    def plot_angle_diff(self):
+    def plot_angle_diff(self) -> plt.figure:
         """
         Plot angle diff.
         """
@@ -332,7 +332,7 @@ class TwinBoundaryAnalyzer():
 
         return fig
 
-    def plot_pair_distance(self):
+    def plot_pair_distance(self) -> plt.figure:
         """
         Plot angle diff.
         """
@@ -341,10 +341,14 @@ class TwinBoundaryAnalyzer():
         fig = plt.figure(figsize=(8,13))
         ax = fig.add_subplot(111)
 
-        plot_pair_distance(ax, pair_distances=initial_env[3], z_coords=initial_env[0],
-                   decorate=False, label='Initial')
-        plot_pair_distance(ax, pair_distances=final_env[3], z_coords=final_env[0],
-                   label='Final')
+        plot_pair_distance(ax,
+                           pair_distances=initial_env[3],
+                           z_coords=initial_env[0],
+                           decorate=False, label='Initial')
+        plot_pair_distance(ax,
+                           pair_distances=final_env[3],
+                           z_coords=final_env[0],
+                           label='Final')
 
         return fig
 
@@ -380,6 +384,9 @@ class TwinBoundaryAnalyzer():
     def get_layer_indeces(self):
         """
         Get layzer indices.
+
+        Returns:
+            list: Layer indices.
         """
         orig_atoms = self._relax_analyzer.original_cell[1]
         sort_indices = np.argsort(orig_atoms[:,2])

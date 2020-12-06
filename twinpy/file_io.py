@@ -14,8 +14,6 @@ except ImportError:
     from yaml import Loader, Dumper
 from twinpy.lattice.lattice import Lattice
 
-epsilon = 1e-8
-
 
 def write_poscar(
         cell:tuple,
@@ -26,8 +24,8 @@ def write_poscar(
     even if its lattice basis is left handed.
 
     Args:
-        cell (tuple): cell
-        filename (str): poscar filename
+        cell (tuple): (lattice, scaled_positions, symbols).
+        filename (str): Poscar filename.
     """
     lattice, scaled_positions, symbols = cell
     symbol_sets = list(set(symbols))
@@ -76,10 +74,10 @@ def read_yaml(filename:str):
     Return dic from yaml.
 
     Args:
-        filename (str): output file name
+        filename (str): Output file name.
 
     Returns:
-        dict: dictionary object
+        dict: Dictionary object.
     """
     with open(filename, 'w') as f:
         dic = yaml.load(f, Loader=Loader)
@@ -89,16 +87,20 @@ def read_yaml(filename:str):
 def write_thermal_ellipsoid(cell:tuple,
                             matrices:np.array,
                             temperatures:list,
+                            filetype:str='CrystalMaker',
                             header:str=''):
     """
     Write thermal ellipsoid.
 
     Args:
-        cell (tuple): cell
-        matrices (np.array): thermal ellipsoid
-        temperatures (list): temperature list
-        header (str): header of filename
+        cell (tuple): (lattice, scaled_positions, symbols).
+        matrices (np.array): Thermal ellipsoid.
+        temperatures (list): Temperature list.
+        filetype (str): Currently only 'CrystalMaker' is supported.
+        header (str): Header of filename.
     """
+    if filetype != 'CrystalMaker':
+        raise ValueError("Only filetype='CrystalMaker' is supported.")
     lines = []
     lattice = Lattice(cell[0])
     abc = lattice.abc

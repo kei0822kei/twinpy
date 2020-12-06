@@ -197,7 +197,7 @@ def _get_atomic_environment(cell:tuple, layer_indices:list) -> tuple:
     Plane coordinates (z coordinates) are fractional.
 
     Args:
-        cell (np.array): (lattice, symbols, frac_coords).
+        cell (np.array): (lattice, scaled_positions, symbols).
         layer_indices (list): List of layer indices.
 
     Returns:

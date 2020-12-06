@@ -32,10 +32,10 @@ def get_aiida_structure(cell:tuple) -> StructureData:
     Get aiida structure from input cell.
 
     Args:
-        cell (tuple): cell = (lattice, scaled_positions, symbols)
+        cell (tuple): (lattice, scaled_positions, symbols).
 
     Returns:
-        StructureData: aiida structure data
+        StructureData: Aiida structure data.
     """
     structure = StructureData(cell=cell[0])
     for symbol, scaled_position in zip(cell[2], cell[1]):
@@ -45,13 +45,16 @@ def get_aiida_structure(cell:tuple) -> StructureData:
     return structure
 
 
-def get_workflow_pks(node, workflow):
+def get_workflow_pks(node, workflow) -> list:
     """
     Get workflow pks in the node.
 
     Args:
         node: node
-        workflow: workflow, ex. workflow = WorkflowFactory('vasp.relax')
+        workflow: Workflow, ex. workflow = WorkflowFactory('vasp.relax').
+
+    Returns:
+        list: PKs.
     """
     qb = QueryBuilder()
     qb.append(Node, filters={'id':{'==': node.pk}}, tag='wf')
@@ -62,16 +65,16 @@ def get_workflow_pks(node, workflow):
 
 
 def get_cell_from_aiida(structure:StructureData,
-                        get_scaled_positions:bool=True):
+                        get_scaled_positions:bool=True) -> tuple:
     """
     Get cell from input aiida structure.
 
     Args:
-        structure (StructureData): aiida structure data
-        get_scaled_positions (bool): if True, return scaled positions
+        structure (StructureData): Aiida structure data.
+        get_scaled_positions (bool): If True, return scaled positions.
 
     Returns:
-        tuple: cell
+        tuple: (lattice, positions, symbols).
     """
     lattice = np.array(structure.cell)
     positions = np.array([ site.position for site in structure.sites ])
@@ -92,7 +95,7 @@ class _WorkChain():
             ):
         """
         Args:
-            node: aiida Node
+            node: Aiida Node.
         """
         self._node = node
         self._process_class = self._node.process_class.get_name()
