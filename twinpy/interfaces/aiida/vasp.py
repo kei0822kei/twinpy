@@ -35,7 +35,7 @@ class _AiidaVaspWorkChain(_WorkChain):
             ):
         """
         Args:
-            node: aiida Node
+            node: Aiida Node.
         """
         super().__init__(node=node)
         self._initial_structure_pk = None
@@ -104,7 +104,7 @@ class _AiidaVaspWorkChain(_WorkChain):
         Get sampling kpoints information.
 
         Returns:
-            dict: kpoints information
+            dict: Contains kpoints information.
         """
         mesh, offset = self._node.inputs.kpoints.get_kpoints_mesh()
         total_mesh = mesh[0] * mesh[1] * mesh[2]
@@ -134,7 +134,7 @@ class _AiidaVaspWorkChain(_WorkChain):
         Get input parameters.
 
         Returns:
-            dict: input parameters
+            dict: Contains input parameters.
         """
         potcar = {
             'potential_family': self._node.inputs.potential_family.value,
@@ -188,7 +188,7 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
             ):
         """
         Args:
-            node: aiida Node
+            node: Aiida Node.
         """
         process_class = 'VaspWorkChain'
         check_process_class(node, process_class)
@@ -223,7 +223,7 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
         Get pks.
 
         Returns:
-            dict: containing vasp pk and structure pk
+            dict: Contains vasp pk and structure pk.
         """
         return {
                  'vasp_pk': self._pk,
@@ -288,8 +288,8 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
 
         Todo:
             Fix names. Name 'final_cell' 'final_structure_pk' 'cuurent-'
-            are strange because final_cell and final_structure_pk
-            the result from first relax pk. Therefore, 'current-'
+            are strange because final_cell and final_structure_pk are
+            the results from first relax pk. Therefore, 'current-'
             is truely final structure pk and final cell.
         """
         process_class = 'RelaxWorkChain'
@@ -346,7 +346,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         Get relax settings.
 
         Returns:
-            dict: relax settings
+            dict: Contains relax settings.
         """
         keys = [ key for key in self._node.inputs._get_keys()
                      if 'relax' in key ]
@@ -361,7 +361,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         Get VaspWorkChain pks.
 
         Returns:
-            tuple: (relax_calcs, static_calc)
+            tuple: (relax_calcs, static_calc).
         """
         qb = QueryBuilder()
         qb.append(Node, filters={'id':{'==': self._pk}})
@@ -387,7 +387,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         Get AiidaVaspWorkChain class objects.
 
         Returns:
-            tuple: (relax_calcs, static_calc)
+            tuple: (relax_calcs, static_calc).
         """
         relax_pks, static_pk = self.get_vasp_calculation_pks()
         if self._exit_status == 0:
@@ -406,7 +406,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         Get pks.
 
         Returns:
-            dict: containing relax pk and structure pk
+            dict: Contains relax pk and structure pk.
         """
         relax_pks, static_pk = self.get_vasp_calculation_pks()
         pks = {
@@ -535,7 +535,7 @@ class AiidaRelaxCollection():
     def _set_structures(self):
         """
         Check previous output structure and next input structure
-        is same.
+        are the same.
         """
         relax_pk = None
         structure_pk = None

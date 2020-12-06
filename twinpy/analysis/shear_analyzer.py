@@ -10,7 +10,6 @@ from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.bonding import _get_atomic_environment
 from twinpy.plot.twinboundary import plot_plane, plot_angle, plot_pair_distance
 from twinpy.plot.relax import plot_atom_diff
-from twinpy.plot.base import get_plot_properties_for_trajectory
 from twinpy.file_io import write_poscar
 
 
@@ -341,7 +340,6 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
                        label=label,
                        decorate=decorate,
                        )
-            # ax.legend()
 
         return fig
 
@@ -366,7 +364,6 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
                        label=label,
                        decorate=decorate,
                        )
-            # ax.legend()
 
         return fig
 

@@ -6,6 +6,7 @@ Analize relax calculation.
 I did not name this file as vasp_analyzer.py
 because this also can be used in the case lammps is used.
 """
+
 import numpy as np
 from twinpy.structure.base import check_same_cells
 from twinpy.structure.diff import get_structure_diff
@@ -97,7 +98,7 @@ class RelaxAnalyzer():
 
         Note:
             For variable definitions in this definition,
-            see Eq.(1.8) and (1.17) in Crystal Structure documention.
+            see Eq.(1.8) and Eq.(1.17) in Crystal Structure documention.
             Note that by crystal body rotation, fractional
             coordinate of atom positions are not changed.
         """
