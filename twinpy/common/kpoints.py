@@ -111,8 +111,7 @@ def get_mesh_offset_from_direct_lattice(lattice:np.array,
     # fix mesh from get_mesh_from_interval
     if is_hexagonal:
         offset = (0., 0., 0.5)
-        # If True, get 1, if False get 0.
-        condition = lambda x: int(x%2==0)
+        condition = lambda x: int(x%2==0)  # If True, get 1, if False get 0.
         arr = [ condition(m) for m in mesh[:2] ]
         if (mesh[2]!=1 and mesh[2]%2==1):
             arr.append(1)
@@ -121,7 +120,6 @@ def get_mesh_offset_from_direct_lattice(lattice:np.array,
         arr = np.array(arr)
     else:
         offset = (0.5, 0.5, 0.5)
-        # condition = lambda x: int(x!=1 and x%2==1)
         condition = lambda x: int(x%2==1)
         arr = np.array([ condition(m) for m in mesh ])
     fixed_mesh = mesh + arr

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Relax transition plot.
+This module is used for provide information from vasp relax.
 """
 
 import numpy as np
@@ -103,7 +103,6 @@ class RelaxPlot():
 
         Args:
             ax: Matplotlib subplot.
-            is_logscale: If True, plot with log scale.
             decorate (bool): If True, decorate figure.
         """
         if decorate:
@@ -240,6 +239,9 @@ def plot_atom_diff(ax,
         direction (str): Diff direction.
         shuffle (bool): If True, diffrence of scaled positions,
                         which ignore lattice shear, are ploted.
+
+    Notes:
+        For input 'kwargs', see twinpy.plot.base.line_chart.
     """
     diff = get_structure_diff(cells=[initial_cell, final_cell],
                               include_base=False)

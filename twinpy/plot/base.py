@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-provide various kinds of plot
+This module provides various kinds of tools for plotting.
 """
 
 import numpy as np
@@ -19,15 +19,24 @@ def line_chart(ax,
                xlabel:str,
                ylabel:str,
                label:str=None,
-               alpha=1.,
                sort_by='x',
                **kwargs):
     """
     Plot line chart in ax.
 
     Args:
-        sort_by (str): if sort_by == 'y', sort by y data
-        kwargs: c, marker, facecolor, s
+        ax: subplot of matplotlib
+        xdata (np.array): Input xdata.
+        ydata (np.array): Input ydata.
+        xlabel (str): x label.
+        ylabel (str): y label.
+        label (str): Label for ax.
+        sort_by (str): if sort_by == 'y', sort by y data.
+        kwargs: c, marker, facecolor, s, alpha.
+
+    Notes:
+        'kwargs' is parsed to ax.scatter. for more detailed information,
+        see documentation for ax.scatter.
     """
     if 'c' in kwargs.keys():
         c = kwargs['c']
@@ -51,10 +60,14 @@ def line_chart(ax,
     else:
         facecolor_num = len(ax.get_lines()) % 2
         if facecolor_num == 0:
-            # facecolor = 'white'
             facecolor = 'None'
         else:
             facecolor = c
+
+    if 'alpha' in kwargs.keys():
+        alpha = kwargs['alpha']
+    else:
+        alpha = 1.
 
     raw = np.array([xdata, ydata])
     if sort_by == 'y':
@@ -82,10 +95,11 @@ def line_chart_group(ax,
     Plot group line chart in ax.
 
     Args:
-        kwargs: see line_chart
+        glabel (str): Group label.
 
     Note:
         This function finds the unique value sets in gdata and make groups.
+        For the other input parameters, see twinpy.plot.base.line_chart.
     """
     uniques = np.unique(gdata)
     for unique in uniques:
@@ -99,7 +113,6 @@ def line_chart_group(ax,
                    ylabel=ylabel,
                    label=label,
                    **kwargs)
-    # ax.legend()
 
 
 def line_chart_group_trajectory(ax,
@@ -109,16 +122,17 @@ def line_chart_group_trajectory(ax,
                                 xlabel:str,
                                 ylabel:str,
                                 glabel:str,
-                                tdata=None,
+                                tdata,
                                 **kwargs):
     """
     Plot group line chart in ax with trajectory.
 
     Args:
-        kwargs: see line_chart
+        glabel (str): Group label.
 
     Note:
         This function finds the unique value sets in gdata and make groups.
+        For the other input parameters, see twinpy.plot.base.line_chart.
     """
     uniques_ = np.unique(gdata)
     for j, unique_ in enumerate(uniques_):
@@ -164,8 +178,8 @@ def get_plot_properties_for_trajectory(plot_nums:int,
     Get plot properties for trajectory.
 
     Args:
-        plot_nums (int): the number of plots
-        base_color (str): base color
+        plot_nums (int): The number of plots.
+        base_color (str): Base color.
 
     Returns:
         tuple: (cs, alphas, linewidths, linestyles)
@@ -185,7 +199,7 @@ def get_plot_properties_for_trajectory(plot_nums:int,
 
 def create_figure_axes(ratios:list=[1.],
                        axes_pad:float=0.,
-                       figsize:tuple=(8,6)):
+                       figsize:tuple=(8,6)) -> tuple:
     """
     Create figure and axes.
 
@@ -195,8 +209,7 @@ def create_figure_axes(ratios:list=[1.],
         figsize (tuple): Figure size.
 
     Returns:
-        plt.figure: Figure.
-        list: Axes.
+        tuple: Returns (fig, axes).
     """
     bottom = 0.15
     hight = 0.75
@@ -216,4 +229,4 @@ def create_figure_axes(ratios:list=[1.],
         axes.append(ax)
         ax_left += wdt + axes_pad
 
-    return fig, axes
+    return (fig, axes)

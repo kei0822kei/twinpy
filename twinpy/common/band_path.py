@@ -29,7 +29,7 @@ def get_seekpath(cell:tuple) -> dict:
     return skp
 
 
-def get_labels_band_paths_from_seekpath(cell:tuple):
+def get_labels_band_paths_from_seekpath(cell:tuple) -> tuple:
     """
     Get labels and band paths from seekpath result.
 
@@ -37,8 +37,7 @@ def get_labels_band_paths_from_seekpath(cell:tuple):
         cell (tuple): Cell.
 
     Returns:
-        list: labels
-        np.array: band paths
+        tuple: (labels, band_paths)
     """
     skp = get_seekpath(cell)
     paths = skp['path']
@@ -54,7 +53,7 @@ def get_labels_band_paths_from_seekpath(cell:tuple):
     lb, band_paths = get_band_paths_from_labels(
             labels=labels,
             labels_qpoints=labels_qpoints)
-    return lb, band_paths
+    return (lb, band_paths)
 
 
 def get_labels_for_twin() -> dict:
@@ -96,7 +95,7 @@ def get_labels_for_twin() -> dict:
 
 
 def get_band_paths_from_labels(labels:list,
-                               labels_qpoints:dict):
+                               labels_qpoints:dict) -> tuple:
     """
     Get segment qpoints which is input for phonopy.
 
@@ -106,8 +105,7 @@ def get_band_paths_from_labels(labels:list,
         labels_qpoints (dict): Dictionary for labels and corresponding qpoints.
 
     Returns:
-        list: labels
-        np.array: band paths
+        tuple: (labels, band_paths)
 
     Examples:
         >>> labels = ['GAMMA', 'M_1', '', 'K_1', 'GAMMA']
@@ -129,4 +127,4 @@ def get_band_paths_from_labels(labels:list,
             lb.append(label)
     seg_qpt.append(qpt)
 
-    return lb, seg_qpt
+    return (lb, seg_qpt)
