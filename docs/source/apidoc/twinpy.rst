@@ -10,6 +10,7 @@ Subpackages
    twinpy.common
    twinpy.interfaces
    twinpy.lattice
+   twinpy.plot
    twinpy.properties
    twinpy.structure
 

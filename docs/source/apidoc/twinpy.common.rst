@@ -4,16 +4,6 @@ twinpy.common package
 Submodules
 ----------
 
-twinpy.common.plot module
--------------------------
-
-.. automodule:: twinpy.common.plot
-   :members:
-   :special-members:
-   :private-members:
-   :undoc-members:
-   :show-inheritance:
-
 twinpy.common.utils module
 --------------------------
 
