@@ -99,7 +99,7 @@ class _AiidaVaspWorkChain(_WorkChain):
         max_force = float(np.linalg.norm(self._forces, axis=1).max())
         return max_force
 
-    def get_kpoints_info(self) -> dict:
+    def get_kpoints_info(self, include_two_pi=True) -> dict:
         """
         Get sampling kpoints information.
 
@@ -110,7 +110,8 @@ class _AiidaVaspWorkChain(_WorkChain):
         total_mesh = mesh[0] * mesh[1] * mesh[2]
         twinpy_kpoints = get_mesh_offset_from_direct_lattice(
                 lattice=self._initial_cell[0],
-                mesh=mesh)
+                mesh=mesh,
+                include_two_pi=include_two_pi)
         kpts = {
                 'mesh': mesh,
                 'total_mesh': twinpy_kpoints['total_mesh'],

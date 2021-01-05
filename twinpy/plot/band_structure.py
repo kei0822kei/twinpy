@@ -11,6 +11,8 @@ from phonopy.phonon.band_structure import BandStructure
 from twinpy.plot.base import (create_figure_axes,
                               get_plot_properties_for_trajectory)
 
+from matplotlib import pyplot as plt
+plt.rcParams["font.family"] = "times new roman"
 
 def decorate_string_for_latex(string):
     """
@@ -195,15 +197,19 @@ class BandPlot():
         return self._segment_distances
 
     def plot_segment_band_structure(self, ax, frequences, distances,
-                                    labels:list=None, c='r', linestyle='-',
+                                    label:str=None, c='r', linestyle='-',
                                     alpha=1., linewidth=1.5,
                                     show_yscale:bool=True):
         """
         Plot segment band structure.
         """
         for i in range(frequences.shape[1]):
+            if i == 0:
+                _label = label
+            else:
+                _label = None
             ax.plot(distances, frequences[:,i], c=c, linestyle=linestyle,
-                    alpha=alpha, linewidth=linewidth)
+                    alpha=alpha, linewidth=linewidth, label=_label)
         ax.set_xlim(min(distances), max(distances))
         if show_yscale:
             labelleft = True
@@ -429,6 +435,13 @@ class BandsPlot():
 
         for j, bandplot in enumerate(self._bandplots):
             for i in range(len((self._bandplots[0]._segment_frequences))):
+                if i == 0 and j == 0:
+                    label = 'Initial'
+                elif i == 0 and j == len(self._bandplots)-1:
+                    label = 'Final'
+                else:
+                    label = None
+
                 if i == 0:
                     show_yscale = True
                 else:
@@ -442,6 +455,7 @@ class BandsPlot():
                         alpha=self._alphas[j],
                         linestyle=self._linestyles[j],
                         linewidth=self._linewidths[j],
+                        label=label,
                         )
                 if j == 0:
                     bandplot.plot_vline(axes[i], i)
