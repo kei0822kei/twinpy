@@ -6,13 +6,13 @@ make structures
 """
 
 import numpy as np
+from copy import deepcopy
 import yaml
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
     from yaml import Loader, Dumper
-
-epsilon = 1e-8
+from twinpy.lattice.lattice import Lattice
 
 
 def write_poscar(
@@ -24,8 +24,8 @@ def write_poscar(
     even if its lattice basis is left handed.
 
     Args:
-        cell (tuple): cell
-        filename (str): poscar filename
+        cell (tuple): (lattice, scaled_positions, symbols).
+        filename (str): Poscar filename.
     """
     lattice, scaled_positions, symbols = cell
     symbol_sets = list(set(symbols))
@@ -74,11 +74,63 @@ def read_yaml(filename:str):
     Return dic from yaml.
 
     Args:
-        filename (str): output file name
+        filename (str): Output file name.
 
     Returns:
-        dict: dictionary object
+        dict: Dictionary object.
     """
     with open(filename, 'w') as f:
         dic = yaml.load(f, Loader=Loader)
     return dic
+
+
+def write_thermal_ellipsoid(cell:tuple,
+                            matrices:np.array,
+                            temperatures:list,
+                            filetype:str='CrystalMaker',
+                            header:str=''):
+    """
+    Write thermal ellipsoid.
+
+    Args:
+        cell (tuple): (lattice, scaled_positions, symbols).
+        matrices (np.array): Thermal ellipsoid.
+        temperatures (list): Temperature list.
+        filetype (str): Currently only 'CrystalMaker' is supported.
+        header (str): Header of filename.
+    """
+    if filetype != 'CrystalMaker':
+        raise ValueError("Only filetype='CrystalMaker' is supported.")
+    lines = []
+    lattice = Lattice(cell[0])
+    abc = lattice.abc
+    abc_str = ' '.join(map(str, list(abc)))
+    angles = lattice.angles
+    angles_str = ' '.join(map(str, list(angles)))
+    cell_str = "CELL {} {}".format(abc_str, angles_str)
+    lines.append(cell_str)
+    lines.append("")
+    lines.append("ATOM")
+
+    # crystal maker => xx yy zz xy xz yz
+    tensor_idx = [[0,0], [1,1], [2,2], [0,1], [0,2], [1,2]]
+
+    for i in range(len(cell[2])):
+        frac_str = ' '.join(map(str, list(cell[1][i])))
+        lines.append("{} {} {}".format(cell[2][i],
+                                       cell[2][i]+str(i+1),
+                                       frac_str))
+    lines.append("")
+    lines.append("UANI")
+    for i, temp in enumerate(temperatures):
+        temp_lines = deepcopy(lines)
+        for j in range(len(cell[2])):
+            mat = np.round(matrices[i,j], decimals=4)
+            tensor = [ str(mat.item(*idx)) for idx in tensor_idx ]
+            tensor_str = ' '.join(tensor)
+            temp_lines.append("{} {}".format(cell[2][j]+str(1+j), tensor_str))
+
+        strings = '\n'.join(temp_lines)
+        filename = header + "temp{}K.cmtx".format(temp)
+        with open(filename, 'w') as f:
+            f.write(strings)

@@ -5,7 +5,56 @@
 Lattice class
 """
 
+from copy import deepcopy
 import numpy as np
+
+
+def check_hexagonal_lattice(lattice:np.array):
+    """
+    Check input lattice is hexagonal lattice.
+
+    Args:
+        lattice (np.array): lattice
+
+    Raises:
+        AssertionError: the angles are not (90, 90, 120)
+
+    Note:
+        Check the angles of input lattice are (90, 90, 120).
+
+    TODO:
+        Add tolerance of assert_allclose.
+    """
+    hexagonal = Lattice(lattice)
+    expected = np.array([90., 90., 120.])
+    actual = hexagonal.angles
+    np.testing.assert_allclose(
+            actual,
+            expected,
+            err_msg="angles of lattice was {}, which is not hexagonal".
+                    format(actual),
+            )
+
+
+def get_hexagonal_lattice_from_a_c(a:float, c:float) -> np.array:
+    """
+    Get hexagonal lattice from the norms of a and c axes.
+
+    Args:
+        a (str): the norm of a axis
+        c (str): the norm of c axis
+
+    Returns:
+        np.array: hexagonal lattice
+
+    Raises:
+        AssertionError: either a or c is negative value
+    """
+    assert a > 0. and c > 0., "input 'a' and 'c' must be positive value"
+    lattice = np.array([[  1.,           0., 0.],
+                        [-0.5, np.sqrt(3)/2, 0.],
+                        [  0.,           0., 1.]]) * np.array([a,a,c])
+    return lattice
 
 
 class Lattice():
@@ -35,6 +84,7 @@ class Lattice():
         self._set_abc()
 
         self._angles = None
+        self._sin_angles = None
         self._cos_angles = None
         self._set_angles()
 
@@ -102,14 +152,17 @@ class Lattice():
         lat = self.lattice
         abc = self.abc
         cos_angles = []
+        sin_angles = []
         angles = []
         for i in range(3):
             j = (i + 1) % 3
             k = (i + 2) % 3
             cos_angle = np.dot(lat[j],lat[k]) / (abc[j] * abc[k])
             cos_angles.append(cos_angle)
-            angles.append(np.arccos((cos_angle)) * 180 / np.pi)
+            angles.append(np.arccos(cos_angle) * 180 / np.pi)
+            sin_angles.append(np.sin(np.arccos(cos_angle)))
         self._cos_angles = tuple(cos_angles)
+        self._sin_angles = tuple(sin_angles)
         self._angles = tuple(angles)
 
     @property
@@ -125,6 +178,13 @@ class Lattice():
         Cosine angles of axes.
         """
         return self._cos_angles
+
+    @property
+    def sin_angles(self):
+        """
+        Sine angles of axes.
+        """
+        return self._sin_angles
 
     def _set_metric(self, is_old_style=False):
         """
@@ -176,27 +236,66 @@ class Lattice():
         """
         first = frac_coord_first.reshape(3,1)
         second = frac_coord_second.reshape(3,1)
+
         return float(np.dot(np.dot(first.T,
                                    self._metric),
                             second))
 
-    def get_distance(self,
-                     frac_coord_first:np.array,
-                     frac_coord_second:np.array) -> float:
+    def get_norm(self,
+                 frac_coords:np.array,
+                 is_cartesian:bool=False,
+                 with_periodic:bool=True) -> float:
         """
-        Return cartesian distance between two fractional coordinate.
+        Get distance between frac_coord and origin.
+
+        Args:
+            frac_coords (np.array): Fractional coords.
+            is_cartesian (bool): If True input coords are recognized
+                                 as cartesian.
+            with_periodic (bool): If True, consider periodic condition.
+
+        Returns:
+            float: Distance in cartesian coordinate.
+        """
+        origin = np.array([0.,0.,0.])
+        norm = self.get_distance(frac_first_coords=frac_coords,
+                                 frac_second_coords=origin,
+                                 is_cartesian=is_cartesian,
+                                 with_periodic=with_periodic)
+
+        return norm
+
+    def get_angle(self,
+                  frac_coord_first:np.array,
+                  frac_coord_second:np.array,
+                  get_acute:bool=False) -> float:
+        """
+        Return angle between two fractional coordinate.
 
         Args:
             frac_coord_first (np.array): frac coord
             frac_coord_second (np.array): frac coord
+            get_acute (bool): if True, get acute angle
 
         Returns:
-            float: distance
+            float: angle
         """
-        sub = frac_coord_first - frac_coord_second
-        distance = np.linalg.norm(np.dot(self._lattice.T,
-                                         sub.reshape(3,1)))
-        return distance
+        origin = np.array([0.,0.,0.])
+        norm_first = self.get_distance(frac_coord_first,
+                                       origin,
+                                       with_periodic=False)
+        norm_second = self.get_distance(frac_coord_second,
+                                        origin,
+                                        with_periodic=False)
+        inner_product = self.dot(frac_coord_first=frac_coord_first,
+                                 frac_coord_second=frac_coord_second)
+        cos_angle = np.round(inner_product / (norm_first * norm_second),
+                             decimals=8)
+        angle = np.arccos(cos_angle) * 180 / np.pi
+        if get_acute:
+            angle = min(angle, 180-angle)
+
+        return angle
 
     def is_hexagonal_lattice(self) -> bool:
         """
@@ -213,70 +312,106 @@ class Lattice():
             flag = True
         except AssertionError:
             flag = False
+
         return flag
 
+    def get_diff(self,
+                 first_coords:np.array,
+                 second_coords:np.array,
+                 is_cartesian:bool=False,
+                 with_periodic:bool=True) -> np.array:
+        """
+        Get diff between first coords and second coords.
 
-def check_hexagonal_lattice(lattice:np.array):
-    """
-    Check input lattice is hexagonal lattice.
+        Args:
+            first_coords (np.array): Positions.
+            second_coords (np.array): Positions.
+            is_cartesian (bool): If True input coords are recognized
+                                 as cartesian.
+            with_periodic (bool): If True, consider periodic condition.
 
-    Args:
-        lattice (np.array): lattice
+        Returns:
+            np.array: Atom diff (second_coords - first_coords)
+                      in fractional coordinate.
+        """
+        if is_cartesian:
+            _first_frac = np.dot(np.linalg.inv(self._lattice.T),
+                                 first_coords.T).T
+            _second_frac = np.dot(np.linalg.inv(self._lattice.T),
+                                  second_coords.T).T
+        else:
+            _first_frac = deepcopy(first_coords)
+            _second_frac = deepcopy(second_coords)
 
-    Raises:
-        AssertionError: the angles are not (90, 90, 120)
+        if with_periodic:
+            _diff = np.round((_second_frac - _first_frac) % 1, decimals=8)
+            diff = np.where(_diff>0.5, _diff-1, _diff)
+        else:
+            diff = _second_frac - _first_frac
 
-    Note:
-        Check the angles of input lattice are (90, 90, 120).
+        return diff
 
-    TODO:
-        Add tolerance of assert_allclose.
-    """
-    hexagonal = Lattice(lattice)
-    expected = np.array([90., 90., 120.])
-    actual = hexagonal.angles
-    np.testing.assert_allclose(
-            actual,
-            expected,
-            err_msg="angles of lattice was {}, which is not hexagonal".
-                    format(actual),
-            )
+    def get_midpoint(self,
+                     first_coords:np.array,
+                     second_coords:np.array,
+                     is_cartesian:bool=False,
+                     with_periodic:bool=True) -> np.array:
+        """
+        Get midpoint.
 
+        Args:
+            first_coords (np.array): Positions.
+            second_coords (np.array): Positions.
+            is_cartesian (bool): If True input coords are recognized
+                                 as cartesian.
+            with_periodic (bool): If True, consider periodic condition.
 
-def create_hexagonal_lattice(a:float, c:float) -> np.array:
-    """
-    Create hexagonal lattice.
+        Returns:
+            np.array: Atom diff (second_coords - first_coords)
+                      in fractional coordinate.
+        """
+        if is_cartesian:
+            _first_frac = np.dot(np.linalg.inv(self._lattice.T),
+                                 first_coords.T).T
+            _second_frac = np.dot(np.linalg.inv(self._lattice.T),
+                                  second_coords.T).T
+        else:
+            _first_frac = deepcopy(first_coords)
+            _second_frac = deepcopy(second_coords)
 
-    Args:
-        a (float): norm of a axis
-        c (float): norm of c axis
+        if with_periodic:
+            diff = self.get_diff(first_coords=first_coords,
+                                 second_coords=second_coords,
+                                 is_cartesian=is_cartesian,
+                                 with_periodic=with_periodic)
+            midpoint = np.round((_first_frac + diff / 2) % 1, decimals=8)
+        else:
+            midpoint = (_second_frac - _first_frac) / 2
 
-    Returns:
-        np.array: hexagonal lattice
-    """
-    lattice = np.array([[  1.,           0., 0.],
-                        [-0.5, np.sqrt(3)/2, 0.],
-                        [  0.,           0., 1.]]) \
-              * np.array([[a,a,c]]).T
-    return lattice
+        return midpoint
 
+    def get_distance(self,
+                     frac_first_coords:np.array,
+                     frac_second_coords:np.array,
+                     is_cartesian:bool=False,
+                     with_periodic:bool=True) -> float:
+        """
+        Get cartesian distance between two fractional coordinate.
 
-def get_hexagonal_lattice_from_a_c(a:float, c:float) -> np.array:
-    """
-    Get hexagonal lattice from the norms of a and c axes.
+        Args:
+            frac_first_coords (np.array): Fractional coords.
+            frac_second_coords (np.array): Fractional coords.
+            is_cartesian (bool): If True input coords are recognized
+                                 as cartesian.
+            with_periodic (bool): If True, consider periodic condition.
 
-    Args:
-        a (str): the norm of a axis
-        c (str): the norm of c axis
+        Returns:
+            float: Distance in cartesian coordinate.
+        """
+        diff = self.get_diff(first_coords=frac_first_coords,
+                             second_coords=frac_second_coords,
+                             is_cartesian=is_cartesian,
+                             with_periodic=with_periodic)
+        distance = np.linalg.norm(np.dot(self.lattice.T, diff.T))
 
-    Returns:
-        np.array: hexagonal lattice
-
-    Raises:
-        AssertionError: either a or c is negative value
-    """
-    assert a > 0. and c > 0., "input 'a' and 'c' must be positive value"
-    lattice = np.array([[  1.,           0., 0.],
-                        [-0.5, np.sqrt(3)/2, 0.],
-                        [  0.,           0., 1.]]) * np.array([a,a,c])
-    return lattice
+        return distance
