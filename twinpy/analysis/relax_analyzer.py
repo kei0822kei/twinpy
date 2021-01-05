@@ -84,10 +84,11 @@ class RelaxAnalyzer():
                 no_idealize=False,
                 symprec=1e-5,
                 get_sort_list=False)
-        if not check_same_cells(first_cell=primitive_cell,
-                                second_cell=self._initial_cell):
-            raise RuntimeError("Standardized original cell does not "
-                               "the same as initial cell.")
+        ### future edit because relaxed structure step by step
+        # if not check_same_cells(first_cell=primitive_cell,
+        #                         second_cell=self._initial_cell):
+        #     raise RuntimeError("Standardized original cell does not "
+        #                        "the same as initial cell.")
         self._original_cell = _original_cell
         self._standardize = std
         self._set_final_cell_in_original_frame()

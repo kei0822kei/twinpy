@@ -10,7 +10,6 @@ from phonopy.phonon.dos import TotalDos, PartialDos
 from twinpy.plot.base import (DEFAULT_COLORS,
                               get_plot_properties_for_trajectory)
 
-
 class _DosPlot():
     """
     Base for TotalDosPlot and TotalDosesPlot.
