@@ -4,7 +4,6 @@
 """
 Bonding base.
 """
-
 import numpy as np
 import itertools
 from twinpy.lattice.lattice import Lattice
@@ -48,6 +47,10 @@ def get_neighbors(cell:tuple,
                 neighbors.append([i, l, m, n])
                 distances.append(distance)
 
+    # sort
+    sort_idx = np.argsort(distances)
+    distances = list(np.array(distances)[sort_idx])
+    neighbors = list(np.array(neighbors)[sort_idx])
     neighbors = list(map(tuple, neighbors))
 
     if get_distances:
@@ -106,7 +109,6 @@ def common_neighbor_analysis(cell:tuple) -> list:
     """
     def _get_label(bondings):
         state = 'unknown'
-        print(len(bondings))
         if len(bondings) == 12:
             status_1 = len([ bond for bond in bondings if bond == [1,4,2,1] ])
             status_2 = len([ bond for bond in bondings if bond == [1,4,2,2] ])
@@ -186,3 +188,78 @@ def common_neighbor_analysis(cell:tuple) -> list:
         states.append(state)
 
     return states
+
+
+def _get_atomic_environment(cell:tuple, layer_indices:list) -> tuple:
+    """
+    Get plane coords from lower plane to upper plane.
+    Return list of z coordinates of original cell frame.
+    Plane coordinates (z coordinates) are fractional.
+
+    Args:
+        cell (np.array): (lattice, scaled_positions, symbols).
+        layer_indices (list): List of layer indices.
+
+    Returns:
+        tuple: (planes, distances, angles)
+    """
+    lattice = Lattice(cell[0])
+    angles = lattice.angles
+    np.testing.assert_allclose(
+            angles[1:], [90., 90.],
+            err_msg="Angles of lattice is {}. "
+                    "Angle beta and gamma must be 90 degree.".format(angles))
+    sine = lattice.sin_angles[0]
+    plane_z_coords = []
+    distances = []
+    previous_z_coord = 0.
+    angles = []
+    pair_distances = []
+    c_norm = np.linalg.norm(cell[0], axis=1)[2]
+    for i, indices in enumerate(layer_indices):
+        pair_atoms = cell[1][indices,:]
+        pair_diff = lattice.get_diff(first_coords=pair_atoms[0],
+                                     second_coords=pair_atoms[1],
+                                     with_periodic=True)
+        pair_distance = lattice.get_norm(frac_coords=pair_diff,
+                                         with_periodic=True)
+        pair_distances.append(pair_distance)
+        lattice_point = lattice.get_midpoint(
+                first_coords=pair_atoms[0],
+                second_coords=pair_atoms[1],
+                with_periodic=True,
+                )
+        if i == 0:
+            if lattice_point[2] > 0.9:
+                lattice_point[2] = lattice_point[2] - 1.
+        elif i == len(layer_indices) - 1:
+            if lattice_point[2] < 0.1:
+                lattice_point[2] = lattice_point[2] + 1.
+        plane_z_coord = c_norm * lattice_point[2] * sine
+        plane_z_coords.append(plane_z_coord)
+
+        if i > 0:
+            d = plane_z_coord - previous_z_coord
+            distances.append(d)
+            previous_z_coord = plane_z_coord
+
+    # # angles
+        diff = lattice.get_diff(
+                   first_coords=pair_atoms[0],
+                   second_coords=pair_atoms[1],
+                   is_cartesian=False,
+                   with_periodic=True,
+                   )
+        diff_cart = np.dot(lattice.lattice.T, diff)
+        cos = diff_cart[1] / np.linalg.norm(diff_cart)
+        angle = np.arccos(cos) * 180 / np.pi % 180
+        angles.append(angle)
+    angles = np.array(angles)
+    angles = np.where(angles > 90., angles-180, angles)
+    angles = np.abs(angles)
+    distances.append(lattice.abc[2] * sine - plane_z_coords[-1])
+
+    return (list(plane_z_coords),
+            list(distances),
+            list(angles),
+            pair_distances)

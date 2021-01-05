@@ -274,7 +274,8 @@ class StandardizeCell():
         """
         spg_cell = spglib.standardize_cell(self._cell_for_spglib,
                                            to_primitive=to_primitive,
-                                           no_idealize=no_idealize)
+                                           no_idealize=no_idealize,
+                                           symprec=symprec)
         symbols = get_chemical_symbols(spg_cell[2])
         std_cell = (spg_cell[0], spg_cell[1], symbols)
         if no_sort:
@@ -293,3 +294,65 @@ class StandardizeCell():
                 return (sort_std_cell, sort_list)
             else:
                 return sort_std_cell
+
+    def convert_kpoints(self, kpoints:tuple, kpoints_type:str) -> tuple:
+        """
+        Convert input kpoints to required kpoints.
+
+        Args:
+            kpoints (tuple): Contains (mesh, offset).
+            kpoints_type (str): Input kpoints type.
+                                Choose 'original' or 'primitive'.
+        Notes:
+            'primitive' in this function means 'primitive idealized'.
+        """
+        def __get_kpt_transformation_matrix():
+            R = self.rotation_matrix
+            M_p = self.get_standardized_cell(to_primitive=True,
+                                             no_idealize=True)[0].T
+            M = self.cell[0].T
+            mat = np.dot(M_p.T,
+                         np.linalg.inv(M).T)
+            return mat
+
+        convert_mat = __get_kpt_transformation_matrix()
+        if kpoints_type == 'original':
+            mesh = np.round(np.abs(np.dot(convert_mat, kpoints[0])),
+                            decimals=4).astype(int).tolist()
+            offset = np.round(np.abs(np.dot(convert_mat, kpoints[1])),
+                              decimals=4).tolist()
+            kpts = {
+                    'original': kpoints,
+                    'primitive': (mesh, offset),
+                    }
+        elif kpoints_type == 'primitive':
+            mesh = np.round(np.abs(np.dot(np.linalg.inv(convert_mat),
+                                          kpoints[0])),
+                            decimals=4).astype(int)
+            offset = np.round(np.abs(np.dot(np.linalg.inv(convert_mat),
+                                            kpoints[1])),
+                              decimals=4)
+            kpts = {
+                    'original': (mesh, offset),
+                    'primitive': kpoints,
+                    }
+        else:
+            raise RuntimeError("input kpoints_type: {}, which is prohibited."
+                               .format(kpoints_type))
+
+        return kpts
+
+    # def add_standardized_to_original_operation(cell:tuple, cell_is_primitve=True):
+    #     """
+    #     Add primitive to original operation toward input cell.
+    #     """
+    #     # lattice
+    #     R = self._rotation_matrix
+    #     P = self._transformation_matrix
+    #     P_c = self._conv_to_prim_matrix
+    #     p = self._origin_shift
+
+    #     if cell_is_primitve:
+    #         M_bar_p = np.transpose(cell[0])
+    #         M_p = np.dot(R.T, M_bar_p)
+    #         M_s = np.dot(M_p, np.linalg.inv(P_c))

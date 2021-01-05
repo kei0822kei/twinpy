@@ -5,12 +5,20 @@
 API for twinpy
 """
 
+from pprint import pprint
 import numpy as np
+from aiida.orm import load_node
+from aiida import load_profile
 from twinpy.structure.base import is_hcp
 from twinpy.structure.shear import get_shear
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
-from twinpy.file_io import read_yaml, write_yaml
+from twinpy.file_io import read_yaml, write_yaml, write_poscar
+from twinpy.interfaces.aiida.shear import AiidaShearWorkChain
+from twinpy.interfaces.aiida.twinboundary \
+        import AiidaTwinBoudnaryRelaxWorkChain
+
+load_profile()
 
 
 def get_twinpy_from_cell(cell:tuple,
@@ -60,6 +68,124 @@ class Twinpy():
         self._shear = None
         self._twinboundary = None
         self._shear_is_primitive = None
+
+        self._shear_analyzer = None
+        self._twinboundary_analyzer = None
+        self._twinboundary_shear_analyzer = None
+
+    def _check_shear_is_set(self):
+        """
+        Check shear structure is set.
+
+        Raises:
+            RuntimeError: when shear structure is not set
+        """
+        if self._shear is None:
+            msg = "shear structure is not set, please run set_shear"
+            raise RuntimeError(msg)
+
+    def _check_twinboundary_is_set(self):
+        """
+        Check twinboudnary is set.
+
+        Raises:
+            RuntimeError: when twinboundary structure is not set
+        """
+        if self._twinboundary is None:
+            msg = "twinboundary structure is not set, \
+                   please run set_twinboundary"
+            raise RuntimeError(msg)
+
+    def _check_shear_analyzer_is_set(self):
+        """
+        Check shear analyzer is set.
+
+        Raises:
+            RuntimeError: when shear analyzer is not set
+        """
+        if self._shear_analyzer is None:
+            msg = "shear analyzer is not set, please run \
+                   initialize_from_aiida_shear"
+            raise RuntimeError(msg)
+
+    def _check_twinboundary_analyzer_is_set(self):
+        """
+        Check twinboudnary analyzer is set.
+
+        Raises:
+            RuntimeError: when twinboundary analyzer is not set
+        """
+        if self._twinboundary_analyzer is None:
+            msg = "twinboundary analyzer is not set, \
+                   please run initialize_from_aiida_twinboundary"
+            raise RuntimeError(msg)
+
+    def _check_twinboundary_shear_analyzer_is_set(self):
+        """
+        Check twinboudnary shear analyzer is set.
+
+        Raises:
+            RuntimeError: when twinboundary analyzer is not set
+        """
+        if self._twinboundary_shear_analyzer is None:
+            msg = "twinboundary shear analyzer is not set, " \
+                  "please run set_twinboundary_shear_analyzer"
+            raise RuntimeError(msg)
+
+    @staticmethod
+    def initialize_from_aiida_shear(shear_pk:int):
+        """
+        Set shear from AiidaShearWorkChain.
+        """
+        aiida_shear = AiidaShearWorkChain(load_node(shear_pk))
+        shear_analyzer = aiida_shear.get_shear_analyzer()
+        twinmode = aiida_shear.shear_conf['twinmode']
+        cell = aiida_shear.cells['hexagonal']
+        twinpy = get_twinpy_from_cell(
+                     cell=cell,
+                     twinmode=twinmode)
+        twinpy.set_shear(xshift=0.,
+                         yshift=0.,
+                         dim=[1,1,1],
+                         shear_strain_ratio=0.,
+                         is_primitive=True)
+        twinpy._set_shear_analyzer(shear_analyzer)
+
+        return twinpy
+
+    @staticmethod
+    def initialize_from_aiida_twinboundary(twinboundary_relax_pk:int,
+                                           twinboundary_phonon_pk:int=None,
+                                           additional_relax_pks:list=None,
+                                           hexagonal_relax_pk:int=None,
+                                           hexagonal_phonon_pk:int=None):
+        """
+        Set twinboundary from AiidaTwinBoudnaryRelaxWorkChain.
+        """
+        aiida_tb_relax = AiidaTwinBoudnaryRelaxWorkChain(
+                load_node(twinboundary_relax_pk))
+        tb_settings = aiida_tb_relax.twinboundary_settings
+        twinboundary_analyzer = \
+                aiida_tb_relax.get_twinboundary_analyzer(
+                    twinboundary_phonon_pk=twinboundary_phonon_pk,
+                    additional_relax_pks=additional_relax_pks,
+                    hexagonal_relax_pk=hexagonal_relax_pk,
+                    hexagonal_phonon_pk=hexagonal_phonon_pk)
+
+        twinpy = get_twinpy_from_cell(
+                     cell=aiida_tb_relax.cells['hexagonal'],
+                     twinmode=tb_settings['twinmode'])
+        twinpy.set_twinboundary(
+                layers=tb_settings['layers'],
+                delta=tb_settings['delta'],
+                twintype=tb_settings['twintype'],
+                xshift=tb_settings['xshift'],
+                yshift=tb_settings['yshift'],
+                shear_strain_ratio=tb_settings['shear_strain_ratio'],
+                )
+        twinpy._set_twinboundary_analyzer(twinboundary_analyzer)
+
+        return twinpy
 
     @property
     def shear(self):
@@ -142,28 +268,59 @@ class Twinpy():
         """
         return self._twinboundary
 
-    def _shear_structure_is_not_set(self):
+    def _set_shear_analyzer(self, shear_analyzer):
         """
-        Check shear structure is set.
+        Set shear_analyzer.
+        """
+        self._shear_analyzer = shear_analyzer
 
-        Raises:
-            RuntimeError: when shear structure is not set
+    @property
+    def shear_analyzer(self):
         """
-        if self._shear is None:
-            msg = "shear structure is not set, run please set shear"
-            raise RuntimeError(msg)
+        Shear anylzer.
+        """
+        return self._shear_analyzer
 
-    def _twinboundary_structure_is_not_set(self):
+    def _set_twinboundary_analyzer(self, twinboundary_analyzer):
         """
-        Check twinboudnary is set.
+        Set twinboundary_analyzer.
+        """
+        self._twinboundary_analyzer = twinboundary_analyzer
 
-        Raises:
-            RuntimeError: when twinboundary structure is not set
+    @property
+    def twinboundary_analyzer(self):
         """
-        if self._twinboundary is None:
-            msg = "twinboundary structure is not set, \
-                   run please set twinboundary"
-            raise RuntimeError(msg)
+        Twinboundary anylzer.
+        """
+        return self._twinboundary_analyzer
+
+    def set_twinboundary_shear_analyzer(self,
+                                        shear_relax_pks:list,
+                                        shear_phonon_pks:list,
+                                        shear_strain_ratios:list):
+        """
+        Set TwinBoundaryShearAnalyzer class object.
+
+        Args:
+            shear_relax_pks (list): Relaxes for shear structures.
+            shear_phonon_pks (list): Phonon calculations for shear structures.
+            shear_strain_ratios (list): Shear shear_strain_ratios.
+        """
+        self._check_twinboundary_analyzer_is_set()
+        tb_shear = \
+          self._twinboundary_analyzer.get_twinboundary_shear_analyzer_from_pks(
+                  shear_relax_pks=shear_relax_pks,
+                  shear_phonon_pks=shear_phonon_pks,
+                  shear_strain_ratios=shear_strain_ratios,
+                  )
+        self._twinboundary_shear_analyzer = tb_shear
+
+    @property
+    def twinboundary_shear_analyzer(self):
+        """
+        Twinboundary shear analyzer.
+        """
+        return self._twinboundary_shear_analyzer
 
     def get_shear_standardize(self,
                               get_lattice:bool=False,
@@ -172,7 +329,7 @@ class Twinpy():
         """
         Get shear standardized structure object.
         """
-        self._shear_structure_is_not_set()
+        self._check_shear_is_set()
         cell = self._shear.get_cell_for_export(
                 get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
@@ -186,7 +343,7 @@ class Twinpy():
         """
         Get twinboundary standardized structure object.
         """
-        self._twinboundary_structure_is_not_set()
+        self._check_twinboundary_is_set()
         cell = self._twinboundary.get_cell_for_export(
                 get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
@@ -246,8 +403,108 @@ class Twinpy():
 
         return dic
 
+    def _get_cells(self,
+                   relax_analyzers,
+                   is_original_frame:bool=True,
+                   is_relax:bool=True):
+        """
+        Get cells.
+
+        Args:
+            relax_analyzers (list): List of relax analyzer.
+            is_original_frame (bool): If True, returns cells in original frame.
+            is_relax (bool): If True, return relax cells.
+        """
+        if is_original_frame:
+            if is_relax:
+                cells = [ relax.final_cell_in_original_frame
+                              for relax in relax_analyzers ]
+            else:
+                cells = [ relax.original_cell for relax in relax_analyzers ]
+        else:
+            if is_relax:
+                cells = [ relax.final_cell for relax in relax_analyzers ]
+            else:
+                cells = [ relax.initial_cell for relax in relax_analyzers ]
+
+        return cells
+
+    def get_shear_cells(self,
+                        is_original_frame:bool=True,
+                        is_relax:bool=True):
+        """
+        Get shear cells.
+
+        Args:
+            is_original_frame (bool): If True, returns cells in original frame.
+            is_relax (bool): If True, return relax cells.
+        """
+        self._check_shear_analyzer_is_set()
+        relax_analyzers = self._shear_analyzer.relax_analyzers
+        cells = self._get_cells(relax_analyzers=relax_analyzers,
+                                is_original_frame=is_original_frame,
+                                is_relax=is_relax)
+
+        return cells
+
+    def write_shear_cells(self,
+                          is_original_frame:bool=True,
+                          is_relax:bool=True,
+                          header:str=''):
+        """
+        write shear cells to POSCAR.
+
+        Args:
+            is_original_frame (bool): If True, returns cells in original frame.
+            is_relax (bool): If True, return relax cells.
+            header (str): File header.
+        """
+        cells = self.get_shear_cells()
+        for i, cell in enumerate(cells):
+            filename = "shear_%1.2f.poscar" % \
+                           self._shear_analyzer.shear_strain_ratios
+            write_poscar(cell=cell,
+                         filename=filename)
+
+    def get_twinboundary_shear_cells(self,
+                                     is_original_frame:bool=True,
+                                     is_relax:bool=True):
+        """
+        Get twinboundary shear cells.
+
+        Args:
+            is_original_frame (bool): If True, returns cells in original frame.
+            is_relax (bool): If True, return relax cells.
+        """
+        self._check_twinboundary_shear_analyzer_is_set()
+        relax_analyzers = self._twinboundary_shear_analyzer.relax_analyzers
+        cells = self._get_cells(relax_analyzers=relax_analyzers,
+                                is_original_frame=is_original_frame,
+                                is_relax=is_relax)
+
+        return cells
+
+    def write_twinboundary_shear_cells(self,
+                                       is_original_frame:bool=True,
+                                       is_relax:bool=True,
+                                       header:str=''):
+        """
+        write twinboundary shear cells to POSCAR.
+
+        Args:
+            is_original_frame (bool): If True, returns cells in original frame.
+            is_relax (bool): If True, return relax cells.
+            header (str): File header.
+        """
+        cells = self.get_twinboundary_shear_cells()
+        for i, cell in enumerate(cells):
+            ratio = self._twinboundary_shear_analyzer.shear_strain_ratios[i]
+            filename = "twinboundary_shear_%1.2f.poscar" % ratio
+            write_poscar(cell=cell,
+                         filename=filename)
+
     @staticmethod
-    def load_yaml(self, filename:str):
+    def load_yaml(filename:str):
         """
         Load twinpy from yaml file.
 
@@ -258,12 +515,12 @@ class Twinpy():
             Twinpy: Twinpy object
         """
         dic = read_yaml(filename)
-        twinpy = self.load_dict(dic)
+        twinpy = Twinpy.load_dict(dic)
 
         return twinpy
 
     @staticmethod
-    def load_dict(self, dic:dict):
+    def load_dict(dic:dict):
         """
         Load twinpy from dic.
 
@@ -299,3 +556,43 @@ class Twinpy():
                     layers=tb['layers'])
 
         return twinpy
+
+    def plot_twinboundary_shear_bandstructure(
+            self,
+            npoints:int=51,
+            with_eigenvectors:bool=False,
+            use_reciprocal_lattice:bool=True):
+        """
+        Plot twinboundary shear band structure.
+        """
+        from matplotlib import pyplot as plt
+        from twinpy.plot.band_structure \
+                import (get_labels_band_paths_from_seekpath,
+                        BandsPlot)
+
+        self._check_twinboundary_shear_analyzer_is_set()
+
+        tb_shear = self._twinboundary_shear_analyzer
+        base_phn = self._twinboundary_shear_analyzer.phonon_analyzers[0]
+        base_cell = base_phn.primitive_cell
+        labels, base_band_paths = \
+                get_labels_band_paths_from_seekpath(cell=base_cell)
+        band_structures = \
+                tb_shear.get_band_structures(
+                        base_band_paths=base_band_paths,
+                        labels=labels,
+                        npoints=51,
+                        with_eigenvectors=with_eigenvectors,
+                        use_reciprocal_lattice=use_reciprocal_lattice,
+                        )
+        bsp = BandsPlot(band_structures=band_structures)
+        fig, _ = bsp.plot_band_structures()
+        plt.show()
+
+    def show_twinboundary_reciprocal_high_symmetry_points(self):
+        """
+        Show twinboundary reciprocal high symmetry points.
+        """
+        phonon_analyzer = self._twinboundary_analyzer.phonon_analyzer
+        recip_high_sym = phonon_analyzer.get_reciprocal_high_symmetry_points()
+        pprint(recip_high_sym)

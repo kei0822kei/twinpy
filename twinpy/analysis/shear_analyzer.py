@@ -1,38 +1,243 @@
-#!/usr/bin/env pythoo
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
 Analize shear calculation.
 """
-import numpy as np
-from twinpy.structure.base import check_same_cells
+from matplotlib import pyplot as plt
+from twinpy.structure.shear import ShearStructure
 from twinpy.structure.diff import get_structure_diff
-from twinpy.structure.standardize import StandardizeCell
-from twinpy.plot.base import get_plot_properties_for_trajectory
-from twinpy.plot.band import bands_plot
+from twinpy.structure.bonding import _get_atomic_environment
+from twinpy.plot.twinboundary import plot_plane, plot_angle, plot_pair_distance
+from twinpy.plot.relax import plot_atom_diff
+from twinpy.file_io import write_poscar
 
 
-class ShearAnalyzer():
+class _BaseShearAnalyzer():
+    """
+    Base for ShearAnalyzer and TwinBoundaryShearAnalyzer.
+    """
+
+    def __init__(self,
+                 relax_analyzers:list=None,
+                 phonon_analyzers:list=None,
+                 ):
+        self._relax_analyzers = None
+        self._phonon_analyzers = None
+        self._set_analyzers(relax_analyzers,
+                            phonon_analyzers)
+
+    def _set_analyzers(self, relax_analyzers, phonon_analyzers):
+        """
+        Set analyzer.
+        """
+        if [relax_analyzers, phonon_analyzers] == [None, None]:
+            raise RuntimeError("Both relax_analyzers and "
+                               "phonon_analyzers do not set.")
+
+        if phonon_analyzers is None:
+            self._relax_analyzers = relax_analyzers
+        else:
+            self._relax_analyzers = \
+                    [ phonon_analyzer.relax_analyzer
+                          for phonon_analyzer in phonon_analyzers]
+            self._phonon_analyzers = phonon_analyzers
+
+    @property
+    def relax_analyzers(self):
+        """
+        List of relax analyzers.
+        """
+        return self._relax_analyzers
+
+    @property
+    def phonon_analyzers(self):
+        """
+        List of phonon analyzers.
+        """
+        return self._phonon_analyzers
+
+    def get_shear_diffs(self):
+        """
+        Get structure diffs between original relax and sheared relax cells
+        IN ORIGINAL FRAME.
+        """
+        relax_cells_original_frame = \
+                [ relax_analyzer.final_cell_in_original_frame
+                      for relax_analyzer in self._relax_analyzers ]
+        diffs = get_structure_diff(cells=relax_cells_original_frame,
+                                   base_index=0,
+                                   include_base=True)
+        return diffs
+
+    def get_band_paths(self, base_band_paths:list) -> list:
+        """
+        Get band paths for all shear cells from band paths for first cell.
+
+        Args:
+            base_band_paths (np.array): Path connections for first
+                                             primitive standardized structure.
+
+        Examples:
+            >>> base_band_paths = [[[  0, 0, 0.5],
+                                    [  0, 0, 0  ]],
+                                   [[0.5, 0,   0],
+                                    [0.5, 0, 0.5],
+                                    [  0, 0, 0.5]]]
+
+        Note:
+            Get path_connections for each shear structure considering
+            structure body rotation.
+        """
+        base_pha = self._phonon_analyzers[0]
+        bps_orig_cart = base_pha.get_band_paths_from_primitive_to_original(
+                band_paths=base_band_paths,
+                input_is_cart=False,
+                output_is_cart=True,
+                )
+        band_paths_for_all = []
+        for pha in self._phonon_analyzers:
+            bps = pha.get_band_paths_from_original_to_primitive(
+                    band_paths=bps_orig_cart,
+                    input_is_cart=True,
+                    output_is_cart=False,
+                    )
+            band_paths_for_all.append(bps)
+
+        return band_paths_for_all
+
+    def get_band_structures(self,
+                            base_band_paths:list,
+                            labels:list=None,
+                            npoints:int=51,
+                            with_eigenvectors:bool=False,
+                            use_reciprocal_lattice:bool=True) -> list:
+        """
+        Get BandStructure objects.
+
+        Args:
+            base_band_paths (np.array): Path connections for first
+                                             primitive standardized structure.
+            labels (list): Band labels for first band paths.
+            npoints (int): The number of qpoints along the band path.
+            with_eigenvectors (bool): If True, compute eigenvectors.
+
+        Notes:
+            Reciprocal lattices for each structure are set automatically.
+            For more detail, see 'get_band_qpoints_and_path_connections'
+            in phonopy.phonon.band_structure.
+        """
+        band_paths_for_all = self.get_band_paths(
+                base_band_paths=base_band_paths)
+        band_structures = []
+        for i, phonon_analyzer in enumerate(self._phonon_analyzers):
+            # if i == 0:
+            #     lbs = labels
+            # else:
+            #     lbs = None
+            band_structure = phonon_analyzer.get_band_structure(
+                    band_paths=band_paths_for_all[i],
+                    # labels=lbs,
+                    labels=labels,
+                    npoints=npoints,
+                    with_eigenvectors=with_eigenvectors,
+                    use_reciprocal_lattice=use_reciprocal_lattice,
+                    )
+            band_structures.append(band_structure)
+
+        return band_structures
+
+    def run_mesh(self,
+                 interval:float=0.1,
+                 is_store:bool=True,
+                 is_gamma_center:bool=True,
+                 dry_run:bool=False,
+                 is_eigenvectors:bool=False,
+                 verbose:bool=True):
+        """
+        Run mesh.
+
+        Args:
+            interval (float): mesh interval
+            is_store (bool): If True, result is stored in self._phonon.
+            dry_run (bool): If True, show sampling mesh information
+                            and not run.
+        """
+        for phonon in self._phonon_analyzers:
+            phonon.run_mesh(interval=interval,
+                            is_store=is_store,
+                            dry_run=dry_run,
+                            is_eigenvectors=is_eigenvectors,
+                            is_gamma_center=is_gamma_center,
+                            verbose=True)
+
+    def get_total_doses(self,
+                        is_store:bool=True,
+                        sigma=None,
+                        freq_min=None,
+                        freq_max=None,
+                        freq_pitch=None,
+                        use_tetrahedron_method=True):
+        """
+        Get total doses.
+        """
+        tdoses = []
+        for phonon in self._phonon_analyzers:
+            tdos = phonon.get_total_dos(
+                    is_store=is_store,
+                    sigma=sigma,
+                    freq_min=freq_min,
+                    freq_max=freq_max,
+                    freq_pitch=freq_pitch,
+                    use_tetrahedron_method=use_tetrahedron_method)
+            tdoses.append(tdos)
+
+        return tdoses
+
+    def get_projected_doses(self,
+                            is_store:bool=True,
+                            sigma=None,
+                            freq_min=None,
+                            freq_max=None,
+                            freq_pitch=None,
+                            use_tetrahedron_method=True,
+                            direction=None,
+                            xyz_projection=None):
+        """
+        Get projected doses.
+        """
+        pdoses = []
+        for phonon in self._phonon_analyzers:
+            pdos = phonon.get_projected_dos(
+                    is_store=is_store,
+                    sigma=sigma,
+                    freq_min=freq_min,
+                    freq_max=freq_max,
+                    freq_pitch=freq_pitch,
+                    use_tetrahedron_method=use_tetrahedron_method,
+                    direction=direction,
+                    xyz_projection=xyz_projection)
+            pdoses.append(pdos)
+
+        return pdoses
+
+
+class ShearAnalyzer(_BaseShearAnalyzer):
     """
     Analize shear result.
     """
 
     def __init__(
            self,
-           original_cells:list,
-           input_cells:list,
-           relax_cells:list,
+           shear_structure:ShearStructure,
+           phonon_analyzers:list,
            ):
         """
-        Args:
-            original_cells (list): primitivie original cells, which is output
-                               cells of ShearStructure class
-            input_cells (list): input cells for vasp
-            relax_cells (list): relax cells of vasp
+        Init.
 
-        Raises:
-            RuntimeError: The number of atoms changes between original cells
-                          and input cells, which is not supported.
+        Args:
+            shear_structure: ShearStructure class object.
+            phonon_analyzers (list): List of PhononAnalyzer class object.
 
         Todo:
             Currently not supported the case the number of original_cells
@@ -41,240 +246,188 @@ class ShearAnalyzer():
             problem. One solution is to make attribute
             'self._original_primitive' which contains two atoms
             in the unit cell and original basis.
+            Twinboundary shaer structure also use this class.
+            If this is inconvenient, I have to create
+            _BaseShaerAnalyzer, ShearAnalyzer TwinBoundaryShearAnalyzer
+            classes separately.
         """
-        def __check_number_of_atoms_not_changed(original_cells,
-                                                input_cells):
-            for original_cell, input_cell in zip(original_cells, input_cells):
-                if not len(original_cell) == len(input_cell):
-                    raise RuntimeError(
-                            "The number of atoms changes between "
-                            "original cells and input cells, "
-                            "which is not supported.")
-
-        __check_number_of_atoms_not_changed(original_cells, input_cells)
-        self._original_cells = original_cells
-        self._input_cells = input_cells
-        self._relax_cells = None
-        self._set_relax_cells(input_cells, relax_cells)
-        self._standardizes = None
-        self._set_standardizes()
-        self._relax_cells_original_frame = None
-        self._set_relax_cells_in_original_frame()
-        self._phonons = None
+        super().__init__(phonon_analyzers=phonon_analyzers)
+        self._shear_structure = shear_structure
 
     @property
-    def original_cells(self):
+    def shear_structure(self):
         """
-        Original cells, which are output of ShearStructure.
+        Shear structure.
         """
-        return self._original_cells
+        return self._shear_structure
 
-    @property
-    def input_cells(self):
-        """
-        Relax input cells.
-        """
-        return self._input_cells
 
-    def _set_relax_cells(self, input_cells, relax_cells):
-        """
-        Check lattice does not change in relaxation and
-        set relax_cells.
-        """
-        for input_cell, relax_cell in zip(input_cells, relax_cells):
-            np.testing.assert_allclose(input_cell[0], relax_cell[0],
-                                       atol=1e-5)
-        self._relax_cells = relax_cells
+class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
+    """
+    Analize twinboundary shear result.
+    """
 
-    @property
-    def relax_cells(self):
+    def __init__(
+           self,
+           shear_strain_ratios:list,
+           layer_indices:list,
+           relax_analyzers:list=None,
+           phonon_analyzers:list=None,
+           ):
         """
-        Relax output cells.
-        """
-        return self._relax_cells
-
-    def _set_standardizes(self):
-        """
-        Set standardizes.
-        """
-        to_primitive = True
-        no_idealize = False
-        symprec = 1e-5
-        no_sort = False
-        get_sort_list = False
-
-        standardizes = [ StandardizeCell(cell)
-                             for cell in self._original_cells ]
-
-        for i, standardize in enumerate(standardizes):
-            std_cell = standardize.get_standardized_cell(
-                    to_primitive=to_primitive,
-                    no_idealize=no_idealize,
-                    symprec=symprec,
-                    no_sort=no_sort,
-                    get_sort_list=get_sort_list,
-                    )
-            cells_are_same = check_same_cells(self._input_cells[i],
-                                              std_cell)
-            if not cells_are_same:
-                raise RuntimeError("standardized cell do not match "
-                                   "with input cell")
-
-        self._standardizes = standardizes
-
-    @property
-    def standardizes(self):
-        """
-        Standardizes.
-        """
-        return self._standardizes
-
-    def _set_relax_cells_in_original_frame(self) -> list:
-        """
-        Set relax cells in original frame which is not
-        conventional and its angles are close to (90., 90., 120.).
-
-        Returns:
-            list: relax cells in original frame
-
-        Note:
-            For variable definitions in this definition,
-            see Eq.(1.8) and (1.17) in Crystal Structure documention.
-            Note that by crystal body rotation, fractional
-            coordinate of atom positions are not changed.
-        """
-        def __get_relax_atoms_in_original_frame(prim_atoms,
-                                                conv_to_prim_matrix,
-                                                transformation_matrix,
-                                                origin_shift):
-            X_p = prim_atoms.T
-            P_c = conv_to_prim_matrix
-            P = transformation_matrix
-            p = origin_shift.reshape(3,1)
-
-            X_s = np.dot(P_c, X_p)
-            X = np.dot(np.linalg.inv(P), X_s) \
-                    - np.dot(np.linalg.inv(P), p)
-            orig_atoms = np.round(X.T, decimals=8) % 1.
-            return orig_atoms
-
-        relax_orig_cells = []
-        for i in range(len(self._relax_cells)):
-            lattice = self._original_cells[i][0]
-            conv_to_prim_matrix = \
-                self._standardizes[i].conventional_to_primitive_matrix
-            transformation_matrix = \
-                self._standardizes[i].transformation_matrix
-            origin_shift = self._standardizes[i].origin_shift
-            scaled_positions = __get_relax_atoms_in_original_frame(
-                    prim_atoms=self._relax_cells[i][1],
-                    conv_to_prim_matrix=conv_to_prim_matrix,
-                    transformation_matrix=transformation_matrix,
-                    origin_shift=origin_shift,
-                    )
-            symbols = self._original_cells[i][2]
-            relax_orig_cell = (lattice, scaled_positions, symbols)
-            relax_orig_cells.append(relax_orig_cell)
-
-        self._relax_cells_in_original_frame = relax_orig_cells
-
-    @property
-    def relax_cells_in_original_frame(self):
-        """
-        Relax cells in original frame
-        """
-        return self._relax_cells_in_original_frame
-
-    def set_phonons(self, phonons):
-        """
-        Set phonons.
-        """
-        self._phonons = phonons
-
-    @property
-    def phonons(self):
-        """
-        Phonons.
-        """
-        return self._phonons
-
-    def get_relax_diffs(self):
-        """
-        Get structure diffs between input and relax cells
-        IN ORIGINAL FRAME.
-        """
-        diffs = []
-        for input_cell, relax_cell in \
-                zip(self._original_cells, self._relax_cells_in_original_frame):
-            cells = (input_cell, relax_cell)
-            diff = get_structure_diff(cells=cells,
-                                      base_index=0,
-                                      include_base=False)
-            diffs.append(diff)
-
-        return diffs
-
-    def get_shear_diffs(self):
-        """
-        Get structure diffs between original and sheared structures
-        IN ORIGINAL FRAME.
-        """
-        cells = self._relax_cells_in_original_frame
-        diffs = get_structure_diff(cells=cells,
-                                   base_index=0,
-                                   include_base=True)
-        return diffs
-
-    def plot_bands(self,
-                   fig,
-                   with_dos=False,
-                   mesh=None,
-                   band_labels=None,
-                   segment_qpoints=None,
-                   xscale=20,
-                   npoints=51,
-                   labels=None,):
-        """
-        plot phonon bands
+        Init.
 
         Args:
-            arg1 (str): description
-            arg2 (np.array): (3x3 numpy array) description
-
-        Returns:
-            dict: description
-
-        Raises:
-            ValueError: description
-
-        Examples:
-            description
-
-            >>> print_test ("test", "message")
-              test message
-
-        Note:
-            description
+            phonon_analyzers (list): List of PhononAnalyzer class object.
         """
-        cs, alphas, linewidths, linestyles = \
-                get_plot_properties_for_trajectory(
-                        plot_nums=len(self._phonons))
-        transformation_matrices = \
-                [ std.transformation_matrix for std in self._standardizes ]
-        bands_plot(fig=fig,
-                   phonons=self._phonons,
-                   rotation_matrices=[ std.rotation_matrix for std in self.standardizes ],
-                   original_lattices=[ cell[0] for cell in self._original_cells ],
-                   input_lattices=[ cell[0] for cell in self._input_cells ],
-                   band_labels=band_labels,
-                   segment_qpoints=segment_qpoints,
-                   xscale=xscale,
-                   npoints=npoints,
-                   with_dos=with_dos,
-                   mesh=mesh,
-                   cs=cs,
-                   alphas=alphas,
-                   linewidths=linewidths,
-                   linestyles=linestyles,
-                   labels=labels,
-                   )
+        super().__init__(
+                relax_analyzers=relax_analyzers,
+                phonon_analyzers=phonon_analyzers)
+        self._shear_strain_ratios = shear_strain_ratios
+        self._layer_indices = layer_indices
+
+    @property
+    def layer_indices(self):
+        """
+        Layer indices.
+        """
+        return self._layer_indices
+
+    @property
+    def shear_strain_ratios(self):
+        """
+        Shear structure.
+        """
+        return self._shear_strain_ratios
+
+    def get_atomic_environment(self) -> list:
+        """
+        Get plane coords from lower plane to upper plane.
+        Return list of z coordinates of original cell frame.
+        Plane coordinates (z coordinates) are fractional.
+        """
+        orig_cells = self.get_final_cells_in_original_frame()
+        envs = [ _get_atomic_environment(cell, self._layer_indices)
+                     for cell in orig_cells ]
+        return envs
+
+    def get_final_cells_in_original_frame(self) -> list:
+        """
+        Get final cells in original frame.
+        """
+        orig_cells = [ relax_analyzer.final_cell_in_original_frame
+                           for relax_analyzer in self._relax_analyzers ]
+        return orig_cells
+
+    def plot_plane_diff(self):
+        """
+        Plot plane diff.
+        """
+        envs = self.get_atomic_environment()
+
+        fig = plt.figure(figsize=(8,13))
+        ax = fig.add_subplot(111)
+
+        for i, ratio in enumerate(self._shear_strain_ratios):
+            if i == len(envs)-1:
+                decorate = True
+            else:
+                decorate = False
+            label = "shear ratio: %1.2f" % ratio
+            plot_plane(ax,
+                       distances=envs[i][1],
+                       z_coords=envs[i][0],
+                       label=label,
+                       decorate=decorate,
+                       )
+
+        return fig
+
+    def plot_angle_diff(self):
+        """
+        Plot angle diff.
+        """
+        envs = self.get_atomic_environment()
+
+        fig = plt.figure(figsize=(8,13))
+        ax = fig.add_subplot(111)
+
+        for i, ratio in enumerate(self._shear_strain_ratios):
+            if i == len(envs)-1:
+                decorate = True
+            else:
+                decorate = False
+            label = "shear ratio: %1.2f" % ratio
+            plot_angle(ax,
+                       z_coords=envs[i][0],
+                       angles=envs[i][2],
+                       label=label,
+                       decorate=decorate,
+                       )
+
+        return fig
+
+    def plot_pair_distance(self):
+        """
+        Plot pair distance.
+        """
+        envs = self.get_atomic_environment()
+
+        fig = plt.figure(figsize=(8,13))
+        ax = fig.add_subplot(111)
+
+        for i, ratio in enumerate(self._shear_strain_ratios):
+            if i == len(envs)-1:
+                decorate = True
+            else:
+                decorate = False
+            label = "shear ratio: %1.2f" % ratio
+            plot_pair_distance(ax,
+                               z_coords=envs[i][0],
+                               pair_distances=envs[i][3],
+                               label=label,
+                               decorate=decorate,
+                               )
+            ax.legend()
+
+        return fig
+
+    def plot_atom_diff(self, direction='x', shuffle:bool=True):
+        """
+        Plot atom diff.
+        """
+        i_f_cells = [ [ relax_analyzer.original_cell,
+                        relax_analyzer.final_cell_in_original_frame]
+                            for relax_analyzer in self._relax_analyzers ]
+        fig = plt.figure(figsize=(8,13))
+        ax = fig.add_subplot(111)
+
+        for i, cells in enumerate(i_f_cells):
+            if i == len(i_f_cells)-1:
+                decorate = True
+            else:
+                decorate = False
+            label = "shear ratio: %1.2f" % self._shear_strain_ratios[i]
+            plot_atom_diff(ax,
+                           initial_cell=cells[0],
+                           final_cell=cells[1],
+                           decorate=decorate,
+                           direction=direction,
+                           label=label,
+                           shuffle=shuffle,
+                           )
+
+    def write_poscars(self, header:str='', is_original_frame:bool=True):
+        """
+        Write poscars
+
+        Args:
+            header (str): File header.
+            is_original_frame (bool): Poscar is in original frame.
+        """
+        orig_cells = [ relax_analyzer.final_cell_in_original_frame
+                           for relax_analyzer in self._relax_analyzers ]
+        for i, cell in enumerate(orig_cells):
+            filename = header + "{}_s{}.poscar".format(
+                    i, self._shear_strain_ratios[i])
+            write_poscar(cell=cell, filename=filename)
