@@ -1,9 +1,9 @@
 {
-    "name": "pkg-template",
+    "name": "twinpy",
     "author": "kei0822kei",
     "author_email": "mizokami.keiyu.46u@st.kyoto-u.ac.jp",
-    "description": "provide template for making package",
-    "url": "https://github.com/kei0822kei/pkg-template",
+    "description": "provide toolkits for hexagonal deformation twinning",
+    "url": "https://github.com/kei0822kei/twinpy",
     "license": "MIT",
     "classifiers": [
         "Programming Language :: Python",
