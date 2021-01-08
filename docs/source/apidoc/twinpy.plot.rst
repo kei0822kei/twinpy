@@ -4,55 +4,50 @@ twinpy.plot package
 Submodules
 ----------
 
-twinpy.plot.band module
------------------------
+twinpy.plot.band\_structure module
+----------------------------------
 
-.. automodule:: twinpy.plot.band
+.. automodule:: twinpy.plot.band_structure
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
-
-twinpy.plot.band\_bak module
-----------------------------
-
-.. automodule:: twinpy.plot.band_bak
-   :members:
-   :special-members:
    :private-members:
-   :undoc-members:
-   :show-inheritance:
 
 twinpy.plot.base module
 -----------------------
 
 .. automodule:: twinpy.plot.base
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 twinpy.plot.dos module
 ----------------------
 
 .. automodule:: twinpy.plot.dos
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
-twinpy.plot.vasp module
------------------------
+twinpy.plot.relax module
+------------------------
 
-.. automodule:: twinpy.plot.vasp
+.. automodule:: twinpy.plot.relax
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
+
+twinpy.plot.twinboundary module
+-------------------------------
+
+.. automodule:: twinpy.plot.twinboundary
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :private-members:
 
 
 Module contents
@@ -60,7 +55,6 @@ Module contents
 
 .. automodule:: twinpy.plot
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:

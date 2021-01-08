@@ -9,40 +9,36 @@ twinpy.lattice.brillouin module
 
 .. automodule:: twinpy.lattice.brillouin
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 twinpy.lattice.hexagonal\_direction module
 ------------------------------------------
 
 .. automodule:: twinpy.lattice.hexagonal_direction
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 twinpy.lattice.hexagonal\_plane module
 --------------------------------------
 
 .. automodule:: twinpy.lattice.hexagonal_plane
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 twinpy.lattice.lattice module
 -----------------------------
 
 .. automodule:: twinpy.lattice.lattice
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 
 Module contents
@@ -50,7 +46,6 @@ Module contents
 
 .. automodule:: twinpy.lattice
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
