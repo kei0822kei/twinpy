@@ -41,7 +41,7 @@
   <link rel="stylesheet" href="../_static/contentui.css" type="text/css" />
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="twinpy.properties package" href="twinpy.properties.html" />
+    <link rel="next" title="twinpy.plot package" href="twinpy.plot.html" />
     <link rel="prev" title="twinpy.interfaces package" href="twinpy.interfaces.html" /> 
 </head>
 
@@ -108,6 +108,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.lattice">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="twinpy.plot.html">twinpy.plot package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.properties.html">twinpy.properties package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.structure.html">twinpy.structure package</a></li>
 </ul>
@@ -191,11 +192,6 @@
 <span id="twinpy-lattice-brillouin-module"></span><h2>twinpy.lattice.brillouin module<a class="headerlink" href="#module-twinpy.lattice.brillouin" title="Permalink to this headline">¶</a></h2>
 <p>brillouin zone</p>
 <dl class="function">
-<dt id="twinpy.lattice.brillouin.get_labels_for_twin">
-<code class="sig-prename descclassname">twinpy.lattice.brillouin.</code><code class="sig-name descname">get_labels_for_twin</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/brillouin.html#get_labels_for_twin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.brillouin.get_labels_for_twin" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="twinpy.lattice.brillouin.show_brillouin_zone">
 <code class="sig-prename descclassname">twinpy.lattice.brillouin.</code><code class="sig-name descname">show_brillouin_zone</code><span class="sig-paren">(</span><em class="sig-param">reciprocal_lattice</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/brillouin.html#show_brillouin_zone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.brillouin.show_brillouin_zone" title="Permalink to this definition">¶</a></dt>
 <dd><p>extract from seekpath’s script</p>
@@ -209,11 +205,11 @@
 <dt id="twinpy.lattice.hexagonal_direction.HexagonalDirection">
 <em class="property">class </em><code class="sig-prename descclassname">twinpy.lattice.hexagonal_direction.</code><code class="sig-name descname">HexagonalDirection</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">three: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em>, <em class="sig-param">four: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_direction.html#HexagonalDirection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_direction.HexagonalDirection" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#twinpy.lattice.lattice.Lattice" title="twinpy.lattice.lattice.Lattice"><code class="xref py py-class docutils literal notranslate"><span class="pre">twinpy.lattice.lattice.Lattice</span></code></a></p>
-<p>deals with hexagonal direction</p>
+<p>Deals with hexagonal direction.</p>
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_direction.HexagonalDirection.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">three: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em>, <em class="sig-param">four: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_direction.html#HexagonalDirection.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_direction.HexagonalDirection.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>deals with hexagonal direction</p>
+<dd><p>Deals with hexagonal direction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -238,7 +234,7 @@
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_direction.HexagonalDirection.get_cartesian">
 <code class="sig-name descname">get_cartesian</code><span class="sig-paren">(</span><em class="sig-param">normalize: bool = False</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_direction.html#HexagonalDirection.get_cartesian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_direction.HexagonalDirection.get_cartesian" title="Permalink to this definition">¶</a></dt>
-<dd><p>get direction with the cartesian coordinate</p>
+<dd><p>Get direction with the cartesian coordinate.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>normalize</strong> – if True, normalized the norm of the vector to 1</p>
@@ -255,13 +251,13 @@
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_direction.HexagonalDirection.inverse">
 <code class="sig-name descname">inverse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_direction.html#HexagonalDirection.inverse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_direction.HexagonalDirection.inverse" title="Permalink to this definition">¶</a></dt>
-<dd><p>set inversed plane ex. (10-12) =&gt; (-101-2)</p>
+<dd><p>Set inversed plane ex. (10-12) =&gt; (-101-2).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_direction.HexagonalDirection.reset_indices">
 <code class="sig-name descname">reset_indices</code><span class="sig-paren">(</span><em class="sig-param">three: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em>, <em class="sig-param">four: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_direction.html#HexagonalDirection.reset_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_direction.HexagonalDirection.reset_indices" title="Permalink to this definition">¶</a></dt>
-<dd><p>reset indices</p>
+<dd><p>Reset indices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -270,7 +266,7 @@
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – both ‘three’ and ‘four’ are None or
+<dd class="field-even"><p><strong>RuntimeError</strong> – both ‘three’ and ‘four’ are None or
     both ‘three’ and ‘four’ are not None</p>
 </dd>
 </dl>
@@ -286,7 +282,7 @@
 <dl class="function">
 <dt id="twinpy.lattice.hexagonal_direction.convert_direction_from_four_to_three">
 <code class="sig-prename descclassname">twinpy.lattice.hexagonal_direction.</code><code class="sig-name descname">convert_direction_from_four_to_three</code><span class="sig-paren">(</span><em class="sig-param">four: Union[list, numpy.array, tuple]</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_direction.html#convert_direction_from_four_to_three"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_direction.convert_direction_from_four_to_three" title="Permalink to this definition">¶</a></dt>
-<dd><p>convert direction from four to three</p>
+<dd><p>Convert direction from four to three.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>four</strong> – four indices of hexagonal direction [uvtw]</p>
@@ -294,7 +290,7 @@
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>AssertionError</strong> – len(four) != 4</p></li>
-<li><p><strong>AssertionError</strong> – u + v + t != 0</p></li>
+<li><p><strong>AssertionError</strong> – (u+v+t) != 0</p></li>
 </ul>
 </dd>
 <dt class="field-odd">Returns</dt>
@@ -309,7 +305,7 @@
 <dl class="function">
 <dt id="twinpy.lattice.hexagonal_direction.convert_direction_from_three_to_four">
 <code class="sig-prename descclassname">twinpy.lattice.hexagonal_direction.</code><code class="sig-name descname">convert_direction_from_three_to_four</code><span class="sig-paren">(</span><em class="sig-param">three: Union[list, numpy.array, tuple]</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_direction.html#convert_direction_from_three_to_four"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_direction.convert_direction_from_three_to_four" title="Permalink to this definition">¶</a></dt>
-<dd><p>convert direction from three to four</p>
+<dd><p>Convert direction from three to four.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>three</strong> – three indices of hexagonal direction [UVW]</p>
@@ -334,7 +330,7 @@
 <dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane">
 <em class="property">class </em><code class="sig-prename descclassname">twinpy.lattice.hexagonal_plane.</code><code class="sig-name descname">HexagonalPlane</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">three: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em>, <em class="sig-param">four: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#HexagonalPlane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#twinpy.lattice.lattice.Lattice" title="twinpy.lattice.lattice.Lattice"><code class="xref py py-class docutils literal notranslate"><span class="pre">twinpy.lattice.lattice.Lattice</span></code></a></p>
-<p>deals with hexagonal plane</p>
+<p>Deals with hexagonal plane.</p>
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">lattice: numpy.array</em>, <em class="sig-param">three: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em>, <em class="sig-param">four: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#HexagonalPlane.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane.__init__" title="Permalink to this definition">¶</a></dt>
@@ -357,13 +353,13 @@
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane.four">
 <em class="property">property </em><code class="sig-name descname">four</code><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane.four" title="Permalink to this definition">¶</a></dt>
-<dd><p>plane indice (hkil)</p>
+<dd><p>Plane indice (hkil).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane.get_cartesian">
 <code class="sig-name descname">get_cartesian</code><span class="sig-paren">(</span><em class="sig-param">frac_coord</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#HexagonalPlane.get_cartesian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane.get_cartesian" title="Permalink to this definition">¶</a></dt>
-<dd><p>get cartesian coordinate of the input frac_coord</p>
+<dd><p>Get cartesian coordinate of the input frac_coord.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>frac_coord</strong> (<em>np.array</em>) – fractional coorinate</p>
@@ -380,7 +376,7 @@
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane.get_direction_normal_to_plane">
 <code class="sig-name descname">get_direction_normal_to_plane</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; twinpy.lattice.hexagonal_direction.HexagonalDirection<a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#HexagonalPlane.get_direction_normal_to_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane.get_direction_normal_to_plane" title="Permalink to this definition">¶</a></dt>
-<dd><p>get direction normal to input plane</p>
+<dd><p>Get direction normal to input plane.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>direction normal to plane</p>
@@ -394,7 +390,7 @@
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane.get_distance_from_plane">
 <code class="sig-name descname">get_distance_from_plane</code><span class="sig-paren">(</span><em class="sig-param">frac_coord</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#HexagonalPlane.get_distance_from_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane.get_distance_from_plane" title="Permalink to this definition">¶</a></dt>
-<dd><p>get dicstance from plane</p>
+<dd><p>Get dicstance from plane.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>frac_coord</strong> (<em>np.array</em>) – fractional coorinate</p>
@@ -411,13 +407,13 @@
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane.inverse">
 <code class="sig-name descname">inverse</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#HexagonalPlane.inverse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane.inverse" title="Permalink to this definition">¶</a></dt>
-<dd><p>set inversed plane ex. (10-12) =&gt; (-101-2)</p>
+<dd><p>Set inversed plane ex. (10-12) =&gt; (-101-2).</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane.reset_indices">
 <code class="sig-name descname">reset_indices</code><span class="sig-paren">(</span><em class="sig-param">three: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em>, <em class="sig-param">four: Union[list</em>, <em class="sig-param">numpy.array</em>, <em class="sig-param">tuple] = None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#HexagonalPlane.reset_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane.reset_indices" title="Permalink to this definition">¶</a></dt>
-<dd><p>reset indices</p>
+<dd><p>Reset indices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -426,7 +422,7 @@
 </ul>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – both ‘three’ and ‘four’ are None or
+<dd class="field-even"><p><strong>RuntimeError</strong> – both ‘three’ and ‘four’ are None or
     both ‘three’ and ‘four’ are not None</p>
 </dd>
 </dl>
@@ -435,7 +431,7 @@
 <dl class="method">
 <dt id="twinpy.lattice.hexagonal_plane.HexagonalPlane.three">
 <em class="property">property </em><code class="sig-name descname">three</code><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.HexagonalPlane.three" title="Permalink to this definition">¶</a></dt>
-<dd><p>plane indice (HKL)</p>
+<dd><p>Plane indice (HKL).</p>
 </dd></dl>
 
 </dd></dl>
@@ -443,16 +439,22 @@
 <dl class="function">
 <dt id="twinpy.lattice.hexagonal_plane.convert_plane_from_four_to_three">
 <code class="sig-prename descclassname">twinpy.lattice.hexagonal_plane.</code><code class="sig-name descname">convert_plane_from_four_to_three</code><span class="sig-paren">(</span><em class="sig-param">four: Union[list, numpy.array, tuple]</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#convert_plane_from_four_to_three"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.convert_plane_from_four_to_three" title="Permalink to this definition">¶</a></dt>
-<dd><p>convert plane from four to three</p>
+<dd><p>Convert plane from four to three.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>four</strong> – four indices of hexagonal plane</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>three indices</p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>AssertionError</strong> – len(four) != 4</p></li>
+<li><p><strong>AssertionError</strong> – (h+k+i) != 0</p></li>
+</ul>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.array</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>three indices</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
 </dd>
 </dl>
 </dd></dl>
@@ -460,16 +462,19 @@
 <dl class="function">
 <dt id="twinpy.lattice.hexagonal_plane.convert_plane_from_three_to_four">
 <code class="sig-prename descclassname">twinpy.lattice.hexagonal_plane.</code><code class="sig-name descname">convert_plane_from_three_to_four</code><span class="sig-paren">(</span><em class="sig-param">three: Union[list, numpy.array, tuple]</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/lattice/hexagonal_plane.html#convert_plane_from_three_to_four"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.hexagonal_plane.convert_plane_from_three_to_four" title="Permalink to this definition">¶</a></dt>
-<dd><p>convert plane from three to four</p>
+<dd><p>Convert plane from three to four.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>three</strong> – three indices of hexagonal plane</p>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>four indices</p>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – len(four) != 3</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>np.array</p>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>four indices</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>np.array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -645,7 +650,7 @@ Two vectors must be given as fractional coordinate.</p>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>check the angles of input lattice are (90, 90, 120)</p>
+<p>Check the angles of input lattice are (90, 90, 120).</p>
 </div>
 </dd></dl>
 
@@ -672,7 +677,7 @@ Two vectors must be given as fractional coordinate.</p>
 <dl class="function">
 <dt id="twinpy.lattice.lattice.get_hexagonal_lattice_from_a_c">
 <code class="sig-prename descclassname">twinpy.lattice.lattice.</code><code class="sig-name descname">get_hexagonal_lattice_from_a_c</code><span class="sig-paren">(</span><em class="sig-param">a: float</em>, <em class="sig-param">c: float</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/lattice/lattice.html#get_hexagonal_lattice_from_a_c"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.lattice.lattice.get_hexagonal_lattice_from_a_c" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get hexagonal lattice from a and c axes.</p>
+<dd><p>Get hexagonal lattice from the norms of a and c axes.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -706,7 +711,7 @@ Two vectors must be given as fractional coordinate.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="twinpy.properties.html" class="btn btn-neutral float-right" title="twinpy.properties package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="twinpy.plot.html" class="btn btn-neutral float-right" title="twinpy.plot package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="twinpy.interfaces.html" class="btn btn-neutral float-left" title="twinpy.interfaces package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

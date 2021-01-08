@@ -42,7 +42,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="twinpy.structure package" href="twinpy.structure.html" />
-    <link rel="prev" title="twinpy.lattice package" href="twinpy.lattice.html" /> 
+    <link rel="prev" title="twinpy.plot package" href="twinpy.plot.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -100,6 +100,7 @@
 <li class="toctree-l3"><a class="reference internal" href="twinpy.common.html">twinpy.common package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.interfaces.html">twinpy.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.lattice.html">twinpy.lattice package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="twinpy.plot.html">twinpy.plot package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">twinpy.properties package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.properties.hexagonal">twinpy.properties.hexagonal module</a></li>
@@ -187,11 +188,11 @@
 </div>
 <div class="section" id="module-twinpy.properties.hexagonal">
 <span id="twinpy-properties-hexagonal-module"></span><h2>twinpy.properties.hexagonal module<a class="headerlink" href="#module-twinpy.properties.hexagonal" title="Permalink to this headline">¶</a></h2>
-<p>hexagonal property</p>
+<p>Hexagonal property.</p>
 <dl class="function">
 <dt id="twinpy.properties.hexagonal.get_atom_positions">
 <code class="sig-prename descclassname">twinpy.properties.hexagonal.</code><code class="sig-name descname">get_atom_positions</code><span class="sig-paren">(</span><em class="sig-param">wyckoff: str</em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/properties/hexagonal.html#get_atom_positions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.hexagonal.get_atom_positions" title="Permalink to this definition">¶</a></dt>
-<dd><p>get atom positions in Hexagonal Close-Packed</p>
+<dd><p>Get atom positions in Hexagonal Close-Packed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>wyckoff</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – wyckoff letter, choose ‘c’ or ‘d’</p>
@@ -208,36 +209,22 @@
 </div>
 <div class="section" id="module-twinpy.properties.twinmode">
 <span id="twinpy-properties-twinmode-module"></span><h2>twinpy.properties.twinmode module<a class="headerlink" href="#module-twinpy.properties.twinmode" title="Permalink to this headline">¶</a></h2>
-<p>provide properties of twin modes</p>
+<p>Provide properties of twin modes.</p>
 <dl class="class">
 <dt id="twinpy.properties.twinmode.TwinIndices">
 <em class="property">class </em><code class="sig-prename descclassname">twinpy.properties.twinmode.</code><code class="sig-name descname">TwinIndices</code><span class="sig-paren">(</span><em class="sig-param">lattice: twinpy.lattice.lattice.Lattice</em>, <em class="sig-param">twinmode: str</em>, <em class="sig-param">wyckoff: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>deals with twin indices</p>
-<blockquote>
-<div><dl class="attribute">
-<dt id="twinpy.properties.twinmode.TwinIndices.att1">
-<code class="sig-name descname">att1</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.att1" title="Permalink to this definition">¶</a></dt>
-<dd><p>Optional comment string.</p>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="twinpy.properties.twinmode.TwinIndices.att2">
-<code class="sig-name descname">att2</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.att2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Optional comment string.</p>
-</dd></dl>
-
-</div></blockquote>
+<p>Deals with twin indices</p>
 <dl class="attribute">
 <dt id="twinpy.properties.twinmode.TwinIndices.__dict__">
-<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.properties.twinmode', '__doc__': '\n    deals with twin indices\n\n       .. attribute:: att1\n\n          Optional comment string.\n\n\n       .. attribute:: att2\n\n          Optional comment string.\n\n    ', '__init__': &lt;function TwinIndices.__init__&gt;, 'lattice': &lt;property object&gt;, 'twinmode': &lt;property object&gt;, 'wyckoff': &lt;property object&gt;, 'indices_Yoo': &lt;property object&gt;, 'indices': &lt;property object&gt;, 'get_indices': &lt;function TwinIndices.get_indices&gt;, '_get_indices_Yoo': &lt;function TwinIndices._get_indices_Yoo&gt;, '_set_K1': &lt;function TwinIndices._set_K1&gt;, '_set_k1_k2': &lt;function TwinIndices._set_k1_k2&gt;, '_reset_indices': &lt;function TwinIndices._reset_indices&gt;, '_set_shear_plane': &lt;function TwinIndices._set_shear_plane&gt;, 'get_supercell_matrix_for_parent': &lt;function TwinIndices.get_supercell_matrix_for_parent&gt;, 'get_shear_strain_function': &lt;function TwinIndices.get_shear_strain_function&gt;, '__dict__': &lt;attribute '__dict__' of 'TwinIndices' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'TwinIndices' objects&gt;})</em><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.__dict__" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.properties.twinmode', '__doc__': '\n    Deals with twin indices\n    ', '__init__': &lt;function TwinIndices.__init__&gt;, 'lattice': &lt;property object&gt;, 'twinmode': &lt;property object&gt;, 'wyckoff': &lt;property object&gt;, 'indices_Yoo': &lt;property object&gt;, 'indices': &lt;property object&gt;, '_get_indices_Yoo': &lt;function TwinIndices._get_indices_Yoo&gt;, '_set_K1': &lt;function TwinIndices._set_K1&gt;, '_set_k1_k2': &lt;function TwinIndices._set_k1_k2&gt;, '_reset_indices': &lt;function TwinIndices._reset_indices&gt;, '_set_shear_plane': &lt;function TwinIndices._set_shear_plane&gt;, 'get_supercell_matrix_for_parent': &lt;function TwinIndices.get_supercell_matrix_for_parent&gt;, 'get_shear_strain_function': &lt;function TwinIndices.get_shear_strain_function&gt;, '__dict__': &lt;attribute '__dict__' of 'TwinIndices' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'TwinIndices' objects&gt;})</em><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.__dict__" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices.__init__">
 <code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">lattice: twinpy.lattice.lattice.Lattice</em>, <em class="sig-param">twinmode: str</em>, <em class="sig-param">wyckoff: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><p>get twin indices of input twinmode
-twinmode must be ‘10-11’, ‘10-12’, ‘11-21’ or ‘11-22’</p>
+<dd><p>Get twin indices of input twinmode.
+Twinmode must be ‘10-11’, ‘10-12’, ‘11-21’ or ‘11-22’.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -298,14 +285,30 @@ atoms</p></li>
 
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices._get_indices_Yoo">
-<code class="sig-name descname">_get_indices_Yoo</code><span class="sig-paren">(</span><em class="sig-param">lattice</em>, <em class="sig-param">twinmode</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._get_indices_Yoo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._get_indices_Yoo" title="Permalink to this definition">¶</a></dt>
-<dd><p>get specific twinmode indices which are found in Yoo’s paper</p>
+<code class="sig-name descname">_get_indices_Yoo</code><span class="sig-paren">(</span><em class="sig-param">lattice</em>, <em class="sig-param">twinmode</em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._get_indices_Yoo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._get_indices_Yoo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get specific twinmode indices which are found in Yoo’s paper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>indices by Yoo</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/2.7/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices._reset_indices">
 <code class="sig-name descname">_reset_indices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._reset_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._reset_indices" title="Permalink to this definition">¶</a></dt>
-<dd><p>reset indices</p>
+<dd><p>Reset indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AssertionError</strong> – k1 is not orthogonal to eta1</p></li>
+<li><p><strong>AssertionError</strong> – k2 is not orthogonal to eta2</p></li>
+</ul>
+</dd>
+</dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>conditions are as bellow</p>
@@ -322,7 +325,7 @@ atoms</p></li>
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices._set_K1">
 <code class="sig-name descname">_set_K1</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._set_K1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._set_K1" title="Permalink to this definition">¶</a></dt>
-<dd><p>set K1</p>
+<dd><p>Set K1.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>There are two candidates for K1 plane.
@@ -339,13 +342,18 @@ are fixed by multiplied (-1, -1, -1, 1).</p>
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices._set_k1_k2">
 <code class="sig-name descname">_set_k1_k2</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._set_k1_k2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._set_k1_k2" title="Permalink to this definition">¶</a></dt>
-<dd><p>set k1 and k2</p>
+<dd><p>Set k1 and k2.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices._set_shear_plane">
 <code class="sig-name descname">_set_shear_plane</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices._set_shear_plane"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices._set_shear_plane" title="Permalink to this definition">¶</a></dt>
-<dd><p>set shear plane</p>
+<dd><p>Set shear plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>RuntimeError</strong> – could not find shear plane</p>
+</dd>
+</dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>set shear plane which fulfill the following conditions
@@ -355,21 +363,23 @@ from six candidates
 </dd></dl>
 
 <dl class="method">
-<dt id="twinpy.properties.twinmode.TwinIndices.get_indices">
-<code class="sig-name descname">get_indices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices.get_indices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.get_indices" title="Permalink to this definition">¶</a></dt>
-<dd><p>get indices</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices.get_shear_strain_function">
 <code class="sig-name descname">get_shear_strain_function</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices.get_shear_strain_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.get_shear_strain_function" title="Permalink to this definition">¶</a></dt>
-<dd><p>get shear strain function</p>
+<dd><p>Get shear strain function.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices.get_supercell_matrix_for_parent">
-<code class="sig-name descname">get_supercell_matrix_for_parent</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices.get_supercell_matrix_for_parent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.get_supercell_matrix_for_parent" title="Permalink to this definition">¶</a></dt>
-<dd><p>get supercell matrix for creating parent matrix</p>
+<code class="sig-name descname">get_supercell_matrix_for_parent</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#TwinIndices.get_supercell_matrix_for_parent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.get_supercell_matrix_for_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get supercell matrix for creating parent matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>sueprcell matrix</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>np.array</p>
+</dd>
+</dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>create lattice basis with integerized m, eta1 and eta2</p>
@@ -379,35 +389,39 @@ from six candidates
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices.indices">
 <em class="property">property </em><code class="sig-name descname">indices</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.indices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Indices.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices.indices_Yoo">
 <em class="property">property </em><code class="sig-name descname">indices_Yoo</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.indices_Yoo" title="Permalink to this definition">¶</a></dt>
-<dd><p>indices Yoo showed</p>
+<dd><p>Indices Yoo showed.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices.lattice">
 <em class="property">property </em><code class="sig-name descname">lattice</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.lattice" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Lattice.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices.twinmode">
 <em class="property">property </em><code class="sig-name descname">twinmode</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.twinmode" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Twinmode.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="twinpy.properties.twinmode.TwinIndices.wyckoff">
 <em class="property">property </em><code class="sig-name descname">wyckoff</code><a class="headerlink" href="#twinpy.properties.twinmode.TwinIndices.wyckoff" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Wyckoff.</p>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="function">
 <dt id="twinpy.properties.twinmode.check_supported_twinmode">
 <code class="sig-prename descclassname">twinpy.properties.twinmode.</code><code class="sig-name descname">check_supported_twinmode</code><span class="sig-paren">(</span><em class="sig-param">twinmode</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#check_supported_twinmode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.check_supported_twinmode" title="Permalink to this definition">¶</a></dt>
-<dd><p>check input twinmode is supported</p>
+<dd><p>Check input twinmode is supported.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>twinmode</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – choose from ‘10-12’, ‘10-11’, ‘11-22’ or ‘11-21’
@@ -421,8 +435,8 @@ from six candidates
 
 <dl class="function">
 <dt id="twinpy.properties.twinmode.get_shear_strain_function">
-<code class="sig-prename descclassname">twinpy.properties.twinmode.</code><code class="sig-name descname">get_shear_strain_function</code><span class="sig-paren">(</span><em class="sig-param">twinmode: str</em><span class="sig-paren">)</span> &#x2192; function<a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#get_shear_strain_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.get_shear_strain_function" title="Permalink to this definition">¶</a></dt>
-<dd><p>get shear strain</p>
+<code class="sig-prename descclassname">twinpy.properties.twinmode.</code><code class="sig-name descname">get_shear_strain_function</code><span class="sig-paren">(</span><em class="sig-param">twinmode: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#get_shear_strain_function"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.get_shear_strain_function" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get shear strain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>twinmode</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – choose from ‘10-12’, ‘10-11’, ‘11-22’ or ‘11-21’
@@ -430,7 +444,7 @@ from six candidates
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><dl class="simple">
-<dt>function which returns shear strain</dt><dd><p>input args: r</p>
+<dt>function which returns shear strain</dt><dd><p>input arg is r</p>
 </dd>
 </dl>
 </p>
@@ -444,7 +458,15 @@ from six candidates
 <dl class="function">
 <dt id="twinpy.properties.twinmode.get_twin_indices_by_Yoo">
 <code class="sig-prename descclassname">twinpy.properties.twinmode.</code><code class="sig-name descname">get_twin_indices_by_Yoo</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/twinpy/properties/twinmode.html#get_twin_indices_by_Yoo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.properties.twinmode.get_twin_indices_by_Yoo" title="Permalink to this definition">¶</a></dt>
-<dd><p>get twin indices Yoo showed in his paper</p>
+<dd><p>Get twin indices Yoo showed in his paper.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>twin indices</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/2.7/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -464,7 +486,7 @@ from six candidates
         <a href="twinpy.structure.html" class="btn btn-neutral float-right" title="twinpy.structure package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="twinpy.lattice.html" class="btn btn-neutral float-left" title="twinpy.lattice package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="twinpy.plot.html" class="btn btn-neutral float-left" title="twinpy.plot package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
