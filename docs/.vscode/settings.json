@@ -1,0 +1,4 @@
+{
+    "python.pythonPath": "/Users/mizokami-mac/src/pyenv/versions/anaconda3-2019.10/envs/sphinx/bin/python",
+    "restructuredtext.confPath": "${workspaceFolder}/source"
+}

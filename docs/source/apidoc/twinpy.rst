@@ -22,20 +22,18 @@ twinpy.api\_twinpy module
 
 .. automodule:: twinpy.api_twinpy
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 twinpy.file\_io module
 ----------------------
 
 .. automodule:: twinpy.file_io
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
 
 
 Module contents
@@ -43,7 +41,6 @@ Module contents
 
 .. automodule:: twinpy
    :members:
-   :special-members:
-   :private-members:
    :undoc-members:
    :show-inheritance:
+   :private-members:
