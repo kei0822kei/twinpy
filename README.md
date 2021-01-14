@@ -18,7 +18,6 @@ For more information, please visit twinpy documentation.
  * Construct hexagonal twin boundary:
    ```python
    twinpy-structure.py --structure twinboundary -r 0. --twinmode '10-12' --twintype 1 --get_poscar --layers 12 --delta 0
-   ```
 
 
 ## Installation
@@ -30,7 +29,8 @@ pip install twinpy
 
 ## Usage
 
-FUTURE EDIT.
+FUTURE EDIT
+
 
 ## License
 
