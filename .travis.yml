@@ -3,7 +3,7 @@ deploy:
   skip_cleanup: true
   keep_history: true
   on:
-    branch: gh-pages
+    branch: "/release*/"
 
 branches:
   only:
