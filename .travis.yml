@@ -9,7 +9,7 @@ branches:
   only:
     - master
     - develop
-    - release*
+    - "/release*/"
 
 language: python - "3.6"
 
