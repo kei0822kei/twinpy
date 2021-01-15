@@ -20,6 +20,10 @@
         "voluptuous"
     ],
     "extras_require": {
+        "develop": [
+            "phonopy",
+            "pymatgen"
+        ],
         "docs": [
             "sphinx",
             "sphinxcontrib-contentui",
