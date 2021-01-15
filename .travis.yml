@@ -3,12 +3,13 @@ deploy:
   skip_cleanup: true
   keep_history: true
   on:
-    branch: gh-pages
+    branch: develop
 
 branches:
   only:
     - master
     - develop
+    - "/release*/"
 
 language: python - "3.6"
 
@@ -22,4 +23,4 @@ script:
   - pytest
 
 after_success:
-  - echo "test finishes"
+  - codecov

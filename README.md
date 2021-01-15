@@ -1,16 +1,11 @@
-<!--
-[![Build Status](https://github.com/kei0822kei/package-template/workflows/ci/badge.svg?branch=master)](https://github.com/kei0822kei/package-template/actions)
-[![Coverage Status](https://coveralls.io/repos/github/kei0822kei/package-template/badge.svg?branch=master)](https://coveralls.io/github/kei0822kei/package-template?branch=master)
-[![Docs status](https://readthedocs.org/projects/package-template/badge)](http://package-template.readthedocs.io/)
-[![PyPI version](https://badge.fury.io/py/package-template.svg)](https://badge.fury.io/py/package-template)
--->
+[![Build Status](https://travis-ci.com/kei0822kei/twinpy.svg?branch=master)](https://travis-ci.com/kei0822kei/twinpy)
+[![codecov](https://codecov.io/gh/kei0822kei/twinpy/branch/master/graph/badge.svg?token=X9M31WTX6G)](https://codecov.io/gh/kei0822kei/twinpy)
 
 # twinpy
 
 This package provides various tools for analyzing hexagonal deformation twinning.
 
-For more information, please visit twinpy documentation.
-[twinpy documentation](https://kei0822kei.github.io/twinpy/)
+For more information, please visit [twinpy documentation](https://kei0822kei.github.io/twinpy/).
 
 
 ## Features
