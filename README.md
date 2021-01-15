@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.com/kei0822kei/twinpy.svg?branch=master)](https://travis-ci.com/kei0822kei/twinpy)
+[![codecov](https://codecov.io/gh/kei0822kei/twinpy/branch/master/graph/badge.svg?token=X9M31WTX6G)](https://codecov.io/gh/kei0822kei/twinpy)
 
 # twinpy
 
