@@ -9,6 +9,7 @@ branches:
   only:
     - master
     - develop
+    - release/*
 
 language: python - "3.6"
 
