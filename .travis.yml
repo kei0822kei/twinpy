@@ -23,4 +23,4 @@ script:
   - pytest
 
 after_success:
-  - echo "test finishes"
+  - codecov
