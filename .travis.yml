@@ -16,14 +16,14 @@ language: python - "3.6"
 
 before_install:
   - echo "test starts"
-  - pip install codecov coverage pytest-cov
+  - pip install codecov coverage
 
 install:
   - pip install .[develop]
 
 script:
   # - pytest
-  - pytest --cov-report=xml
+  - pytest --verbose --color=yes --cov=twinpy --assert=plain
 
 after_success:
   - codecov
