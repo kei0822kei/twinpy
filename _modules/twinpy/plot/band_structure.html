@@ -1,0 +1,673 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.plot.band_structure &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/contentui.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.plot.band_structure</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.plot.band_structure</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Band plot.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">phonopy.phonon.band_structure</span> <span class="kn">import</span> <span class="n">BandStructure</span>
+<span class="kn">from</span> <span class="nn">twinpy.plot.base</span> <span class="kn">import</span> <span class="p">(</span><span class="n">create_figure_axes</span><span class="p">,</span>
+                              <span class="n">get_plot_properties_for_trajectory</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;font.family&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;times new roman&quot;</span>
+
+<div class="viewcode-block" id="decorate_string_for_latex"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.decorate_string_for_latex">[docs]</a><span class="k">def</span> <span class="nf">decorate_string_for_latex</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    decorate strings for latex</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">string</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">decorated_string</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">elif</span> <span class="n">string</span> <span class="o">==</span> <span class="s1">&#39;GAMMA&#39;</span><span class="p">:</span>
+        <span class="n">decorated_string</span> <span class="o">=</span> <span class="s2">&quot;$&quot;</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;GAMMA&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\Gamma&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;$&quot;</span>
+    <span class="k">elif</span> <span class="n">string</span> <span class="o">==</span> <span class="s1">&#39;SIGMA&#39;</span><span class="p">:</span>
+        <span class="n">decorated_string</span> <span class="o">=</span> <span class="s2">&quot;$&quot;</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;SIGMA&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\Sigma&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;$&quot;</span>
+    <span class="k">elif</span> <span class="n">string</span> <span class="o">==</span> <span class="s1">&#39;DELTA&#39;</span><span class="p">:</span>
+        <span class="n">decorated_string</span> <span class="o">=</span> <span class="s2">&quot;$&quot;</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;DELTA&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\Delta&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;$&quot;</span>
+    <span class="k">elif</span> <span class="n">string</span> <span class="o">==</span> <span class="s1">&#39;LAMBDA&#39;</span><span class="p">:</span>
+        <span class="n">decorated_string</span> <span class="o">=</span> <span class="s2">&quot;$&quot;</span> <span class="o">+</span> <span class="n">string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;LAMBDA&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;\Lambda&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;$&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">decorated_string</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;$\mathrm{</span><span class="si">%s</span><span class="s2">}$&quot;</span> <span class="o">%</span> <span class="n">string</span>
+    <span class="k">return</span> <span class="n">decorated_string</span></div>
+
+
+<div class="viewcode-block" id="get_axes_distances"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.get_axes_distances">[docs]</a><span class="k">def</span> <span class="nf">get_axes_distances</span><span class="p">(</span><span class="n">band_structure</span><span class="p">:</span><span class="n">BandStructure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get axes distances in angstrome.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        band_structure: BandStructure class object.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list: Axes distances in angstrome.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        This function returns list of distances of connected band paths.</span>
+<span class="sd">        To plot band structure, axes ratios are necessary.</span>
+<span class="sd">        You can use resultant list as ratios for plotting band structure.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">min_distance</span> <span class="o">=</span> <span class="mf">0.</span>
+    <span class="n">widths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">distance</span><span class="p">,</span> <span class="n">path_connection</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">band_structure</span><span class="o">.</span><span class="n">get_distances</span><span class="p">(),</span>
+                                         <span class="n">band_structure</span><span class="o">.</span><span class="n">path_connections</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">path_connection</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">width</span> <span class="o">=</span> <span class="n">distance</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">min_distance</span>
+            <span class="n">widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+            <span class="n">min_distance</span> <span class="o">=</span> <span class="n">distance</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">widths</span></div>
+
+
+<div class="viewcode-block" id="BandPlot"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandPlot">[docs]</a><span class="k">class</span> <span class="nc">BandPlot</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Band structure plot class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">band_structure</span><span class="p">:</span><span class="n">BandStructure</span><span class="p">,</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            band_structure: BandStructure class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_band_structure</span> <span class="o">=</span> <span class="n">band_structure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_axes_distances</span> <span class="o">=</span> <span class="n">get_axes_distances</span><span class="p">(</span><span class="n">band_structure</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_structure</span><span class="o">.</span><span class="n">labels</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_segment_frequences</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_segment_distances</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_segment_labels_distances</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_segments</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ylim</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min_frequency</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_frequency</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BandPlot.set_ylim"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandPlot.set_ylim">[docs]</a>    <span class="k">def</span> <span class="nf">set_ylim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ymin</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ymax</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set ylim.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ymin (float): If None, min(frequences) -</span>
+<span class="sd">                          (max(frequences) - min(frequences)) * 1.05 is set.</span>
+<span class="sd">            ymax (float): If None, max(frequences) +</span>
+<span class="sd">                          (max(frequences) - min(frequences)) * 1.05 is set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">freq_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span> <span class="n">freq</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="k">for</span> <span class="n">freq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segment_frequences</span> <span class="p">])</span>
+        <span class="n">freq_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span> <span class="n">freq</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">for</span> <span class="n">freq</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segment_frequences</span> <span class="p">])</span>
+        <span class="n">span</span> <span class="o">=</span> <span class="n">freq_max</span> <span class="o">-</span> <span class="n">freq_min</span>
+        <span class="k">if</span> <span class="n">ymin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_ymin</span> <span class="o">=</span> <span class="n">freq_min</span> <span class="o">-</span> <span class="n">span</span> <span class="o">*</span> <span class="mf">0.05</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_ymin</span> <span class="o">=</span> <span class="n">ymin</span>
+        <span class="k">if</span> <span class="n">ymax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_ymax</span> <span class="o">=</span> <span class="n">freq_max</span> <span class="o">+</span> <span class="n">span</span> <span class="o">*</span> <span class="mf">0.05</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_ymax</span> <span class="o">=</span> <span class="n">ymax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min_frequency</span> <span class="o">=</span> <span class="n">freq_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_frequency</span> <span class="o">=</span> <span class="n">freq_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ylim</span> <span class="o">=</span> <span class="p">(</span><span class="n">_ymin</span><span class="p">,</span> <span class="n">_ymax</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set segment frequences and distances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">frequences</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_structure</span><span class="o">.</span><span class="n">get_frequencies</span><span class="p">()</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_structure</span><span class="o">.</span><span class="n">get_distances</span><span class="p">()</span>
+        <span class="n">path_connections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_structure</span><span class="o">.</span><span class="n">path_connections</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path_connections</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>
+                                 <span class="o">-</span> <span class="n">path_connections</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_labels</span>
+
+        <span class="n">seg_freqs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">seg_dis</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">seg_labels_qpoints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">freqs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">dis</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">iter_labels</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="n">labels_qpoints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path_connections</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">labels_qpoints</span> <span class="o">==</span> <span class="p">[]:</span>
+                <span class="n">labels_qpoints</span> <span class="o">=</span> <span class="p">[(</span><span class="n">iter_labels</span><span class="o">.</span><span class="fm">__next__</span><span class="p">(),</span> <span class="mf">0.</span><span class="p">)]</span>
+            <span class="n">freqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">frequences</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">dis</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">distances</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">labels_qpoints</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">iter_labels</span><span class="o">.</span><span class="fm">__next__</span><span class="p">(),</span> <span class="n">dis</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">dis</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">path_connections</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="k">continue</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">freqs</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">seg_freqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">freqs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">seg_freqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">freqs</span><span class="p">))</span>
+                <span class="n">dis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dis</span><span class="p">)</span> <span class="o">-</span> <span class="n">dis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">seg_dis</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dis</span><span class="p">)</span>
+                <span class="n">seg_labels_qpoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">labels_qpoints</span><span class="p">)</span>
+                <span class="n">freqs</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">dis</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">labels_qpoints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_segment_frequences</span> <span class="o">=</span> <span class="n">seg_freqs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_segment_distances</span> <span class="o">=</span> <span class="n">seg_dis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_segment_labels_distances</span> <span class="o">=</span> <span class="n">seg_labels_qpoints</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">band_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Band structure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_structure</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">axes_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Axes distances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axes_distances</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">min_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Min frequency.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_frequency</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Max frequency.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_frequency</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">segment_frequences</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Segment freqences.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segment_frequences</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">segment_distances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Segment distances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segment_distances</span>
+
+<div class="viewcode-block" id="BandPlot.plot_segment_band_structure"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandPlot.plot_segment_band_structure">[docs]</a>    <span class="k">def</span> <span class="nf">plot_segment_band_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">frequences</span><span class="p">,</span> <span class="n">distances</span><span class="p">,</span>
+                                    <span class="n">label</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;-&#39;</span><span class="p">,</span>
+                                    <span class="n">alpha</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+                                    <span class="n">show_yscale</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot segment band structure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">frequences</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">_label</span> <span class="o">=</span> <span class="n">label</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_label</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">distances</span><span class="p">,</span> <span class="n">frequences</span><span class="p">[:,</span><span class="n">i</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="n">linestyle</span><span class="p">,</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="n">linewidth</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">_label</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">distances</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">distances</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">show_yscale</span><span class="p">:</span>
+            <span class="n">labelleft</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">labelleft</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelbottom</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">labelleft</span><span class="o">=</span><span class="n">labelleft</span><span class="p">,</span>
+                       <span class="n">labelright</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">labeltop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">bottom</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">right</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">top</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandPlot.plot_ylabel"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandPlot.plot_ylabel">[docs]</a>    <span class="k">def</span> <span class="nf">plot_ylabel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot ylabel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">decorate_string_for_latex</span><span class="p">(</span><span class="s2">&quot;Frequency [THz]&quot;</span><span class="p">),</span>
+                      <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelbottom</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">labelleft</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">labelright</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">labeltop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">bottom</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                       <span class="n">right</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                       <span class="n">top</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandPlot.plot_vline"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandPlot.plot_vline">[docs]</a>    <span class="k">def</span> <span class="nf">plot_vline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span><span class="nb">int</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot segment band.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ax: Axes.</span>
+<span class="sd">            idx (int): Segmet index.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[</span> <span class="n">ld</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">ld</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segment_labels_distances</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="p">]</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="p">[</span> <span class="n">ld</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">ld</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_segment_labels_distances</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="p">]</span>
+        <span class="k">for</span> <span class="n">label</span><span class="p">,</span> <span class="n">distance</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">distances</span><span class="p">):</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+        <span class="n">decorated_labels</span> <span class="o">=</span> <span class="p">[</span> <span class="n">decorate_string_for_latex</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+                                 <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">labels</span> <span class="p">]</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xticklabels</span><span class="p">(</span><span class="n">decorated_labels</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandPlot.plot_hline"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandPlot.plot_hline">[docs]</a>    <span class="k">def</span> <span class="nf">plot_hline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">hval</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot horizontal line.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">hval</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;grey&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandPlot.plot_band_structure"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandPlot.plot_band_structure">[docs]</a>    <span class="k">def</span> <span class="nf">plot_band_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span>
+                            <span class="n">dosplot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                            <span class="n">dos_distance</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span>
+                            <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot band structure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_axes_distances</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dosplot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dos_distance</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">create_figure_axes</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span>
+                                       <span class="n">ratios</span><span class="o">=</span><span class="n">distances</span><span class="p">,</span>
+                                       <span class="n">axes_pad</span><span class="o">=</span><span class="mf">0.03</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_segment_frequences</span><span class="p">))):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">show_yscale</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">plot_ylabel</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">show_yscale</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_segment_band_structure</span><span class="p">(</span>
+                    <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">,</span>
+                    <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">frequences</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_segment_frequences</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">distances</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_segment_distances</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">show_yscale</span><span class="o">=</span><span class="n">show_yscale</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_vline</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_hline</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ylim</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dosplot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dosplot</span><span class="o">.</span><span class="n">plot_total_dos</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">)</span>
+            <span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelleft</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ylim</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plot_hline</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span></div></div>
+
+
+<div class="viewcode-block" id="BandsPlot"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandsPlot">[docs]</a><span class="k">class</span> <span class="nc">BandsPlot</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Band structure plot class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">band_structures</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Init.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            band_structures (list): List of BandStructure class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_band_structures</span> <span class="o">=</span> <span class="n">band_structures</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bandplots</span> <span class="o">=</span> <span class="p">[</span> <span class="n">BandPlot</span><span class="p">(</span><span class="n">band_structure</span><span class="p">)</span>
+                                <span class="k">for</span> <span class="n">band_structure</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_structures</span> <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_axes_distances</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bandplots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axes_distances</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ylim</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min_frequency</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_frequency</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ymax</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_alphas</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_linewidths</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_linestyles</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_line_properties</span><span class="p">(</span><span class="n">base_color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BandsPlot.set_line_properties"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandsPlot.set_line_properties">[docs]</a>    <span class="k">def</span> <span class="nf">set_line_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_color</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set line properties</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_alphas</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_linewidths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_linestyles</span> <span class="o">=</span> \
+                <span class="n">get_plot_properties_for_trajectory</span><span class="p">(</span>
+                        <span class="n">plot_nums</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bandplots</span><span class="p">),</span>
+                        <span class="n">base_color</span><span class="o">=</span><span class="n">base_color</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BandsPlot.set_cs"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandsPlot.set_cs">[docs]</a>    <span class="k">def</span> <span class="nf">set_cs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        cs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cs</span> <span class="o">=</span> <span class="n">cs</span></div>
+
+<div class="viewcode-block" id="BandsPlot.set_alphas"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandsPlot.set_alphas">[docs]</a>    <span class="k">def</span> <span class="nf">set_alphas</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alphas</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        cs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_alphas</span> <span class="o">=</span> <span class="n">alphas</span></div>
+
+<div class="viewcode-block" id="BandsPlot.set_linewidths"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandsPlot.set_linewidths">[docs]</a>    <span class="k">def</span> <span class="nf">set_linewidths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linewidths</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        cs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_linewidths</span> <span class="o">=</span> <span class="n">linewidths</span></div>
+
+<div class="viewcode-block" id="BandsPlot.set_linestyles"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandsPlot.set_linestyles">[docs]</a>    <span class="k">def</span> <span class="nf">set_linestyles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linestyles</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        cs</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_linestyles</span> <span class="o">=</span> <span class="n">linestyles</span></div>
+
+    <span class="c1"># def set_ylim(self, ax, ymin:float=None, ymax:float=None):</span>
+<div class="viewcode-block" id="BandsPlot.set_ylim"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandsPlot.set_ylim">[docs]</a>    <span class="k">def</span> <span class="nf">set_ylim</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ymin</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ymax</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set ylim.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ymin (float): If None, min(frequences) -</span>
+<span class="sd">                          (max(frequences) - min(frequences)) * 1.05 is set.</span>
+<span class="sd">            ymax (float): If None, max(frequences) +</span>
+<span class="sd">                          (max(frequences) - min(frequences)) * 1.05 is set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">freq_min</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span> <span class="n">bandplot</span><span class="o">.</span><span class="n">min_frequency</span>
+                             <span class="k">for</span> <span class="n">bandplot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bandplots</span> <span class="p">])</span>
+        <span class="n">freq_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span> <span class="n">bandplot</span><span class="o">.</span><span class="n">max_frequency</span>
+                             <span class="k">for</span> <span class="n">bandplot</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bandplots</span> <span class="p">])</span>
+        <span class="n">span</span> <span class="o">=</span> <span class="n">freq_max</span> <span class="o">-</span> <span class="n">freq_min</span>
+        <span class="k">if</span> <span class="n">ymin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_ymin</span> <span class="o">=</span> <span class="n">freq_min</span> <span class="o">-</span> <span class="n">span</span> <span class="o">*</span> <span class="mf">0.05</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_ymin</span> <span class="o">=</span> <span class="n">ymin</span>
+        <span class="k">if</span> <span class="n">ymax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_ymax</span> <span class="o">=</span> <span class="n">freq_max</span> <span class="o">+</span> <span class="n">span</span> <span class="o">*</span> <span class="mf">0.05</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_ymax</span> <span class="o">=</span> <span class="n">ymax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_min_frequency</span> <span class="o">=</span> <span class="n">freq_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_frequency</span> <span class="o">=</span> <span class="n">freq_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ylim</span> <span class="o">=</span> <span class="p">(</span><span class="n">_ymin</span><span class="p">,</span> <span class="n">_ymax</span><span class="p">)</span></div>
+        <span class="c1"># ax.set_ylim(self._ylim)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">band_structures</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Band structures.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_band_structures</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">bandplots</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        List of BandsPlot class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bandplots</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">min_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Min frequency.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_frequency</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Max frequency.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_frequency</span>
+
+<div class="viewcode-block" id="BandsPlot.plot_band_structures"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.band_structure.BandsPlot.plot_band_structures">[docs]</a>    <span class="k">def</span> <span class="nf">plot_band_structures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="n">dosesplot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dos_distance</span><span class="o">=</span><span class="mf">0.3</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot band structures.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            fig: Figure.</span>
+<span class="sd">            axes (list): Axes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_axes_distances</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dosesplot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dos_distance</span><span class="p">)</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">create_figure_axes</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">,</span>
+                                       <span class="n">ratios</span><span class="o">=</span><span class="n">distances</span><span class="p">,</span>
+                                       <span class="n">axes_pad</span><span class="o">=</span><span class="mf">0.03</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">bandplot</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bandplots</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">_bandplots</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">_segment_frequences</span><span class="p">))):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;Initial&#39;</span>
+                <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_bandplots</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;Final&#39;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">label</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">show_yscale</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">show_yscale</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">bandplot</span><span class="o">.</span><span class="n">plot_segment_band_structure</span><span class="p">(</span>
+                        <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="n">frequences</span><span class="o">=</span><span class="n">bandplot</span><span class="o">.</span><span class="n">segment_frequences</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="n">distances</span><span class="o">=</span><span class="n">bandplot</span><span class="o">.</span><span class="n">segment_distances</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="n">show_yscale</span><span class="o">=</span><span class="n">show_yscale</span><span class="p">,</span>
+                        <span class="n">c</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_cs</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                        <span class="n">alpha</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_alphas</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                        <span class="n">linestyle</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_linestyles</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                        <span class="n">linewidth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_linewidths</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                        <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+                        <span class="p">)</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">bandplot</span><span class="o">.</span><span class="n">plot_vline</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="n">bandplot</span><span class="o">.</span><span class="n">plot_hline</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ylim</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dosesplot</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dosesplot</span><span class="o">.</span><span class="n">set_cs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cs</span><span class="p">)</span>
+            <span class="n">dosesplot</span><span class="o">.</span><span class="n">set_alphas</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alphas</span><span class="p">)</span>
+            <span class="n">dosesplot</span><span class="o">.</span><span class="n">set_linewidths</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_linewidths</span><span class="p">)</span>
+            <span class="n">dosesplot</span><span class="o">.</span><span class="n">set_linestyles</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_linestyles</span><span class="p">)</span>
+            <span class="n">dosesplot</span><span class="o">.</span><span class="n">plot_total_doses</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">labelleft</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ylim</span><span class="p">)</span>
+            <span class="n">axes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

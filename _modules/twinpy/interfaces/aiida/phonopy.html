@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.interfaces.aiida.phonopy &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/contentui.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.interfaces.aiida.phonopy</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.interfaces.aiida.phonopy</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Aiida interface for twinpy.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">twinpy.interfaces.aiida.base</span> <span class="kn">import</span> <span class="p">(</span><span class="n">check_process_class</span><span class="p">,</span>
+                                          <span class="n">get_cell_from_aiida</span><span class="p">,</span>
+                                          <span class="n">_WorkChain</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">twinpy.interfaces.phonopy</span> <span class="kn">import</span> <span class="n">get_phonopy_structure</span>
+<span class="kn">from</span> <span class="nn">twinpy.common.utils</span> <span class="kn">import</span> <span class="n">print_header</span>
+<span class="kn">from</span> <span class="nn">twinpy.analysis.phonon_analyzer</span> <span class="kn">import</span> <span class="p">(</span><span class="n">RelaxAnalyzer</span><span class="p">,</span>
+                                             <span class="n">PhononAnalyzer</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">aiida.cmdline.utils.decorators</span> <span class="kn">import</span> <span class="n">with_dbenv</span>
+<span class="kn">from</span> <span class="nn">aiida.common</span> <span class="kn">import</span> <span class="n">NotExistentAttributeError</span>
+<span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="p">(</span><span class="n">load_node</span><span class="p">,</span>
+                       <span class="n">Node</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">phonopy</span> <span class="kn">import</span> <span class="n">Phonopy</span>
+
+
+<div class="viewcode-block" id="AiidaPhonopyWorkChain"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.phonopy.AiidaPhonopyWorkChain">[docs]</a><span class="nd">@with_dbenv</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">AiidaPhonopyWorkChain</span><span class="p">(</span><span class="n">_WorkChain</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Phononpy work chain class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">node</span><span class="p">:</span><span class="n">Node</span><span class="p">,</span>
+            <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            node: Aiida Node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">process_class</span> <span class="o">=</span> <span class="s1">&#39;PhonopyWorkChain&#39;</span>
+        <span class="n">check_process_class</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">process_class</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unitcell</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span>
+                <span class="n">load_node</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">pk</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phonon_settings</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">phonon_settings</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phonon_setting_info</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">phonon_setting_info</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unitcell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_primitive</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_supercell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_structures</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_force_sets</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_force_sets</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_set_structures</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set structures.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unitcell</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_primitive</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">primitive</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_supercell</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">supercell</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;unitcell_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                <span class="s1">&#39;primitive_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">primitive</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                <span class="s1">&#39;supercell_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">supercell</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">unitcell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Input unitcell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unitcell</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">primitive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Output primitive cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_primitive</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">supercell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Output supercell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_supercell</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">structure_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Structure pks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span>
+
+    <span class="k">def</span> <span class="nf">_set_force_sets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set force_sets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_force_sets</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">force_sets</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s1">&#39;force_sets&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">NotExistentAttributeError</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Could not find force sets. Probably, &quot;</span>
+                          <span class="s2">&quot;this job still running or finished improperly.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="s2">&quot;process state: </span><span class="si">{}</span><span class="s2"> (pk=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">_process_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pk</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">phonon_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Input phonon settings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonon_settings</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">phonon_setting_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Output phonon setting_info.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonon_setting_info</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">force_sets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Output force sets.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_force_sets</span>
+
+<div class="viewcode-block" id="AiidaPhonopyWorkChain.get_pks"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.phonopy.AiidaPhonopyWorkChain.get_pks">[docs]</a>    <span class="k">def</span> <span class="nf">get_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get pks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Containing phonopy pk and structure pk.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">pks</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;phonopy_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pk</span><span class="p">})</span>
+
+        <span class="k">return</span> <span class="n">pks</span></div>
+
+<div class="viewcode-block" id="AiidaPhonopyWorkChain.get_phonon"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.phonopy.AiidaPhonopyWorkChain.get_phonon">[docs]</a>    <span class="k">def</span> <span class="nf">get_phonon</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Phonopy</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get phonopy object.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Phonopy: Phonopy class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">phonon</span> <span class="o">=</span> <span class="n">Phonopy</span><span class="p">(</span>
+                <span class="n">get_phonopy_structure</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unitcell</span><span class="p">),</span>
+                <span class="n">supercell_matrix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_phonon_setting_info</span><span class="p">[</span><span class="s1">&#39;supercell_matrix&#39;</span><span class="p">],</span>
+                <span class="n">primitive_matrix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_phonon_setting_info</span><span class="p">[</span><span class="s1">&#39;primitive_matrix&#39;</span><span class="p">])</span>
+        <span class="n">phonon</span><span class="o">.</span><span class="n">set_displacement_dataset</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_phonon_setting_info</span><span class="p">[</span><span class="s1">&#39;displacement_dataset&#39;</span><span class="p">])</span>
+        <span class="n">phonon</span><span class="o">.</span><span class="n">set_forces</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_force_sets</span><span class="p">)</span>
+        <span class="n">phonon</span><span class="o">.</span><span class="n">produce_force_constants</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">phonon</span></div>
+
+<div class="viewcode-block" id="AiidaPhonopyWorkChain.get_phonon_analyzer"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.phonopy.AiidaPhonopyWorkChain.get_phonon_analyzer">[docs]</a>    <span class="k">def</span> <span class="nf">get_phonon_analyzer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                            <span class="n">relax_analyzer</span><span class="p">:</span><span class="n">RelaxAnalyzer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get PhononAnalyzer class object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            relax_analyzer: RelaxAnalyzer class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">analyzer</span> <span class="o">=</span> <span class="n">PhononAnalyzer</span><span class="p">(</span><span class="n">phonon</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_phonon</span><span class="p">(),</span>
+                                  <span class="n">relax_analyzer</span><span class="o">=</span><span class="n">relax_analyzer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">analyzer</span></div>
+
+<div class="viewcode-block" id="AiidaPhonopyWorkChain.get_description"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.phonopy.AiidaPhonopyWorkChain.get_description">[docs]</a>    <span class="k">def</span> <span class="nf">get_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get description.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print_common_information</span><span class="p">()</span>
+        <span class="n">print_header</span><span class="p">(</span><span class="s1">&#39;PKs&#39;</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pks</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">print_header</span><span class="p">(</span><span class="s1">&#39;phonopy settings&#39;</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_phonon_settings</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

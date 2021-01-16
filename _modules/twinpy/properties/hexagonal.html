@@ -24,16 +24,11 @@
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
         <script src="../../../_static/contentui.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
     
-    <link rel="search" type="application/opensearchdescription+xml"
-          title="Search within twinpy 0.0.1 documentation"
-          href="../../../_static/opensearch.xml"/>
 
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
@@ -64,7 +59,7 @@
             
             
               <div class="version">
-                0.0
+                0.0.1
               </div>
             
           
@@ -89,9 +84,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../definitions/index.html">Definitions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../developer_guide/index.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../apidoc/twinpy.html">API documentation</a></li>
 </ul>
 
@@ -158,24 +151,151 @@
   <h1>Source code for twinpy.properties.hexagonal</h1><div class="highlight"><pre>
 <span></span><span class="ch">#!/usr/bin/env python</span>
 <span class="c1"># -*- coding: utf-8 -*-</span>
-
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">hexagonal property</span>
+<span class="sd">This module deals with hexagonal property.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">spglib</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.lattice</span> <span class="kn">import</span> <span class="n">CrystalLattice</span>
 
-<div class="viewcode-block" id="get_atom_positions"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.get_atom_positions">[docs]</a><span class="k">def</span> <span class="nf">get_atom_positions</span><span class="p">(</span><span class="n">wyckoff</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+
+<div class="viewcode-block" id="check_hexagonal_lattice"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.check_hexagonal_lattice">[docs]</a><span class="k">def</span> <span class="nf">check_hexagonal_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    get atom positions in Hexagonal Close-Packed</span>
+<span class="sd">    Check input lattice is hexagonal lattice.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        wyckoff (str): wyckoff letter, choose &#39;c&#39; or &#39;d&#39;</span>
+<span class="sd">        lattice: Lattice matrix.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: The angles are not (90, 90, 120).</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Check the angles of input lattice are (90, 90, 120).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">hexagonal</span> <span class="o">=</span> <span class="n">CrystalLattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">)</span>
+    <span class="n">expected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">90.</span><span class="p">,</span> <span class="mf">90.</span><span class="p">,</span> <span class="mf">120.</span><span class="p">])</span>
+    <span class="n">actual</span> <span class="o">=</span> <span class="n">hexagonal</span><span class="o">.</span><span class="n">angles</span>
+    <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;The angles of lattice was </span><span class="si">{}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">               which does not match [90., 90., 120.]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">actual</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
+            <span class="n">actual</span><span class="p">,</span>
+            <span class="n">expected</span><span class="p">,</span>
+            <span class="n">err_msg</span><span class="o">=</span><span class="n">err_msg</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_cell_is_hcp"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.check_cell_is_hcp">[docs]</a><span class="k">def</span> <span class="nf">check_cell_is_hcp</span><span class="p">(</span><span class="n">cell</span><span class="p">:</span><span class="nb">tuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check input cell is hexagonal close-packed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cell: (lattice, scaled_positions, symbols).</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        RuntimeError: Both positions and scaled_positions are specified.</span>
+<span class="sd">        RuntimeError: Input symbol is not unique.</span>
+<span class="sd">        RuntimeError: The number of symbols are not two,</span>
+<span class="sd">                      which is the number of atoms</span>
+<span class="sd">                      for hexagonal close-packed structure.</span>
+<span class="sd">        RuntimeError: Space group of input cell is not &#39;P6_3/mmc&#39;.</span>
+<span class="sd">        AssertionError: Input cell is not</span>
+<span class="sd">                        hexagonal close-packed.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        The spglib software is used to get space group.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lattice</span><span class="p">,</span> <span class="n">scaled_positions</span><span class="p">,</span> <span class="n">symbols</span> <span class="o">=</span> <span class="n">cell</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">symbols</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Symbol is not unique.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">symbols</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;The number of symbols are not two.&quot;</span><span class="p">)</span>
+
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">spglib</span><span class="o">.</span><span class="n">get_symmetry_dataset</span><span class="p">((</span><span class="n">lattice</span><span class="p">,</span>
+                                           <span class="n">scaled_positions</span><span class="p">,</span>
+                                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+
+    <span class="n">spg_symbol</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;international&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">spg_symbol</span> <span class="o">!=</span> <span class="s1">&#39;P6_3/mmc&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Space group of input structure is </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                           <span class="s2">&quot;not &#39;P6_3/mmc&#39;.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">spg_symbol</span><span class="p">))</span>
+
+    <span class="n">wyckoffs</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;wyckoffs&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">wyckoffs</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[[</span><span class="s1">&#39;c&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;d&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">]:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;wyckoff letters are </span><span class="si">{}</span><span class="s2">, which must be &quot;</span>
+                           <span class="s2">&quot;[&#39;c&#39;, &#39;c&#39;] or [&#39;d&#39;, &#39;d&#39;]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">wyckoffs</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="get_wyckoff_from_hcp"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.get_wyckoff_from_hcp">[docs]</a><span class="k">def</span> <span class="nf">get_wyckoff_from_hcp</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get wyckoff letter from HCP crystal structure.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cell: (lattice, scaled_positions, symbols).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        np.array: atom positions</span>
+<span class="sd">        str: Wyckoff letter.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">wyckoff</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">],</span> <span class="s2">&quot;wyckoff must be &#39;c&#39; or &#39;d&#39;&quot;</span>
+    <span class="n">check_cell_is_hcp</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">)</span>
+    <span class="n">lattice</span><span class="p">,</span> <span class="n">scaled_positions</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cell</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">spglib</span><span class="o">.</span><span class="n">get_symmetry_dataset</span><span class="p">((</span><span class="n">lattice</span><span class="p">,</span>
+                                           <span class="n">scaled_positions</span><span class="p">,</span>
+                                           <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+    <span class="n">wyckoff</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[</span><span class="s1">&#39;wyckoffs&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">wyckoff</span></div>
+
+
+<div class="viewcode-block" id="get_hexagonal_lattice_from_a_c"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.get_hexagonal_lattice_from_a_c">[docs]</a><span class="k">def</span> <span class="nf">get_hexagonal_lattice_from_a_c</span><span class="p">(</span><span class="n">a</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span><span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get hexagonal lattice from the norms of a and c axes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a: The norm of a axis.</span>
+<span class="sd">        c: The norm of c axis.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array: Hexagonal lattice with its length of basis vectors</span>
+<span class="sd">                  are [a, a, c].</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: Either a or c is negative value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="mf">0.</span> <span class="ow">and</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mf">0.</span><span class="p">:</span>
+        <span class="n">err_msg</span> <span class="o">=</span> <span class="s2">&quot;input value was a=</span><span class="si">{}</span><span class="s2"> and c=</span><span class="si">{}</span><span class="s2"> &quot;</span> \
+                  <span class="s2">&quot;but both a and c must be positive&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
+
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.</span><span class="p">,</span>           <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                        <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span>
+                        <span class="p">[</span>  <span class="mf">0.</span><span class="p">,</span>           <span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">]])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">a</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">c</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">lattice</span></div>
+
+
+<div class="viewcode-block" id="get_hcp_atom_positions"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.get_hcp_atom_positions">[docs]</a><span class="k">def</span> <span class="nf">get_hcp_atom_positions</span><span class="p">(</span><span class="n">wyckoff</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get atom positions in Hexagonal Close-Packed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        wyckoff: Wyckoff letter, choose &#39;c&#39; or &#39;d&#39;.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: Input wyckoff is neither &#39;c&#39; nor &#39;d&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array: Atom positions with fractional coordinate.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        origin point is  plane in the middle of hcp primitive atom pairs.</span>
+<span class="sd">        The atom positions of wyckoff &#39;c&#39;, for example, are</span>
+<span class="sd">        [[ 1/3 -1/3  1/4 ], [ -1/3 1/3 -1/4 ]] not</span>
+<span class="sd">        [[ 1/3  2/3  1/4 ], [  2/3 1/3  3/4 ]].</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">wyckoff</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;c&#39;</span><span class="p">,</span> <span class="s1">&#39;d&#39;</span><span class="p">],</span> \
+             <span class="s2">&quot;Input wyckoff must be &#39;c&#39; or &#39;d&#39; (input:</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">wyckoff</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="n">wyckoff</span> <span class="o">==</span> <span class="s1">&#39;c&#39;</span><span class="p">:</span>
         <span class="n">atom_positions</span> <span class="o">=</span> \
             <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span> <span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span>  <span class="mi">1</span><span class="o">/</span><span class="mi">4</span><span class="p">],</span>
@@ -184,7 +304,366 @@
         <span class="n">atom_positions</span> <span class="o">=</span> \
             <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span> <span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">4</span><span class="p">],</span>
                       <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span>  <span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span>  <span class="mi">1</span><span class="o">/</span><span class="mi">4</span><span class="p">]])</span>  <span class="c1"># No.194, wyckoff &#39;d&#39;</span>
+
     <span class="k">return</span> <span class="n">atom_positions</span></div>
+
+
+<div class="viewcode-block" id="get_hcp_cell"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.get_hcp_cell">[docs]</a><span class="k">def</span> <span class="nf">get_hcp_cell</span><span class="p">(</span><span class="n">a</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+                 <span class="n">c</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+                 <span class="n">symbol</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
+                 <span class="n">wyckoff</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="s1">&#39;c&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get hexagonal close-packed cell.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a: The norm of a axis.</span>
+<span class="sd">        c: The norm of c axis.</span>
+<span class="sd">        symbol: Element symbol.</span>
+<span class="sd">        wyckoff: Wyckoff letter.</span>
+
+<span class="sd">    Note:</span>
+<span class="sd">        Input wyckoff must be &#39;c&#39; or &#39;d&#39;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: Hexagonal close-packed cell.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lattice</span> <span class="o">=</span> <span class="n">get_hexagonal_lattice_from_a_c</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">scaled_positions</span> <span class="o">=</span> <span class="n">get_hcp_atom_positions</span><span class="p">(</span><span class="n">wyckoff</span><span class="o">=</span><span class="n">wyckoff</span><span class="p">)</span>
+    <span class="n">symbols</span> <span class="o">=</span> <span class="p">[</span><span class="n">symbol</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">scaled_positions</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">lattice</span><span class="p">,</span> <span class="n">scaled_positions</span><span class="p">,</span> <span class="n">symbols</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="convert_direction_from_four_to_three"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.convert_direction_from_four_to_three">[docs]</a><span class="k">def</span> <span class="nf">convert_direction_from_four_to_three</span><span class="p">(</span><span class="n">four</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span>
+                                                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                                                    <span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert direction from four to three.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        four: Four indices of hexagonal direction [uvtw].</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: The number of elements of input list</span>
+<span class="sd">                       &#39;four&#39; is not four.</span>
+<span class="sd">        AssertionError: Let be four=[u,v,t,w], u + v + t is not zero.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array: Direction with three indices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">four</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;The number of elements of input list is not four.&quot;</span>
+    <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">four</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">u</span><span class="o">+</span><span class="n">v</span><span class="o">+</span><span class="n">t</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Input elements u+v+t is not equal to 0.&quot;</span>
+    <span class="n">U</span> <span class="o">=</span> <span class="n">u</span> <span class="o">-</span> <span class="n">t</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">v</span> <span class="o">-</span> <span class="n">t</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">w</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">U</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">W</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="convert_direction_from_three_to_four"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.convert_direction_from_three_to_four">[docs]</a><span class="k">def</span> <span class="nf">convert_direction_from_three_to_four</span><span class="p">(</span><span class="n">three</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span>
+                                                     <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                                                     <span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert direction from three to four.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        three: Three indices of hexagonal direction [UVW].</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: The number of element of input list &#39;three&#39;</span>
+<span class="sd">                        is not three.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array: Direction with four indices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">three</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;The number of elements of input list </span><span class="se">\</span>
+<span class="s2">                             is not three.&quot;</span>
+    <span class="n">U</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">three</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="p">(</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">U</span> <span class="o">-</span> <span class="n">V</span> <span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="p">(</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">V</span> <span class="o">-</span> <span class="n">U</span> <span class="p">)</span> <span class="o">/</span> <span class="mi">3</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span> <span class="n">u</span> <span class="o">+</span> <span class="n">v</span> <span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">W</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">w</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="HexagonalDirection"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.HexagonalDirection">[docs]</a><span class="k">class</span> <span class="nc">HexagonalDirection</span><span class="p">(</span><span class="n">CrystalLattice</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class deals with hexagonal direction.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+           <span class="bp">self</span><span class="p">,</span>
+           <span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+           <span class="n">three</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">four</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lattice: Lattice matrix.</span>
+<span class="sd">            three: Direction indice (three).</span>
+<span class="sd">            four: Direction indice (four).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_three</span> <span class="o">=</span> <span class="n">three</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_four</span> <span class="o">=</span> <span class="n">four</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_three</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_four</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">three</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Hexagonal direction with three direction indices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_three</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">four</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Hexagonal direction with four direction indices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_four</span>
+
+<div class="viewcode-block" id="HexagonalDirection.reset_indices"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.HexagonalDirection.reset_indices">[docs]</a>    <span class="k">def</span> <span class="nf">reset_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">three</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">four</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The indices for hexagonal direction are reset.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            three: Direction with three indices.</span>
+<span class="sd">            four: Direction with four indices.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: Both &#39;three&#39; and &#39;four&#39; are None or</span>
+<span class="sd">                          both &#39;three&#39; and &#39;four&#39; are not None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">three</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">four</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_three</span> <span class="o">=</span> <span class="n">three</span>
+                <span class="n">_four</span> <span class="o">=</span> <span class="n">convert_direction_from_three_to_four</span><span class="p">(</span><span class="n">three</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Both &#39;three&#39; and &#39;four&#39; are not None.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">four</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_three</span> <span class="o">=</span> <span class="n">convert_direction_from_four_to_three</span><span class="p">(</span><span class="n">four</span><span class="p">)</span>
+                <span class="n">_four</span> <span class="o">=</span> <span class="n">four</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Both &#39;three&#39; and &#39;four&#39; are None.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_three</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_three</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_four</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_four</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HexagonalDirection.inverse"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.HexagonalDirection.inverse">[docs]</a>    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set inversed plane. In the case direction is [10-12],</span>
+<span class="sd">        indices are reset from [10-12] to [-101-2].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_indices</span><span class="p">(</span><span class="n">three</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">three</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="HexagonalDirection.get_cartesian"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.HexagonalDirection.get_cartesian">[docs]</a>    <span class="k">def</span> <span class="nf">get_cartesian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">normalize</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get direction with the cartesian coordinate.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            normalize: If True, the norm of the vector is normalized to one.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: Direction with the cartesian coordinate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cart_coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">three</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+            <span class="n">cart_coords</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">cart_coords</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cart_coords</span></div></div>
+
+
+<div class="viewcode-block" id="convert_plane_from_four_to_three"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.convert_plane_from_four_to_three">[docs]</a><span class="k">def</span> <span class="nf">convert_plane_from_four_to_three</span><span class="p">(</span><span class="n">four</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span>
+                                                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                                                <span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert plane from four to three.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        four: Four indices of hexagonal plane.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: len(four) != 4</span>
+<span class="sd">        AssertionError: (h+k+i) != 0</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: Plane three indices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">four</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;The number of elements of input list is not four.&quot;</span>
+    <span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span> <span class="o">=</span> <span class="n">four</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">h</span><span class="o">+</span><span class="n">k</span><span class="o">+</span><span class="n">i</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;h+k+i is not equal to 0.&quot;</span>
+    <span class="n">H</span> <span class="o">=</span> <span class="n">h</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">k</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">l</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="convert_plane_from_three_to_four"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.convert_plane_from_three_to_four">[docs]</a><span class="k">def</span> <span class="nf">convert_plane_from_three_to_four</span><span class="p">(</span><span class="n">three</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span>
+                                                 <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                                                 <span class="nb">tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert plane from three to four.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        three: Three indices of hexagonal plane.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        AssertionError: len(four) != 3</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array: Direction with three indices.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">three</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;The length of input list is not three.&quot;</span>
+    <span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">l</span> <span class="o">=</span> <span class="n">three</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span> <span class="n">h</span> <span class="o">+</span> <span class="n">k</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">h</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">l</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="HexagonalPlane"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.HexagonalPlane">[docs]</a><span class="k">class</span> <span class="nc">HexagonalPlane</span><span class="p">(</span><span class="n">CrystalLattice</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Deals with hexagonal plane.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+           <span class="bp">self</span><span class="p">,</span>
+           <span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+           <span class="n">three</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">four</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            lattice: Lattice.</span>
+<span class="sd">            three: Plane indice (three).</span>
+<span class="sd">            four: Plane indice (four).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">three</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_three</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_three</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">three</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">four</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_four</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_four</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">four</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_indices</span><span class="p">(</span><span class="n">three</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_three</span><span class="p">,</span> <span class="n">four</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_four</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">three</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plane indice (HKL).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_three</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">four</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plane indice (hkil).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_four</span>
+
+<div class="viewcode-block" id="HexagonalPlane.reset_indices"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.HexagonalPlane.reset_indices">[docs]</a>    <span class="k">def</span> <span class="nf">reset_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">three</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">four</span><span class="p">:</span><span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The indices for hexagonal plane are reset.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            three: Plane with three indices.</span>
+<span class="sd">            four: Plane with four indices.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: Both &#39;three&#39; and &#39;four&#39; are None or</span>
+<span class="sd">                          both &#39;three&#39; and &#39;four&#39; are not None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">three</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">four</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_three</span> <span class="o">=</span> <span class="n">three</span>
+                <span class="n">_four</span> <span class="o">=</span> <span class="n">convert_plane_from_three_to_four</span><span class="p">(</span><span class="n">three</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Both &#39;three&#39; and &#39;four&#39; are not None.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">four</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">_three</span> <span class="o">=</span> <span class="n">convert_plane_from_four_to_three</span><span class="p">(</span><span class="n">four</span><span class="p">)</span>
+                <span class="n">_four</span> <span class="o">=</span> <span class="n">four</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Both &#39;three&#39; and &#39;four&#39; are None.&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_three</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_three</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_four</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">_four</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="HexagonalPlane.inverse"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.HexagonalPlane.inverse">[docs]</a>    <span class="k">def</span> <span class="nf">inverse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set inversed plane ex. (10-12) =&gt; (-101-2).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_indices</span><span class="p">(</span><span class="n">three</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">three</span><span class="o">*</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="HexagonalPlane.get_direction_normal_to_plane"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.HexagonalPlane.get_direction_normal_to_plane">[docs]</a>    <span class="k">def</span> <span class="nf">get_direction_normal_to_plane</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                      <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HexagonalDirection</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get direction normal to input plane.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            normalize: If True, normalized direction is returned.</span>
+<span class="sd">                       Else, the norm of the vector is the plane interval.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            HexagonalDirection: Hexagonal direction object</span>
+<span class="sd">                                which is normal to plane.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tf_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">res_tf_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reciprocal_lattice</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">direction_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">res_tf_matrix</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_three</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">normalize</span><span class="p">:</span>
+            <span class="n">direction_cart</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">direction_cart</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">direction_cart</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">direction_cart</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">tf_matrix</span><span class="p">),</span>
+                           <span class="n">direction_cart</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">]))</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">hex_dr</span> <span class="o">=</span> <span class="n">HexagonalDirection</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
+                                    <span class="n">three</span><span class="o">=</span><span class="n">direction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hex_dr</span></div>
+
+<div class="viewcode-block" id="HexagonalPlane.get_plane_interval"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.HexagonalPlane.get_plane_interval">[docs]</a>    <span class="k">def</span> <span class="nf">get_plane_interval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get plane interval.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Plane interval.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hex_dr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_direction_normal_to_plane</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">direction</span> <span class="o">=</span> <span class="n">hex_dr</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">direction</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">norm</span></div>
+
+<div class="viewcode-block" id="HexagonalPlane.get_distance_from_plane"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.hexagonal.HexagonalPlane.get_distance_from_plane">[docs]</a>    <span class="k">def</span> <span class="nf">get_distance_from_plane</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frac_coord</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get dicstance from plane which contains origin point</span>
+<span class="sd">        to input fractional coordinate.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            frac_coord: Fractional coorinate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Distance from plane.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">frac_coord</span> <span class="o">=</span> <span class="n">frac_coord</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_direction_normal_to_plane</span><span class="p">()</span>
+        <span class="n">k_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">k</span><span class="o">.</span><span class="n">three</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">e_k_cart</span> <span class="o">=</span> <span class="n">k_cart</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">k_cart</span><span class="p">)</span>
+        <span class="n">x_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">frac_coord</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">e_k_cart</span><span class="p">,</span> <span class="n">x_cart</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">d</span></div></div>
 </pre></div>
 
            </div>
@@ -197,7 +676,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, kei0822kei. All rights reserved
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
 
     </p>
   </div>

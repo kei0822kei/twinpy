@@ -8,9 +8,7 @@ Welcome to twinpy's documentation!
 .. toctree::
    :maxdepth: 2
 
-   user_guide/index
    definitions/index
-   developer_guide/index
    API documentation <apidoc/twinpy>
 
 ``twinpy`` is released under the MIT license.

@@ -1,0 +1,354 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.plot.twinboundary &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/contentui.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.plot.twinboundary</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.plot.twinboundary</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Twinboundary plot</span>
+
+<span class="sd">This module provide various kinds of plot related to twin boudnary.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">twinpy.plot.base</span> <span class="kn">import</span> <span class="n">line_chart</span>
+
+
+<div class="viewcode-block" id="plot_plane"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.twinboundary.plot_plane">[docs]</a><span class="k">def</span> <span class="nf">plot_plane</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span>
+               <span class="n">distances</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+               <span class="n">z_coords</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+               <span class="n">label</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">decorate</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+               <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot plane.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ax: matplotlib ax.</span>
+<span class="sd">        distances (list): List of plane intervals.</span>
+<span class="sd">        z_coords (list): List of z coordinate of each plane.</span>
+<span class="sd">        label (str): Plot label.</span>
+<span class="sd">        decorate (bool): If True, ax is decorated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Distance&#39;</span>
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Hight&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">_distances</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+    <span class="n">_z_coords</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">z_coords</span><span class="p">)</span>
+    <span class="n">_distances</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">distances</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">_distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">distances</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">_z_coords</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">distances</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">_z_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">z_coords</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">distances</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+    <span class="n">fixed_z_coords</span> <span class="o">=</span> <span class="n">_z_coords</span> <span class="o">+</span> <span class="n">distances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">c</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="n">line_chart</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+               <span class="n">xdata</span><span class="o">=</span><span class="n">_distances</span><span class="p">,</span>
+               <span class="n">ydata</span><span class="o">=</span><span class="n">fixed_z_coords</span><span class="p">,</span>
+               <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+               <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+               <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+               <span class="n">sort_by</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>
+               <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">fixed_z_coords</span><span class="p">)</span>
+        <span class="n">tb_idx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">bulk_distance</span> <span class="o">=</span> <span class="n">_distances</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">/</span><span class="mi">4</span><span class="p">)]</span>
+        <span class="n">xmin</span> <span class="o">=</span> <span class="n">bulk_distance</span> <span class="o">-</span> <span class="mf">0.025</span>
+        <span class="n">xmax</span> <span class="o">=</span> <span class="n">bulk_distance</span> <span class="o">+</span> <span class="mf">0.025</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">tb_idx</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">fixed_z_coords</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">-</span><span class="n">distances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+                      <span class="n">xmin</span><span class="o">=</span><span class="n">xmin</span><span class="o">-</span><span class="mf">0.01</span><span class="p">,</span>
+                      <span class="n">xmax</span><span class="o">=</span><span class="n">xmax</span><span class="o">+</span><span class="mf">0.01</span><span class="p">,</span>
+                      <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span>
+                      <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="plot_angle"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.twinboundary.plot_angle">[docs]</a><span class="k">def</span> <span class="nf">plot_angle</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span>
+               <span class="n">angles</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+               <span class="n">z_coords</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+               <span class="n">label</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">decorate</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+               <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot angle.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ax: matplotlib ax.</span>
+<span class="sd">        z_coords (list): List of z coordinate of each plane.</span>
+<span class="sd">        label (str): Plot label.</span>
+<span class="sd">        decorate (bool): If True, ax is decorated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Angle&#39;</span>
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Hight&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">_angles</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+    <span class="n">_z_coords</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">z_coords</span><span class="p">)</span>
+    <span class="n">_angles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">angles</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">_z_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">z_coords</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">z_coords</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">line_chart</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+               <span class="n">xdata</span><span class="o">=</span><span class="n">_angles</span><span class="p">,</span>
+               <span class="n">ydata</span><span class="o">=</span><span class="n">_z_coords</span><span class="p">,</span>
+               <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+               <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+               <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+               <span class="n">sort_by</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>
+               <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">_z_coords</span><span class="p">)</span>
+        <span class="n">tb_idx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">bulk_angle</span> <span class="o">=</span> <span class="n">angles</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">/</span><span class="mi">4</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">tb_idx</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">_z_coords</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+                      <span class="n">xmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                      <span class="n">xmax</span><span class="o">=</span><span class="n">bulk_angle</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span>
+                      <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span>
+                      <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="plot_pair_distance"><a class="viewcode-back" href="../../../apidoc/twinpy.plot.html#twinpy.plot.twinboundary.plot_pair_distance">[docs]</a><span class="k">def</span> <span class="nf">plot_pair_distance</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span>
+                       <span class="n">pair_distances</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+                       <span class="n">z_coords</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+                       <span class="n">label</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">decorate</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Plot angle.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ax: matplotlib ax.</span>
+<span class="sd">        pair_distances (list): List of A-B pair distances, which is originally</span>
+<span class="sd">                               primitive pair in HCP structure.</span>
+<span class="sd">        z_coords (list): List of z coordinate of each plane.</span>
+<span class="sd">        label (str): Plot label.</span>
+<span class="sd">        decorate (bool): If True, ax is decorated.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="s1">&#39;Pair Distance&#39;</span>
+        <span class="n">ylabel</span> <span class="o">=</span> <span class="s1">&#39;Hight&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">xlabel</span> <span class="o">=</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">_pair_distances</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">pair_distances</span><span class="p">)</span>
+    <span class="n">_z_coords</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">z_coords</span><span class="p">)</span>
+    <span class="n">_pair_distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pair_distances</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">_z_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">z_coords</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="n">z_coords</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">line_chart</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span>
+               <span class="n">xdata</span><span class="o">=</span><span class="n">_pair_distances</span><span class="p">,</span>
+               <span class="n">ydata</span><span class="o">=</span><span class="n">_z_coords</span><span class="p">,</span>
+               <span class="n">xlabel</span><span class="o">=</span><span class="n">xlabel</span><span class="p">,</span>
+               <span class="n">ylabel</span><span class="o">=</span><span class="n">ylabel</span><span class="p">,</span>
+               <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span>
+               <span class="n">sort_by</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">decorate</span><span class="p">:</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">_z_coords</span><span class="p">)</span>
+        <span class="n">tb_idx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span> <span class="n">num</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">bulk_pair_distance</span> <span class="o">=</span> <span class="n">pair_distances</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">num</span><span class="o">/</span><span class="mi">4</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">tb_idx</span><span class="p">:</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">hlines</span><span class="p">(</span><span class="n">_z_coords</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span>
+                      <span class="n">xmin</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+                      <span class="n">xmax</span><span class="o">=</span><span class="n">bulk_pair_distance</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span>
+                      <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span>
+                      <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

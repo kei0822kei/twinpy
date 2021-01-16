@@ -1,0 +1,493 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.interfaces.aiida.twinboundary &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/contentui.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.interfaces.aiida.twinboundary</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.interfaces.aiida.twinboundary</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Aiida interface for twinpy.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">aiida.cmdline.utils.decorators</span> <span class="kn">import</span> <span class="n">with_dbenv</span>
+<span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="p">(</span><span class="n">load_node</span><span class="p">,</span>
+                       <span class="n">Node</span><span class="p">,</span>
+                       <span class="n">KpointsData</span><span class="p">,</span>
+                       <span class="n">Float</span><span class="p">,</span>
+                       <span class="n">Int</span><span class="p">,</span>
+                       <span class="n">Bool</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">twinpy.common.utils</span> <span class="kn">import</span> <span class="n">print_header</span>
+<span class="kn">from</span> <span class="nn">twinpy.interfaces.aiida.base</span> <span class="kn">import</span> <span class="p">(</span><span class="n">check_process_class</span><span class="p">,</span>
+                                          <span class="n">get_aiida_structure</span><span class="p">,</span>
+                                          <span class="n">get_cell_from_aiida</span><span class="p">,</span>
+                                          <span class="n">_WorkChain</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">twinpy.interfaces.aiida.vasp</span> <span class="kn">import</span> <span class="p">(</span><span class="n">AiidaRelaxWorkChain</span><span class="p">,</span>
+                                          <span class="n">AiidaRelaxCollection</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">twinpy.interfaces.aiida.phonopy</span> <span class="kn">import</span> <span class="n">AiidaPhonopyWorkChain</span>
+<span class="kn">from</span> <span class="nn">twinpy.properties.hexagonal</span> <span class="kn">import</span> <span class="n">get_wyckoff_from_hcp</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.standardize</span> <span class="kn">import</span> <span class="n">StandardizeCell</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.twinboundary</span> <span class="kn">import</span> <span class="n">get_twinboundary</span>
+<span class="kn">from</span> <span class="nn">twinpy.analysis.twinboundary_analyzer</span> <span class="kn">import</span> <span class="n">TwinBoundaryAnalyzer</span>
+
+
+<div class="viewcode-block" id="AiidaTwinBoudnaryRelaxWorkChain"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.twinboundary.AiidaTwinBoudnaryRelaxWorkChain">[docs]</a><span class="nd">@with_dbenv</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">AiidaTwinBoudnaryRelaxWorkChain</span><span class="p">(</span><span class="n">_WorkChain</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    TwinBoundaryRelax work chain class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">node</span><span class="p">:</span><span class="n">Node</span><span class="p">,</span>
+            <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            node: TwinBoundaryRelaxWorkChain node</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">process_class</span> <span class="o">=</span> <span class="s1">&#39;TwinBoundaryRelaxWorkChain&#39;</span>
+        <span class="n">check_process_class</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">process_class</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_twinboundary_settings</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cells</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_twinboundary</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_twinboundary_structure</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_twinboundary_structure</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_set_twinboundary</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set twinboundary from vasp.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">called</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="n">aiida_hexagonal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">structure</span>
+        <span class="n">aiida_tb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">called</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">twinboundary</span>
+        <span class="n">aiida_tb_original</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">called</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">twinboundary_orig</span>
+        <span class="n">aiida_tb_relax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">called</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">relax__structure</span>
+        <span class="n">tb</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="n">aiida_tb</span><span class="p">)</span>
+        <span class="n">tb_original</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="n">aiida_tb_original</span><span class="p">)</span>
+        <span class="n">tb_relax</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="n">aiida_tb_relax</span><span class="p">)</span>
+
+        <span class="n">round_cells</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="p">[</span> <span class="n">tb</span><span class="p">,</span> <span class="n">tb_original</span><span class="p">,</span> <span class="n">tb_relax</span> <span class="p">]:</span>
+            <span class="n">round_lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+            <span class="n">round_lattice</span> <span class="o">=</span> <span class="n">cell</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">round_atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">cell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1</span>
+            <span class="n">round_cell</span> <span class="o">=</span> <span class="p">(</span><span class="n">round_lattice</span><span class="p">,</span> <span class="n">round_atoms</span><span class="p">,</span> <span class="n">cell</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">round_cells</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">round_cell</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_twinboundary_settings</span> <span class="o">=</span> <span class="n">parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cells</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;hexagonal&#39;</span><span class="p">:</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="n">aiida_hexagonal</span><span class="p">),</span>
+                <span class="s1">&#39;twinboundary&#39;</span><span class="p">:</span> <span class="n">round_cells</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="s1">&#39;twinboundary_original&#39;</span><span class="p">:</span> <span class="n">round_cells</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="s1">&#39;twinboundary_relax&#39;</span><span class="p">:</span> <span class="n">round_cells</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;hexagonal_pk&#39;</span><span class="p">:</span> <span class="n">aiida_hexagonal</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                <span class="s1">&#39;twinboundary_pk&#39;</span><span class="p">:</span> <span class="n">aiida_tb</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                <span class="s1">&#39;twinboundary_original_pk&#39;</span><span class="p">:</span> <span class="n">aiida_tb_original</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                <span class="s1">&#39;twinboundary_relax_pk&#39;</span><span class="p">:</span> <span class="n">aiida_tb_relax</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                <span class="p">}</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">twinboundary_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Twinboundary settings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_twinboundary_settings</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cells</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        cells.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cells</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">structure_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Twinboundary structure pks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span>
+
+    <span class="k">def</span> <span class="nf">_set_twinboundary_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set twinpy structure object and standardize object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_twinboundary_settings</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span>
+                        <span class="n">load_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span><span class="p">[</span><span class="s1">&#39;hexagonal_pk&#39;</span><span class="p">]))</span>
+        <span class="n">lattice</span><span class="p">,</span> <span class="n">scaled_positions</span><span class="p">,</span> <span class="n">symbols</span> <span class="o">=</span> <span class="n">cell</span>
+        <span class="n">wyckoff</span> <span class="o">=</span> <span class="n">get_wyckoff_from_hcp</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">)</span>
+        <span class="n">twinboundary</span> <span class="o">=</span> <span class="n">get_twinboundary</span><span class="p">(</span>
+                           <span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+                           <span class="n">symbol</span><span class="o">=</span><span class="n">symbols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                           <span class="n">twinmode</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;twinmode&#39;</span><span class="p">],</span>
+                           <span class="n">layers</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;layers&#39;</span><span class="p">],</span>
+                           <span class="n">wyckoff</span><span class="o">=</span><span class="n">wyckoff</span><span class="p">,</span>
+                           <span class="n">delta</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;delta&#39;</span><span class="p">],</span>
+                           <span class="n">twintype</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;twintype&#39;</span><span class="p">],</span>
+                           <span class="n">xshift</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;xshift&#39;</span><span class="p">],</span>
+                           <span class="n">yshift</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;yshift&#39;</span><span class="p">],</span>
+                           <span class="n">shear_strain_ratio</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;shear_strain_ratio&#39;</span><span class="p">])</span>
+        <span class="n">tb_cell</span> <span class="o">=</span> <span class="n">twinboundary</span><span class="o">.</span><span class="n">get_cell_for_export</span><span class="p">(</span>
+                      <span class="n">get_lattice</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">move_atoms_into_unitcell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_twinboundary_structure</span> <span class="o">=</span> <span class="n">twinboundary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span> <span class="o">=</span> <span class="n">StandardizeCell</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="n">tb_cell</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">twinboundary_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Twinpy structure object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_twinboundary_structure</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">standardize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stadardize object of twinpy original cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span>
+
+<div class="viewcode-block" id="AiidaTwinBoudnaryRelaxWorkChain.get_pks"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.twinboundary.AiidaTwinBoudnaryRelaxWorkChain.get_pks">[docs]</a>    <span class="k">def</span> <span class="nf">get_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get pks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">relax_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">called</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pk</span>
+        <span class="n">pks</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">pks</span><span class="p">[</span><span class="s1">&#39;twinboundary_pk&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pk</span>
+        <span class="n">pks</span><span class="p">[</span><span class="s1">&#39;relax_pk&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">relax_pk</span>
+        <span class="k">return</span> <span class="n">pks</span></div>
+
+<div class="viewcode-block" id="AiidaTwinBoudnaryRelaxWorkChain.get_aiida_relax"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.twinboundary.AiidaTwinBoudnaryRelaxWorkChain.get_aiida_relax">[docs]</a>    <span class="k">def</span> <span class="nf">get_aiida_relax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">additional_relax_pks</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get relax collection.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            additional_relax_pks (list): List of additinal relax calculation</span>
+<span class="sd">                                         pks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: description</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">relax_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pks</span><span class="p">()[</span><span class="s1">&#39;relax_pk&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">additional_relax_pks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aiida_relax</span> <span class="o">=</span> <span class="n">AiidaRelaxWorkChain</span><span class="p">(</span><span class="n">load_node</span><span class="p">(</span><span class="n">relax_pk</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">relax_pks</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">additional_relax_pks</span><span class="p">)</span>
+            <span class="n">relax_pks</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">relax_pk</span><span class="p">)</span>
+            <span class="n">aiida_relaxes</span> <span class="o">=</span> \
+                    <span class="p">[</span> <span class="n">AiidaRelaxWorkChain</span><span class="p">(</span><span class="n">load_node</span><span class="p">(</span><span class="n">pk</span><span class="p">))</span> <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="n">relax_pks</span> <span class="p">]</span>
+            <span class="n">aiida_relax</span> <span class="o">=</span> <span class="n">AiidaRelaxCollection</span><span class="p">(</span><span class="n">aiida_relaxes</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">aiida_relax</span></div>
+
+<div class="viewcode-block" id="AiidaTwinBoudnaryRelaxWorkChain.get_twinboundary_analyzer"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.twinboundary.AiidaTwinBoudnaryRelaxWorkChain.get_twinboundary_analyzer">[docs]</a>    <span class="k">def</span> <span class="nf">get_twinboundary_analyzer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                  <span class="n">twinboundary_phonon_pk</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">additional_relax_pks</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">hexagonal_relax_pk</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                                  <span class="n">hexagonal_phonon_pk</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get TwinBoundaryAnalyzer class object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            twinboudnary_phonon_pk (int): Twinboundary phonon calculation pk.</span>
+<span class="sd">            additional_relax_pks (list): List of additinal relax calculation</span>
+<span class="sd">                                         pks.</span>
+<span class="sd">            hexagonal_relax_pk (int): Hexagonal relax calculation pk.</span>
+<span class="sd">            hexagonal_phonon_pk (int): Hexagonal phonon calculation pk.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">twinboundary_structure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_twinboundary_structure</span>
+        <span class="n">original_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cells</span><span class="p">[</span><span class="s1">&#39;twinboundary_original&#39;</span><span class="p">]</span>
+        <span class="n">aiida_relax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_aiida_relax</span><span class="p">(</span>
+                <span class="n">additional_relax_pks</span><span class="o">=</span><span class="n">additional_relax_pks</span><span class="p">)</span>
+        <span class="n">relax_analyzer</span> <span class="o">=</span> <span class="n">aiida_relax</span><span class="o">.</span><span class="n">get_relax_analyzer</span><span class="p">(</span>
+                             <span class="n">original_cell</span><span class="o">=</span><span class="n">original_cell</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">twinboundary_phonon_pk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aiida_phonopy</span> <span class="o">=</span> <span class="n">AiidaPhonopyWorkChain</span><span class="p">(</span>
+                                <span class="n">load_node</span><span class="p">(</span><span class="n">twinboundary_phonon_pk</span><span class="p">))</span>
+            <span class="n">phonon_analyzer</span> <span class="o">=</span> <span class="n">aiida_phonopy</span><span class="o">.</span><span class="n">get_phonon_analyzer</span><span class="p">(</span>
+                                  <span class="n">relax_analyzer</span><span class="o">=</span><span class="n">relax_analyzer</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">phonon_analyzer</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">hex_phonon_analyzer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">hexagonal_relax_pk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">hexagonal_phonon_pk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">aiida_hex_relax</span> <span class="o">=</span> <span class="n">AiidaRelaxWorkChain</span><span class="p">(</span>
+                                  <span class="n">load_node</span><span class="p">(</span><span class="n">hexagonal_relax_pk</span><span class="p">))</span>
+            <span class="n">hex_relax_analyzer</span> <span class="o">=</span> <span class="n">aiida_hex_relax</span><span class="o">.</span><span class="n">get_relax_analyzer</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">hexagonal_phonon_pk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">aiida_hex_phonopy</span> <span class="o">=</span> <span class="n">AiidaPhonopyWorkChain</span><span class="p">(</span>
+                                        <span class="n">load_node</span><span class="p">(</span><span class="n">hexagonal_phonon_pk</span><span class="p">))</span>
+                <span class="n">hex_phonon_analyzer</span> <span class="o">=</span> <span class="n">aiida_hex_phonopy</span><span class="o">.</span><span class="n">get_phonon_analyzer</span><span class="p">(</span>
+                        <span class="n">relax_analyzer</span><span class="o">=</span><span class="n">hex_relax_analyzer</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hex_phonon_analyzer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">twinboundary_analyzer</span> <span class="o">=</span> <span class="n">TwinBoundaryAnalyzer</span><span class="p">(</span>
+                <span class="n">twinboundary_structure</span><span class="o">=</span><span class="n">twinboundary_structure</span><span class="p">,</span>
+                <span class="n">twinboundary_relax_analyzer</span><span class="o">=</span><span class="n">relax_analyzer</span><span class="p">,</span>
+                <span class="n">twinboundary_phonon_analyzer</span><span class="o">=</span><span class="n">phonon_analyzer</span><span class="p">,</span>
+                <span class="n">hexagonal_phonon_analyzer</span><span class="o">=</span><span class="n">hex_phonon_analyzer</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">twinboundary_analyzer</span></div>
+
+<div class="viewcode-block" id="AiidaTwinBoudnaryRelaxWorkChain.get_shear_relax_builder"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.twinboundary.AiidaTwinBoudnaryRelaxWorkChain.get_shear_relax_builder">[docs]</a>    <span class="k">def</span> <span class="nf">get_shear_relax_builder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                <span class="n">shear_strain_ratio</span><span class="p">:</span><span class="nb">float</span><span class="p">,</span>
+                                <span class="n">additional_relax_pks</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get relax builder for shear introduced relax twinboundary structure.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            shear_strain_ratio (float): shear strain ratio</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">twinboundary_analyzer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_twinboundary_analyzer</span><span class="p">(</span>
+                <span class="n">additional_relax_pks</span><span class="o">=</span><span class="n">additional_relax_pks</span><span class="p">)</span>
+        <span class="n">cell</span> <span class="o">=</span> <span class="n">twinboundary_analyzer</span><span class="o">.</span><span class="n">get_shear_cell</span><span class="p">(</span>
+                <span class="n">shear_strain_ratio</span><span class="o">=</span><span class="n">shear_strain_ratio</span><span class="p">,</span>
+                <span class="n">is_standardize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>  <span class="c1"># in order to get rotation matrix</span>
+        <span class="n">std</span> <span class="o">=</span> <span class="n">StandardizeCell</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="p">)</span>
+        <span class="n">std_cell</span> <span class="o">=</span> <span class="n">std</span><span class="o">.</span><span class="n">get_standardized_cell</span><span class="p">(</span><span class="n">to_primitive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                             <span class="n">no_idealize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                             <span class="n">no_sort</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">additional_relax_pks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rlx_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pks</span><span class="p">()[</span><span class="s1">&#39;relax_pk&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rlx_pk</span> <span class="o">=</span> <span class="n">additional_relax_pks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">rlx_node</span> <span class="o">=</span> <span class="n">load_node</span><span class="p">(</span><span class="n">rlx_pk</span><span class="p">)</span>
+        <span class="n">builder</span> <span class="o">=</span> <span class="n">rlx_node</span><span class="o">.</span><span class="n">get_builder_restart</span><span class="p">()</span>
+
+        <span class="c1"># fix kpoints</span>
+        <span class="n">mesh</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span> <span class="n">builder</span><span class="o">.</span><span class="n">kpoints</span><span class="o">.</span><span class="n">get_kpoints_mesh</span><span class="p">())</span>
+        <span class="n">orig_mesh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span><span class="o">.</span><span class="n">transformation_matrix</span><span class="p">),</span> <span class="n">mesh</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+        <span class="n">orig_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span>
+            <span class="n">std</span><span class="o">.</span><span class="n">transformation_matrix</span><span class="p">),</span> <span class="n">offset</span><span class="p">)),</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">std_mesh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">std</span><span class="o">.</span><span class="n">transformation_matrix</span><span class="p">,</span>
+                                 <span class="n">orig_mesh</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+        <span class="n">std_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">std</span><span class="o">.</span><span class="n">transformation_matrix</span><span class="p">,</span>
+                                            <span class="n">orig_offset</span><span class="p">)),</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">kpt</span> <span class="o">=</span> <span class="n">KpointsData</span><span class="p">()</span>
+        <span class="n">kpt</span><span class="o">.</span><span class="n">set_kpoints_mesh</span><span class="p">(</span><span class="n">std_mesh</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">std_offset</span><span class="p">)</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">kpoints</span> <span class="o">=</span> <span class="n">kpt</span>
+
+        <span class="c1"># fix structure</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">structure</span> <span class="o">=</span> <span class="n">get_aiida_structure</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="n">std_cell</span><span class="p">)</span>
+
+        <span class="c1"># fix relax conf</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">relax</span><span class="o">.</span><span class="n">convergence_max_iterations</span> <span class="o">=</span> <span class="n">Int</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">relax</span><span class="o">.</span><span class="n">positions</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">relax</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">relax</span><span class="o">.</span><span class="n">volume</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">relax</span><span class="o">.</span><span class="n">convergence_positions</span> <span class="o">=</span> <span class="n">Float</span><span class="p">(</span><span class="mf">1e-4</span><span class="p">)</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">relax</span><span class="o">.</span><span class="n">force_cutoff</span> <span class="o">=</span> \
+                <span class="n">Float</span><span class="p">(</span><span class="n">AiidaRelaxWorkChain</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">rlx_node</span><span class="p">)</span><span class="o">.</span><span class="n">get_max_force</span><span class="p">())</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;tbr:</span><span class="si">{}</span><span class="s2"> rlx:</span><span class="si">{}</span><span class="s2"> shr:</span><span class="si">{}</span><span class="s2"> std:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pk</span><span class="p">,</span> <span class="n">rlx_node</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">shear_strain_ratio</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">builder</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> \
+                <span class="s2">&quot;twinboundary_relax_pk:</span><span class="si">{}</span><span class="s2"> relax_pk:</span><span class="si">{}</span><span class="s2"> &quot;</span> \
+                <span class="s2">&quot;shear_strain_ratio:</span><span class="si">{}</span><span class="s2"> standardize:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_pk</span><span class="p">,</span> <span class="n">rlx_node</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span> <span class="n">shear_strain_ratio</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">builder</span></div>
+
+<div class="viewcode-block" id="AiidaTwinBoudnaryRelaxWorkChain.get_description"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.twinboundary.AiidaTwinBoudnaryRelaxWorkChain.get_description">[docs]</a>    <span class="k">def</span> <span class="nf">get_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get description.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print_common_information</span><span class="p">()</span>
+        <span class="n">print_header</span><span class="p">(</span><span class="s1">&#39;PKs&#39;</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pks</span><span class="p">())</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

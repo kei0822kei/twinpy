@@ -1,0 +1,442 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.interfaces.aiida.shear &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/contentui.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.interfaces.aiida.shear</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.interfaces.aiida.shear</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Aiida interface for twinpy.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">twinpy.analysis.phonon_analyzer</span> <span class="kn">import</span> <span class="n">PhononAnalyzer</span>
+<span class="kn">from</span> <span class="nn">twinpy.analysis.shear_analyzer</span> <span class="kn">import</span> <span class="n">ShearAnalyzer</span>
+<span class="kn">from</span> <span class="nn">twinpy.interfaces.aiida.base</span> <span class="kn">import</span> <span class="p">(</span><span class="n">check_process_class</span><span class="p">,</span>
+                                          <span class="n">get_cell_from_aiida</span><span class="p">,</span>
+                                          <span class="n">get_workflow_pks</span><span class="p">,</span>
+                                          <span class="n">_WorkChain</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">twinpy.interfaces.aiida.vasp</span> <span class="kn">import</span> <span class="n">AiidaRelaxWorkChain</span>
+<span class="kn">from</span> <span class="nn">twinpy.interfaces.aiida.phonopy</span> <span class="kn">import</span> <span class="n">AiidaPhonopyWorkChain</span>
+<span class="kn">from</span> <span class="nn">twinpy.properties.hexagonal</span> <span class="kn">import</span> <span class="n">get_wyckoff_from_hcp</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.shear</span> <span class="kn">import</span> <span class="n">get_shear</span>
+<span class="kn">from</span> <span class="nn">aiida.cmdline.utils.decorators</span> <span class="kn">import</span> <span class="n">with_dbenv</span>
+<span class="kn">from</span> <span class="nn">aiida.plugins</span> <span class="kn">import</span> <span class="n">WorkflowFactory</span>
+<span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="p">(</span><span class="n">load_node</span><span class="p">,</span>
+                       <span class="n">Node</span><span class="p">,</span>
+                       <span class="n">QueryBuilder</span><span class="p">,</span>
+                       <span class="n">StructureData</span><span class="p">,</span>
+                       <span class="n">CalcFunctionNode</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AiidaShearWorkChain"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.shear.AiidaShearWorkChain">[docs]</a><span class="nd">@with_dbenv</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">AiidaShearWorkChain</span><span class="p">(</span><span class="n">_WorkChain</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Shear work chain class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">node</span><span class="p">:</span><span class="n">Node</span><span class="p">,</span>
+            <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            node: ShearWorkChain node</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">            Replace shear_conf ot shear_settings as</span>
+<span class="sd">            AiidaTwinBoundaryRelaxWorkChain class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">process_class</span> <span class="o">=</span> <span class="s1">&#39;ShearWorkChain&#39;</span>
+        <span class="n">check_process_class</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">process_class</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_conf</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">shear_conf</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_ratios</span> <span class="o">=</span> \
+            <span class="n">node</span><span class="o">.</span><span class="n">called</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">shear_settings</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()[</span><span class="s1">&#39;shear_ratios&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gamma</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_phonon</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">is_phonon</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_shears_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cells</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_shear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_structure</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_shear_structure</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relax_pks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relaxes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_relaxes</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phonon_pks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phonons</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_phonon</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_phonons</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_set_shear_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set twinpy structure object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">twinmode</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shear_conf</span><span class="p">[</span><span class="s1">&#39;twinmode&#39;</span><span class="p">]</span>
+        <span class="n">lattice</span><span class="p">,</span> <span class="n">scaled_positions</span><span class="p">,</span> <span class="n">symbols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cells</span><span class="p">[</span><span class="s1">&#39;hexagonal&#39;</span><span class="p">]</span>
+        <span class="n">wyckoff</span> <span class="o">=</span> <span class="n">get_wyckoff_from_hcp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cells</span><span class="p">[</span><span class="s1">&#39;hexagonal&#39;</span><span class="p">])</span>
+        <span class="n">shear</span> <span class="o">=</span> <span class="n">get_shear</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+                          <span class="n">symbol</span><span class="o">=</span><span class="n">symbols</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                          <span class="n">twinmode</span><span class="o">=</span><span class="n">twinmode</span><span class="p">,</span>
+                          <span class="n">wyckoff</span><span class="o">=</span><span class="n">wyckoff</span><span class="p">,</span>
+                          <span class="n">xshift</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                          <span class="n">yshift</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+                          <span class="n">dim</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span>
+                          <span class="n">shear_strain_ratio</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                          <span class="n">is_primitive</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shear_structure</span> <span class="o">=</span> <span class="n">shear</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shear_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Input shear conf.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shear_conf</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shear_ratios</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Output shear ratios.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shear_ratios</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">gamma</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Output gamma.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gamma</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_phonon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Input is_phonon.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_phonon</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cells</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cells.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cells</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">shear_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Twinpy structure class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_shear_structure</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">structure_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Structure pks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span>
+
+    <span class="k">def</span> <span class="nf">_set_shear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set ShearWorkChain data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">qb</span> <span class="o">=</span> <span class="n">QueryBuilder</span><span class="p">()</span>
+        <span class="n">qb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Node</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:{</span><span class="s1">&#39;==&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pk</span><span class="p">}},</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;wf&#39;</span><span class="p">)</span>
+        <span class="n">qb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CalcFunctionNode</span><span class="p">,</span>
+                  <span class="n">filters</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;label&#39;</span><span class="p">:{</span><span class="s1">&#39;==&#39;</span><span class="p">:</span> <span class="s1">&#39;get_shear_structures&#39;</span><span class="p">}},</span>
+                  <span class="n">with_incoming</span><span class="o">=</span><span class="s1">&#39;wf&#39;</span><span class="p">,</span>
+                  <span class="n">project</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+        <span class="n">create_shears_pk</span> <span class="o">=</span> <span class="n">qb</span><span class="o">.</span><span class="n">all</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">qb</span> <span class="o">=</span> <span class="n">QueryBuilder</span><span class="p">()</span>
+        <span class="n">qb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Node</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:{</span><span class="s1">&#39;==&#39;</span><span class="p">:</span> <span class="n">create_shears_pk</span><span class="p">}},</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;cs&#39;</span><span class="p">)</span>
+        <span class="n">qb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">StructureData</span><span class="p">,</span>
+                  <span class="n">with_incoming</span><span class="o">=</span><span class="s1">&#39;cs&#39;</span><span class="p">,</span>
+                  <span class="n">project</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">])</span>
+        <span class="n">structs</span> <span class="o">=</span> <span class="n">qb</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="n">orig_cell_pks</span> <span class="o">=</span> <span class="p">[</span> <span class="n">struct</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">struct</span> <span class="ow">in</span> <span class="n">structs</span>
+                                    <span class="k">if</span> <span class="s1">&#39;shear_orig&#39;</span> <span class="ow">in</span> <span class="n">struct</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">]</span>
+        <span class="n">orig_cell_pks</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_shears_pk</span> <span class="o">=</span> <span class="n">create_shears_pk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span><span class="p">[</span><span class="s1">&#39;shear_original_pks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">orig_cell_pks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_structure_pks</span><span class="p">[</span><span class="s1">&#39;hexagonal_pk&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">structure</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cells</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cells</span><span class="p">[</span><span class="s1">&#39;hexagonal&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cells</span><span class="p">[</span><span class="s1">&#39;shear_original&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="p">[</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="n">load_node</span><span class="p">(</span><span class="n">pk</span><span class="p">))</span>
+                      <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="n">orig_cell_pks</span> <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_set_relaxes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set relax in ShearWorkChain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">relax_wf</span> <span class="o">=</span> <span class="n">WorkflowFactory</span><span class="p">(</span><span class="s1">&#39;vasp.relax&#39;</span><span class="p">)</span>
+        <span class="n">rlx_pks</span> <span class="o">=</span> <span class="n">get_workflow_pks</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="p">,</span>
+                                   <span class="n">workflow</span><span class="o">=</span><span class="n">relax_wf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relax_pks</span> <span class="o">=</span> <span class="n">rlx_pks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relaxes</span> <span class="o">=</span> <span class="p">[</span> <span class="n">AiidaRelaxWorkChain</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">load_node</span><span class="p">(</span><span class="n">pk</span><span class="p">))</span>
+                              <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relax_pks</span> <span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">relax_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Output relax pks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relax_pks</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">relaxes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Output relaxes in ShearWorkChain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relaxes</span>
+
+    <span class="k">def</span> <span class="nf">_set_phonons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set phonon_pks in ShearWorkChain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">phonon_wf</span> <span class="o">=</span> <span class="n">WorkflowFactory</span><span class="p">(</span><span class="s1">&#39;phonopy.phonopy&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phonon_pks</span> <span class="o">=</span> <span class="n">get_workflow_pks</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="p">,</span>
+                                            <span class="n">workflow</span><span class="o">=</span><span class="n">phonon_wf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phonons</span> <span class="o">=</span> <span class="p">[</span> <span class="n">AiidaPhonopyWorkChain</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">load_node</span><span class="p">(</span><span class="n">pk</span><span class="p">))</span>
+                              <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonon_pks</span> <span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">phonon_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Output phonon pks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonon_pks</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">phonons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Output phonons in ShearWorkChain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonons</span>
+
+<div class="viewcode-block" id="AiidaShearWorkChain.get_shear_analyzer"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.shear.AiidaShearWorkChain.get_shear_analyzer">[docs]</a>    <span class="k">def</span> <span class="nf">get_shear_analyzer</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ShearAnalyzer</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get ShearAnalyzer class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">original_cells</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cells</span><span class="p">[</span><span class="s1">&#39;shear_original&#39;</span><span class="p">]</span>
+        <span class="n">phonon_analyzers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">relax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_relaxes</span><span class="p">):</span>
+            <span class="n">relax_analyzer</span> <span class="o">=</span> <span class="n">relax</span><span class="o">.</span><span class="n">get_relax_analyzer</span><span class="p">(</span>
+                    <span class="n">original_cell</span><span class="o">=</span><span class="n">original_cells</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">phn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonons</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">get_phonon</span><span class="p">()</span>
+            <span class="n">phonon_analyzer</span> <span class="o">=</span> <span class="n">PhononAnalyzer</span><span class="p">(</span><span class="n">phonon</span><span class="o">=</span><span class="n">phn</span><span class="p">,</span>
+                                             <span class="n">relax_analyzer</span><span class="o">=</span><span class="n">relax_analyzer</span><span class="p">)</span>
+            <span class="n">phonon_analyzers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">phonon_analyzer</span><span class="p">)</span>
+        <span class="n">shear_analyzer</span> <span class="o">=</span> <span class="n">ShearAnalyzer</span><span class="p">(</span><span class="n">shear_structure</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_shear_structure</span><span class="p">,</span>
+                                       <span class="n">phonon_analyzers</span><span class="o">=</span><span class="n">phonon_analyzers</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">shear_analyzer</span></div>
+
+<div class="viewcode-block" id="AiidaShearWorkChain.get_pks"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.shear.AiidaShearWorkChain.get_pks">[docs]</a>    <span class="k">def</span> <span class="nf">get_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get pks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: keys and corresponding pks</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pks</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;shear_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pk</span><span class="p">,</span>
+                <span class="s1">&#39;get_shear_structures_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_shears_pk</span><span class="p">,</span>
+                <span class="s1">&#39;relax_pks&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relax_pks</span><span class="p">,</span>
+                <span class="s1">&#39;phonon_pks&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonon_pks</span><span class="p">,</span>
+              <span class="p">}</span>
+        <span class="k">return</span> <span class="n">pks</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

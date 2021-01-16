@@ -24,16 +24,11 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script src="../_static/contentui.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-    <link rel="search" type="application/opensearchdescription+xml"
-          title="Search within twinpy 0.0.1 documentation"
-          href="../_static/opensearch.xml"/>
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
@@ -66,7 +61,7 @@
             
             
               <div class="version">
-                0.0
+                0.0.1
               </div>
             
           
@@ -91,7 +86,6 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Definitions</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="bonding.html">bonding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lattice.html">lattice</a></li>
@@ -109,7 +103,6 @@
 <li class="toctree-l2"><a class="reference internal" href="structure.html">structure</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../apidoc/twinpy.html">API documentation</a></li>
 </ul>
 
@@ -164,6 +157,8 @@
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="../_sources/definitions/properties.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -193,46 +188,46 @@
 <h2><a class="toc-backref" href="#id3">hexagonal close-packed</a><a class="headerlink" href="#hexagonal-close-packed" title="Permalink to this headline">¶</a></h2>
 <p>Hexagonal lattice is already defined in the lattice page.
 There are two options how each atom set. First,
-two atoms <span class="math notranslate nohighlight">\(\boldsymbol{X}_{atm}\)</span> are placed Wyckoff ‘c’ (No. 194) as</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\boldsymbol{X}_{atm}
+two atoms <img class="math" src="../_images/math/7a9792d9432a4896e54ec86a2ae85187d9122c9e.png" alt="\boldsymbol{X}_{atm}"/> are placed Wyckoff ‘c’ (No. 194) as</p>
+<div class="math">
+<p><img src="../_images/math/f14b073a5536a75481beeb46d0893656e7892f9c.png" alt="\boldsymbol{X}_{atm}
 =
 \begin{pmatrix}
   \frac{1}{3} &amp; -\frac{1}{3} \\
  -\frac{1}{3} &amp;  \frac{1}{3} \\
   \frac{1}{4} &amp; -\frac{1}{4} \\
-\end{pmatrix}\end{split}\]</div>
-<p>and the other is Wyckoff ‘d’ as</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\boldsymbol{X}_{atm}
+\end{pmatrix}"/></p>
+</div><p>and the other is Wyckoff ‘d’ as</p>
+<div class="math">
+<p><img src="../_images/math/8a4f51db4f6a83df4c08941a1851663f924197a2.png" alt="\boldsymbol{X}_{atm}
 =
 \begin{pmatrix}
   \frac{1}{3} &amp; -\frac{1}{3} \\
  -\frac{1}{3} &amp;  \frac{1}{3} \\
  -\frac{1}{4} &amp;  \frac{1}{4} \\
-\end{pmatrix}\end{split}\]</div>
-<p>with the <span class="math notranslate nohighlight">\([\boldsymbol{a}_1, \boldsymbol{a}_2, \boldsymbol{c}]\)</span> basis.</p>
+\end{pmatrix}"/></p>
+</div><p>with the <img class="math" src="../_images/math/b4bb820ac7a9ed2cf10baaa6d59522e45f09c8a6.png" alt="[\boldsymbol{a}_1, \boldsymbol{a}_2, \boldsymbol{c}]"/> basis.</p>
 </div>
 <div class="section" id="twin-mode">
 <h2><a class="toc-backref" href="#id4">twin mode</a><a class="headerlink" href="#twin-mode" title="Permalink to this headline">¶</a></h2>
 <p>Currently, {10-11}, {10-12}, {11-21} and {11-22} twins are supported.</p>
 <div class="section" id="shear-strain-function">
 <h3><a class="toc-backref" href="#id5">shear strain function</a><a class="headerlink" href="#shear-strain-function" title="Permalink to this headline">¶</a></h3>
-<p>The shear strain function <span class="math notranslate nohighlight">\(\gamma\)</span> are provided in (Yoo. 1981).
-When <span class="math notranslate nohighlight">\(r (= \frac{c}{a})\)</span> are given,</p>
+<p>The shear strain function <img class="math" src="../_images/math/34d137cf01c787ecda732761c3f95b0f65a6c3e9.png" alt="\gamma"/> are provided in (Yoo. 1981).
+When <img class="math" src="../_images/math/a6ac9ab17b58d44e0d8f5931a39a0bc29352576d.png" alt="r (= \frac{c}{a})"/> are given,</p>
 <p>in {10-12} twin,</p>
-<div class="math notranslate nohighlight">
-\[\gamma = \frac{|r^2-3|}{r\sqrt{3}}\]</div>
-<p>in {10-11} twin,</p>
-<div class="math notranslate nohighlight">
-\[\gamma = \frac{|4r^2-9|}{4r\sqrt{3}}\]</div>
-<p>in {11-22} twin,</p>
-<div class="math notranslate nohighlight">
-\[\gamma = \frac{2|r^2-2|}{3r}\]</div>
-<p>in {11-21} twin,</p>
-<div class="math notranslate nohighlight">
-\[\gamma = \frac{1}{r}.\]</div>
-</div>
+<div class="math">
+<p><img src="../_images/math/20ce1e0185d92417f1e8e3e5f97e6266530eec36.png" alt="\gamma = \frac{|r^2-3|}{r\sqrt{3}}"/></p>
+</div><p>in {10-11} twin,</p>
+<div class="math">
+<p><img src="../_images/math/87fdaa664ace029b0ac728395182cbd457367acd.png" alt="\gamma = \frac{|4r^2-9|}{4r\sqrt{3}}"/></p>
+</div><p>in {11-22} twin,</p>
+<div class="math">
+<p><img src="../_images/math/60f5d2a0f7bf056a0d9be41e6ed8704bfcbd06db.png" alt="\gamma = \frac{2|r^2-2|}{3r}"/></p>
+</div><p>in {11-21} twin,</p>
+<div class="math">
+<p><img src="../_images/math/fcf3fdaaa8fced8ff03c35ef6d2242ee07f7340c.png" alt="\gamma = \frac{1}{r}."/></p>
+</div></div>
 <div class="section" id="twin-indices">
 <h3><a class="toc-backref" href="#id6">twin indices</a><a class="headerlink" href="#twin-indices" title="Permalink to this headline">¶</a></h3>
 <p>You can find twin indices in the paper by <a class="reference internal" href="#yoo" id="id1"><span>[Yoo]</span></a>.</p>
@@ -245,11 +240,11 @@ When <span class="math notranslate nohighlight">\(r (= \frac{c}{a})\)</span> are
 <col style="width: 18%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p><span class="math notranslate nohighlight">\(\boldsymbol{K}_1\)</span></p></th>
-<th class="head"><p><span class="math notranslate nohighlight">\(\boldsymbol{K}_2\)</span></p></th>
-<th class="head"><p><span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span></p></th>
-<th class="head"><p><span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span></p></th>
-<th class="head"><p><span class="math notranslate nohighlight">\(\boldsymbol{S}\)</span></p></th>
+<tr class="row-odd"><th class="head"><p><img class="math" src="../_images/math/521add3adc34b5fc2d29366b56b3ddc355233676.png" alt="\boldsymbol{K}_1"/></p></th>
+<th class="head"><p><img class="math" src="../_images/math/2932bfc4ddb977fbf6a6d823551a8bffd3d35dcc.png" alt="\boldsymbol{K}_2"/></p></th>
+<th class="head"><p><img class="math" src="../_images/math/52f85a259492541e30fcde5420c70b1850090ec6.png" alt="\boldsymbol{\eta}_1"/></p></th>
+<th class="head"><p><img class="math" src="../_images/math/268942c140aab0cdafe0df90072deb910fcd6257.png" alt="\boldsymbol{\eta}_2"/></p></th>
+<th class="head"><p><img class="math" src="../_images/math/62ec84347fe638752170783d780b7744566f4575.png" alt="\boldsymbol{S}"/></p></th>
 </tr>
 </thead>
 <tbody>
@@ -284,15 +279,15 @@ When <span class="math notranslate nohighlight">\(r (= \frac{c}{a})\)</span> are
 <code class="docutils literal notranslate"><span class="pre">twinpy</span></code> follows this convention which is</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li><p>Vector <span class="math notranslate nohighlight">\(\boldsymbol{m}\)</span> (, which is normal to shear plane),
-<span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span> and
-<span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span> form right hand system.</p></li>
-<li><p>The angle between <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span>
-and <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span> are obtuse.</p></li>
-<li><p>The angle between <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_1\)</span>
-and <span class="math notranslate nohighlight">\(\boldsymbol{k}_2\)</span> are acute.</p></li>
-<li><p>The angle between <span class="math notranslate nohighlight">\(\boldsymbol{\eta}_2\)</span>
-and <span class="math notranslate nohighlight">\(\boldsymbol{k}_1\)</span> are acute.</p></li>
+<li><p>Vector <img class="math" src="../_images/math/a6f28cdba7467ca3fbb3cf1a8621f12883f1ccd5.png" alt="\boldsymbol{m}"/> (, which is normal to shear plane),
+<img class="math" src="../_images/math/52f85a259492541e30fcde5420c70b1850090ec6.png" alt="\boldsymbol{\eta}_1"/> and
+<img class="math" src="../_images/math/268942c140aab0cdafe0df90072deb910fcd6257.png" alt="\boldsymbol{\eta}_2"/> form right hand system.</p></li>
+<li><p>The angle between <img class="math" src="../_images/math/52f85a259492541e30fcde5420c70b1850090ec6.png" alt="\boldsymbol{\eta}_1"/>
+and <img class="math" src="../_images/math/268942c140aab0cdafe0df90072deb910fcd6257.png" alt="\boldsymbol{\eta}_2"/> are obtuse.</p></li>
+<li><p>The angle between <img class="math" src="../_images/math/52f85a259492541e30fcde5420c70b1850090ec6.png" alt="\boldsymbol{\eta}_1"/>
+and <img class="math" src="../_images/math/59851e0e1b7629dcc3b5b9ffec9709500cfc8547.png" alt="\boldsymbol{k}_2"/> are acute.</p></li>
+<li><p>The angle between <img class="math" src="../_images/math/268942c140aab0cdafe0df90072deb910fcd6257.png" alt="\boldsymbol{\eta}_2"/>
+and <img class="math" src="../_images/math/b292bc14a92be71bfb080980dde1f1b5726d9cd6.png" alt="\boldsymbol{k}_1"/> are acute.</p></li>
 </ol>
 </div></blockquote>
 <p>In addition, <code class="docutils literal notranslate"><span class="pre">twinpy</span></code> add the following role as</p>
@@ -355,7 +350,7 @@ This condition depends on wyckoff position.</p></li>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, kei0822kei. All rights reserved
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
 
     </p>
   </div>

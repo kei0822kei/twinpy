@@ -24,16 +24,11 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script src="../_static/contentui.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-    <link rel="search" type="application/opensearchdescription+xml"
-          title="Search within twinpy 0.0.1 documentation"
-          href="../_static/opensearch.xml"/>
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
@@ -66,7 +61,7 @@
             
             
               <div class="version">
-                0.0
+                0.0.1
               </div>
             
           
@@ -91,21 +86,20 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Definitions</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="bonding.html">bonding</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">lattice</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">Lattice</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#lattice-matrix">Lattice Matrix</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#inner-product-and-metric-tensor">Inner Product and Metric Tensor</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#hexagonal-direction">Hexagonal Direction</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#hexagonal-lattice">Hexagonal Lattice</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#indices">indices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#indices">Indices</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#hexagonal-plane">Hexagonal Plane</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id2">indices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Indices</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#direction-normal-to-plane">direction normal to plane</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#distance-from-plane">distance from plane</a></li>
 </ul>
@@ -117,7 +111,6 @@
 <li class="toctree-l2"><a class="reference internal" href="structure.html">structure</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../apidoc/twinpy.html">API documentation</a></li>
 </ul>
 
@@ -172,6 +165,8 @@
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="../_sources/definitions/lattice.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -188,43 +183,43 @@
 <p>In this page, some formulations are provided used in hexagonal.py file.</p>
 <div class="contents local topic" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#id1" id="id3">Lattice</a></p>
+<li><p><a class="reference internal" href="#lattice-matrix" id="id2">Lattice Matrix</a></p>
 <ul>
-<li><p><a class="reference internal" href="#inner-product-and-metric-tensor" id="id4">Inner Product and Metric Tensor</a></p></li>
+<li><p><a class="reference internal" href="#inner-product-and-metric-tensor" id="id3">Inner Product and Metric Tensor</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#hexagonal-direction" id="id5">Hexagonal Direction</a></p>
+<li><p><a class="reference internal" href="#hexagonal-direction" id="id4">Hexagonal Direction</a></p>
 <ul>
-<li><p><a class="reference internal" href="#hexagonal-lattice" id="id6">Hexagonal Lattice</a></p></li>
-<li><p><a class="reference internal" href="#indices" id="id7">indices</a></p></li>
+<li><p><a class="reference internal" href="#hexagonal-lattice" id="id5">Hexagonal Lattice</a></p></li>
+<li><p><a class="reference internal" href="#indices" id="id6">Indices</a></p></li>
 </ul>
 </li>
-<li><p><a class="reference internal" href="#hexagonal-plane" id="id8">Hexagonal Plane</a></p>
+<li><p><a class="reference internal" href="#hexagonal-plane" id="id7">Hexagonal Plane</a></p>
 <ul>
-<li><p><a class="reference internal" href="#id2" id="id9">indices</a></p></li>
-<li><p><a class="reference internal" href="#direction-normal-to-plane" id="id10">direction normal to plane</a></p></li>
-<li><p><a class="reference internal" href="#distance-from-plane" id="id11">distance from plane</a></p></li>
+<li><p><a class="reference internal" href="#id1" id="id8">Indices</a></p></li>
+<li><p><a class="reference internal" href="#direction-normal-to-plane" id="id9">direction normal to plane</a></p></li>
+<li><p><a class="reference internal" href="#distance-from-plane" id="id10">distance from plane</a></p></li>
 </ul>
 </li>
 </ul>
 </div>
-<div class="section" id="id1">
-<h2><a class="toc-backref" href="#id3">Lattice</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="lattice-matrix">
+<h2><a class="toc-backref" href="#id2">Lattice Matrix</a><a class="headerlink" href="#lattice-matrix" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="inner-product-and-metric-tensor">
-<h3><a class="toc-backref" href="#id4">Inner Product and Metric Tensor</a><a class="headerlink" href="#inner-product-and-metric-tensor" title="Permalink to this headline">¶</a></h3>
-<p>Given lattice matrix <span class="math notranslate nohighlight">\(\boldsymbol{L}\)</span>
-and two vectors <span class="math notranslate nohighlight">\((x_1, y_1, z_1)^{T}\)</span> and <span class="math notranslate nohighlight">\((x_2, y_2, z_2)^{T}\)</span>,
+<h3><a class="toc-backref" href="#id3">Inner Product and Metric Tensor</a><a class="headerlink" href="#inner-product-and-metric-tensor" title="Permalink to this headline">¶</a></h3>
+<p>Given lattice matrix <img class="math" src="../_images/math/6ab7b6581f49b1cb9aadc6277a0e27b62df580a5.png" alt="\boldsymbol{L}"/>
+and two vectors <img class="math" src="../_images/math/e4b883273f1c01ef912e1422c61123c22b3fee56.png" alt="(x_1, y_1, z_1)^{T}"/> and <img class="math" src="../_images/math/2e82905286c8053965c82bfeaa1c166b554f4d75.png" alt="(x_2, y_2, z_2)^{T}"/>,
 inner product can calculated as</p>
-<div class="math notranslate nohighlight">
-\[[\boldsymbol{a},
+<div class="math">
+<p><img src="../_images/math/0db7809645a26103f9c978b715a43bff28abbfd6.png" alt="[\boldsymbol{a},
  \boldsymbol{b},
  \boldsymbol{c}]
 =
 [\boldsymbol{e}_x,
  \boldsymbol{e}_y,
- \boldsymbol{e}_z] \boldsymbol{L}\]</div>
-<div class="math notranslate nohighlight">
-\[\begin{split}(
+ \boldsymbol{e}_z] \boldsymbol{L}"/></p>
+</div><div class="math">
+<p><img src="../_images/math/d51fe914d03487cf4aa3dcd7794d3877bc4d4dc9.png" alt="(
 \boldsymbol{L}
 \begin{pmatrix}
 x_1 \\
@@ -244,43 +239,43 @@ z_2 \\
 x_2 \\
 y_2 \\
 z_2 \\
-\end{pmatrix}\end{split}\]</div>
-<p>where metric tensor <span class="math notranslate nohighlight">\(\boldsymbol{G}\)</span></p>
-<div class="math notranslate nohighlight">
-\[\boldsymbol{G} = \boldsymbol{L}^{T} \boldsymbol{L}\]</div>
-</div>
+\end{pmatrix}"/></p>
+</div><p>where metric tensor <img class="math" src="../_images/math/e5c5be4c895101a3d307403e2fc9f665cccb9fdb.png" alt="\boldsymbol{G}"/></p>
+<div class="math">
+<p><img src="../_images/math/c299873c365a8db88e6aa6ede4292f5f783c109c.png" alt="\boldsymbol{G} = \boldsymbol{L}^{T} \boldsymbol{L}"/></p>
+</div></div>
 </div>
 <div class="section" id="hexagonal-direction">
-<h2><a class="toc-backref" href="#id5">Hexagonal Direction</a><a class="headerlink" href="#hexagonal-direction" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4">Hexagonal Direction</a><a class="headerlink" href="#hexagonal-direction" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="hexagonal-lattice">
-<h3><a class="toc-backref" href="#id6">Hexagonal Lattice</a><a class="headerlink" href="#hexagonal-lattice" title="Permalink to this headline">¶</a></h3>
-<p>To create this object, hexagonal lattice <span class="math notranslate nohighlight">\(\boldsymbol{H}\)</span>
+<h3><a class="toc-backref" href="#id5">Hexagonal Lattice</a><a class="headerlink" href="#hexagonal-lattice" title="Permalink to this headline">¶</a></h3>
+<p>To create this object, hexagonal lattice <img class="math" src="../_images/math/a1c2ff15968eeb5238cd57719e34658888b30d7a.png" alt="\boldsymbol{H}"/>
 and plane indices (three or four) are needed.</p>
-<div class="math notranslate nohighlight">
-\[[\boldsymbol{a}_1,
+<div class="math">
+<p><img src="../_images/math/7a9072c4b5bc89982e0b57903fb7e7f01d4a96eb.png" alt="[\boldsymbol{a}_1,
  \boldsymbol{a}_2,
  \boldsymbol{c}]
 =
 [\boldsymbol{e}_x,
  \boldsymbol{e}_y,
- \boldsymbol{e}_z] \boldsymbol{H}\]</div>
-<p>where</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\boldsymbol{H}
+ \boldsymbol{e}_z] \boldsymbol{H}"/></p>
+</div><p>where</p>
+<div class="math">
+<p><img src="../_images/math/e5fb4a76af2bdbac4e6e7170cb2cff671d0ce128.png" alt="\boldsymbol{H}
 =
 \begin{pmatrix}
 a &amp; -\frac{1}{2}a &amp; 0 \\
 0 &amp; \frac{\sqrt{3}}{2}a &amp; 0 \\
 0 &amp; 0 &amp; c \\
-\end{pmatrix}.\end{split}\]</div>
-</div>
+\end{pmatrix}."/></p>
+</div></div>
 <div class="section" id="indices">
-<h3><a class="toc-backref" href="#id7">indices</a><a class="headerlink" href="#indices" title="Permalink to this headline">¶</a></h3>
-<p>Let input direction <span class="math notranslate nohighlight">\(\boldsymbol{k}\)</span> is <span class="math notranslate nohighlight">\((UVW)\)</span>
-in three indices and <span class="math notranslate nohighlight">\((uvtw)\)</span> in four indices.
+<h3><a class="toc-backref" href="#id6">Indices</a><a class="headerlink" href="#indices" title="Permalink to this headline">¶</a></h3>
+<p>Let input direction <img class="math" src="../_images/math/7289c740c2b2f9113da54e0e272b4dd2a62b0c8e.png" alt="\boldsymbol{k}"/> is <img class="math" src="../_images/math/68be175d3b86e426b93725df8b2904bccba5ccc8.png" alt="(UVW)"/>
+in three indices and <img class="math" src="../_images/math/76b17f3c3b26c88e74c543c19687e13be579489f.png" alt="(uvtw)"/> in four indices.
 There are the relation between two kinds of direction indices as</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\begin{pmatrix}
+<div class="math">
+<p><img src="../_images/math/a11772dff0a4fe69151a363a5cb6dd93d6520dad.png" alt="\begin{pmatrix}
   U \\
   V \\
   W \\
@@ -290,10 +285,10 @@ There are the relation between two kinds of direction indices as</p>
   u \\
   v \\
   w \\
-\end{pmatrix}\end{split}\]</div>
-<p>and</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\begin{pmatrix}
+\end{pmatrix}"/></p>
+</div><p>and</p>
+<div class="math">
+<p><img src="../_images/math/f73b761288ecb9e9871e45567337ff14eef5c2de.png" alt="\begin{pmatrix}
   u \\
   v \\
   t \\
@@ -305,18 +300,18 @@ There are the relation between two kinds of direction indices as</p>
   ( 2  V - U ) / 3 \\
   - ( u + v ) \\
   W \\
-\end{pmatrix}.\end{split}\]</div>
-</div>
+\end{pmatrix}."/></p>
+</div></div>
 </div>
 <div class="section" id="hexagonal-plane">
-<h2><a class="toc-backref" href="#id8">Hexagonal Plane</a><a class="headerlink" href="#hexagonal-plane" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id2">
-<h3><a class="toc-backref" href="#id9">indices</a><a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
-<p>Let input plane <span class="math notranslate nohighlight">\(\boldsymbol{K}\)</span> is <span class="math notranslate nohighlight">\((HKL)\)</span>
-in three indices and <span class="math notranslate nohighlight">\((hkil)\)</span> in four indices.
+<h2><a class="toc-backref" href="#id7">Hexagonal Plane</a><a class="headerlink" href="#hexagonal-plane" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3><a class="toc-backref" href="#id8">Indices</a><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>Let input plane <img class="math" src="../_images/math/379b9a792028f9056dbb924ac0d33142699e6809.png" alt="\boldsymbol{K}"/> is <img class="math" src="../_images/math/675e35cbf4d35d8a21cde10f9c3f6a7b13f60914.png" alt="(HKL)"/>
+in three indices and <img class="math" src="../_images/math/5b77b7923ab834a14c7db287e0c6a6afba4ac742.png" alt="(hkil)"/> in four indices.
 There are the relation between two kinds of plane indices as</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\begin{pmatrix}
+<div class="math">
+<p><img src="../_images/math/eb4360266c14837d18efb40a48380806f34bc0d4.png" alt="\begin{pmatrix}
   H \\
   K \\
   L \\
@@ -326,10 +321,10 @@ There are the relation between two kinds of plane indices as</p>
   h \\
   k \\
   l \\
-\end{pmatrix}\end{split}\]</div>
-<p>and</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\begin{pmatrix}
+\end{pmatrix}"/></p>
+</div><p>and</p>
+<div class="math">
+<p><img src="../_images/math/8e091fbee761faf083c5dd824a3ef5b65edce1a0.png" alt="\begin{pmatrix}
   h \\
   k \\
   i \\
@@ -341,14 +336,14 @@ There are the relation between two kinds of plane indices as</p>
   K \\
   -( H + K ) \\
   L \\
-\end{pmatrix}.\end{split}\]</div>
-</div>
+\end{pmatrix}."/></p>
+</div></div>
 <div class="section" id="direction-normal-to-plane">
-<h3><a class="toc-backref" href="#id10">direction normal to plane</a><a class="headerlink" href="#direction-normal-to-plane" title="Permalink to this headline">¶</a></h3>
-<p>When the vector normal to <span class="math notranslate nohighlight">\(\boldsymbol{K}\)</span> is <span class="math notranslate nohighlight">\(\boldsymbol{k}\)</span>,
+<h3><a class="toc-backref" href="#id9">direction normal to plane</a><a class="headerlink" href="#direction-normal-to-plane" title="Permalink to this headline">¶</a></h3>
+<p>When the vector normal to <img class="math" src="../_images/math/379b9a792028f9056dbb924ac0d33142699e6809.png" alt="\boldsymbol{K}"/> is <img class="math" src="../_images/math/7289c740c2b2f9113da54e0e272b4dd2a62b0c8e.png" alt="\boldsymbol{k}"/>,
 then</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} [\boldsymbol{a}_1,
+<div class="math">
+<p><img src="../_images/math/698077b2626d6eab1ad6893d70e01ef0747b559f.png" alt="[\boldsymbol{a}_1,
   \boldsymbol{a}_2,
   \boldsymbol{c}]
  \boldsymbol{k}
@@ -381,10 +376,10 @@ then</p>
   H \\
   K \\
   L \\
-\end{pmatrix}\end{split}\]</div>
-<p>so</p>
-<div class="math notranslate nohighlight">
-\[\begin{split} \boldsymbol{k}
+\end{pmatrix}"/></p>
+</div><p>so</p>
+<div class="math">
+<p><img src="../_images/math/48f6576789fceb34bdb52481a80b1d3ab9a20a88.png" alt="\boldsymbol{k}
  =
 \boldsymbol{H}^{-1}
 \boldsymbol{H}^*
@@ -392,27 +387,35 @@ then</p>
   H \\
   K \\
   L \\
-\end{pmatrix}\end{split}\]</div>
-<p>where <span class="math notranslate nohighlight">\(\boldsymbol{H}^*\)</span> is reciprocal lattice of hexagonal lattice
-<span class="math notranslate nohighlight">\(\boldsymbol{H}\)</span>.</p>
-</div>
+\end{pmatrix}"/></p>
+</div><p>where <img class="math" src="../_images/math/e6558bd520ae35279ae54738c88b165ead8d1899.png" alt="\boldsymbol{H}^*"/> is reciprocal lattice of hexagonal lattice
+<img class="math" src="../_images/math/a1c2ff15968eeb5238cd57719e34658888b30d7a.png" alt="\boldsymbol{H}"/>.</p>
+<p>Let plane interval vector be <img class="math" src="../_images/math/20652bb8fee65d3fbcf2f602648b3b5a948bb488.png" alt="\boldsymbol{d}"/> and its norm be <img class="math" src="../_images/math/badad346f6fbe2e237af99bfbd9a93a4da53a3da.png" alt="d"/>,</p>
+<div class="math">
+<p><img src="../_images/math/7ce2d779cdea30270a5d28f66694eb123697bf19.png" alt="\boldsymbol{d}
+=
+\frac{1}{|\bm{k}|} \frac{\bm{k}}{|\bm{k}|}"/></p>
+</div><p>and</p>
+<div class="math">
+<p><img src="../_images/math/3ee34e4c94c2a8c654685c427ee76019c2d79aba.png" alt="d = \frac{1}{|\bm{k}|}."/></p>
+</div></div>
 <div class="section" id="distance-from-plane">
-<h3><a class="toc-backref" href="#id11">distance from plane</a><a class="headerlink" href="#distance-from-plane" title="Permalink to this headline">¶</a></h3>
-<p>Let <span class="math notranslate nohighlight">\(\boldsymbol{x}\)</span> is the position in the basis of hexagonal lattice.
-Distance from the plane <span class="math notranslate nohighlight">\(d\)</span> are</p>
-<div class="math notranslate nohighlight">
-\[d
+<h3><a class="toc-backref" href="#id10">distance from plane</a><a class="headerlink" href="#distance-from-plane" title="Permalink to this headline">¶</a></h3>
+<p>Let <img class="math" src="../_images/math/fa44d7cdd2d3f90f81820cfe85818a142149d124.png" alt="\boldsymbol{x}"/> is the position in the basis of hexagonal lattice.
+Distance from the plane <img class="math" src="../_images/math/badad346f6fbe2e237af99bfbd9a93a4da53a3da.png" alt="d"/> are</p>
+<div class="math">
+<p><img src="../_images/math/7e32ed72ccb89c9a7ff862a7f43d6487d1ca3063.png" alt="d
 =
 |\boldsymbol{e}_{\boldsymbol{k}}
-\cdot \boldsymbol{H} \boldsymbol{x}|\]</div>
-<p>where <cite>boldsymbol{e}_{boldsymbol{k}}</cite> is unit vector along
-<span class="math notranslate nohighlight">\(\boldsymbol{k}\)</span> direction on the basis of
-<span class="math notranslate nohighlight">\([\boldsymbol{e}_x, \boldsymbol{e}_y, \boldsymbol{e}_z]\)</span></p>
-<div class="math notranslate nohighlight">
-\[\boldsymbol{e}_{\boldsymbol{k}}
+\cdot \boldsymbol{H} \boldsymbol{x}|"/></p>
+</div><p>where <cite>boldsymbol{e}_{boldsymbol{k}}</cite> is unit vector along
+<img class="math" src="../_images/math/7289c740c2b2f9113da54e0e272b4dd2a62b0c8e.png" alt="\boldsymbol{k}"/> direction on the basis of
+<img class="math" src="../_images/math/2f71ce44846da051cfba0e6cce03b227a07ca069.png" alt="[\boldsymbol{e}_x, \boldsymbol{e}_y, \boldsymbol{e}_z]"/></p>
+<div class="math">
+<p><img src="../_images/math/0a5d4d358e41faa6599a882caa8d6cc65c38b481.png" alt="\boldsymbol{e}_{\boldsymbol{k}}
 =
-\frac{\boldsymbol{H}\boldsymbol{k}}{|\boldsymbol{H}\boldsymbol{k}|}\]</div>
-</div>
+\frac{\boldsymbol{H}\boldsymbol{k}}{|\boldsymbol{H}\boldsymbol{k}|}"/></p>
+</div></div>
 </div>
 </div>
 
@@ -436,7 +439,7 @@ Distance from the plane <span class="math notranslate nohighlight">\(d\)</span> 
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, kei0822kei. All rights reserved
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
 
     </p>
   </div>

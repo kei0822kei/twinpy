@@ -24,16 +24,11 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script src="../_static/contentui.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-    <link rel="search" type="application/opensearchdescription+xml"
-          title="Search within twinpy 0.0.1 documentation"
-          href="../_static/opensearch.xml"/>
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
@@ -66,7 +61,7 @@
             
             
               <div class="version">
-                0.0
+                0.0.1
               </div>
             
           
@@ -91,21 +86,20 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../definitions/index.html">Definitions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="twinpy.html">API documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="twinpy.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">twinpy.analysis package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.analysis.phonon_analyzer">twinpy.analysis.phonon_analyzer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.analysis.relax_analyzer">twinpy.analysis.relax_analyzer module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.analysis.shear_analyzer">twinpy.analysis.shear_analyzer module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.analysis.shear_analyzer_bak">twinpy.analysis.shear_analyzer_bak module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.analysis.twinboundary_analyzer">twinpy.analysis.twinboundary_analyzer module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.analysis">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.common.html">twinpy.common package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.interfaces.html">twinpy.interfaces package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="twinpy.lattice.html">twinpy.lattice package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.plot.html">twinpy.plot package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.properties.html">twinpy.properties package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.structure.html">twinpy.structure package</a></li>
@@ -170,6 +164,8 @@
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="../_sources/apidoc/twinpy.analysis.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -186,383 +182,577 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
+<div class="section" id="module-twinpy.analysis.phonon_analyzer">
+<span id="twinpy-analysis-phonon-analyzer-module"></span><h2>twinpy.analysis.phonon_analyzer module<a class="headerlink" href="#module-twinpy.analysis.phonon_analyzer" title="Permalink to this headline">¶</a></h2>
+<p>Analize phonopy calculation.</p>
+<dl class="py class">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.analysis.phonon_analyzer.</code><code class="sig-name descname">PhononAnalyzer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">phonon</span><span class="p">:</span> <span class="n">phonopy.api_phonopy.Phonopy</span></em>, <em class="sig-param"><span class="n">relax_analyzer</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer" title="twinpy.analysis.relax_analyzer.RelaxAnalyzer">twinpy.analysis.relax_analyzer.RelaxAnalyzer</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Analize phonopy result.</p>
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.export_phonon">
+<code class="sig-name descname">export_phonon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>str<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.export_phonon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.export_phonon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Export phonopy object to yaml file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Output filename. If None, filename becomes
+pk&lt;number&gt;_phonopy.yaml.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_band_paths_from_original_to_primitive">
+<code class="sig-name descname">get_band_paths_from_original_to_primitive</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">band_paths</span></em>, <em class="sig-param"><span class="n">input_is_cart</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">output_is_cart</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.get_band_paths_from_original_to_primitive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_band_paths_from_original_to_primitive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get band paths in original frame to primitive frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>band_paths</strong> (<em>list</em>) – Band paths.</p></li>
+<li><p><strong>input_is_cart</strong> (<em>bool</em>) – Whether input qpoints are cartesian.</p></li>
+<li><p><strong>output_is_cart</strong> (<em>bool</em>) – Whether output qpoints are cartesian.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_band_paths_from_primitive_to_original">
+<code class="sig-name descname">get_band_paths_from_primitive_to_original</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">band_paths</span></em>, <em class="sig-param"><span class="n">input_is_cart</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">output_is_cart</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.get_band_paths_from_primitive_to_original"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_band_paths_from_primitive_to_original" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get band paths in primitive frame to original frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>band_paths</strong> (<em>list</em>) – Band paths.</p></li>
+<li><p><strong>input_is_cart</strong> (<em>bool</em>) – Whether input qpoints are cartesian.</p></li>
+<li><p><strong>output_is_cart</strong> (<em>bool</em>) – Whether output qpoints are cartesian.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_band_structure">
+<code class="sig-name descname">get_band_structure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">band_paths</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">labels</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">npoints</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">51</span></em>, <em class="sig-param"><span class="n">with_eigenvectors</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">use_reciprocal_lattice</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.get_band_structure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_band_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get BandStructure class object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>band_paths</strong> (<em>list</em>) – Band paths.</p></li>
+<li><p><strong>labels</strong> (<em>list</em>) – Band labels.</p></li>
+<li><p><strong>npoints</strong> (<em>int</em>) – The number of sampling points.</p></li>
+<li><p><strong>with_eigenvectors</strong> (<em>bool</em>) – If True, calculte eigenvectors.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_projected_dos">
+<code class="sig-name descname">get_projected_dos</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">is_store</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">freq_min</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">freq_max</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">freq_pitch</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_tetrahedron_method</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">direction</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xyz_projection</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.get_projected_dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_projected_dos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get projected dos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>is_store</strong> (<em>bool</em>) – If True, result is stored in self._phonon.projected_dos</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_qpoints_from_original_to_primitive">
+<code class="sig-name descname">get_qpoints_from_original_to_primitive</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">qpoints</span><span class="p">:</span> <span class="n">numpy.array</span></em>, <em class="sig-param"><span class="n">input_is_cart</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">output_is_cart</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.get_qpoints_from_original_to_primitive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_qpoints_from_original_to_primitive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get qpoints in original frame to primitive frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qpoints</strong> (<em>np.array</em>) – Qpoints.</p></li>
+<li><p><strong>input_is_cart</strong> (<em>bool</em>) – Whether input qpoints are cartesian.</p></li>
+<li><p><strong>output_is_cart</strong> (<em>bool</em>) – Whether output qpoints are cartesian.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_qpoints_from_primitive_to_original">
+<code class="sig-name descname">get_qpoints_from_primitive_to_original</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">qpoints</span><span class="p">:</span> <span class="n">numpy.array</span></em>, <em class="sig-param"><span class="n">input_is_cart</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">output_is_cart</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.get_qpoints_from_primitive_to_original"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_qpoints_from_primitive_to_original" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get qpoints in primitive frame to original frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>qpoints</strong> (<em>np.array</em>) – Qpoints.</p></li>
+<li><p><strong>input_is_cart</strong> (<em>bool</em>) – Whether input qpoints are cartesian.</p></li>
+<li><p><strong>output_is_cart</strong> (<em>bool</em>) – Whether output qpoints are cartesian.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_reciprocal_high_symmetry_points">
+<code class="sig-name descname">get_reciprocal_high_symmetry_points</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.get_reciprocal_high_symmetry_points"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_reciprocal_high_symmetry_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get reciprocal high symmetry points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Contains point coordinates for primitive and original.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_thermal_displacement_matrices">
+<code class="sig-name descname">get_thermal_displacement_matrices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">t_step</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">100</span></em>, <em class="sig-param"><span class="n">t_max</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1000</span></em>, <em class="sig-param"><span class="n">t_min</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">with_original_cart</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">def_cif</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.get_thermal_displacement_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_thermal_displacement_matrices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get ThermalDisplacementMatrices object for
+both hexagonal and twinboundary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t_step</strong> (<em>int</em>) – temperature interval</p></li>
+<li><p><strong>t_max</strong> (<em>int</em>) – max temperature</p></li>
+<li><p><strong>t_min</strong> (<em>int</em>) – minimum temperature</p></li>
+<li><p><strong>with_original_cart</strong> (<em>bool</em>) – if True, use twinboundary
+original frame</p></li>
+<li><p><strong>def_cif</strong> (<em>bool</em>) – if True, use cif definition</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_total_dos">
+<code class="sig-name descname">get_total_dos</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">is_store</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">sigma</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">freq_min</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">freq_max</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">freq_pitch</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_tetrahedron_method</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.get_total_dos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_total_dos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get total dos.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>is_store</strong> (<em>bool</em>) – If True, result is stored in self._phonon.total_dos</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.original_reciprocal_lattice">
+<em class="property">property </em><code class="sig-name descname">original_reciprocal_lattice</code><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.original_reciprocal_lattice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reciprocal lattice.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.phonon">
+<em class="property">property </em><code class="sig-name descname">phonon</code><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.phonon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Phonopy class object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.primitive_cell">
+<em class="property">property </em><code class="sig-name descname">primitive_cell</code><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.primitive_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Primitive cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.reciprocal_lattice">
+<em class="property">property </em><code class="sig-name descname">reciprocal_lattice</code><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.reciprocal_lattice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reciprocal lattice.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.relax_analyzer">
+<em class="property">property </em><code class="sig-name descname">relax_analyzer</code><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.relax_analyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>RelaxAnalyzer class object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.rotation_matrix">
+<em class="property">property </em><code class="sig-name descname">rotation_matrix</code><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.rotation_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotation matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.run_mesh">
+<code class="sig-name descname">run_mesh</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">interval</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">is_store</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">get_phonon</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dry_run</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">is_eigenvectors</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">is_gamma_center</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.run_mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.run_mesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run mesh for both hexagonal and twinboundary phonon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>interval</strong> (<em>float</em>) – mesh interval</p></li>
+<li><p><strong>is_store</strong> (<em>bool</em>) – If True, result is stored in self._phonon.</p></li>
+<li><p><strong>get_phonon</strong> (<em>bool</em>) – If True, return Phonopy class obejct,
+which is independent from self._phonon.</p></li>
+<li><p><strong>dry_run</strong> (<em>bool</em>) – If True, show sampling mesh information
+and not run.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.phonon_analyzer.PhononAnalyzer.set_relax_analyzer">
+<code class="sig-name descname">set_relax_analyzer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">relax_analyzer</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/phonon_analyzer.html#PhononAnalyzer.set_relax_analyzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer.set_relax_analyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set relax analyzer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>relax_analyzer</strong> – RelaxAnalyzer class object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-twinpy.analysis.relax_analyzer">
+<span id="twinpy-analysis-relax-analyzer-module"></span><h2>twinpy.analysis.relax_analyzer module<a class="headerlink" href="#module-twinpy.analysis.relax_analyzer" title="Permalink to this headline">¶</a></h2>
+<p>Analize relax calculation.
+I did not name this file as vasp_analyzer.py
+because this also can be used in the case lammps is used.</p>
+<dl class="py class">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.analysis.relax_analyzer.</code><code class="sig-name descname">RelaxAnalyzer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">initial_cell</span><span class="p">:</span> <span class="n">tuple</span></em>, <em class="sig-param"><span class="n">final_cell</span><span class="p">:</span> <span class="n">tuple</span></em>, <em class="sig-param"><span class="n">original_cell</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tuple<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">forces</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>numpy.array<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stress</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>numpy.array<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">energy</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/relax_analyzer.html#RelaxAnalyzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Analize relax result.</p>
+<dl class="py method">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer.energy">
+<em class="property">property </em><code class="sig-name descname">energy</code><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer.energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total energy.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer.final_cell">
+<em class="property">property </em><code class="sig-name descname">final_cell</code><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer.final_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Final cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer.final_cell_in_original_frame">
+<em class="property">property </em><code class="sig-name descname">final_cell_in_original_frame</code><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer.final_cell_in_original_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Final cell in original frame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer.forces">
+<em class="property">property </em><code class="sig-name descname">forces</code><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer.forces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forces acting on atoms.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer.get_diff">
+<code class="sig-name descname">get_diff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">is_original_frame</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/relax_analyzer.html#RelaxAnalyzer.get_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer.get_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get structure diffs between initial cell and final cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>is_original_frame</strong> (<em>bool</em>) – If True, get diff in original frame.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>When you use is_original_frame=True, you have to set
+original_cell before running this function.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer.initial_cell">
+<em class="property">property </em><code class="sig-name descname">initial_cell</code><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer.initial_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initial cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer.original_cell">
+<em class="property">property </em><code class="sig-name descname">original_cell</code><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer.original_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Original cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer.set_original_cell">
+<code class="sig-name descname">set_original_cell</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">original_cell</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/relax_analyzer.html#RelaxAnalyzer.set_original_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer.set_original_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set original cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>original_cell</strong> (<em>tuple</em>) – Original cell whose standardized cell
+is initail_cell.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer.standardize">
+<em class="property">property </em><code class="sig-name descname">standardize</code><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer.standardize" title="Permalink to this definition">¶</a></dt>
+<dd><p>StandardizeCell class object.
+Which is for original and initial cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.relax_analyzer.RelaxAnalyzer.stress">
+<em class="property">property </em><code class="sig-name descname">stress</code><a class="headerlink" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer.stress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stress acting on atoms.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-twinpy.analysis.shear_analyzer">
 <span id="twinpy-analysis-shear-analyzer-module"></span><h2>twinpy.analysis.shear_analyzer module<a class="headerlink" href="#module-twinpy.analysis.shear_analyzer" title="Permalink to this headline">¶</a></h2>
 <p>Analize shear calculation.</p>
-<dl class="class">
+<dl class="py class">
 <dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer">
-<em class="property">class </em><code class="sig-prename descclassname">twinpy.analysis.shear_analyzer.</code><code class="sig-name descname">ShearAnalyzer</code><span class="sig-paren">(</span><em class="sig-param">original_cells: list</em>, <em class="sig-param">input_cells: list</em>, <em class="sig-param">relax_cells: list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#ShearAnalyzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.analysis.shear_analyzer.</code><code class="sig-name descname">ShearAnalyzer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shear_structure</span><span class="p">:</span> <span class="n"><a class="reference internal" href="twinpy.structure.html#twinpy.structure.shear.ShearStructure" title="twinpy.structure.shear.ShearStructure">twinpy.structure.shear.ShearStructure</a></span></em>, <em class="sig-param"><span class="n">phonon_analyzers</span><span class="p">:</span> <span class="n">list</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#ShearAnalyzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">twinpy.analysis.shear_analyzer._BaseShearAnalyzer</span></code></p>
 <p>Analize shear result.</p>
-<dl class="attribute">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.__dict__">
-<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.analysis.shear_analyzer', '__doc__': '\n    Analize shear result.\n    ', '__init__': &lt;function ShearAnalyzer.__init__&gt;, 'original_cells': &lt;property object&gt;, 'input_cells': &lt;property object&gt;, '_set_relax_cells': &lt;function ShearAnalyzer._set_relax_cells&gt;, 'relax_cells': &lt;property object&gt;, '_set_standardizes': &lt;function ShearAnalyzer._set_standardizes&gt;, 'standardizes': &lt;property object&gt;, '_set_relax_cells_in_original_frame': &lt;function ShearAnalyzer._set_relax_cells_in_original_frame&gt;, 'relax_cells_in_original_frame': &lt;property object&gt;, 'set_phonons': &lt;function ShearAnalyzer.set_phonons&gt;, 'phonons': &lt;property object&gt;, 'get_relax_diffs': &lt;function ShearAnalyzer.get_relax_diffs&gt;, 'get_shear_diffs': &lt;function ShearAnalyzer.get_shear_diffs&gt;, 'plot_bands': &lt;function ShearAnalyzer.plot_bands&gt;, '__dict__': &lt;attribute '__dict__' of 'ShearAnalyzer' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'ShearAnalyzer' objects&gt;})</em><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.__dict__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dl class="py method">
+<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.shear_structure">
+<em class="property">property </em><code class="sig-name descname">shear_structure</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.shear_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shear structure.</p>
+</dd></dl>
 
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">original_cells: list</em>, <em class="sig-param">input_cells: list</em>, <em class="sig-param">relax_cells: list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#ShearAnalyzer.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
+</dd></dl>
+
+<dl class="py class">
+<dt id="twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.analysis.shear_analyzer.</code><code class="sig-name descname">TwinBoundaryShearAnalyzer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shear_strain_ratios</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">layer_indices</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">relax_analyzers</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">phonon_analyzers</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#TwinBoundaryShearAnalyzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">twinpy.analysis.shear_analyzer._BaseShearAnalyzer</span></code></p>
+<p>Analize twinboundary shear result.</p>
+<dl class="py method">
+<dt id="twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.get_atomic_environment">
+<code class="sig-name descname">get_atomic_environment</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#TwinBoundaryShearAnalyzer.get_atomic_environment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.get_atomic_environment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get plane coords from lower plane to upper plane.
+Return list of z coordinates of original cell frame.
+Plane coordinates (z coordinates) are fractional.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.get_final_cells_in_original_frame">
+<code class="sig-name descname">get_final_cells_in_original_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#TwinBoundaryShearAnalyzer.get_final_cells_in_original_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.get_final_cells_in_original_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get final cells in original frame.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.layer_indices">
+<em class="property">property </em><code class="sig-name descname">layer_indices</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.layer_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Layer indices.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.plot_angle_diff">
+<code class="sig-name descname">plot_angle_diff</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#TwinBoundaryShearAnalyzer.plot_angle_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.plot_angle_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot angle diff.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.plot_atom_diff">
+<code class="sig-name descname">plot_atom_diff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">direction</span><span class="o">=</span><span class="default_value">'x'</span></em>, <em class="sig-param"><span class="n">shuffle</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#TwinBoundaryShearAnalyzer.plot_atom_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.plot_atom_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot atom diff.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.plot_pair_distance">
+<code class="sig-name descname">plot_pair_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#TwinBoundaryShearAnalyzer.plot_pair_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.plot_pair_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot pair distance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.plot_plane_diff">
+<code class="sig-name descname">plot_plane_diff</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#TwinBoundaryShearAnalyzer.plot_plane_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.plot_plane_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot plane diff.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.shear_strain_ratios">
+<em class="property">property </em><code class="sig-name descname">shear_strain_ratios</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.shear_strain_ratios" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shear structure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.write_poscars">
+<code class="sig-name descname">write_poscars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">header</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">''</span></em>, <em class="sig-param"><span class="n">is_original_frame</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#TwinBoundaryShearAnalyzer.write_poscars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.TwinBoundaryShearAnalyzer.write_poscars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write poscars</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>original_cells</strong> (<em>list</em>) – primitivie original cells, which is output
-cells of ShearStructure class</p></li>
-<li><p><strong>input_cells</strong> (<em>list</em>) – input cells for vasp</p></li>
-<li><p><strong>relax_cells</strong> (<em>list</em>) – relax cells of vasp</p></li>
+<li><p><strong>header</strong> (<em>str</em>) – File header.</p></li>
+<li><p><strong>is_original_frame</strong> (<em>bool</em>) – Poscar is in original frame.</p></li>
 </ul>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>RuntimeError</strong> – The number of atoms changes between original cells
-    and input cells, which is not supported.</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.__module__">
-<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.analysis.shear_analyzer'</em><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.__module__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.__weakref__">
-<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.__weakref__" title="Permalink to this definition">¶</a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer._set_relax_cells">
-<code class="sig-name descname">_set_relax_cells</code><span class="sig-paren">(</span><em class="sig-param">input_cells</em>, <em class="sig-param">relax_cells</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#ShearAnalyzer._set_relax_cells"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer._set_relax_cells" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check lattice does not change in relaxation and
-set relax_cells.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer._set_relax_cells_in_original_frame">
-<code class="sig-name descname">_set_relax_cells_in_original_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#ShearAnalyzer._set_relax_cells_in_original_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer._set_relax_cells_in_original_frame" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set relax cells in original frame which is not
-conventional and its angles are close to (90., 90., 120.).</p>
+</div>
+<div class="section" id="module-twinpy.analysis.twinboundary_analyzer">
+<span id="twinpy-analysis-twinboundary-analyzer-module"></span><h2>twinpy.analysis.twinboundary_analyzer module<a class="headerlink" href="#module-twinpy.analysis.twinboundary_analyzer" title="Permalink to this headline">¶</a></h2>
+<p>Analize twinboudnary relax calculation.</p>
+<dl class="py class">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer">
+<em class="property">class </em><code class="sig-prename descclassname">twinpy.analysis.twinboundary_analyzer.</code><code class="sig-name descname">TwinBoundaryAnalyzer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">twinboundary_structure</span><span class="p">:</span> <span class="n"><a class="reference internal" href="twinpy.structure.html#twinpy.structure.twinboundary.TwinBoundaryStructure" title="twinpy.structure.twinboundary.TwinBoundaryStructure">twinpy.structure.twinboundary.TwinBoundaryStructure</a></span></em>, <em class="sig-param"><span class="n">twinboundary_relax_analyzer</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="#twinpy.analysis.relax_analyzer.RelaxAnalyzer" title="twinpy.analysis.relax_analyzer.RelaxAnalyzer">twinpy.analysis.relax_analyzer.RelaxAnalyzer</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">twinboundary_phonon_analyzer</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer" title="twinpy.analysis.phonon_analyzer.PhononAnalyzer">twinpy.analysis.phonon_analyzer.PhononAnalyzer</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hexagonal_phonon_analyzer</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference internal" href="#twinpy.analysis.phonon_analyzer.PhononAnalyzer" title="twinpy.analysis.phonon_analyzer.PhononAnalyzer">twinpy.analysis.phonon_analyzer.PhononAnalyzer</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Analyze shear result.</p>
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_atomic_environment">
+<code class="sig-name descname">get_atomic_environment</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer.get_atomic_environment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_atomic_environment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get plane coords from lower plane to upper plane.
+Return list of z coordinates of original cell frame.
+Plane coordinates (z coordinates) are fractional.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>relax cells in original frame</p>
+<dd class="field-odd"><p><dl class="simple">
+<dt>First and second element are for initial and final cell</dt><dd><p>respectively. Each contains (planes, distances, angles)</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_formation_energy">
+<code class="sig-name descname">get_formation_energy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">use_relax_lattice</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer.get_formation_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_formation_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get formation energy. Unit [mJ/m^(-2)]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>use_relax_lattice</strong> (<em>bool</em>) – If True, relax lattice is used.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_layer_indeces">
+<code class="sig-name descname">get_layer_indeces</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer.get_layer_indeces"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_layer_indeces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get layzer indices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Layer indices.</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p>list</p>
 </dd>
 </dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For variable definitions in this definition,
-see Eq.(1.8) and (1.17) in Crystal Structure documention.
-Note that by crystal body rotation, fractional
-coordinate of atom positions are not changed.</p>
-</div>
 </dd></dl>
 
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer._set_standardizes">
-<code class="sig-name descname">_set_standardizes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#ShearAnalyzer._set_standardizes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer._set_standardizes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set standardizes.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.get_relax_diffs">
-<code class="sig-name descname">get_relax_diffs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#ShearAnalyzer.get_relax_diffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.get_relax_diffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get structure diffs between input and relax cells
-IN ORIGINAL FRAME.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.get_shear_diffs">
-<code class="sig-name descname">get_shear_diffs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#ShearAnalyzer.get_shear_diffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.get_shear_diffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get structure diffs between original and sheared structures
-IN ORIGINAL FRAME.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.input_cells">
-<em class="property">property </em><code class="sig-name descname">input_cells</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.input_cells" title="Permalink to this definition">¶</a></dt>
-<dd><p>Relax input cells.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.original_cells">
-<em class="property">property </em><code class="sig-name descname">original_cells</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.original_cells" title="Permalink to this definition">¶</a></dt>
-<dd><p>Original cells, which are output of ShearStructure.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.phonons">
-<em class="property">property </em><code class="sig-name descname">phonons</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.phonons" title="Permalink to this definition">¶</a></dt>
-<dd><p>Phonons.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.plot_bands">
-<code class="sig-name descname">plot_bands</code><span class="sig-paren">(</span><em class="sig-param">fig</em>, <em class="sig-param">with_dos=False</em>, <em class="sig-param">mesh=None</em>, <em class="sig-param">band_labels=None</em>, <em class="sig-param">segment_qpoints=None</em>, <em class="sig-param">xscale=20</em>, <em class="sig-param">npoints=51</em>, <em class="sig-param">labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#ShearAnalyzer.plot_bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.plot_bands" title="Permalink to this definition">¶</a></dt>
-<dd><p>plot phonon bands</p>
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_shear_cell">
+<code class="sig-name descname">get_shear_cell</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shear_strain_ratio</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">atom_positions</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>numpy.array<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">is_standardize</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer.get_shear_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_shear_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get shear introduced twinboundary cell.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>arg1</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – description</p></li>
-<li><p><strong>arg2</strong> (<em>np.array</em>) – (3x3 numpy array) description</p></li>
+<li><p><strong>shear_strain_ratio</strong> (<em>float</em>) – Shear strain ratio.</p></li>
+<li><p><strong>atom_positions</strong> (<em>np.array</em>) – Atom positions in fractional coordinate.
+If atom_positions is None, the ones of
+original relax cell is used.</p></li>
+<li><p><strong>is_standardize</strong> (<em>bool</em>) – If True, get standardized cell.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>description</p>
+<dd class="field-even"><p>shear introduced cell</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/2.7/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></p>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – description</p>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
-<p class="rubric">Examples</p>
-<p>description</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">print_test</span> <span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">)</span>
-<span class="go">  test message</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>description</p>
-</div>
+<p class="rubric">Notes</p>
+<p>If you want to shear structure step by step, you can get next step
+structure by inputting atom positions of previous step using
+‘atom_positions’ input parameter.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.relax_cells">
-<em class="property">property </em><code class="sig-name descname">relax_cells</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.relax_cells" title="Permalink to this definition">¶</a></dt>
-<dd><p>Relax output cells.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.relax_cells_in_original_frame">
-<em class="property">property </em><code class="sig-name descname">relax_cells_in_original_frame</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.relax_cells_in_original_frame" title="Permalink to this definition">¶</a></dt>
-<dd><p>Relax cells in original frame</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.set_phonons">
-<code class="sig-name descname">set_phonons</code><span class="sig-paren">(</span><em class="sig-param">phonons</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#ShearAnalyzer.set_phonons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.set_phonons" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set phonons.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer.ShearAnalyzer.standardizes">
-<em class="property">property </em><code class="sig-name descname">standardizes</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer.ShearAnalyzer.standardizes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Standardizes.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="twinpy.analysis.shear_analyzer.is_cells_are_same">
-<code class="sig-prename descclassname">twinpy.analysis.shear_analyzer.</code><code class="sig-name descname">is_cells_are_same</code><span class="sig-paren">(</span><em class="sig-param">first_cell: tuple</em>, <em class="sig-param">second_cell: tuple</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer.html#is_cells_are_same"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer.is_cells_are_same" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check first cell and second cell are same.</p>
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_twinboundary_shear_analyzer">
+<code class="sig-name descname">get_twinboundary_shear_analyzer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shear_strain_ratios</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">relax_analyzers</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">shear_phonon_analyzers</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer.get_twinboundary_shear_analyzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_twinboundary_shear_analyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get TwinBoundaryShearAnalyzer class object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>first_cell</strong> (<em>tuple</em>) – first cell</p></li>
-<li><p><strong>second_cell</strong> (<em>tuple</em>) – second cell</p></li>
+<li><p><strong>shear_phonon_analyzers</strong> (<em>list</em>) – List of additional shear
+phonon analyzers.</p></li>
+<li><p><strong>shear_strain_ratios</strong> (<em>list</em>) – Shear shear_strain_ratios.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>return True if two cells are same</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)">bool</a></p>
-</dd>
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="module-twinpy.analysis.shear_analyzer_bak">
-<span id="twinpy-analysis-shear-analyzer-bak-module"></span><h2>twinpy.analysis.shear_analyzer_bak module<a class="headerlink" href="#module-twinpy.analysis.shear_analyzer_bak" title="Permalink to this headline">¶</a></h2>
-<p>Analize shear calculation.</p>
-<dl class="class">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer">
-<em class="property">class </em><code class="sig-prename descclassname">twinpy.analysis.shear_analyzer_bak.</code><code class="sig-name descname">ShearAnalyzer</code><span class="sig-paren">(</span><em class="sig-param">original_cells: list</em>, <em class="sig-param">input_cells: list</em>, <em class="sig-param">relax_cells: list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer_bak.html#ShearAnalyzer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/2.7/library/functions.html#object" title="(in Python v2.7)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Analize shear result.</p>
-<dl class="attribute">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.__dict__">
-<code class="sig-name descname">__dict__</code><em class="property"> = mappingproxy({'__module__': 'twinpy.analysis.shear_analyzer_bak', '__doc__': '\n    Analize shear result.\n    ', '__init__': &lt;function ShearAnalyzer.__init__&gt;, 'original_cells': &lt;property object&gt;, 'input_cells': &lt;property object&gt;, '_set_relax_cells': &lt;function ShearAnalyzer._set_relax_cells&gt;, 'relax_cells': &lt;property object&gt;, '_set_standardizes': &lt;function ShearAnalyzer._set_standardizes&gt;, 'standardizes': &lt;property object&gt;, '_set_relax_cells_in_original_frame': &lt;function ShearAnalyzer._set_relax_cells_in_original_frame&gt;, 'relax_cells_in_original_frame': &lt;property object&gt;, 'set_phonons': &lt;function ShearAnalyzer.set_phonons&gt;, 'phonons': &lt;property object&gt;, 'get_relax_diffs': &lt;function ShearAnalyzer.get_relax_diffs&gt;, 'get_shear_diffs': &lt;function ShearAnalyzer.get_shear_diffs&gt;, 'plot_bands': &lt;function ShearAnalyzer.plot_bands&gt;, '__dict__': &lt;attribute '__dict__' of 'ShearAnalyzer' objects&gt;, '__weakref__': &lt;attribute '__weakref__' of 'ShearAnalyzer' objects&gt;})</em><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.__dict__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.__init__">
-<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">original_cells: list</em>, <em class="sig-param">input_cells: list</em>, <em class="sig-param">relax_cells: list</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer_bak.html#ShearAnalyzer.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.__init__" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>original_cells</strong> (<em>list</em>) – primitivie original cells, which is output
-cells of ShearStructure class</p></li>
-<li><p><strong>input_cells</strong> (<em>list</em>) – input cells for vasp</p></li>
-<li><p><strong>relax_cells</strong> (<em>list</em>) – relax cells of vasp</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>RuntimeError</strong> – The number of atoms changes between original cells
-    and input cells, which is not supported.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.__module__">
-<code class="sig-name descname">__module__</code><em class="property"> = 'twinpy.analysis.shear_analyzer_bak'</em><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.__module__" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="attribute">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.__weakref__">
-<code class="sig-name descname">__weakref__</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.__weakref__" title="Permalink to this definition">¶</a></dt>
-<dd><p>list of weak references to the object (if defined)</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer._set_relax_cells">
-<code class="sig-name descname">_set_relax_cells</code><span class="sig-paren">(</span><em class="sig-param">input_cells</em>, <em class="sig-param">relax_cells</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer_bak.html#ShearAnalyzer._set_relax_cells"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer._set_relax_cells" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check lattice does not change in relaxation and
-set relax_cells.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer._set_relax_cells_in_original_frame">
-<code class="sig-name descname">_set_relax_cells_in_original_frame</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer_bak.html#ShearAnalyzer._set_relax_cells_in_original_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer._set_relax_cells_in_original_frame" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set relax cells in original frame which is not
-conventional and its angles are close to (90., 90., 120.).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>relax cells in original frame</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>list</p>
-</dd>
-</dl>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For variable definitions in this definition,
-see Eq.(1.8) and (1.17) in Crystal Structure documention.
-Note that by crystal body rotation, fractional
-coordinate of atom positions are not changed.</p>
-</div>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer._set_standardizes">
-<code class="sig-name descname">_set_standardizes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer_bak.html#ShearAnalyzer._set_standardizes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer._set_standardizes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set standardizes.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.get_relax_diffs">
-<code class="sig-name descname">get_relax_diffs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer_bak.html#ShearAnalyzer.get_relax_diffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.get_relax_diffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get structure diffs between input and relax cells
-IN ORIGINAL FRAME.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.get_shear_diffs">
-<code class="sig-name descname">get_shear_diffs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer_bak.html#ShearAnalyzer.get_shear_diffs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.get_shear_diffs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get structure diffs between original and sheared structures
-IN ORIGINAL FRAME.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.input_cells">
-<em class="property">property </em><code class="sig-name descname">input_cells</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.input_cells" title="Permalink to this definition">¶</a></dt>
-<dd><p>Relax input cells.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.original_cells">
-<em class="property">property </em><code class="sig-name descname">original_cells</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.original_cells" title="Permalink to this definition">¶</a></dt>
-<dd><p>Original cells, which are output of ShearStructure.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.phonons">
-<em class="property">property </em><code class="sig-name descname">phonons</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.phonons" title="Permalink to this definition">¶</a></dt>
-<dd><p>Phonons.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.plot_bands">
-<code class="sig-name descname">plot_bands</code><span class="sig-paren">(</span><em class="sig-param">fig</em>, <em class="sig-param">with_dos=False</em>, <em class="sig-param">mesh=None</em>, <em class="sig-param">band_labels=None</em>, <em class="sig-param">segment_qpoints=None</em>, <em class="sig-param">xscale=20</em>, <em class="sig-param">npoints=51</em>, <em class="sig-param">labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer_bak.html#ShearAnalyzer.plot_bands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.plot_bands" title="Permalink to this definition">¶</a></dt>
-<dd><p>plot phonon bands</p>
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_twinboundary_shear_analyzer_from_pks">
+<code class="sig-name descname">get_twinboundary_shear_analyzer_from_pks</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shear_relax_pks</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">shear_strain_ratios</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">shear_phonon_pks</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer.get_twinboundary_shear_analyzer_from_pks"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.get_twinboundary_shear_analyzer_from_pks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get TwinBoundaryShearAnalyzer class object from pks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>arg1</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – description</p></li>
-<li><p><strong>arg2</strong> (<em>np.array</em>) – (3x3 numpy array) description</p></li>
+<li><p><strong>shear_relax_pks</strong> (<em>list</em>) – Relaxes for shear structures.</p></li>
+<li><p><strong>shear_phonon_pks</strong> (<em>list</em>) – Phonon calculations for shear structures.</p></li>
+<li><p><strong>shear_strain_ratios</strong> (<em>list</em>) – Shear shear_strain_ratios.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>description</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/2.7/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></p>
-</dd>
-<dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>ValueError</strong> – description</p>
-</dd>
 </dl>
-<p class="rubric">Examples</p>
-<p>description</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">print_test</span> <span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">)</span>
-<span class="go">  test message</span>
-</pre></div>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>description</p>
-</div>
 </dd></dl>
 
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.relax_cells">
-<em class="property">property </em><code class="sig-name descname">relax_cells</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.relax_cells" title="Permalink to this definition">¶</a></dt>
-<dd><p>Relax output cells.</p>
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.hexagonal_phonon_analyzer">
+<em class="property">property </em><code class="sig-name descname">hexagonal_phonon_analyzer</code><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.hexagonal_phonon_analyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bulk phonon.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.relax_cells_in_original_frame">
-<em class="property">property </em><code class="sig-name descname">relax_cells_in_original_frame</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.relax_cells_in_original_frame" title="Permalink to this definition">¶</a></dt>
-<dd><p>Relax cells in original frame</p>
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.hexagonal_relax_analyzer">
+<em class="property">property </em><code class="sig-name descname">hexagonal_relax_analyzer</code><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.hexagonal_relax_analyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bulk relax.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.set_phonons">
-<code class="sig-name descname">set_phonons</code><span class="sig-paren">(</span><em class="sig-param">phonons</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer_bak.html#ShearAnalyzer.set_phonons"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.set_phonons" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set phonons.</p>
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.phonon_analyzer">
+<em class="property">property </em><code class="sig-name descname">phonon_analyzer</code><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.phonon_analyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Twinboundary phonon.</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.standardizes">
-<em class="property">property </em><code class="sig-name descname">standardizes</code><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.ShearAnalyzer.standardizes" title="Permalink to this definition">¶</a></dt>
-<dd><p>Standardizes.</p>
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.plot_angle_diff">
+<code class="sig-name descname">plot_angle_diff</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; matplotlib.pyplot.figure<a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer.plot_angle_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.plot_angle_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot angle diff.</p>
 </dd></dl>
 
-</dd></dl>
-
-<dl class="function">
-<dt id="twinpy.analysis.shear_analyzer_bak.is_cells_are_same">
-<code class="sig-prename descclassname">twinpy.analysis.shear_analyzer_bak.</code><code class="sig-name descname">is_cells_are_same</code><span class="sig-paren">(</span><em class="sig-param">first_cell: tuple</em>, <em class="sig-param">second_cell: tuple</em><span class="sig-paren">)</span> &#x2192; bool<a class="reference internal" href="../_modules/twinpy/analysis/shear_analyzer_bak.html#is_cells_are_same"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.shear_analyzer_bak.is_cells_are_same" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check first cell and second cell are same.</p>
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.plot_atom_diff">
+<code class="sig-name descname">plot_atom_diff</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shuffle</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer.plot_atom_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.plot_atom_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot atom diff.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>first_cell</strong> (<em>tuple</em>) – first cell</p></li>
-<li><p><strong>second_cell</strong> (<em>tuple</em>) – second cell</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>return True if two cells are same</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)">bool</a></p>
+<dd class="field-odd"><p><strong>shuffle</strong> (<em>bool</em>) – If True, diffrence of scaled positions,
+which ignore lattice shear, are ploted.</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.plot_pair_distance">
+<code class="sig-name descname">plot_pair_distance</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; matplotlib.pyplot.figure<a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer.plot_pair_distance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.plot_pair_distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot angle diff.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.plot_plane_diff">
+<code class="sig-name descname">plot_plane_diff</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/analysis/twinboundary_analyzer.html#TwinBoundaryAnalyzer.plot_plane_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.plot_plane_diff" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot plane diff.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.relax_analyzer">
+<em class="property">property </em><code class="sig-name descname">relax_analyzer</code><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.relax_analyzer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Twinboundary relax.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.standardize">
+<em class="property">property </em><code class="sig-name descname">standardize</code><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.standardize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stadardize object of twinpy original cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.twinboundary_structure">
+<em class="property">property </em><code class="sig-name descname">twinboundary_structure</code><a class="headerlink" href="#twinpy.analysis.twinboundary_analyzer.TwinBoundaryAnalyzer.twinboundary_structure" title="Permalink to this definition">¶</a></dt>
+<dd><p>TwinBoundaryStructure class object</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -591,7 +781,7 @@ IN ORIGINAL FRAME.</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, kei0822kei. All rights reserved
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
 
     </p>
   </div>

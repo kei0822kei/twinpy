@@ -24,16 +24,11 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script src="../_static/contentui.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-    <link rel="search" type="application/opensearchdescription+xml"
-          title="Search within twinpy 0.0.1 documentation"
-          href="../_static/opensearch.xml"/>
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
@@ -66,7 +61,7 @@
             
             
               <div class="version">
-                0.0
+                0.0.1
               </div>
             
           
@@ -91,20 +86,19 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../definitions/index.html">Definitions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="twinpy.html">API documentation</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="twinpy.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="twinpy.analysis.html">twinpy.analysis package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">twinpy.common package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.common.band_path">twinpy.common.band_path module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-twinpy.common.kpoints">twinpy.common.kpoints module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.common.utils">twinpy.common.utils module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-twinpy.common">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.interfaces.html">twinpy.interfaces package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="twinpy.lattice.html">twinpy.lattice package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.plot.html">twinpy.plot package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.properties.html">twinpy.properties package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="twinpy.structure.html">twinpy.structure package</a></li>
@@ -169,6 +163,8 @@
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="../_sources/apidoc/twinpy.common.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -185,29 +181,173 @@
 <div class="section" id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </div>
+<div class="section" id="module-twinpy.common.band_path">
+<span id="twinpy-common-band-path-module"></span><h2>twinpy.common.band_path module<a class="headerlink" href="#module-twinpy.common.band_path" title="Permalink to this headline">¶</a></h2>
+<p>Band plot.</p>
+<dl class="py function">
+<dt id="twinpy.common.band_path.get_band_paths_from_labels">
+<code class="sig-prename descclassname">twinpy.common.band_path.</code><code class="sig-name descname">get_band_paths_from_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">labels</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">labels_qpoints</span><span class="p">:</span> <span class="n">dict</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="../_modules/twinpy/common/band_path.html#get_band_paths_from_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.band_path.get_band_paths_from_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get segment qpoints which is input for phonopy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labels</strong> (<em>list</em>) – List of labels. If you want to separate band structure,
+add ‘’ between labels. See Examples.</p></li>
+<li><p><strong>labels_qpoints</strong> (<em>dict</em>) – Dictionary for labels and corresponding qpoints.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(labels, band_paths)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GAMMA&#39;</span><span class="p">,</span> <span class="s1">&#39;M_1&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;K_1&#39;</span><span class="p">,</span> <span class="s1">&#39;GAMMA&#39;</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">get_band_paths_from_labels</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+<span class="go">    [[[  0,   0, 0],</span>
+<span class="go">      [1/2,   0, 0]],</span>
+<span class="go">     [[1/3, 1/3, 0],</span>
+<span class="go">      [  0,   0, 0]]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="twinpy.common.band_path.get_labels_band_paths_from_seekpath">
+<code class="sig-prename descclassname">twinpy.common.band_path.</code><code class="sig-name descname">get_labels_band_paths_from_seekpath</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cell</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span> &#x2192; tuple<a class="reference internal" href="../_modules/twinpy/common/band_path.html#get_labels_band_paths_from_seekpath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.band_path.get_labels_band_paths_from_seekpath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get labels and band paths from seekpath result.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cell</strong> (<em>tuple</em>) – Cell.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>(labels, band_paths)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="twinpy.common.band_path.get_labels_for_twin">
+<code class="sig-prename descclassname">twinpy.common.band_path.</code><code class="sig-name descname">get_labels_for_twin</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/twinpy/common/band_path.html#get_labels_for_twin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.band_path.get_labels_for_twin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get labels for hexagonal twin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Contain keys and qpoints.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Labels and qpoints for twin is as bellow.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">label_qpoints</span> <span class="o">=</span> <span class="p">{</span>
+<span class="go">        &#39;GAMMA&#39;: [0, 0, 0],</span>
+<span class="go">        &#39;M_1&#39;  : [1/2, 0, 0],</span>
+<span class="go">        &#39;M_2&#39;  : [-1/2, 1/2, 0],</span>
+<span class="go">        &#39;K_1&#39;  : [1/3, 1/3, 0],</span>
+<span class="go">        &#39;K_2&#39;  : [-1/3, 2/3, 0],</span>
+<span class="go">        &#39;A&#39;    : [0, 0, 1/2],</span>
+<span class="go">        &#39;L_1&#39;  : [1/2, 0, 1/2],</span>
+<span class="go">        &#39;L_2&#39;  : [-1/2, 1/2, 1/2],</span>
+<span class="go">        &#39;H_1&#39;  : [1/3, 1/3, 1/2],</span>
+<span class="go">        &#39;H_2&#39;  : [-1/3, 2/3, 1/2],</span>
+<span class="go">        }</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="twinpy.common.band_path.get_seekpath">
+<code class="sig-prename descclassname">twinpy.common.band_path.</code><code class="sig-name descname">get_seekpath</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cell</span><span class="p">:</span> <span class="n">tuple</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/twinpy/common/band_path.html#get_seekpath"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.band_path.get_seekpath" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get seekpath results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>cell</strong> (<em>tuple</em>) – Cell.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Labels and corresponding qpoints.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-twinpy.common.kpoints">
+<span id="twinpy-common-kpoints-module"></span><h2>twinpy.common.kpoints module<a class="headerlink" href="#module-twinpy.common.kpoints" title="Permalink to this headline">¶</a></h2>
+<p>Deals with kpoints.</p>
+<dl class="py function">
+<dt id="twinpy.common.kpoints.get_mesh_offset_from_direct_lattice">
+<code class="sig-prename descclassname">twinpy.common.kpoints.</code><code class="sig-name descname">get_mesh_offset_from_direct_lattice</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lattice</span><span class="p">:</span> <span class="n">numpy.array</span></em>, <em class="sig-param"><span class="n">interval</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>float<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mesh</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>list<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">include_two_pi</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; dict<a class="reference internal" href="../_modules/twinpy/common/kpoints.html#get_mesh_offset_from_direct_lattice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.kpoints.get_mesh_offset_from_direct_lattice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get kpoints mesh and offset from input lattice and interval.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lattice</strong> (<em>np.array</em>) – lattice matrix</p></li>
+<li><p><strong>interval</strong> (<em>float</em>) – grid interval</p></li>
+<li><p><strong>mesh</strong> (<em>list</em>) – mesh</p></li>
+<li><p><strong>include_two_pi</strong> (<em>bool</em>) – if True, include 2 * pi</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>containing abc norms, mesh, offset</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – both mesh and interval are not specified</p></li>
+<li><p><strong>ValueError</strong> – both mesh and interval are specified</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Please input ‘interval’ or ‘mesh’, not both.
+If the angles of input lattice is (90., 90., 120.),
+offset is set (0., 0., 0.5) and mesh is set
+(odd, odd, even or 1).
+If even becomes zero, fix to one.
+Otherwise, set (0.5, 0.5, 0.5) and mesh is set
+(even or 1, even or 1, even or 1).
+If you use this function, it is better to input
+STANDARDIZED CELL.</p>
+</div>
+</dd></dl>
+
+</div>
 <div class="section" id="module-twinpy.common.utils">
 <span id="twinpy-common-utils-module"></span><h2>twinpy.common.utils module<a class="headerlink" href="#module-twinpy.common.utils" title="Permalink to this headline">¶</a></h2>
-<p>This file provides various convenient tools used by other scripts in twinpy.</p>
-<dl class="function">
+<p>This module deals wtih various convenient tools
+used by other scripts in twinpy.</p>
+<dl class="py function">
 <dt id="twinpy.common.utils.float2frac">
-<code class="sig-prename descclassname">twinpy.common.utils.</code><code class="sig-name descname">float2frac</code><span class="sig-paren">(</span><em class="sig-param">var</em>, <em class="sig-param">accuracy=3</em>, <em class="sig-param">denominator=10</em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/twinpy/common/utils.html#float2frac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.utils.float2frac" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">twinpy.common.utils.</code><code class="sig-name descname">float2frac</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">accuracy</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">3</span></em>, <em class="sig-param"><span class="n">denominator</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">10</span></em><span class="sig-paren">)</span> &#x2192; str<a class="reference internal" href="../_modules/twinpy/common/utils.html#float2frac"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.utils.float2frac" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform float to fractional (str object).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>var</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – input value</p></li>
-<li><p><strong>accuracy</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – threshold of whether two values are the same of not,                         In the case of ‘accuracy=3’,                         check the third decimal place.</p></li>
-<li><p><strong>denominator</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – if ‘denominator=10’,                            check from 1/2 to 12/13</p></li>
+<li><p><strong>var</strong> – Input value.</p></li>
+<li><p><strong>accuracy</strong> – Threshold of whether two values are the same of not.
+In the case of ‘accuracy=3’, check the third decimal place.</p></li>
+<li><p><strong>denominator</strong> – If ‘denominator=10’, check from 1/2 to 12/13.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>fractional value</p>
+<dd class="field-even"><p>Fractional value.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)">str</a></p>
+<dd class="field-odd"><p>str</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>RuntimeError</strong> – could not find fractional representation of input ‘var’</p>
+<dd class="field-even"><p><strong>RuntimeError</strong> – Could not find fractional representation of input ‘var’.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -217,23 +357,23 @@
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="twinpy.common.utils.get_ratio">
-<code class="sig-prename descclassname">twinpy.common.utils.</code><code class="sig-name descname">get_ratio</code><span class="sig-paren">(</span><em class="sig-param">nums: list</em>, <em class="sig-param">threshold: float = 0.001</em>, <em class="sig-param">maxmultiply: int = 100</em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/twinpy/common/utils.html#get_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.utils.get_ratio" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">twinpy.common.utils.</code><code class="sig-name descname">get_ratio</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nums</span><span class="p">:</span> <span class="n">list</span></em>, <em class="sig-param"><span class="n">threshold</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">maxmultiply</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">100</span></em><span class="sig-paren">)</span> &#x2192; list<a class="reference internal" href="../_modules/twinpy/common/utils.html#get_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.utils.get_ratio" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get ration of input nums.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>nums</strong> (<em>list</em>) – numbers</p>
+<dd class="field-odd"><p><strong>nums</strong> – Numbers.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>ratio</p>
+<dd class="field-even"><p>Ratio.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>list</p>
 </dd>
 <dt class="field-even">Raises</dt>
-<dd class="field-even"><p><strong>RuntimeError</strong> – could not find multiply number
-    for making input number integer</p>
+<dd class="field-even"><p><strong>RuntimeError</strong> – Could not find multiply number
+    for making input number integer.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -245,23 +385,54 @@
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>as you can find in ‘Examples’, ‘get_ratio’ keeps sign</p>
+<p>As you can find in ‘Examples’, ‘get_ratio’ keeps sign.</p>
 </div>
 </dd></dl>
 
-<dl class="function">
-<dt id="twinpy.common.utils.round_off">
-<code class="sig-prename descclassname">twinpy.common.utils.</code><code class="sig-name descname">round_off</code><span class="sig-paren">(</span><em class="sig-param">x: float</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/utils.html#round_off"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.utils.round_off" title="Permalink to this definition">¶</a></dt>
-<dd><p>round off for input value ‘x’</p>
+<dl class="py function">
+<dt id="twinpy.common.utils.print_header">
+<code class="sig-prename descclassname">twinpy.common.utils.</code><code class="sig-name descname">print_header</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">string</span><span class="p">:</span> <span class="n">str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/utils.html#print_header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.utils.print_header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print heading with specified string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – some value</p>
+<dd class="field-odd"><p><strong>string</strong> – Head string.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>TypeError</strong> – input is not str object</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="twinpy.common.utils.reshape_dimension">
+<code class="sig-prename descclassname">twinpy.common.utils.</code><code class="sig-name descname">reshape_dimension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dim</span><span class="p">:</span> <span class="n">numpy.array</span></em><span class="sig-paren">)</span> &#x2192; numpy.array<a class="reference internal" href="../_modules/twinpy/common/utils.html#reshape_dimension"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.utils.reshape_dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>If dim.shape == (3,), reshape to (3,3) numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – Input dimension is neither (3,) or (3,3) np.array.</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p>rouned off value</p>
+<dd class="field-even"><p>3x3 dimention matrix.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)">int</a></p>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="twinpy.common.utils.round_off">
+<code class="sig-prename descclassname">twinpy.common.utils.</code><code class="sig-name descname">round_off</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="p">:</span> <span class="n">float</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/twinpy/common/utils.html#round_off"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#twinpy.common.utils.round_off" title="Permalink to this definition">¶</a></dt>
+<dd><p>Round off for input value ‘x’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> – Some value.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Rouned off value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
@@ -299,7 +470,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, kei0822kei. All rights reserved
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
 
     </p>
   </div>

@@ -1,0 +1,651 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.analysis.phonon_analyzer &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/contentui.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.analysis.phonon_analyzer</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.analysis.phonon_analyzer</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Analize phonopy calculation.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">phonopy</span> <span class="kn">import</span> <span class="n">Phonopy</span>
+<span class="kn">from</span> <span class="nn">phonopy.phonon.band_structure</span> <span class="kn">import</span> <span class="p">(</span>
+        <span class="n">get_band_qpoints_and_path_connections</span><span class="p">,</span>
+        <span class="n">BandStructure</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">twinpy.interfaces.phonopy</span> <span class="kn">import</span> <span class="n">get_cell_from_phonopy_structure</span>
+<span class="kn">from</span> <span class="nn">twinpy.common.kpoints</span> <span class="kn">import</span> <span class="n">get_mesh_offset_from_direct_lattice</span>
+<span class="kn">from</span> <span class="nn">twinpy.common.band_path</span> <span class="kn">import</span> <span class="n">get_seekpath</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.base</span> <span class="kn">import</span> <span class="n">check_same_cells</span>
+<span class="kn">from</span> <span class="nn">twinpy.analysis.relax_analyzer</span> <span class="kn">import</span> <span class="n">RelaxAnalyzer</span>
+
+
+<div class="viewcode-block" id="PhononAnalyzer"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer">[docs]</a><span class="k">class</span> <span class="nc">PhononAnalyzer</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Analize phonopy result.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+           <span class="bp">self</span><span class="p">,</span>
+           <span class="n">phonon</span><span class="p">:</span><span class="n">Phonopy</span><span class="p">,</span>
+           <span class="n">relax_analyzer</span><span class="p">:</span><span class="n">RelaxAnalyzer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            phonon: Phonopy class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span> <span class="o">=</span> <span class="n">phonon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_symmetrize_fc</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relax_analyzer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">relax_analyzer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_relax_analyzer</span><span class="p">(</span><span class="n">relax_analyzer</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_matrix</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_relax_analyzer</span><span class="o">.</span><span class="n">_standardize</span><span class="o">.</span><span class="n">rotation_matrix</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_primitive_cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_primitive_cell</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_reciprocal_lattice</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_reciprocal_lattice</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_symmetrize_fc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Symmetrize force constants.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span><span class="o">.</span><span class="n">symmetrize_force_constants</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_set_primitive_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set primitive cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_primitive_cell</span> <span class="o">=</span> <span class="n">get_cell_from_phonopy_structure</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span><span class="o">.</span><span class="n">get_primitive</span><span class="p">())</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">primitive_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Primitive cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_primitive_cell</span>
+
+    <span class="k">def</span> <span class="nf">_set_reciprocal_lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set reciprocal lattice.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_primitive_cell</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relax_analyzer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_original_reciprocal_lattice</span> <span class="o">=</span> \
+                    <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rotation_matrix</span><span class="p">,</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">reciprocal_lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reciprocal lattice.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">original_reciprocal_lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reciprocal lattice.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">phonon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Phonopy class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">relax_analyzer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        RelaxAnalyzer class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_relax_analyzer</span>
+
+<div class="viewcode-block" id="PhononAnalyzer.set_relax_analyzer"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.set_relax_analyzer">[docs]</a>    <span class="k">def</span> <span class="nf">set_relax_analyzer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relax_analyzer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set relax analyzer.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            relax_analyzer: RelaxAnalyzer class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">relax_cell</span> <span class="o">=</span> <span class="n">relax_analyzer</span><span class="o">.</span><span class="n">final_cell</span>
+        <span class="n">unitcell</span> <span class="o">=</span> <span class="n">get_cell_from_phonopy_structure</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span><span class="o">.</span><span class="n">get_primitive</span><span class="p">())</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">check_same_cells</span><span class="p">(</span><span class="n">first_cell</span><span class="o">=</span><span class="n">relax_cell</span><span class="p">,</span>
+                                <span class="n">second_cell</span><span class="o">=</span><span class="n">unitcell</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;phonon unitcell does not &quot;</span>
+                               <span class="s2">&quot;the same as relax cell.&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_relax_analyzer</span> <span class="o">=</span> <span class="n">relax_analyzer</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">rotation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rotation matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_matrix</span>
+
+<div class="viewcode-block" id="PhononAnalyzer.export_phonon"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.export_phonon">[docs]</a>    <span class="k">def</span> <span class="nf">export_phonon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span><span class="nb">str</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Export phonopy object to yaml file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str): Output filename. If None, filename becomes</span>
+<span class="sd">                            pk&lt;number&gt;_phonopy.yaml.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;phonopy_params.yaml&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PhononAnalyzer.get_reciprocal_high_symmetry_points"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_reciprocal_high_symmetry_points">[docs]</a>    <span class="k">def</span> <span class="nf">get_reciprocal_high_symmetry_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get reciprocal high symmetry points.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Contains point coordinates for primitive and original.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">point_coords</span> <span class="o">=</span> <span class="n">get_seekpath</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_primitive_cell</span><span class="p">)[</span><span class="s1">&#39;point_coords&#39;</span><span class="p">]</span>
+        <span class="n">point_coords_orig</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">point_coords</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">orig_qpt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_qpoints_from_primitive_to_original</span><span class="p">(</span>
+                               <span class="n">qpoints</span><span class="o">=</span><span class="n">point_coords</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+            <span class="n">point_coords_orig</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">orig_qpt</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;primitive&#39;</span><span class="p">:</span> <span class="n">point_coords</span><span class="p">,</span> <span class="s1">&#39;original&#39;</span><span class="p">:</span> <span class="n">point_coords_orig</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="PhononAnalyzer.get_qpoints_from_original_to_primitive"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_qpoints_from_original_to_primitive">[docs]</a>    <span class="k">def</span> <span class="nf">get_qpoints_from_original_to_primitive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                               <span class="n">qpoints</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                                               <span class="n">input_is_cart</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                               <span class="n">output_is_cart</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get qpoints in original frame to primitive frame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qpoints (np.array): Qpoints.</span>
+<span class="sd">            input_is_cart (bool): Whether input qpoints are cartesian.</span>
+<span class="sd">            output_is_cart (bool): Whether output qpoints are cartesian.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">recip_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">orig_recip_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_reciprocal_lattice</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_matrix</span>
+        <span class="k">if</span> <span class="n">input_is_cart</span><span class="p">:</span>
+            <span class="n">orig_qmat_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">qpoints</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">orig_qmat_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">orig_recip_mat</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">qpoints</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">qmat_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">,</span> <span class="n">orig_qmat_cart</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">output_is_cart</span><span class="p">:</span>
+            <span class="n">output_qpoints</span> <span class="o">=</span> <span class="n">qmat_cart</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_qpoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">recip_mat</span><span class="p">),</span>
+                                    <span class="n">qmat_cart</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="n">output_qpoints</span></div>
+
+<div class="viewcode-block" id="PhononAnalyzer.get_qpoints_from_primitive_to_original"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_qpoints_from_primitive_to_original">[docs]</a>    <span class="k">def</span> <span class="nf">get_qpoints_from_primitive_to_original</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                               <span class="n">qpoints</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                                               <span class="n">input_is_cart</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                               <span class="n">output_is_cart</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get qpoints in primitive frame to original frame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            qpoints (np.array): Qpoints.</span>
+<span class="sd">            input_is_cart (bool): Whether input qpoints are cartesian.</span>
+<span class="sd">            output_is_cart (bool): Whether output qpoints are cartesian.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">recip_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">orig_recip_mat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_reciprocal_lattice</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">rotation_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_matrix</span>
+        <span class="k">if</span> <span class="n">input_is_cart</span><span class="p">:</span>
+            <span class="n">qmat_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">qpoints</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">qmat_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">recip_mat</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">qpoints</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">qmat_orig_cart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">rotation_matrix</span><span class="p">),</span> <span class="n">qmat_cart</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">output_is_cart</span><span class="p">:</span>
+            <span class="n">output_qpoints</span> <span class="o">=</span> <span class="n">qmat_orig_cart</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_qpoints</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">orig_recip_mat</span><span class="p">),</span>
+                                    <span class="n">qmat_orig_cart</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="k">return</span> <span class="n">output_qpoints</span></div>
+
+<div class="viewcode-block" id="PhononAnalyzer.get_band_paths_from_original_to_primitive"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_band_paths_from_original_to_primitive">[docs]</a>    <span class="k">def</span> <span class="nf">get_band_paths_from_original_to_primitive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                                  <span class="n">band_paths</span><span class="p">,</span>
+                                                  <span class="n">input_is_cart</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                  <span class="n">output_is_cart</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get band paths in original frame to primitive frame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            band_paths (list): Band paths.</span>
+<span class="sd">            input_is_cart (bool): Whether input qpoints are cartesian.</span>
+<span class="sd">            output_is_cart (bool): Whether output qpoints are cartesian.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">primitive_band_paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">band_path</span> <span class="ow">in</span> <span class="n">band_paths</span><span class="p">:</span>
+            <span class="n">primitive_band_path</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">get_qpoints_from_original_to_primitive</span><span class="p">(</span>
+                        <span class="n">qpoints</span><span class="o">=</span><span class="n">band_path</span><span class="p">,</span>
+                        <span class="n">input_is_cart</span><span class="o">=</span><span class="n">input_is_cart</span><span class="p">,</span>
+                        <span class="n">output_is_cart</span><span class="o">=</span><span class="n">output_is_cart</span><span class="p">)</span>
+            <span class="n">primitive_band_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">primitive_band_path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">primitive_band_paths</span></div>
+
+<div class="viewcode-block" id="PhononAnalyzer.get_band_paths_from_primitive_to_original"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_band_paths_from_primitive_to_original">[docs]</a>    <span class="k">def</span> <span class="nf">get_band_paths_from_primitive_to_original</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                                  <span class="n">band_paths</span><span class="p">,</span>
+                                                  <span class="n">input_is_cart</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                  <span class="n">output_is_cart</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get band paths in primitive frame to original frame.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            band_paths (list): Band paths.</span>
+<span class="sd">            input_is_cart (bool): Whether input qpoints are cartesian.</span>
+<span class="sd">            output_is_cart (bool): Whether output qpoints are cartesian.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">original_band_paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">band_path</span> <span class="ow">in</span> <span class="n">band_paths</span><span class="p">:</span>
+            <span class="n">original_band_path</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">get_qpoints_from_primitive_to_original</span><span class="p">(</span>
+                        <span class="n">qpoints</span><span class="o">=</span><span class="n">band_path</span><span class="p">,</span>
+                        <span class="n">input_is_cart</span><span class="o">=</span><span class="n">input_is_cart</span><span class="p">,</span>
+                        <span class="n">output_is_cart</span><span class="o">=</span><span class="n">output_is_cart</span><span class="p">)</span>
+            <span class="n">original_band_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">original_band_path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">original_band_paths</span></div>
+
+<div class="viewcode-block" id="PhononAnalyzer.get_band_structure"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_band_structure">[docs]</a>    <span class="k">def</span> <span class="nf">get_band_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                           <span class="n">band_paths</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+                           <span class="n">labels</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">npoints</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">51</span><span class="p">,</span>
+                           <span class="n">with_eigenvectors</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                           <span class="n">use_reciprocal_lattice</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get BandStructure class object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            band_paths (list): Band paths.</span>
+<span class="sd">            labels (list): Band labels.</span>
+<span class="sd">            npoints (int): The number of sampling points.</span>
+<span class="sd">            with_eigenvectors (bool): If True, calculte eigenvectors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">use_reciprocal_lattice</span><span class="p">:</span>
+            <span class="n">rec_lattice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rec_lattice</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">qpoints</span><span class="p">,</span> <span class="n">connections</span> <span class="o">=</span> <span class="n">get_band_qpoints_and_path_connections</span><span class="p">(</span>
+                <span class="n">band_paths</span><span class="o">=</span><span class="n">band_paths</span><span class="p">,</span>
+                <span class="n">npoints</span><span class="o">=</span><span class="n">npoints</span><span class="p">,</span>
+                <span class="n">rec_lattice</span><span class="o">=</span><span class="n">rec_lattice</span><span class="p">)</span>
+        <span class="n">band_structure</span> <span class="o">=</span> <span class="n">BandStructure</span><span class="p">(</span>
+                <span class="n">paths</span><span class="o">=</span><span class="n">qpoints</span><span class="p">,</span>
+                <span class="n">dynamical_matrix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span><span class="o">.</span><span class="n">get_dynamical_matrix</span><span class="p">(),</span>
+                <span class="n">with_eigenvectors</span><span class="o">=</span><span class="n">with_eigenvectors</span><span class="p">,</span>
+                <span class="n">is_band_connection</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">group_velocity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">path_connections</span><span class="o">=</span><span class="n">connections</span><span class="p">,</span>
+                <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+                <span class="n">is_legacy_plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">band_structure</span></div>
+
+<div class="viewcode-block" id="PhononAnalyzer.run_mesh"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.run_mesh">[docs]</a>    <span class="k">def</span> <span class="nf">run_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">interval</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+                 <span class="n">is_store</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">get_phonon</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">dry_run</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">is_eigenvectors</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">is_gamma_center</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">verbose</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run mesh for both hexagonal and twinboundary phonon.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            interval (float): mesh interval</span>
+<span class="sd">            is_store (bool): If True, result is stored in self._phonon.</span>
+<span class="sd">            get_phonon (bool): If True, return Phonopy class obejct,</span>
+<span class="sd">                               which is independent from self._phonon.</span>
+<span class="sd">            dry_run (bool): If True, show sampling mesh information</span>
+<span class="sd">                            and not run.</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">            Fix get_phonon because currenly cannot get thermal_displacement_matrices for gottern phonon object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kpt</span> <span class="o">=</span> <span class="n">get_mesh_offset_from_direct_lattice</span><span class="p">(</span>
+                <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_primitive_cell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">interval</span><span class="o">=</span><span class="n">interval</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">if</span> <span class="n">dry_run</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;# interval: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">interval</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;# sampling mesh: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kpt</span><span class="p">[</span><span class="s1">&#39;mesh&#39;</span><span class="p">]))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;# dry_run is evoked.&quot;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;run mesh with </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kpt</span><span class="p">[</span><span class="s1">&#39;mesh&#39;</span><span class="p">]))</span>
+            <span class="k">if</span> <span class="n">is_store</span><span class="p">:</span>
+                <span class="n">_phonon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_phonon</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span><span class="p">)</span>
+            <span class="n">_phonon</span><span class="o">.</span><span class="n">set_mesh</span><span class="p">(</span>
+                    <span class="n">mesh</span><span class="o">=</span><span class="n">kpt</span><span class="p">[</span><span class="s1">&#39;mesh&#39;</span><span class="p">],</span>
+                    <span class="n">shift</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">is_time_reversal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">is_mesh_symmetry</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># necessary for calc ellipsoid</span>
+                    <span class="n">is_eigenvectors</span><span class="o">=</span><span class="n">is_eigenvectors</span><span class="p">,</span>
+                    <span class="n">is_gamma_center</span><span class="o">=</span><span class="n">is_gamma_center</span><span class="p">,</span>
+                    <span class="n">run_immediately</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">get_phonon</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_phonon</span></div>
+
+<div class="viewcode-block" id="PhononAnalyzer.get_total_dos"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_total_dos">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_dos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                      <span class="n">is_store</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                      <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">freq_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">freq_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">freq_pitch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">use_tetrahedron_method</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get total dos.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            is_store (bool): If True, result is stored in self._phonon.total_dos</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_store</span><span class="p">:</span>
+            <span class="n">_phonon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_phonon</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_tetrahedron_method</span> <span class="ow">and</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;It is prohibited to set use_tetrahedron_method=True and sigma=&lt;float_val&gt;&quot;</span><span class="p">)</span>
+
+        <span class="n">_phonon</span><span class="o">.</span><span class="n">run_total_dos</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span>
+                              <span class="n">freq_min</span><span class="o">=</span><span class="n">freq_min</span><span class="p">,</span>
+                              <span class="n">freq_max</span><span class="o">=</span><span class="n">freq_max</span><span class="p">,</span>
+                              <span class="n">freq_pitch</span><span class="o">=</span><span class="n">freq_pitch</span><span class="p">,</span>
+                              <span class="n">use_tetrahedron_method</span><span class="o">=</span><span class="n">use_tetrahedron_method</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_phonon</span><span class="o">.</span><span class="n">total_dos</span></div>
+
+<div class="viewcode-block" id="PhononAnalyzer.get_projected_dos"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_projected_dos">[docs]</a>    <span class="k">def</span> <span class="nf">get_projected_dos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                        <span class="n">is_store</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">sigma</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">freq_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">freq_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">freq_pitch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">use_tetrahedron_method</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">direction</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">xyz_projection</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get projected dos.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            is_store (bool): If True, result is stored in self._phonon.projected_dos</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">use_tetrahedron_method</span> <span class="ow">and</span> <span class="n">sigma</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;It is prohibited to set use_tetrahedron_method=True and sigma=&lt;float_val&gt;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">is_store</span><span class="p">:</span>
+            <span class="n">_phonon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_phonon</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span><span class="p">)</span>
+
+        <span class="n">_phonon</span><span class="o">.</span><span class="n">run_projected_dos</span><span class="p">(</span><span class="n">sigma</span><span class="o">=</span><span class="n">sigma</span><span class="p">,</span>
+                                  <span class="n">freq_min</span><span class="o">=</span><span class="n">freq_min</span><span class="p">,</span>
+                                  <span class="n">freq_max</span><span class="o">=</span><span class="n">freq_max</span><span class="p">,</span>
+                                  <span class="n">freq_pitch</span><span class="o">=</span><span class="n">freq_pitch</span><span class="p">,</span>
+                                  <span class="n">use_tetrahedron_method</span><span class="o">=</span><span class="n">use_tetrahedron_method</span><span class="p">,</span>
+                                  <span class="n">direction</span><span class="o">=</span><span class="n">direction</span><span class="p">,</span>
+                                  <span class="n">xyz_projection</span><span class="o">=</span><span class="n">xyz_projection</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_phonon</span><span class="o">.</span><span class="n">projected_dos</span></div>
+
+<div class="viewcode-block" id="PhononAnalyzer.get_thermal_displacement_matrices"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.phonon_analyzer.PhononAnalyzer.get_thermal_displacement_matrices">[docs]</a>    <span class="k">def</span> <span class="nf">get_thermal_displacement_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                          <span class="n">t_step</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                                          <span class="n">t_max</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                                          <span class="n">t_min</span><span class="p">:</span><span class="nb">int</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                          <span class="n">with_original_cart</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                          <span class="n">def_cif</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                          <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get ThermalDisplacementMatrices object for</span>
+<span class="sd">        both hexagonal and twinboundary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            t_step (int): temperature interval</span>
+<span class="sd">            t_max (int): max temperature</span>
+<span class="sd">            t_min (int): minimum temperature</span>
+<span class="sd">            with_original_cart (bool): if True, use twinboundary</span>
+<span class="sd">                                       original frame</span>
+<span class="sd">            def_cif (bool): if True, use cif definition</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">            I do not know how to rotate 4d array (temp, atoms, 3, 3).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">phonon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_phonon</span>
+        <span class="n">inv_rotation_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_matrix</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">phonon</span><span class="o">.</span><span class="n">set_thermal_displacement_matrices</span><span class="p">(</span>
+            <span class="n">t_step</span><span class="o">=</span><span class="n">t_step</span><span class="p">,</span>
+            <span class="n">t_max</span><span class="o">=</span><span class="n">t_max</span><span class="p">,</span>
+            <span class="n">t_min</span><span class="o">=</span><span class="n">t_min</span><span class="p">,</span>
+            <span class="n">freq_min</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">freq_max</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">t_cif</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">tdm</span> <span class="o">=</span> <span class="n">phonon</span><span class="o">.</span><span class="n">thermal_displacement_matrices</span>
+        <span class="k">if</span> <span class="n">def_cif</span><span class="p">:</span>
+            <span class="n">_matrix</span> <span class="o">=</span> <span class="n">tdm</span><span class="o">.</span><span class="n">thermal_displacement_matrices_cif</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_matrix</span> <span class="o">=</span> <span class="n">tdm</span><span class="o">.</span><span class="n">thermal_displacement_matrices</span>
+
+        <span class="k">if</span> <span class="n">with_original_cart</span><span class="p">:</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">_matrix</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">lst</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">atom_lst</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                    <span class="n">mat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">inv_rotation_matrix</span><span class="p">,</span>
+                                 <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">_matrix</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">],</span>
+                                        <span class="n">inv_rotation_matrix</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+                    <span class="n">atom_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mat</span><span class="p">)</span>
+                <span class="n">lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom_lst</span><span class="p">)</span>
+            <span class="n">matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">matrix</span> <span class="o">=</span> <span class="n">_matrix</span>
+
+        <span class="k">return</span> <span class="n">matrix</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

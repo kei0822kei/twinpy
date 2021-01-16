@@ -24,16 +24,11 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
         <script src="../_static/contentui.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
     
-    <link rel="search" type="application/opensearchdescription+xml"
-          title="Search within twinpy 0.0.1 documentation"
-          href="../_static/opensearch.xml"/>
 
   
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
@@ -66,7 +61,7 @@
             
             
               <div class="version">
-                0.0
+                0.0.1
               </div>
             
           
@@ -91,7 +86,6 @@
             
             
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User guide</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Definitions</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="bonding.html">bonding</a></li>
 <li class="toctree-l2"><a class="reference internal" href="lattice.html">lattice</a></li>
@@ -104,7 +98,6 @@
 <li class="toctree-l2"><a class="reference internal" href="structure.html">structure</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../developer_guide/index.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../apidoc/twinpy.html">API documentation</a></li>
 </ul>
 
@@ -159,6 +152,8 @@
       <li class="wy-breadcrumbs-aside">
         
             
+            <a href="../_sources/definitions/phonon.rst.txt" rel="nofollow"> View page source</a>
+          
         
       </li>
     
@@ -190,94 +185,94 @@ each other corresponding to different shear strain ratio.
 However, before comparing, it is necessary to transform structures
 from the coordinates suitable for VASP calculations to the ones
 which are easiest to analize their difference.</p>
-<p>Let, the shear lattice basis as <span class="math notranslate nohighlight">\([\boldsymbol{a}_{s},
-\boldsymbol{b}_{s}, \boldsymbol{c}_{s}]\)</span> is defined as</p>
-<div class="math notranslate nohighlight">
-\[[\boldsymbol{a}_{s},
+<p>Let, the shear lattice basis as <img class="math" src="../_images/math/b3b266f34a4027d054f034668bfef08315160d02.png" alt="[\boldsymbol{a}_{s},
+\boldsymbol{b}_{s}, \boldsymbol{c}_{s}]"/> is defined as</p>
+<div class="math">
+<p><img src="../_images/math/89ccd412c92ec01289609df0d4a9f2e8665d618c.png" alt="[\boldsymbol{a}_{s},
  \boldsymbol{b}_{s},
  \boldsymbol{c}_{s}]
 =
 [\boldsymbol{e}_x,
  \boldsymbol{e}_y,
  \boldsymbol{e}_z]
-\boldsymbol{M}_{s}.\]</div>
-<p>and let transformation matrix <span class="math notranslate nohighlight">\(\boldsymbol{P}^{-1}\)</span>
+\boldsymbol{M}_{s}."/></p>
+</div><p>and let transformation matrix <img class="math" src="../_images/math/230600e05530eba3fe9017ea54cdc89ce98d539c.png" alt="\boldsymbol{P}^{-1}"/>
 to standardized lattice, then</p>
-<div class="math notranslate nohighlight">
-\[[\boldsymbol{a}_{std},
+<div class="math">
+<p><img src="../_images/math/8db90215773bcc93ad7e26981390ec4136b505b1.png" alt="[\boldsymbol{a}_{std},
  \boldsymbol{b}_{std},
  \boldsymbol{c}_{std}]
 =
 [\boldsymbol{a}_{s},
  \boldsymbol{b}_{s},
- \boldsymbol{c}_{s}] \boldsymbol{P}^{-1}\]</div>
-<p>equivalently</p>
-<div class="math notranslate nohighlight">
-\[\boldsymbol{M}_{std} = \boldsymbol{M}_{s} \boldsymbol{P}^{-1}\]</div>
-<p>Note in this stage, crystal body IS NOT ROTATED.</p>
+ \boldsymbol{c}_{s}] \boldsymbol{P}^{-1}"/></p>
+</div><p>equivalently</p>
+<div class="math">
+<p><img src="../_images/math/41ce7f7195f46f7d8bef6d96e2d35f1652474a97.png" alt="\boldsymbol{M}_{std} = \boldsymbol{M}_{s} \boldsymbol{P}^{-1}"/></p>
+</div><p>Note in this stage, crystal body IS NOT ROTATED.</p>
 <p>Next, let the conventional and primitive lattice of
-this crystal as <span class="math notranslate nohighlight">\(\boldsymbol{\bar{M}}_{std}\)</span>
-and <span class="math notranslate nohighlight">\(\boldsymbol{\bar{M}}_{prim}\)</span>:</p>
-<div class="math notranslate nohighlight">
-\[[\boldsymbol{\bar{a}}_{std},
+this crystal as <img class="math" src="../_images/math/17d19109227e5883cb706790ca603bbcd9b44bf0.png" alt="\boldsymbol{\bar{M}}_{std}"/>
+and <img class="math" src="../_images/math/93afe4ec6bb3194bfa04cebf46896efc78ee5a5a.png" alt="\boldsymbol{\bar{M}}_{prim}"/>:</p>
+<div class="math">
+<p><img src="../_images/math/d871580ece78a6460909f00fb79ce1b16e5344a9.png" alt="[\boldsymbol{\bar{a}}_{std},
  \boldsymbol{\bar{b}}_{std},
  \boldsymbol{\bar{c}}_{std}]
 =
 [\boldsymbol{e}_x,
  \boldsymbol{e}_y,
  \boldsymbol{e}_z]
-\boldsymbol{\bar{M}}_{std}\]</div>
-<p>and</p>
-<div class="math notranslate nohighlight">
-\[[\boldsymbol{\bar{a}}_{prim},
+\boldsymbol{\bar{M}}_{std}"/></p>
+</div><p>and</p>
+<div class="math">
+<p><img src="../_images/math/2c3893600b70bd939501356e477cb620d1ba7898.png" alt="[\boldsymbol{\bar{a}}_{prim},
  \boldsymbol{\bar{b}}_{prim},
  \boldsymbol{\bar{c}}_{prim}]
 =
 [\boldsymbol{e}_x,
  \boldsymbol{e}_y,
  \boldsymbol{e}_z]
-\boldsymbol{\bar{M}}_{prim}.\]</div>
-<p>Relation between <span class="math notranslate nohighlight">\(\boldsymbol{\bar{M}}_{std}\)</span> and
-<span class="math notranslate nohighlight">\(\boldsymbol{\bar{M}}_{prim}\)</span> depends on lattice centering
+\boldsymbol{\bar{M}}_{prim}."/></p>
+</div><p>Relation between <img class="math" src="../_images/math/17d19109227e5883cb706790ca603bbcd9b44bf0.png" alt="\boldsymbol{\bar{M}}_{std}"/> and
+<img class="math" src="../_images/math/93afe4ec6bb3194bfa04cebf46896efc78ee5a5a.png" alt="\boldsymbol{\bar{M}}_{prim}"/> depends on lattice centering
 (you can find in spglib documentation ‘Definitions and conventions’)</p>
-<div class="math notranslate nohighlight">
-\[[\boldsymbol{\bar{a}}_{prim},
+<div class="math">
+<p><img src="../_images/math/e9004767d46346ec28d26d252b6c975c047b1074.png" alt="[\boldsymbol{\bar{a}}_{prim},
  \boldsymbol{\bar{b}}_{prim},
  \boldsymbol{\bar{c}}_{prim}]
 =
 [\boldsymbol{\bar{a}}_{std},
  \boldsymbol{\bar{b}}_{std},
  \boldsymbol{\bar{c}}_{std}]
-\boldsymbol{P}_c\]</div>
-<p>equivalently</p>
-<div class="math notranslate nohighlight">
-\[\boldsymbol{\bar{M}}_{prim}
+\boldsymbol{P}_c"/></p>
+</div><p>equivalently</p>
+<div class="math">
+<p><img src="../_images/math/1b13769e1aa904429a4e102c8fe24f2c242af1b8.png" alt="\boldsymbol{\bar{M}}_{prim}
 =
-\boldsymbol{\bar{M}}_{std} \boldsymbol{P}_c\]</div>
-<p>where <span class="math notranslate nohighlight">\(\bar{}\)</span> indicates crystal body is rotated
-from the original structure. Rotation matrix <span class="math notranslate nohighlight">\(\boldsymbol{R}\)</span>
+\boldsymbol{\bar{M}}_{std} \boldsymbol{P}_c"/></p>
+</div><p>where <img class="math" src="../_images/math/75eee046003e7782cbd4d23d90bb64bacaa8de53.png" alt="\bar{}"/> indicates crystal body is rotated
+from the original structure. Rotation matrix <img class="math" src="../_images/math/69e6c3d0cc9468d6621bc001f4d6cd79b3443cbd.png" alt="\boldsymbol{R}"/>
 is defined as</p>
-<div class="math notranslate nohighlight">
-\[[\boldsymbol{\bar{a}}_{std},
+<div class="math">
+<p><img src="../_images/math/b3885a6d1cb3f85ead8d8027908fbb9035324ae6.png" alt="[\boldsymbol{\bar{a}}_{std},
  \boldsymbol{\bar{b}}_{std},
  \boldsymbol{\bar{c}}_{std}]
 =
 [\boldsymbol{R}\boldsymbol{a}_{std},
  \boldsymbol{R}\boldsymbol{b}_{std},
- \boldsymbol{R}\boldsymbol{c}_{std}]\]</div>
-<p>equivalently</p>
-<div class="math notranslate nohighlight">
-\[\boldsymbol{\bar{M}}_{std} = \boldsymbol{R}\boldsymbol{M}_{std}.\]</div>
-<p>For summary</p>
-<div class="math notranslate nohighlight">
-\[\boldsymbol{\bar{M}}_{prim}
+ \boldsymbol{R}\boldsymbol{c}_{std}]"/></p>
+</div><p>equivalently</p>
+<div class="math">
+<p><img src="../_images/math/e0eb8a1bb28f1e5f49c670bdbdf546f7587679f4.png" alt="\boldsymbol{\bar{M}}_{std} = \boldsymbol{R}\boldsymbol{M}_{std}."/></p>
+</div><p>For summary</p>
+<div class="math">
+<p><img src="../_images/math/a59ded27b672907937e2c631d871e37fb95ccffb.png" alt="\boldsymbol{\bar{M}}_{prim}
 =
 \boldsymbol{\bar{M}}_{std} \boldsymbol{P}_c
 =
 \boldsymbol{RM}_{std} \boldsymbol{P}_c
 =
-\boldsymbol{RM}_{s} \boldsymbol{P}^{-1} \boldsymbol{P}_c\]</div>
-</div>
+\boldsymbol{RM}_{s} \boldsymbol{P}^{-1} \boldsymbol{P}_c"/></p>
+</div></div>
 <div class="section" id="qpoints-transformation">
 <h2><a class="toc-backref" href="#id2">Qpoints Transformation</a><a class="headerlink" href="#qpoints-transformation" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -303,7 +298,7 @@ is defined as</p>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, kei0822kei. All rights reserved
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
 
     </p>
   </div>

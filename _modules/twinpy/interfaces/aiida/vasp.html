@@ -1,0 +1,879 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.interfaces.aiida.vasp &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/contentui.js"></script>
+    
+    <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.interfaces.aiida.vasp</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.interfaces.aiida.vasp</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Interface for Aiida-Vasp.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">pprint</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">twinpy.interfaces.aiida.base</span> <span class="kn">import</span> <span class="p">(</span><span class="n">check_process_class</span><span class="p">,</span>
+                                          <span class="n">get_cell_from_aiida</span><span class="p">,</span>
+                                          <span class="n">_WorkChain</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">twinpy.common.kpoints</span> <span class="kn">import</span> <span class="n">get_mesh_offset_from_direct_lattice</span>
+<span class="kn">from</span> <span class="nn">twinpy.common.utils</span> <span class="kn">import</span> <span class="n">print_header</span>
+<span class="kn">from</span> <span class="nn">twinpy.plot.relax</span> <span class="kn">import</span> <span class="n">RelaxPlot</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.lattice</span> <span class="kn">import</span> <span class="n">CrystalLattice</span>
+<span class="kn">from</span> <span class="nn">twinpy.analysis.relax_analyzer</span> <span class="kn">import</span> <span class="n">RelaxAnalyzer</span>
+<span class="kn">from</span> <span class="nn">aiida.cmdline.utils.decorators</span> <span class="kn">import</span> <span class="n">with_dbenv</span>
+<span class="kn">from</span> <span class="nn">aiida.common</span> <span class="kn">import</span> <span class="n">NotExistentAttributeError</span>
+<span class="kn">from</span> <span class="nn">aiida.orm</span> <span class="kn">import</span> <span class="p">(</span><span class="n">load_node</span><span class="p">,</span>
+                       <span class="n">Node</span><span class="p">,</span>
+                       <span class="n">WorkChainNode</span><span class="p">,</span>
+                       <span class="n">QueryBuilder</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_AiidaVaspWorkChain</span><span class="p">(</span><span class="n">_WorkChain</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aiida-Vasp base work chain class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">node</span><span class="p">:</span><span class="n">Node</span><span class="p">,</span>
+            <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            node: Aiida Node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_structure_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_initial_structure</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stress</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_forces</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_energy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_state</span> <span class="o">==</span> <span class="s1">&#39;finished&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_properties</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_set_initial_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set initial structure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_structure_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">pk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span>
+                <span class="n">load_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_structure_pk</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">initial_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initial cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span>
+
+    <span class="k">def</span> <span class="nf">_set_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_forces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">forces</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s1">&#39;final&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stress</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">stress</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s1">&#39;final&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_energy</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">energies</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s1">&#39;energy_no_entropy&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">forces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forces acting on atoms after relax.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forces</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stress acting on lattice after relax.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stress</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Total energy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy</span>
+
+    <span class="k">def</span> <span class="nf">get_max_force</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get maximum force acting on atoms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_force</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_forces</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">max_force</span>
+
+    <span class="k">def</span> <span class="nf">get_kpoints_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_two_pi</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get sampling kpoints information.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Contains kpoints information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mesh</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">kpoints</span><span class="o">.</span><span class="n">get_kpoints_mesh</span><span class="p">()</span>
+        <span class="n">total_mesh</span> <span class="o">=</span> <span class="n">mesh</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">mesh</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">mesh</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">twinpy_kpoints</span> <span class="o">=</span> <span class="n">get_mesh_offset_from_direct_lattice</span><span class="p">(</span>
+                <span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span>
+                <span class="n">include_two_pi</span><span class="o">=</span><span class="n">include_two_pi</span><span class="p">)</span>
+        <span class="n">kpts</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;mesh&#39;</span><span class="p">:</span> <span class="n">mesh</span><span class="p">,</span>
+                <span class="s1">&#39;total_mesh&#39;</span><span class="p">:</span> <span class="n">twinpy_kpoints</span><span class="p">[</span><span class="s1">&#39;total_mesh&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;offset&#39;</span><span class="p">:</span> <span class="n">offset</span><span class="p">,</span>
+                <span class="s1">&#39;reciprocal_lattice&#39;</span><span class="p">:</span> <span class="n">twinpy_kpoints</span><span class="p">[</span><span class="s1">&#39;reciprocal_lattice&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;reciprocal_volume&#39;</span><span class="p">:</span> <span class="n">twinpy_kpoints</span><span class="p">[</span><span class="s1">&#39;reciprocal_volume&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;reciprocal_abc&#39;</span><span class="p">:</span> <span class="n">twinpy_kpoints</span><span class="p">[</span><span class="s1">&#39;abc&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;intervals&#39;</span><span class="p">:</span> <span class="n">twinpy_kpoints</span><span class="p">[</span><span class="s1">&#39;intervals&#39;</span><span class="p">],</span>
+                <span class="s1">&#39;include_two_pi&#39;</span><span class="p">:</span> <span class="n">twinpy_kpoints</span><span class="p">[</span><span class="s1">&#39;include_two_pi&#39;</span><span class="p">],</span>
+                <span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">sampling_kpoints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">kpoints</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s1">&#39;kpoints&#39;</span><span class="p">)</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">kpoints</span><span class="o">.</span><span class="n">get_array</span><span class="p">(</span><span class="s1">&#39;weights&#39;</span><span class="p">)</span>
+            <span class="n">weights_num</span> <span class="o">=</span> <span class="p">(</span><span class="n">weights</span> <span class="o">*</span> <span class="n">total_mesh</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">kpts</span><span class="p">[</span><span class="s1">&#39;sampling_kpoints&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sampling_kpoints</span>
+            <span class="n">kpts</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">weights_num</span>
+        <span class="k">return</span> <span class="n">kpts</span>
+
+    <span class="k">def</span> <span class="nf">get_vasp_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get input parameters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Contains input parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">potcar</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;potential_family&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">potential_family</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+            <span class="s1">&#39;potential_mapping&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">potential_mapping</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+            <span class="p">}</span>
+
+        <span class="n">settings</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;incar&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get_dict</span><span class="p">(),</span>
+            <span class="s1">&#39;potcar&#39;</span><span class="p">:</span> <span class="n">potcar</span><span class="p">,</span>
+            <span class="s1">&#39;kpoints&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">kpoints</span><span class="o">.</span><span class="n">get_kpoints_mesh</span><span class="p">(),</span>
+            <span class="s1">&#39;parser_settings&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()[</span><span class="s1">&#39;parser_settings&#39;</span><span class="p">],</span>
+            <span class="p">}</span>
+        <span class="k">return</span> <span class="n">settings</span>
+
+    <span class="k">def</span> <span class="nf">get_misc</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get misc.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">misc</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_print_vasp_results</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print VASP run results.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">print_header</span><span class="p">(</span><span class="s1">&#39;VASP settings&#39;</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_vasp_settings</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">print_header</span><span class="p">(</span><span class="s2">&quot;kpoints information&quot;</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_kpoints_info</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_state</span> <span class="o">==</span> <span class="s1">&#39;finished&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">print_header</span><span class="p">(</span><span class="s1">&#39;VASP outputs&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;# stress&quot;</span><span class="p">)</span>
+            <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_stress</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;# max force acting on atoms&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_max_force</span><span class="p">())</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AiidaVaspWorkChain"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaVaspWorkChain">[docs]</a><span class="nd">@with_dbenv</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">AiidaVaspWorkChain</span><span class="p">(</span><span class="n">_AiidaVaspWorkChain</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Vasp work chain class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">node</span><span class="p">:</span><span class="n">Node</span><span class="p">,</span>
+            <span class="n">ignore_warning</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            node: Aiida Node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">process_class</span> <span class="o">=</span> <span class="s1">&#39;VaspWorkChain&#39;</span>
+        <span class="n">check_process_class</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">process_class</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_final_structure</span><span class="p">(</span><span class="n">ignore_warning</span><span class="o">=</span><span class="n">ignore_warning</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_final_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_warning</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set final structure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">pk</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span>
+                    <span class="n">load_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">NotExistentAttributeError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_warning</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Final structure could not find.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                              <span class="s2">&quot;process state:</span><span class="si">{}</span><span class="s2"> (pk=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">process_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">pk</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">final_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Final cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span>
+
+<div class="viewcode-block" id="AiidaVaspWorkChain.get_pks"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaVaspWorkChain.get_pks">[docs]</a>    <span class="k">def</span> <span class="nf">get_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get pks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Contains vasp pk and structure pk.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span>
+                 <span class="s1">&#39;vasp_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pk</span><span class="p">,</span>
+                 <span class="s1">&#39;initial_structure_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_structure_pk</span><span class="p">,</span>
+                 <span class="s1">&#39;final_structure_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span><span class="p">,</span>
+               <span class="p">}</span></div>
+
+<div class="viewcode-block" id="AiidaVaspWorkChain.get_relax_analyzer"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaVaspWorkChain.get_relax_analyzer">[docs]</a>    <span class="k">def</span> <span class="nf">get_relax_analyzer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_cell</span><span class="p">:</span><span class="nb">tuple</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get RelaxAnalyzer class object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            original_cell (tuple): Original cell whose standardized cell</span>
+<span class="sd">                                   is initail_cell.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RelaxAnalyzer: RelaxAnalyzer class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">analyzer</span> <span class="o">=</span> <span class="n">RelaxAnalyzer</span><span class="p">(</span><span class="n">initial_cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span><span class="p">,</span>
+                                 <span class="n">final_cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span><span class="p">,</span>
+                                 <span class="n">original_cell</span><span class="o">=</span><span class="n">original_cell</span><span class="p">,</span>
+                                 <span class="n">forces</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_forces</span><span class="p">,</span>
+                                 <span class="n">stress</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stress</span><span class="p">,</span>
+                                 <span class="n">energy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">analyzer</span></div>
+
+<div class="viewcode-block" id="AiidaVaspWorkChain.get_outputs"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaVaspWorkChain.get_outputs">[docs]</a>    <span class="k">def</span> <span class="nf">get_outputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get outputs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dic</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_outputs</span><span class="p">()</span>
+        <span class="n">lattice</span> <span class="o">=</span> <span class="n">Lattice</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">dic</span><span class="p">[</span><span class="s1">&#39;abc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lattice</span><span class="o">.</span><span class="n">abc</span>
+
+        <span class="k">return</span> <span class="n">dic</span></div>
+
+<div class="viewcode-block" id="AiidaVaspWorkChain.get_description"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaVaspWorkChain.get_description">[docs]</a>    <span class="k">def</span> <span class="nf">get_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get description.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print_common_information</span><span class="p">()</span>
+        <span class="n">print_header</span><span class="p">(</span><span class="s1">&#39;PKs&#39;</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pks</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print_vasp_results</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="AiidaRelaxWorkChain"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxWorkChain">[docs]</a><span class="nd">@with_dbenv</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">AiidaRelaxWorkChain</span><span class="p">(</span><span class="n">_AiidaVaspWorkChain</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Relax work chain class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">node</span><span class="p">:</span><span class="n">Node</span><span class="p">,</span>
+            <span class="n">ignore_warning</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            node: aiida Node</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">            Fix names. Name &#39;final_cell&#39; &#39;final_structure_pk&#39; &#39;cuurent-&#39;</span>
+<span class="sd">            are strange because final_cell and final_structure_pk are</span>
+<span class="sd">            the results from first relax pk. Therefore, &#39;current-&#39;</span>
+<span class="sd">            is truely final structure pk and final cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">process_class</span> <span class="o">=</span> <span class="s1">&#39;RelaxWorkChain&#39;</span>
+        <span class="n">check_process_class</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">process_class</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">node</span><span class="o">=</span><span class="n">node</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_structure_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_final_structure</span><span class="p">(</span><span class="n">ignore_warning</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_final_structure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_warning</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set final structure.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">relax__structure</span><span class="o">.</span><span class="n">pk</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span>
+                    <span class="n">load_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_structure_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span>
+
+        <span class="k">except</span> <span class="n">NotExistentAttributeError</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_warning</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Final structure could not find.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                              <span class="s2">&quot;process state:</span><span class="si">{}</span><span class="s2"> (pk=</span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">process_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">pk</span><span class="p">))</span>
+
+            <span class="n">relax_pks</span><span class="p">,</span> <span class="n">static_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_vasp_calculation_pks</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">relax_pks</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_structure_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_structure_pk</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">static_pk</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_structure_pk</span> <span class="o">=</span> \
+                            <span class="n">load_node</span><span class="p">(</span><span class="n">static_pk</span><span class="p">)</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">structure</span><span class="o">.</span><span class="n">pk</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_cell</span> <span class="o">=</span> <span class="n">get_cell_from_aiida</span><span class="p">(</span>
+                            <span class="n">load_node</span><span class="p">(</span><span class="n">static_pk</span><span class="p">)</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">structure</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">aiida_vasp</span> <span class="o">=</span> <span class="n">AiidaVaspWorkChain</span><span class="p">(</span><span class="n">load_node</span><span class="p">(</span><span class="n">relax_pks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_structure_pk</span> <span class="o">=</span> \
+                            <span class="n">aiida_vasp</span><span class="o">.</span><span class="n">_initial_structure_pk</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_cell</span> <span class="o">=</span> <span class="n">aiida_vasp</span><span class="o">.</span><span class="n">_initial_cell</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current_final_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Final cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_cell</span>
+
+<div class="viewcode-block" id="AiidaRelaxWorkChain.get_relax_settings"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxWorkChain.get_relax_settings">[docs]</a>    <span class="k">def</span> <span class="nf">get_relax_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get relax settings.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Contains relax settings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span> <span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">_get_keys</span><span class="p">()</span>
+                     <span class="k">if</span> <span class="s1">&#39;relax&#39;</span> <span class="ow">in</span> <span class="n">key</span> <span class="p">]</span>
+        <span class="n">settings</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;relax__&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">settings</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_node</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        <span class="k">return</span> <span class="n">settings</span></div>
+
+<div class="viewcode-block" id="AiidaRelaxWorkChain.get_vasp_calculation_pks"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxWorkChain.get_vasp_calculation_pks">[docs]</a>    <span class="k">def</span> <span class="nf">get_vasp_calculation_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get VaspWorkChain pks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (relax_calcs, static_calc).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">qb</span> <span class="o">=</span> <span class="n">QueryBuilder</span><span class="p">()</span>
+        <span class="n">qb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Node</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:{</span><span class="s1">&#39;==&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pk</span><span class="p">}})</span>
+        <span class="n">qb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">WorkChainNode</span><span class="p">)</span>  <span class="c1"># extract vasp.verify WorkChainNodes</span>
+        <span class="n">qb</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">WorkChainNode</span><span class="p">,</span>
+                  <span class="n">project</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>  <span class="c1"># extract vasp.vasp WorkChainNodes</span>
+        <span class="n">qb</span><span class="o">.</span><span class="n">order_by</span><span class="p">({</span><span class="n">WorkChainNode</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="s1">&#39;asc&#39;</span><span class="p">}})</span>
+        <span class="n">vasp_pks</span> <span class="o">=</span> <span class="n">qb</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+
+        <span class="n">relax_pks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">static_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="s1">&#39;relax&#39;</span> <span class="ow">not</span> <span class="ow">in</span> \
+                <span class="n">load_node</span><span class="p">(</span><span class="n">vasp_pks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">inputs</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">get_dict</span><span class="p">()</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">static_pk</span> <span class="o">=</span> <span class="n">vasp_pks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">relax_pks</span> <span class="o">=</span> <span class="p">[</span> <span class="n">pk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="n">vasp_pks</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Could not find final static_pk calculation.&quot;</span><span class="p">)</span>
+            <span class="n">relax_pks</span> <span class="o">=</span> <span class="p">[</span> <span class="n">pk</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="n">vasp_pks</span> <span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">relax_pks</span><span class="p">,</span> <span class="n">static_pk</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiidaRelaxWorkChain.get_vasp_calculations"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxWorkChain.get_vasp_calculations">[docs]</a>    <span class="k">def</span> <span class="nf">get_vasp_calculations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get AiidaVaspWorkChain class objects.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            tuple: (relax_calcs, static_calc).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">relax_pks</span><span class="p">,</span> <span class="n">static_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_vasp_calculation_pks</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exit_status</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">relax</span> <span class="o">=</span> <span class="p">[</span> <span class="n">AiidaVaspWorkChain</span><span class="p">(</span><span class="n">load_node</span><span class="p">(</span><span class="n">pk</span><span class="p">))</span>
+                                <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="n">relax_pks</span> <span class="p">]</span>
+            <span class="n">static</span> <span class="o">=</span> <span class="n">AiidaVaspWorkChain</span><span class="p">(</span><span class="n">load_node</span><span class="p">(</span><span class="n">static_pk</span><span class="p">),</span>
+                                              <span class="n">ignore_warning</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">relax</span> <span class="o">=</span> <span class="p">[</span> <span class="n">AiidaVaspWorkChain</span><span class="p">(</span><span class="n">load_node</span><span class="p">(</span><span class="n">pk</span><span class="p">))</span>
+                                <span class="k">for</span> <span class="n">pk</span> <span class="ow">in</span> <span class="n">relax_pks</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">]</span>
+            <span class="n">static</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">relax</span><span class="p">,</span> <span class="n">static</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AiidaRelaxWorkChain.get_pks"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxWorkChain.get_pks">[docs]</a>    <span class="k">def</span> <span class="nf">get_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get pks.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: Contains relax pk and structure pk.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">relax_pks</span><span class="p">,</span> <span class="n">static_pk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_vasp_calculation_pks</span><span class="p">()</span>
+        <span class="n">pks</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s1">&#39;relax_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pk</span><span class="p">,</span>
+                <span class="s1">&#39;initial_structure_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_structure_pk</span><span class="p">,</span>
+                <span class="s1">&#39;final_structure_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span><span class="p">,</span>
+                <span class="s1">&#39;current_final_structure_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_structure_pk</span><span class="p">,</span>
+                <span class="s1">&#39;vasp_relax_pks&#39;</span><span class="p">:</span> <span class="n">relax_pks</span><span class="p">,</span>
+                <span class="s1">&#39;static_pk&#39;</span><span class="p">:</span> <span class="n">static_pk</span><span class="p">,</span>
+              <span class="p">}</span>
+        <span class="k">return</span> <span class="n">pks</span></div>
+
+<div class="viewcode-block" id="AiidaRelaxWorkChain.get_relax_analyzer"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxWorkChain.get_relax_analyzer">[docs]</a>    <span class="k">def</span> <span class="nf">get_relax_analyzer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_cell</span><span class="p">:</span><span class="nb">tuple</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get RelaxAnalyzer class object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            original_cell (tuple): Original cell whose standardized cell</span>
+<span class="sd">                                   is initail_cell.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            RelaxAnalyzer: RelaxAnalyzer class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">analyzer</span> <span class="o">=</span> <span class="n">RelaxAnalyzer</span><span class="p">(</span><span class="n">initial_cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span><span class="p">,</span>
+                                 <span class="n">final_cell</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span><span class="p">,</span>
+                                 <span class="n">original_cell</span><span class="o">=</span><span class="n">original_cell</span><span class="p">,</span>
+                                 <span class="n">forces</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_forces</span><span class="p">,</span>
+                                 <span class="n">stress</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_stress</span><span class="p">,</span>
+                                 <span class="n">energy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_energy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">analyzer</span></div>
+
+<div class="viewcode-block" id="AiidaRelaxWorkChain.get_description"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxWorkChain.get_description">[docs]</a>    <span class="k">def</span> <span class="nf">get_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get description.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print_common_information</span><span class="p">()</span>
+        <span class="n">print_header</span><span class="p">(</span><span class="s1">&#39;PKs&#39;</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_pks</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">print_header</span><span class="p">(</span><span class="s2">&quot;relax settings&quot;</span><span class="p">)</span>
+        <span class="n">pprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_relax_settings</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_print_vasp_results</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AiidaRelaxWorkChain.get_relaxplot"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxWorkChain.get_relaxplot">[docs]</a>    <span class="k">def</span> <span class="nf">get_relaxplot</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get RelaxPlot class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">relax_vasps</span><span class="p">,</span> <span class="n">static_vasp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_vasp_calculations</span><span class="p">()</span>
+        <span class="n">relax_data</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">relax_data</span><span class="p">[</span><span class="s1">&#39;max_force&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                <span class="p">[</span> <span class="n">relax_vasp</span><span class="o">.</span><span class="n">get_max_force</span><span class="p">()</span> <span class="k">for</span> <span class="n">relax_vasp</span> <span class="ow">in</span> <span class="n">relax_vasps</span> <span class="p">])</span>
+        <span class="c1"># stress xx yy zz yz zx xy</span>
+        <span class="n">relax_data</span><span class="p">[</span><span class="s1">&#39;stress&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">relax_vasp</span><span class="o">.</span><span class="n">stress</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span>
+                               <span class="k">for</span> <span class="n">relax_vasp</span> <span class="ow">in</span> <span class="n">relax_vasps</span> <span class="p">])</span>
+        <span class="n">relax_data</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">relax_vasp</span><span class="o">.</span><span class="n">energy</span>
+                                              <span class="k">for</span> <span class="n">relax_vasp</span> <span class="ow">in</span> <span class="n">relax_vasps</span> <span class="p">])</span>
+        <span class="n">relax_data</span><span class="p">[</span><span class="s1">&#39;abc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">Lattice</span><span class="p">(</span><span class="n">relax_vasp</span><span class="o">.</span><span class="n">final_cell</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">abc</span>
+                                           <span class="k">for</span> <span class="n">relax_vasp</span> <span class="ow">in</span> <span class="n">relax_vasps</span> <span class="p">])</span>
+        <span class="n">relax_data</span><span class="p">[</span><span class="s1">&#39;steps&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">i</span><span class="o">+</span><span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">relax_vasps</span><span class="p">))</span> <span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">static_vasp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">static_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">static_data</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s1">&#39;max_force&#39;</span><span class="p">:</span> <span class="n">static_vasp</span><span class="o">.</span><span class="n">get_max_force</span><span class="p">(),</span>
+                    <span class="s1">&#39;stress&#39;</span><span class="p">:</span> <span class="n">static_vasp</span><span class="o">.</span><span class="n">stress</span><span class="o">.</span><span class="n">flatten</span><span class="p">()[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">1</span><span class="p">]]</span> <span class="p">,</span>
+                    <span class="s1">&#39;energy&#39;</span><span class="p">:</span> <span class="n">static_vasp</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span>
+                    <span class="s1">&#39;abc&#39;</span><span class="p">:</span> <span class="n">Lattice</span><span class="p">(</span><span class="n">static_vasp</span><span class="o">.</span><span class="n">initial_cell</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">abc</span><span class="p">,</span>
+                    <span class="p">}</span>
+
+        <span class="n">relax_plot</span> <span class="o">=</span> <span class="n">RelaxPlot</span><span class="p">(</span><span class="n">relax_data</span><span class="o">=</span><span class="n">relax_data</span><span class="p">,</span>
+                               <span class="n">static_data</span><span class="o">=</span><span class="n">static_data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">relax_plot</span></div>
+
+<div class="viewcode-block" id="AiidaRelaxWorkChain.plot_convergence"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxWorkChain.plot_convergence">[docs]</a>    <span class="k">def</span> <span class="nf">plot_convergence</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Plot convergence.</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">            This function must be moved in plot directory.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s2">&quot;font.size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">14</span>
+
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">13</span><span class="p">))</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span>  <span class="mf">0.35</span><span class="p">))</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mf">0.63</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">))</span>
+        <span class="n">ax3</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.55</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">))</span>
+        <span class="n">ax4</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mf">0.63</span><span class="p">,</span> <span class="mf">0.55</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">))</span>
+
+        <span class="n">relax_plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relaxplot</span><span class="p">()</span>
+        <span class="n">relax_plot</span><span class="o">.</span><span class="n">plot_max_force</span><span class="p">(</span><span class="n">ax1</span><span class="p">)</span>
+        <span class="n">relax_plot</span><span class="o">.</span><span class="n">plot_energy</span><span class="p">(</span><span class="n">ax2</span><span class="p">)</span>
+        <span class="n">relax_plot</span><span class="o">.</span><span class="n">plot_stress</span><span class="p">(</span><span class="n">ax3</span><span class="p">)</span>
+        <span class="n">relax_plot</span><span class="o">.</span><span class="n">plot_abc</span><span class="p">(</span><span class="n">ax4</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fig</span></div></div>
+
+
+<div class="viewcode-block" id="AiidaRelaxCollection"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxCollection">[docs]</a><span class="k">class</span> <span class="nc">AiidaRelaxCollection</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Collection of AiidaRelaxWorkChain.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+           <span class="bp">self</span><span class="p">,</span>
+           <span class="n">aiida_relaxes</span><span class="p">:</span><span class="nb">list</span><span class="p">,</span>
+           <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            aiida_relaxes (list): List of AiidaRelaxWorkChain.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relaxes</span> <span class="o">=</span> <span class="n">aiida_relaxes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relax_pks</span> <span class="o">=</span> <span class="p">[</span> <span class="n">relax</span><span class="o">.</span><span class="n">pk</span> <span class="k">for</span> <span class="n">relax</span> <span class="ow">in</span> <span class="n">aiida_relaxes</span> <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_structure_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_structure_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_structures</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_set_structures</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check previous output structure and next input structure</span>
+<span class="sd">        are the same.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">relax_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">structure_pk</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">aiida_relax</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relaxes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">aiida_relax</span><span class="o">.</span><span class="n">get_pks</span><span class="p">()[</span><span class="s1">&#39;initial_structure_pk&#39;</span><span class="p">]</span> \
+                        <span class="o">!=</span> <span class="n">structure_pk</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                            <span class="s2">&quot;Relax pk </span><span class="si">{}</span><span class="s2"> output structure pk </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                            <span class="s2">&quot;and relax pk </span><span class="si">{}</span><span class="s2"> input structure pk </span><span class="si">{}</span><span class="s2"> &quot;</span>
+                            <span class="s2">&quot;does not match.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">relax_pk</span><span class="p">,</span>
+                                <span class="n">structure_pk</span><span class="p">,</span>
+                                <span class="n">aiida_relax</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                                <span class="n">aiida_relax</span><span class="o">.</span><span class="n">get_pks</span><span class="p">()[</span><span class="s1">&#39;initial_structure_pk&#39;</span><span class="p">],</span>
+                                <span class="p">))</span>
+            <span class="n">relax_pk</span> <span class="o">=</span> <span class="n">aiida_relax</span><span class="o">.</span><span class="n">pk</span>
+            <span class="n">structure_pk</span> <span class="o">=</span> <span class="n">aiida_relax</span><span class="o">.</span><span class="n">get_pks</span><span class="p">()[</span><span class="s1">&#39;current_final_structure_pk&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_structure_pk</span> <span class="o">=</span> <span class="n">structure_pk</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_cell</span> <span class="o">=</span> \
+                <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="n">load_node</span><span class="p">(</span><span class="n">structure_pk</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relaxes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">process_state</span> <span class="o">==</span> <span class="s1">&#39;finished&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_structure_pk</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_cell</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_structure_pk</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relaxes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_pks</span><span class="p">()[</span><span class="s1">&#39;initial_structure_pk&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span> <span class="o">=</span> \
+                <span class="n">get_cell_from_aiida</span><span class="p">(</span><span class="n">load_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_structure_pk</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">aiida_relaxes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        List of AiidaRelaxWorkChain class object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relaxes</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">initial_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initial cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current_final_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Current final cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_cell</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">final_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Final cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span>
+
+<div class="viewcode-block" id="AiidaRelaxCollection.get_pks"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxCollection.get_pks">[docs]</a>    <span class="k">def</span> <span class="nf">get_pks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get pks.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pks</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;aiida_relax_pks&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relax_pks</span><span class="p">,</span>
+            <span class="s1">&#39;initial_structure_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_structure_pk</span><span class="p">,</span>
+            <span class="s1">&#39;current_final_structure_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_final_structure_pk</span><span class="p">,</span>
+            <span class="s1">&#39;final_structure_pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_structure_pk</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="k">return</span> <span class="n">pks</span></div>
+
+<div class="viewcode-block" id="AiidaRelaxCollection.get_relax_analyzer"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxCollection.get_relax_analyzer">[docs]</a>    <span class="k">def</span> <span class="nf">get_relax_analyzer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_cell</span><span class="p">:</span><span class="nb">tuple</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get RelaxAnalyzer class object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            original_cell (tuple): Original cell whose standardized cell</span>
+<span class="sd">                                   is initail_cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">pks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_pks</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">pks</span><span class="p">[</span><span class="s1">&#39;final_structure_pk&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Final structure in latest RelaxWorkChain (pk=</span><span class="si">{}</span><span class="s2">) &quot;</span>
+                           <span class="s2">&quot;does not find. So build RelaxAnalyzer with &quot;</span>
+                           <span class="s2">&quot;previous RelaxWorkChain (pk=</span><span class="si">{}</span><span class="s2">) &quot;</span>
+                           <span class="s2">&quot; as a final structure.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relaxes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relaxes</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">pk</span><span class="p">,</span>
+                               <span class="p">))</span>
+            <span class="n">final_relax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relaxes</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">final_relax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relaxes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">initail_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span>
+        <span class="n">final_cell</span> <span class="o">=</span> <span class="n">final_relax</span><span class="o">.</span><span class="n">_final_cell</span>
+        <span class="n">forces</span> <span class="o">=</span> <span class="n">final_relax</span><span class="o">.</span><span class="n">forces</span>
+        <span class="n">stress</span> <span class="o">=</span> <span class="n">final_relax</span><span class="o">.</span><span class="n">stress</span>
+        <span class="n">energy</span> <span class="o">=</span> <span class="n">final_relax</span><span class="o">.</span><span class="n">energy</span>
+        <span class="n">relax_analyzer</span> <span class="o">=</span> <span class="n">RelaxAnalyzer</span><span class="p">(</span>
+                <span class="n">initial_cell</span><span class="o">=</span><span class="n">initail_cell</span><span class="p">,</span>
+                <span class="n">final_cell</span><span class="o">=</span><span class="n">final_cell</span><span class="p">,</span>
+                <span class="n">original_cell</span><span class="o">=</span><span class="n">original_cell</span><span class="p">,</span>
+                <span class="n">forces</span><span class="o">=</span><span class="n">forces</span><span class="p">,</span>
+                <span class="n">stress</span><span class="o">=</span><span class="n">stress</span><span class="p">,</span>
+                <span class="n">energy</span><span class="o">=</span><span class="n">energy</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">relax_analyzer</span></div>
+
+<div class="viewcode-block" id="AiidaRelaxCollection.get_relaxplots"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxCollection.get_relaxplots">[docs]</a>    <span class="k">def</span> <span class="nf">get_relaxplots</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get RelaxPlot class objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">relax_plots</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">relax</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_aiida_relaxes</span><span class="p">:</span>
+            <span class="n">relax_plots</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">relax</span><span class="o">.</span><span class="n">get_relaxplot</span><span class="p">())</span>
+
+        <span class="n">start_step</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">relax_plot</span> <span class="ow">in</span> <span class="n">relax_plots</span><span class="p">:</span>
+            <span class="n">relax_plot</span><span class="o">.</span><span class="n">set_steps</span><span class="p">(</span><span class="n">start_step</span><span class="o">=</span><span class="n">start_step</span><span class="p">)</span>
+            <span class="n">start_step</span> <span class="o">=</span> <span class="n">relax_plot</span><span class="o">.</span><span class="n">_relax_data</span><span class="p">[</span><span class="s1">&#39;steps&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">relax_plots</span></div>
+
+<div class="viewcode-block" id="AiidaRelaxCollection.plot_convergence"><a class="viewcode-back" href="../../../../apidoc/twinpy.interfaces.aiida.html#twinpy.interfaces.aiida.vasp.AiidaRelaxCollection.plot_convergence">[docs]</a>    <span class="k">def</span> <span class="nf">plot_convergence</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get RelaxPlot class objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="mi">13</span><span class="p">))</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span>  <span class="mf">0.35</span><span class="p">))</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mf">0.63</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">))</span>
+        <span class="n">ax3</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.55</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">))</span>
+        <span class="n">ax4</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">((</span><span class="mf">0.63</span><span class="p">,</span> <span class="mf">0.55</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.35</span><span class="p">))</span>
+
+        <span class="n">relax_plots</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_relaxplots</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">relax_plot</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">relax_plots</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">decorate</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">decorate</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">relax_plot</span><span class="o">.</span><span class="n">plot_max_force</span><span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">decorate</span><span class="o">=</span><span class="n">decorate</span><span class="p">)</span>
+            <span class="n">relax_plot</span><span class="o">.</span><span class="n">plot_energy</span><span class="p">(</span><span class="n">ax2</span><span class="p">,</span> <span class="n">decorate</span><span class="o">=</span><span class="n">decorate</span><span class="p">)</span>
+            <span class="n">relax_plot</span><span class="o">.</span><span class="n">plot_stress</span><span class="p">(</span><span class="n">ax3</span><span class="p">,</span> <span class="n">decorate</span><span class="o">=</span><span class="n">decorate</span><span class="p">)</span>
+            <span class="n">relax_plot</span><span class="o">.</span><span class="n">plot_abc</span><span class="p">(</span><span class="n">ax4</span><span class="p">,</span> <span class="n">decorate</span><span class="o">=</span><span class="n">decorate</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">fig</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

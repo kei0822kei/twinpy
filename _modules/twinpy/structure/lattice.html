@@ -1,0 +1,594 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.structure.lattice &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/contentui.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.structure.lattice</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.structure.lattice</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module deals with crystal lattice.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">phonopy.structure.atoms</span> <span class="kn">import</span> <span class="n">PhonopyAtoms</span>
+<span class="kn">from</span> <span class="nn">phonopy.structure.cells</span> <span class="kn">import</span> <span class="n">Supercell</span>
+<span class="kn">from</span> <span class="nn">twinpy.common.utils</span> <span class="kn">import</span> <span class="n">reshape_dimension</span>
+
+
+<div class="viewcode-block" id="get_lattice_points_from_supercell"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.lattice.get_lattice_points_from_supercell">[docs]</a><span class="k">def</span> <span class="nf">get_lattice_points_from_supercell</span><span class="p">(</span><span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                                      <span class="n">dim</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get lattice points from supercell.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lattice: Lattice matrix.</span>
+<span class="sd">        dim: Dimension with its shape is (3,) or (3,3).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        np.array: Lattice points.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">unitcell</span> <span class="o">=</span> <span class="n">PhonopyAtoms</span><span class="p">(</span><span class="n">symbols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;H&#39;</span><span class="p">],</span>
+                            <span class="n">cell</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+                            <span class="n">scaled_positions</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mi">0</span><span class="p">]]),</span>
+                            <span class="p">)</span>
+    <span class="n">super_lattice</span> <span class="o">=</span> <span class="n">Supercell</span><span class="p">(</span><span class="n">unitcell</span><span class="o">=</span><span class="n">unitcell</span><span class="p">,</span>
+                              <span class="n">supercell_matrix</span><span class="o">=</span><span class="n">reshape_dimension</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>
+    <span class="n">lattice_points</span> <span class="o">=</span> <span class="n">super_lattice</span><span class="o">.</span><span class="n">scaled_positions</span>
+
+    <span class="k">return</span> <span class="n">lattice_points</span></div>
+
+
+<div class="viewcode-block" id="CrystalLattice"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.lattice.CrystalLattice">[docs]</a><span class="k">class</span> <span class="nc">CrystalLattice</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class deals with crystal lattice.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            lattice: Lattice matrix.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: Input lattice is not 3x3 numpy array.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">lattice</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> \
+                <span class="s2">&quot;Invalid lattice (not 3x3 numpy array).&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span> <span class="o">=</span> <span class="n">lattice</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_volume</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_volume</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_reciprocal_lattice</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_abc</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_abc</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_angles</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sin_angles</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cos_angles</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_angles</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metric</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_metric</span><span class="p">()</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Lattice matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span>
+
+    <span class="k">def</span> <span class="nf">_set_volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set volume.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_volume</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Volume of lattice.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_volume</span>
+
+    <span class="k">def</span> <span class="nf">_set_reciprocal_lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set reciprocal lattice WITHOUT 2*pi.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">reciprocal_lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reciprocal lattice WITHOUT 2*pi.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reciprocal_lattice</span>
+
+    <span class="k">def</span> <span class="nf">_set_abc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set norm of each axis.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_abc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">abc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Norm of each axis.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abc</span>
+
+    <span class="k">def</span> <span class="nf">_set_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set angles and cosine angles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice</span>
+        <span class="n">abc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">abc</span>
+        <span class="n">cos_angles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">sin_angles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">angles</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span>
+            <span class="n">k</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span>
+            <span class="n">cos_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lat</span><span class="p">[</span><span class="n">j</span><span class="p">],</span><span class="n">lat</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">abc</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">*</span> <span class="n">abc</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="n">cos_angles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cos_angle</span><span class="p">)</span>
+            <span class="n">angles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_angle</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="n">sin_angles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_angle</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cos_angles</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">cos_angles</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sin_angles</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">sin_angles</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_angles</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">angles</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">angles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Angles of axes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angles</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cos_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cosine angles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cos_angles</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sin_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sine angles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sin_angles</span>
+
+    <span class="k">def</span> <span class="nf">_set_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set metric tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">metric</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metric</span> <span class="o">=</span> <span class="n">metric</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">metric</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Metric tensor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metric</span>
+
+<div class="viewcode-block" id="CrystalLattice.dot"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.lattice.CrystalLattice.dot">[docs]</a>    <span class="k">def</span> <span class="nf">dot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+            <span class="n">first_coord</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+            <span class="n">second_coord</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+            <span class="n">is_cartesian</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return inner product of two vectors.</span>
+<span class="sd">        Two vectors must be given as fractional coordinate.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            frac_coord_first: Firest fractional coordinate.</span>
+<span class="sd">            frac_coord_second: Second fractional coordinate.</span>
+<span class="sd">            is_cartesian: If True input coord are recognized</span>
+<span class="sd">                          as cartesian.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Inner product.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_cartesian</span><span class="p">:</span>
+            <span class="n">frac_first</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_cartesian_to_fractional</span><span class="p">(</span><span class="n">first_coord</span><span class="p">)</span>
+            <span class="n">frac_second</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_cartesian_to_fractional</span><span class="p">(</span><span class="n">second_coord</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">frac_first</span> <span class="o">=</span> <span class="n">first_coord</span>
+            <span class="n">frac_second</span> <span class="o">=</span> <span class="n">second_coord</span>
+        <span class="n">frac_first</span> <span class="o">=</span> <span class="n">frac_first</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">frac_second</span> <span class="o">=</span> <span class="n">frac_second</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">frac_first</span><span class="o">.</span><span class="n">T</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">_metric</span><span class="p">),</span>
+                            <span class="n">frac_second</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CrystalLattice.get_norm"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.lattice.CrystalLattice.get_norm">[docs]</a>    <span class="k">def</span> <span class="nf">get_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">coord</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                 <span class="n">is_cartesian</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">with_periodic</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get distance between input coord and origin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            coord: Coordinate.</span>
+<span class="sd">            is_cartesian: If True input coord are recognized</span>
+<span class="sd">                          as cartesian.</span>
+<span class="sd">            with_periodic: If True, consider periodic condition.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Distance in cartesian coordinate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">])</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="n">first_coord</span><span class="o">=</span><span class="n">coord</span><span class="p">,</span>
+                                 <span class="n">second_coord</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
+                                 <span class="n">is_cartesian</span><span class="o">=</span><span class="n">is_cartesian</span><span class="p">,</span>
+                                 <span class="n">with_periodic</span><span class="o">=</span><span class="n">with_periodic</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">norm</span></div>
+
+<div class="viewcode-block" id="CrystalLattice.get_angle"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.lattice.CrystalLattice.get_angle">[docs]</a>    <span class="k">def</span> <span class="nf">get_angle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                  <span class="n">frac_coord_first</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                  <span class="n">frac_coord_second</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                  <span class="n">get_acute</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return angle between two fractional coordinate.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            frac_coord_first: Firest fractional coordinate.</span>
+<span class="sd">            frac_coord_second: Second fractional coordinate.</span>
+<span class="sd">            get_acute: If True, get acute angle.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Angle between first and second vector.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">,</span><span class="mf">0.</span><span class="p">])</span>
+        <span class="n">norm_first</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="n">frac_coord_first</span><span class="p">,</span>
+                                       <span class="n">origin</span><span class="p">,</span>
+                                       <span class="n">with_periodic</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">norm_second</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_distance</span><span class="p">(</span><span class="n">frac_coord_second</span><span class="p">,</span>
+                                        <span class="n">origin</span><span class="p">,</span>
+                                        <span class="n">with_periodic</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">inner_product</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">first_coord</span><span class="o">=</span><span class="n">frac_coord_first</span><span class="p">,</span>
+                                 <span class="n">second_coord</span><span class="o">=</span><span class="n">frac_coord_second</span><span class="p">,</span>
+                                 <span class="n">is_cartesian</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">cos_angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">inner_product</span> <span class="o">/</span> <span class="p">(</span><span class="n">norm_first</span> <span class="o">*</span> <span class="n">norm_second</span><span class="p">),</span>
+                             <span class="n">decimals</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_angle</span><span class="p">)</span> <span class="o">*</span> <span class="mi">180</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+
+        <span class="k">if</span> <span class="n">get_acute</span><span class="p">:</span>
+            <span class="n">angle</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="mi">180</span><span class="o">-</span><span class="n">angle</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">angle</span></div>
+
+<div class="viewcode-block" id="CrystalLattice.get_diff"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.lattice.CrystalLattice.get_diff">[docs]</a>    <span class="k">def</span> <span class="nf">get_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">first_coord</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                 <span class="n">second_coord</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                 <span class="n">is_cartesian</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">with_periodic</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get diff between first coord and second coord.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            first_coord: First coordinate.</span>
+<span class="sd">            second_coord: Second coordinate.</span>
+<span class="sd">            is_cartesian: If True input coord are recognized</span>
+<span class="sd">                                 as cartesian.</span>
+<span class="sd">            with_periodic: If True, consider periodic condition.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: Atom diff (second_coord - first_coord)</span>
+<span class="sd">                      in fractional coordinate.</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">            Check it is best to use deepcopy.</span>
+<span class="sd">            Currenly get_diff with with_periodic=True may return incorrect</span>
+<span class="sd">            result.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_cartesian</span><span class="p">:</span>
+            <span class="n">_first_frac</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">convert_cartesian_to_fractional</span><span class="p">(</span><span class="n">cart_coords</span><span class="o">=</span><span class="n">first_coord</span><span class="p">)</span>
+            <span class="n">_second_frac</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">convert_cartesian_to_fractional</span><span class="p">(</span><span class="n">cart_coords</span><span class="o">=</span><span class="n">second_coord</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_first_frac</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">first_coord</span><span class="p">)</span>
+            <span class="n">_second_frac</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">second_coord</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">with_periodic</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;with_periodic=True may returns incorrect result.&quot;</span><span class="p">)</span>
+            <span class="n">_diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">_second_frac</span> <span class="o">-</span> <span class="n">_first_frac</span><span class="p">)</span> <span class="o">%</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">_diff</span><span class="o">&gt;</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">_diff</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">_diff</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="n">_second_frac</span> <span class="o">-</span> <span class="n">_first_frac</span>
+
+        <span class="k">return</span> <span class="n">diff</span></div>
+
+<div class="viewcode-block" id="CrystalLattice.convert_fractional_to_cartesian"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.lattice.CrystalLattice.convert_fractional_to_cartesian">[docs]</a>    <span class="k">def</span> <span class="nf">convert_fractional_to_cartesian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frac_coords</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert list of fractional coordinates to cartesian coordinates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            frac_coords: List of fractional coordinates.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: List of cartesian coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">),</span> <span class="n">frac_coords</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
+
+<div class="viewcode-block" id="CrystalLattice.convert_cartesian_to_fractional"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.lattice.CrystalLattice.convert_cartesian_to_fractional">[docs]</a>    <span class="k">def</span> <span class="nf">convert_cartesian_to_fractional</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cart_coords</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert list of cartesian coordinates to fractional coordinates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cart_coords: Cartesian coordinates.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: Fractional coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">)),</span>
+                      <span class="n">cart_coords</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
+
+<div class="viewcode-block" id="CrystalLattice.get_distance"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.lattice.CrystalLattice.get_distance">[docs]</a>    <span class="k">def</span> <span class="nf">get_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="n">first_coord</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                     <span class="n">second_coord</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                     <span class="n">is_cartesian</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">with_periodic</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get cartesian distance between two coordinates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            first_coord: First coordinate.</span>
+<span class="sd">            second_coord: Second coordinate.</span>
+<span class="sd">            is_cartesian: If True input coord are recognized</span>
+<span class="sd">                                 as cartesian.</span>
+<span class="sd">            with_periodic: If True, consider periodic condition.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Distance in cartesian coordinate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_diff</span><span class="p">(</span><span class="n">first_coord</span><span class="o">=</span><span class="n">first_coord</span><span class="p">,</span>
+                             <span class="n">second_coord</span><span class="o">=</span><span class="n">second_coord</span><span class="p">,</span>
+                             <span class="n">is_cartesian</span><span class="o">=</span><span class="n">is_cartesian</span><span class="p">,</span>
+                             <span class="n">with_periodic</span><span class="o">=</span><span class="n">with_periodic</span><span class="p">)</span>
+        <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">diff</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">distance</span></div>
+
+<div class="viewcode-block" id="CrystalLattice.get_midpoint"><a class="viewcode-back" href="../../../apidoc/twinpy.structure.html#twinpy.structure.lattice.CrystalLattice.get_midpoint">[docs]</a>    <span class="k">def</span> <span class="nf">get_midpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="n">first_coord</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                     <span class="n">second_coord</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
+                     <span class="n">is_cartesian</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">with_periodic</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get midpoint.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            first_coord: First fractional coordinate.</span>
+<span class="sd">            second_coord: Second fractional coordinate.</span>
+<span class="sd">            is_cartesian: If True input coord is recognized</span>
+<span class="sd">                          as cartesian.</span>
+<span class="sd">            with_periodic: If True, consider periodic condition.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: Atom diff (second_coord - first_coord)</span>
+<span class="sd">                      in fractional coordinate.</span>
+
+<span class="sd">        Todo:</span>
+<span class="sd">            It is necessary to fix this function because</span>
+<span class="sd">            in the case &#39;with_periodic=True&#39;, there are two different points</span>
+<span class="sd">            which can be defined as midpoint.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_cartesian</span><span class="p">:</span>
+            <span class="n">_first_frac</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">convert_cartesian_to_fractional</span><span class="p">(</span><span class="n">cart_coords</span><span class="o">=</span><span class="n">first_coord</span><span class="p">)</span>
+            <span class="n">_second_frac</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">convert_cartesian_to_fractional</span><span class="p">(</span><span class="n">cart_coords</span><span class="o">=</span><span class="n">second_coord</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_first_frac</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">first_coord</span><span class="p">)</span>
+            <span class="n">_second_frac</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">second_coord</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">with_periodic</span><span class="p">:</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_diff</span><span class="p">(</span><span class="n">first_coord</span><span class="o">=</span><span class="n">first_coord</span><span class="p">,</span>
+                                 <span class="n">second_coord</span><span class="o">=</span><span class="n">second_coord</span><span class="p">,</span>
+                                 <span class="n">is_cartesian</span><span class="o">=</span><span class="n">is_cartesian</span><span class="p">,</span>
+                                 <span class="n">with_periodic</span><span class="o">=</span><span class="n">with_periodic</span><span class="p">)</span>
+            <span class="n">midpoint</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">_first_frac</span> <span class="o">+</span> <span class="n">diff</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">%</span> <span class="mf">1.</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">midpoint</span> <span class="o">=</span> <span class="p">(</span><span class="n">_second_frac</span> <span class="o">-</span> <span class="n">_first_frac</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+
+        <span class="k">return</span> <span class="n">midpoint</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

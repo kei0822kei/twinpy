@@ -1,0 +1,428 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>twinpy.analysis.relax_analyzer &mdash; twinpy 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/contentui.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/contentui.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> twinpy
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../definitions/index.html">Definitions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/twinpy.html">API documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">twinpy</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>twinpy.analysis.relax_analyzer</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for twinpy.analysis.relax_analyzer</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Analize relax calculation.</span>
+<span class="sd">I did not name this file as vasp_analyzer.py</span>
+<span class="sd">because this also can be used in the case lammps is used.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.base</span> <span class="kn">import</span> <span class="n">check_same_cells</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.diff</span> <span class="kn">import</span> <span class="n">get_structure_diff</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.standardize</span> <span class="kn">import</span> <span class="n">StandardizeCell</span>
+
+
+<div class="viewcode-block" id="RelaxAnalyzer"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.relax_analyzer.RelaxAnalyzer">[docs]</a><span class="k">class</span> <span class="nc">RelaxAnalyzer</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Analize relax result.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+           <span class="bp">self</span><span class="p">,</span>
+           <span class="n">initial_cell</span><span class="p">:</span><span class="nb">tuple</span><span class="p">,</span>
+           <span class="n">final_cell</span><span class="p">:</span><span class="nb">tuple</span><span class="p">,</span>
+           <span class="n">original_cell</span><span class="p">:</span><span class="nb">tuple</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">forces</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">stress</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">energy</span><span class="p">:</span><span class="nb">float</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Args:</span>
+<span class="sd">            initial_cell (tuple): Initial cell for vasp.</span>
+<span class="sd">            final_cell (tuple): Final cell of vasp</span>
+<span class="sd">            original_cell (tuple): Original cell whose standardized cell</span>
+<span class="sd">                                   is initail_cell.</span>
+<span class="sd">            forces (np.array): Forces acting on atoms in the final cell.</span>
+<span class="sd">            stress (np.array): Forces acting on the final cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span> <span class="o">=</span> <span class="n">initial_cell</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span> <span class="o">=</span> <span class="n">final_cell</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_cell</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell_in_original_frame</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_original_cell</span><span class="p">(</span><span class="n">original_cell</span><span class="o">=</span><span class="n">original_cell</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_forces</span> <span class="o">=</span> <span class="n">forces</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stress</span> <span class="o">=</span> <span class="n">stress</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_energy</span> <span class="o">=</span> <span class="n">energy</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">initial_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initial cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">final_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Final cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span>
+
+<div class="viewcode-block" id="RelaxAnalyzer.set_original_cell"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.relax_analyzer.RelaxAnalyzer.set_original_cell">[docs]</a>    <span class="k">def</span> <span class="nf">set_original_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_cell</span><span class="p">:</span><span class="nb">tuple</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set original cell.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            original_cell (tuple): Original cell whose standardized cell</span>
+<span class="sd">                                   is initail_cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">original_cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_original_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">original_cell</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                        <span class="s2">&quot;The number of atoms changes between &quot;</span>
+                        <span class="s2">&quot;original cell and initial cell, &quot;</span>
+                        <span class="s2">&quot;which is not supported.&quot;</span><span class="p">)</span>
+            <span class="n">_original_cell</span> <span class="o">=</span> <span class="n">original_cell</span>
+
+        <span class="n">std</span> <span class="o">=</span> <span class="n">StandardizeCell</span><span class="p">(</span><span class="n">cell</span><span class="o">=</span><span class="n">_original_cell</span><span class="p">)</span>
+        <span class="n">primitive_cell</span> <span class="o">=</span> <span class="n">std</span><span class="o">.</span><span class="n">get_standardized_cell</span><span class="p">(</span>
+                <span class="n">to_primitive</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">no_idealize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">symprec</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span>
+                <span class="n">get_sort_list</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="c1">### future edit because relaxed structure step by step</span>
+        <span class="c1"># if not check_same_cells(first_cell=primitive_cell,</span>
+        <span class="c1">#                         second_cell=self._initial_cell):</span>
+        <span class="c1">#     raise RuntimeError(&quot;Standardized original cell does not &quot;</span>
+        <span class="c1">#                        &quot;the same as initial cell.&quot;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_original_cell</span> <span class="o">=</span> <span class="n">_original_cell</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span> <span class="o">=</span> <span class="n">std</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_final_cell_in_original_frame</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_final_cell_in_original_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set final cell in original frame.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            For variable definitions in this definition,</span>
+<span class="sd">            see Eq.(1.8) and Eq.(1.17) in Crystal Structure documention.</span>
+<span class="sd">            Note that by crystal body rotation, fractional</span>
+<span class="sd">            coordinate of atom positions are not changed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">def</span> <span class="nf">__get_original_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span>
+                                   <span class="n">conv_to_prim_matrix</span><span class="p">,</span>
+                                   <span class="n">rotation_matrix</span><span class="p">,</span>
+                                   <span class="n">transformation_matrix</span><span class="p">):</span>
+            <span class="n">M_p_bar</span> <span class="o">=</span> <span class="n">lattice</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">P_c</span> <span class="o">=</span> <span class="n">conv_to_prim_matrix</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="n">transformation_matrix</span>
+            <span class="n">R</span> <span class="o">=</span> <span class="n">rotation_matrix</span>
+
+            <span class="n">M_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">R</span><span class="p">),</span> <span class="n">M_p_bar</span><span class="p">)</span>
+            <span class="n">M_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">M_p</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">P_c</span><span class="p">))</span>
+            <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">M_s</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">M</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">def</span> <span class="nf">__get_final_atoms_in_original_frame</span><span class="p">(</span><span class="n">prim_atoms</span><span class="p">,</span>
+                                                <span class="n">conv_to_prim_matrix</span><span class="p">,</span>
+                                                <span class="n">transformation_matrix</span><span class="p">,</span>
+                                                <span class="n">origin_shift</span><span class="p">):</span>
+            <span class="n">X_p</span> <span class="o">=</span> <span class="n">prim_atoms</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">P_c</span> <span class="o">=</span> <span class="n">conv_to_prim_matrix</span>
+            <span class="n">P</span> <span class="o">=</span> <span class="n">transformation_matrix</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">origin_shift</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+
+            <span class="n">X_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">P_c</span><span class="p">,</span> <span class="n">X_p</span><span class="p">)</span>
+            <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">P</span><span class="p">),</span> <span class="n">X_s</span><span class="p">)</span> \
+                    <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">P</span><span class="p">),</span> <span class="n">p</span><span class="p">)</span>
+            <span class="n">orig_atoms</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="o">%</span> <span class="mf">1.</span>
+            <span class="k">return</span> <span class="n">orig_atoms</span>
+
+        <span class="n">lattice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">conv_to_prim_matrix</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span><span class="o">.</span><span class="n">conventional_to_primitive_matrix</span>
+        <span class="n">transformation_matrix</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span><span class="o">.</span><span class="n">transformation_matrix</span>
+        <span class="n">origin_shift</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span><span class="o">.</span><span class="n">origin_shift</span>
+        <span class="n">orig_lattice</span> <span class="o">=</span><span class="n">__get_original_lattice</span><span class="p">(</span>
+                <span class="n">lattice</span><span class="o">=</span><span class="n">lattice</span><span class="p">,</span>
+                <span class="n">conv_to_prim_matrix</span><span class="o">=</span><span class="n">conv_to_prim_matrix</span><span class="p">,</span>
+                <span class="n">rotation_matrix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span><span class="o">.</span><span class="n">rotation_matrix</span><span class="p">,</span>
+                <span class="n">transformation_matrix</span><span class="o">=</span><span class="n">transformation_matrix</span><span class="p">)</span>
+        <span class="n">scaled_positions</span> <span class="o">=</span> <span class="n">__get_final_atoms_in_original_frame</span><span class="p">(</span>
+                <span class="n">prim_atoms</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="n">conv_to_prim_matrix</span><span class="o">=</span><span class="n">conv_to_prim_matrix</span><span class="p">,</span>
+                <span class="n">transformation_matrix</span><span class="o">=</span><span class="n">transformation_matrix</span><span class="p">,</span>
+                <span class="n">origin_shift</span><span class="o">=</span><span class="n">origin_shift</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="n">symbols</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_cell</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="n">final_orig_cell</span> <span class="o">=</span> <span class="p">(</span><span class="n">orig_lattice</span><span class="p">,</span> <span class="n">scaled_positions</span><span class="p">,</span> <span class="n">symbols</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell_in_original_frame</span> <span class="o">=</span> <span class="n">final_orig_cell</span>
+
+    <span class="k">def</span> <span class="nf">_check_original_cell_is_set</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check original cell is set.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: Original cell is not set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_cell</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Original cell is not set.&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">original_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Original cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_cell</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">standardize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        StandardizeCell class object.</span>
+<span class="sd">        Which is for original and initial cell.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_standardize</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">final_cell_in_original_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Final cell in original frame.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell_in_original_frame</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">forces</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forces acting on atoms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_forces</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Stress acting on atoms.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stress</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">energy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Total energy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_energy</span>
+
+<div class="viewcode-block" id="RelaxAnalyzer.get_diff"><a class="viewcode-back" href="../../../apidoc/twinpy.analysis.html#twinpy.analysis.relax_analyzer.RelaxAnalyzer.get_diff">[docs]</a>    <span class="k">def</span> <span class="nf">get_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">is_original_frame</span><span class="p">:</span><span class="nb">bool</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get structure diffs between initial cell and final cell.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            is_original_frame (bool): If True, get diff in original frame.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            When you use is_original_frame=True, you have to set</span>
+<span class="sd">            original_cell before running this function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_original_frame</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_original_cell_is_set</span><span class="p">()</span>
+            <span class="n">initial_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_original_cell</span>
+            <span class="n">final_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell_in_original_frame</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">initial_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initial_cell</span>
+            <span class="n">final_cell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_final_cell</span>
+
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">get_structure_diff</span><span class="p">(</span><span class="n">cells</span><span class="o">=</span><span class="p">(</span><span class="n">initial_cell</span><span class="p">,</span> <span class="n">final_cell</span><span class="p">),</span>
+                                  <span class="n">base_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                  <span class="n">include_base</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">diff</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

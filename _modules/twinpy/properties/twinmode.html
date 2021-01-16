@@ -24,16 +24,11 @@
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
-        <script src="../../../_static/language_data.js"></script>
         <script src="../../../_static/contentui.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../../_static/js/theme.js"></script>
 
     
-    <link rel="search" type="application/opensearchdescription+xml"
-          title="Search within twinpy 0.0.1 documentation"
-          href="../../../_static/opensearch.xml"/>
 
   
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
@@ -64,7 +59,7 @@
             
             
               <div class="version">
-                0.0
+                0.0.1
               </div>
             
           
@@ -89,9 +84,7 @@
             
             
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../definitions/index.html">Definitions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../developer_guide/index.html">Developer guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../apidoc/twinpy.html">API documentation</a></li>
 </ul>
 
@@ -160,43 +153,46 @@
 <span class="c1"># -*- coding: utf-8 -*-</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">provide properties of twin modes</span>
+<span class="sd">This module deals with properties of twin modes.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">permutations</span>
-<span class="kn">from</span> <span class="nn">twinpy.lattice.lattice</span> <span class="kn">import</span> <span class="n">Lattice</span><span class="p">,</span> <span class="n">check_hexagonal_lattice</span>
-<span class="kn">from</span> <span class="nn">twinpy.lattice.hexagonal_plane</span> <span class="kn">import</span> <span class="n">HexagonalPlane</span>
-<span class="kn">from</span> <span class="nn">twinpy.lattice.hexagonal_direction</span> <span class="kn">import</span> <span class="n">HexagonalDirection</span>
-<span class="kn">from</span> <span class="nn">twinpy.properties.hexagonal</span> <span class="kn">import</span> <span class="n">get_atom_positions</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">twinpy.properties.hexagonal</span> <span class="kn">import</span> <span class="n">check_hexagonal_lattice</span>
+<span class="kn">from</span> <span class="nn">twinpy.properties.hexagonal</span> <span class="kn">import</span> <span class="p">(</span><span class="n">HexagonalPlane</span><span class="p">,</span>
+                                         <span class="n">HexagonalDirection</span><span class="p">,</span>
+                                         <span class="n">get_hcp_atom_positions</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">twinpy.structure.lattice</span> <span class="kn">import</span> <span class="n">CrystalLattice</span>
 <span class="kn">from</span> <span class="nn">twinpy.common.utils</span> <span class="kn">import</span> <span class="n">get_ratio</span>
 
-<div class="viewcode-block" id="check_supported_twinmode"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.check_supported_twinmode">[docs]</a><span class="k">def</span> <span class="nf">check_supported_twinmode</span><span class="p">(</span><span class="n">twinmode</span><span class="p">):</span>
+
+<div class="viewcode-block" id="check_supported_twinmode"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.check_supported_twinmode">[docs]</a><span class="k">def</span> <span class="nf">check_supported_twinmode</span><span class="p">(</span><span class="n">twinmode</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    check input twinmode is supported</span>
+<span class="sd">    Check input twinmode is supported.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        twinmode (str): choose from &#39;10-12&#39;, &#39;10-11&#39;, &#39;11-22&#39; or &#39;11-21&#39;</span>
-<span class="sd">                        (which are supported)</span>
+<span class="sd">        twinmode: Choose from &#39;10-12&#39;, &#39;10-11&#39;, &#39;11-22&#39; or &#39;11-21&#39;</span>
+<span class="sd">                  (which are supported).</span>
 
 <span class="sd">    Raises:</span>
-<span class="sd">        AssertionError: input twinmode is not supported</span>
+<span class="sd">        AssertionError: Input twinmode is not supported.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">supported_twinmodes</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;10-12&#39;</span><span class="p">,</span> <span class="s1">&#39;10-11&#39;</span><span class="p">,</span> <span class="s1">&#39;11-22&#39;</span><span class="p">,</span> <span class="s1">&#39;11-21&#39;</span><span class="p">]</span>
     <span class="k">assert</span> <span class="n">twinmode</span> <span class="ow">in</span> <span class="n">supported_twinmodes</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> is not supported&#39;</span> <span class="o">%</span> <span class="n">twinmode</span></div>
 
-<div class="viewcode-block" id="get_shear_strain_function"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.get_shear_strain_function">[docs]</a><span class="k">def</span> <span class="nf">get_shear_strain_function</span><span class="p">(</span><span class="n">twinmode</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;function&#39;</span><span class="p">:</span>
+
+<div class="viewcode-block" id="get_shear_strain_function"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.get_shear_strain_function">[docs]</a><span class="k">def</span> <span class="nf">get_shear_strain_function</span><span class="p">(</span><span class="n">twinmode</span><span class="p">:</span><span class="nb">str</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    get shear strain</span>
+<span class="sd">    Get shear strain.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        twinmode (str): choose from &#39;10-12&#39;, &#39;10-11&#39;, &#39;11-22&#39; or &#39;11-21&#39;</span>
-<span class="sd">                        (which are supported)</span>
+<span class="sd">        twinmode: Choose from &#39;10-12&#39;, &#39;10-11&#39;, &#39;11-22&#39; or &#39;11-21&#39;</span>
+<span class="sd">                  (which are supported).</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        function: function which returns shear strain</span>
-<span class="sd">                  input args: r</span>
+<span class="sd">        function: Function which returns shear strain</span>
+<span class="sd">                  input arg is r.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">check_supported_twinmode</span><span class="p">(</span><span class="n">twinmode</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">twinmode</span> <span class="o">==</span> <span class="s1">&#39;10-12&#39;</span><span class="p">:</span>
@@ -213,9 +209,36 @@
                 <span class="mi">1</span> <span class="o">/</span> <span class="n">r</span>
     <span class="k">return</span> <span class="n">func</span></div>
 
+
+<div class="viewcode-block" id="get_number_of_layers"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.get_number_of_layers">[docs]</a><span class="k">def</span> <span class="nf">get_number_of_layers</span><span class="p">(</span><span class="n">twinmode</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the number of layers.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        twinmode: Choose from &#39;10-12&#39;, &#39;10-11&#39;, &#39;11-22&#39; or &#39;11-21&#39;</span>
+<span class="sd">                  (which are supported).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        int: The number of layes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">check_supported_twinmode</span><span class="p">(</span><span class="n">twinmode</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">twinmode</span> <span class="o">==</span> <span class="s1">&#39;10-12&#39;</span><span class="p">:</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="k">elif</span> <span class="n">twinmode</span> <span class="o">==</span> <span class="s1">&#39;10-11&#39;</span><span class="p">:</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="k">elif</span> <span class="n">twinmode</span> <span class="o">==</span> <span class="s1">&#39;11-22&#39;</span><span class="p">:</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="mi">6</span>
+    <span class="k">elif</span> <span class="n">twinmode</span> <span class="o">==</span> <span class="s1">&#39;11-21&#39;</span><span class="p">:</span>
+        <span class="n">layers</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">layers</span></div>
+
+
 <div class="viewcode-block" id="get_twin_indices_by_Yoo"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.get_twin_indices_by_Yoo">[docs]</a><span class="k">def</span> <span class="nf">get_twin_indices_by_Yoo</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    get twin indices Yoo showed in his paper</span>
+<span class="sd">    Get twin indices Yoo showed in his paper.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Twin indices.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">dataset</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;10-12&#39;</span><span class="p">:</span> <span class="p">{</span>
@@ -249,41 +272,33 @@
                         <span class="s1">&#39;eta2&#39;</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span><span class="o">-</span><span class="mi">4</span><span class="o">/</span><span class="mi">3</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">]),</span>
                      <span class="p">},</span>
               <span class="p">}</span>
+
     <span class="k">return</span> <span class="n">dataset</span></div>
+
 
 <div class="viewcode-block" id="TwinIndices"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices">[docs]</a><span class="k">class</span> <span class="nc">TwinIndices</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    deals with twin indices</span>
-
-<span class="sd">       .. attribute:: att1</span>
-
-<span class="sd">          Optional comment string.</span>
-
-
-<span class="sd">       .. attribute:: att2</span>
-
-<span class="sd">          Optional comment string.</span>
-
+<span class="sd">    Deals with twin indices.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="TwinIndices.__init__"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
            <span class="bp">self</span><span class="p">,</span>
-           <span class="n">lattice</span><span class="p">:</span><span class="n">Lattice</span><span class="p">,</span>
+           <span class="n">lattice</span><span class="p">:</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">,</span>
            <span class="n">twinmode</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
            <span class="n">wyckoff</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span>
-       <span class="p">):</span>
+           <span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        get twin indices of input twinmode</span>
-<span class="sd">        twinmode must be &#39;10-11&#39;, &#39;10-12&#39;, &#39;11-21&#39; or &#39;11-22&#39;</span>
+<span class="sd">        Get twin indices of input twinmode.</span>
+<span class="sd">        Twinmode must be &#39;10-11&#39;, &#39;10-12&#39;, &#39;11-21&#39; or &#39;11-22&#39;.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            twinmode (str): currently supported \</span>
-<span class="sd">                            &#39;10-11&#39;, &#39;10-12&#39;, &#39;11-22&#39; and &#39;11-21&#39;</span>
-<span class="sd">            lattice (Lattice): lattice</span>
-<span class="sd">            wyckoff (str): wyckoff letter, &#39;c&#39; or &#39;d&#39;</span>
+<span class="sd">            lattice: Hexagonal lattice matrix.</span>
+<span class="sd">            twinmode: Currently supported \</span>
+<span class="sd">                            &#39;10-11&#39;, &#39;10-12&#39;, &#39;11-22&#39; and &#39;11-21&#39;.</span>
+<span class="sd">            wyckoff: Wyckoff letter, &#39;c&#39; or &#39;d&#39;.</span>
 
 <span class="sd">        Returns:</span>
-<span class="sd">            dict: twin indices</span>
+<span class="sd">            dict: Twin indices.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            You can find customs how to set the four indices</span>
@@ -310,80 +325,85 @@
 <span class="sd">              e. m     condition(1)</span>
 
 <span class="sd">        Todo:</span>
-<span class="sd">            _twin_indices_orig is a little bit different from the ones 1981. Yoo</span>
-<span class="sd">            especially &#39;S&#39;</span>
+<span class="sd">            _twin_indices_orig is a little bit</span>
+<span class="sd">            different from the ones 1981. Yoo especially &#39;S&#39;.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">check_hexagonal_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="o">.</span><span class="n">lattice</span><span class="p">)</span>
+        <span class="n">check_hexagonal_lattice</span><span class="p">(</span><span class="n">lattice</span><span class="p">)</span>
         <span class="n">check_supported_twinmode</span><span class="p">(</span><span class="n">twinmode</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span> <span class="o">=</span> <span class="n">lattice</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_crylat</span> <span class="o">=</span> <span class="n">CrystalLattice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_twinmode</span> <span class="o">=</span> <span class="n">twinmode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_layers</span> <span class="o">=</span> <span class="n">get_number_of_layers</span><span class="p">(</span><span class="n">twinmode</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_wyckoff</span> <span class="o">=</span> <span class="n">wyckoff</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_indices_Yoo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_indices_Yoo</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
-                                                  <span class="bp">self</span><span class="o">.</span><span class="n">_twinmode</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indices_Yoo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_indices_Yoo</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices_Yoo</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_K1</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_k1_k2</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_reset_indices</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_shear_plane</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_shear_plane</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">lattice</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        lattice</span>
+<span class="sd">        Lattice matrix.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">twinmode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        twinmode</span>
+<span class="sd">        Twinmode.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_twinmode</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">layers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Number of layers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layers</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">wyckoff</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        wyckoff</span>
+<span class="sd">        Wyckoff.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wyckoff</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">indices_Yoo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        indices Yoo showed</span>
+<span class="sd">        Indices Yoo showed.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices_Yoo</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        indices</span>
+<span class="sd">        Indices.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span>
 
-<div class="viewcode-block" id="TwinIndices.get_indices"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices.get_indices">[docs]</a>    <span class="k">def</span> <span class="nf">get_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_indices_Yoo</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        get indices</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span></div>
+<span class="sd">        Get specific twinmode indices which are found in Yoo&#39;s paper.</span>
 
-<div class="viewcode-block" id="TwinIndices._get_indices_Yoo"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices._get_indices_Yoo">[docs]</a>    <span class="k">def</span> <span class="nf">_get_indices_Yoo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lattice</span><span class="p">,</span> <span class="n">twinmode</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        get specific twinmode indices which are found in Yoo&#39;s paper</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: indices by Yoo</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">indices_</span> <span class="o">=</span> <span class="n">get_twin_indices_by_Yoo</span><span class="p">()[</span><span class="n">twinmode</span><span class="p">]</span>
+        <span class="n">indices_</span> <span class="o">=</span> <span class="n">get_twin_indices_by_Yoo</span><span class="p">()[</span><span class="bp">self</span><span class="o">.</span><span class="n">_twinmode</span><span class="p">]</span>
         <span class="n">indices</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">plane</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;K1&#39;</span><span class="p">,</span> <span class="s1">&#39;K2&#39;</span><span class="p">]:</span>
-            <span class="n">indices</span><span class="p">[</span><span class="n">plane</span><span class="p">]</span> <span class="o">=</span> <span class="n">HexagonalPlane</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span>
+            <span class="n">indices</span><span class="p">[</span><span class="n">plane</span><span class="p">]</span> <span class="o">=</span> <span class="n">HexagonalPlane</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">,</span>
                                             <span class="n">four</span><span class="o">=</span><span class="n">indices_</span><span class="p">[</span><span class="n">plane</span><span class="p">])</span>
         <span class="k">for</span> <span class="n">direction</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">,</span> <span class="s1">&#39;eta2&#39;</span><span class="p">]:</span>
-            <span class="n">indices</span><span class="p">[</span><span class="n">direction</span><span class="p">]</span> <span class="o">=</span> <span class="n">HexagonalDirection</span><span class="p">(</span><span class="n">lattice</span><span class="p">,</span>
+            <span class="n">indices</span><span class="p">[</span><span class="n">direction</span><span class="p">]</span> <span class="o">=</span> <span class="n">HexagonalDirection</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">,</span>
                                                     <span class="n">four</span><span class="o">=</span><span class="n">indices_</span><span class="p">[</span><span class="n">direction</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">indices</span></div>
+        <span class="k">return</span> <span class="n">indices</span>
 
-<div class="viewcode-block" id="TwinIndices._set_K1"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices._set_K1">[docs]</a>    <span class="k">def</span> <span class="nf">_set_K1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_set_K1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        set K1</span>
+<span class="sd">        Set K1.</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            There are two candidates for K1 plane.</span>
@@ -396,25 +416,34 @@
 <span class="sd">            are fixed by multiplied (-1, -1, -1, 1).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
-        <span class="n">atoms</span> <span class="o">=</span> <span class="n">get_atom_positions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wyckoff</span><span class="p">)</span>
+        <span class="n">atoms</span> <span class="o">=</span> <span class="n">get_hcp_atom_positions</span><span class="p">(</span><span class="n">wyckoff</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wyckoff</span><span class="p">)</span>
         <span class="n">K1_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;K1&#39;</span><span class="p">]</span>
         <span class="n">K1_2</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">K1_1</span><span class="p">)</span>
         <span class="n">K1_2</span><span class="o">.</span><span class="n">reset_indices</span><span class="p">(</span><span class="n">four</span><span class="o">=</span><span class="n">K1_2</span><span class="o">.</span><span class="n">four</span><span class="o">*</span><span class="n">arr</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">K1_1</span><span class="o">.</span><span class="n">get_distance_from_plane</span><span class="p">(</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&gt;</span> \
                <span class="n">K1_2</span><span class="o">.</span><span class="n">get_distance_from_plane</span><span class="p">(</span><span class="n">atoms</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
             <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;K1&#39;</span><span class="p">,</span> <span class="s1">&#39;K2&#39;</span><span class="p">,</span> <span class="s1">&#39;eta1&#39;</span><span class="p">,</span> <span class="s1">&#39;eta2&#39;</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">reset_indices</span><span class="p">(</span><span class="n">four</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">four</span><span class="o">*</span><span class="n">arr</span><span class="p">)</span></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">reset_indices</span><span class="p">(</span>
+                        <span class="n">four</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">four</span><span class="o">*</span><span class="n">arr</span><span class="p">)</span>
 
-<div class="viewcode-block" id="TwinIndices._set_k1_k2"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices._set_k1_k2">[docs]</a>    <span class="k">def</span> <span class="nf">_set_k1_k2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_set_k1_k2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        set k1 and k2</span>
+<span class="sd">        Set k1 and k2.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;K1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_direction_normal_to_plane</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_direction_normal_to_plane</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;K1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_direction_normal_to_plane</span><span class="p">(</span>
+                        <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k2&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_direction_normal_to_plane</span><span class="p">(</span>
+                        <span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<div class="viewcode-block" id="TwinIndices._reset_indices"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices._reset_indices">[docs]</a>    <span class="k">def</span> <span class="nf">_reset_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_reset_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        reset indices</span>
+<span class="sd">        Reset indices.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            AssertionError: k1 is not orthogonal to eta1</span>
+<span class="sd">            AssertionError: k2 is not orthogonal to eta2</span>
 
 <span class="sd">        Note:</span>
 <span class="sd">            conditions are as bellow</span>
@@ -426,43 +455,46 @@
 <span class="sd">            - check k2 is orthogonal to eta2</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># reset eta2</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crylat</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
 
         <span class="c1"># reset eta1</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
-                       <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crylat</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
 
         <span class="c1"># reset K2</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
-                       <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crylat</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;K2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
 
         <span class="c1"># check k1 is orthogonal to eta1</span>
         <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
-                <span class="n">actual</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">),</span>
+                <span class="n">actual</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_crylat</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">),</span>
                 <span class="n">desired</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                 <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
                 <span class="n">err_msg</span><span class="o">=</span><span class="s2">&quot;k1 is not orthogonal to eta1&quot;</span><span class="p">)</span>
 
         <span class="c1"># check k2 is orthogonal to eta2</span>
         <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span>
-                <span class="n">actual</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">),</span>
+                <span class="n">actual</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_crylat</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;k2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">),</span>
                 <span class="n">desired</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                 <span class="n">atol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
-                <span class="n">err_msg</span><span class="o">=</span><span class="s2">&quot;k2 is not orthogonal to eta2&quot;</span><span class="p">)</span></div>
+                <span class="n">err_msg</span><span class="o">=</span><span class="s2">&quot;k2 is not orthogonal to eta2&quot;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="TwinIndices._set_shear_plane"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices._set_shear_plane">[docs]</a>    <span class="k">def</span> <span class="nf">_set_shear_plane</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_set_shear_plane</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        set shear plane</span>
+<span class="sd">        Set shear plane.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: Could not find shear plane.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            set shear plane which fulfill the following conditions</span>
+<span class="sd">            Set shear plane which fulfill the following conditions</span>
 <span class="sd">            from six candidates</span>
 <span class="sd">            ((hkil), (hikl), (khil), (kihl), (ihkl), (ikhl)).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -473,43 +505,48 @@
         <span class="n">normal_directions</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;k1&#39;</span><span class="p">,</span> <span class="s1">&#39;k2&#39;</span><span class="p">,</span> <span class="s1">&#39;eta1&#39;</span><span class="p">,</span> <span class="s1">&#39;eta2&#39;</span><span class="p">]</span>
         <span class="n">flag</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">for</span> <span class="n">trial_S_four</span> <span class="ow">in</span> <span class="n">trial_S_fours</span><span class="p">:</span>
-            <span class="n">trial_S</span> <span class="o">=</span> <span class="n">HexagonalPlane</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">lattice</span><span class="p">,</span>
+            <span class="n">trial_S</span> <span class="o">=</span> <span class="n">HexagonalPlane</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lattice</span><span class="p">,</span>
                                      <span class="n">four</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">trial_S_four</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;intc&#39;</span><span class="p">))</span>
-            <span class="n">trial_m</span> <span class="o">=</span> <span class="n">trial_S</span><span class="o">.</span><span class="n">get_direction_normal_to_plane</span><span class="p">()</span>
-            <span class="n">dots</span> <span class="o">=</span> <span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">trial_m</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
+            <span class="n">trial_m</span> <span class="o">=</span> <span class="n">trial_S</span><span class="o">.</span><span class="n">get_direction_normal_to_plane</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">dots</span> <span class="o">=</span> <span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">_crylat</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">trial_m</span><span class="o">.</span><span class="n">three</span><span class="p">,</span>
                                       <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="n">direction</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">)</span>
                      <span class="k">for</span> <span class="n">direction</span> <span class="ow">in</span> <span class="n">normal_directions</span> <span class="p">]</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dots</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">):</span>
                 <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="k">break</span>
         <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;could not find shear plane&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;could not find shear plane&quot;</span><span class="p">)</span>
 
-        <span class="n">triple_product</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">trial_m</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">(),</span>
-                                <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">(),</span>
-                                         <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">()))</span>
+        <span class="n">triple_product</span> <span class="o">=</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">trial_m</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">(),</span>
+                       <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">(),</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get_cartesian</span><span class="p">()))</span>
         <span class="k">if</span> <span class="n">triple_product</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">trial_S</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
             <span class="n">trial_m</span><span class="o">.</span><span class="n">inverse</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;S&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial_S</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial_m</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">trial_m</span>
 
-<div class="viewcode-block" id="TwinIndices.get_supercell_matrix_for_parent"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices.get_supercell_matrix_for_parent">[docs]</a>    <span class="k">def</span> <span class="nf">get_supercell_matrix_for_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TwinIndices.get_supercell_matrix_for_parent"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices.get_supercell_matrix_for_parent">[docs]</a>    <span class="k">def</span> <span class="nf">get_supercell_matrix_for_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        get supercell matrix for creating parent matrix</span>
+<span class="sd">        Get supercell matrix for creating parent matrix.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.array: Sueprcell matrix.</span>
 
 <span class="sd">        Note:</span>
-<span class="sd">            create lattice basis with integerized m, eta1 and eta2</span>
+<span class="sd">            Create lattice basis with integerized m, eta1 and eta2.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">tf1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">get_ratio</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;m&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">))</span>
         <span class="n">tf2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">get_ratio</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">))</span>
         <span class="n">tf3</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">get_ratio</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_indices</span><span class="p">[</span><span class="s1">&#39;eta2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">three</span><span class="p">))</span>
         <span class="n">supercell_matrix</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">tf1</span><span class="p">,</span> <span class="n">tf2</span><span class="p">,</span> <span class="n">tf3</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
         <span class="k">return</span> <span class="n">supercell_matrix</span></div>
 
 <div class="viewcode-block" id="TwinIndices.get_shear_strain_function"><a class="viewcode-back" href="../../../apidoc/twinpy.properties.html#twinpy.properties.twinmode.TwinIndices.get_shear_strain_function">[docs]</a>    <span class="k">def</span> <span class="nf">get_shear_strain_function</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        get shear strain function</span>
+<span class="sd">        Get shear strain function.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">get_shear_strain_function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_twinmode</span><span class="p">)</span></div></div>
 </pre></div>
@@ -524,7 +561,7 @@
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2020, kei0822kei. All rights reserved
+        &copy; Copyright 2020-2021, kei0822kei. All rights reserved
 
     </p>
   </div>
