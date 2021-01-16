@@ -23,7 +23,7 @@ install:
 
 script:
   # - pytest
-  - py.test --cov-report=xml --cov=twinpy tests/
+  - pytest --cov-report=xml --cov=twinpy
 
 after_success:
   - codecov
