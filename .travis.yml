@@ -1,10 +1,10 @@
-deploy:
-  provider: pages
-  skip_cleanup: true
-  github_token: $GITHUB_TOKEN
-  keep_history: true
-  on:
-    branch: develop
+# deploy:
+#   provider: pages  => commit to gh-pages branch
+#   skip_cleanup: true
+#   github_token: $GITHUB_TOKEN
+#   keep_history: true
+#   on:
+#     branch: develop
 
 branches:
   only:
@@ -17,6 +17,7 @@ language: python - "3.6"
 before_install:
   - echo "test starts"
   - pip install codecov
+  - pip install coverage
 
 install:
   - pip install .[develop]
