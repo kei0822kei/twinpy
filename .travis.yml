@@ -22,5 +22,10 @@ install:
 script:
   - pytest
 
+
+env:
+  global:
+    - CODECOV_TOKEN=577a791a-58cb-4375-887d-ac8173d1270d
+
 after_success:
   - codecov
