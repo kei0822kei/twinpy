@@ -22,8 +22,8 @@ install:
   - pip install .[develop]
 
 script:
-  - pytest
+  # - pytest
+  - py.test --cov-report=xml --cov=twinpy tests/
 
 after_success:
-  # - codecov
-  - bash <(curl -s https://codecov.io/bash)
+  - codecov
