@@ -11,7 +11,7 @@ For more information, please visit [twinpy documentation](https://kei0822kei.git
 ## Features
 
  * Construct hexagonal twin boundary:
-   ```python
+   ```shell
    twinpy-structure.py --structure twinboundary -r 0. --twinmode '10-12' --twintype 1 --get_poscar --layers 12 --delta 0
 
 
