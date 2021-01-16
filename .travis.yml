@@ -16,7 +16,7 @@ language: python - "3.6"
 
 before_install:
   - echo "test starts"
-  - pip install codecov coverage
+  - pip install codecov coverage pytest-cov
 
 install:
   - pip install .[develop]
