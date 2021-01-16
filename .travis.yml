@@ -1,9 +1,10 @@
-# deploy:
-#   provider: pages
-#   skip_cleanup: true
-#   keep_history: true
-#   on:
-#     branch: develop
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  keep_history: true
+  on:
+    branch: develop
 
 branches:
   only:
@@ -23,7 +24,6 @@ install:
 script:
   - pytest
 
-
 after_success:
   - codecov
-  - bash <(curl -s https://codecov.io/bash)
+  # - bash <(curl -s https://codecov.io/bash)
