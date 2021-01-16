@@ -16,8 +16,7 @@ language: python - "3.6"
 
 before_install:
   - echo "test starts"
-  - pip install codecov
-  - pip install coverage
+  - pip install codecov coverage
 
 install:
   - pip install .[develop]
@@ -26,5 +25,5 @@ script:
   - pytest
 
 after_success:
-  - codecov
-  # - bash <(curl -s https://codecov.io/bash)
+  # - codecov
+  - bash <(curl -s https://codecov.io/bash)
