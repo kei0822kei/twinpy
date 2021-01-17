@@ -249,7 +249,7 @@ class _BaseStructure():
     @property
     def r(self):
         """
-        Lattice ratio: r ( = c / a ).
+        Lattice ratio r  = c / a .
         """
         return self._r
 

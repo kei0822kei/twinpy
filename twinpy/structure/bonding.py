@@ -25,8 +25,8 @@ def get_neighbors(cell:tuple,
     Returns:
         list: List of neighboring atoms. Each data contains
               atom_index in the first element and periorics
-              in the remaining elements.
-        list: Optional. If get_distances=True, return distances
+              in the remaining elements. If get_distances=True,
+              this function also returns distances.
     """
     lattice = Lattice(cell[0])
     periodics = np.floor(distance_cutoff / lattice.abc).astype(int)  # round up
