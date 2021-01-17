@@ -25,7 +25,7 @@
             "pymatgen"
         ],
         "docs": [
-            "sphinx",
+            "sphinx>='3.4.3'",
             "sphinxcontrib-contentui",
             "sphinxcontrib-details-directive; python_version>='3.0'",
             "sphinx-rtd-theme"
