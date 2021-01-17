@@ -140,7 +140,7 @@ class AiidaPhonopyWorkChain(_WorkChain):
         Get phonopy object.
 
         Returns:
-            phonon: Phonopy class object.
+            Phonopy: Phonopy class object.
         """
         phonon = Phonopy(
                 get_phonopy_structure(self._unitcell),
