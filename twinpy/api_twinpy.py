@@ -7,7 +7,9 @@ API for twinpy
 
 from pprint import pprint
 import numpy as np
+import warnings
 from aiida.orm import load_node
+from aiida.common.exceptions import ProfileConfigurationError
 from aiida import load_profile
 from twinpy.structure.base import is_hcp
 from twinpy.structure.shear import get_shear
@@ -18,7 +20,14 @@ from twinpy.interfaces.aiida.shear import AiidaShearWorkChain
 from twinpy.interfaces.aiida.twinboundary \
         import AiidaTwinBoudnaryRelaxWorkChain
 
-load_profile()
+try:
+    load_profile()
+except ProfileConfigurationError:
+    err_msg = "Failed to load aiida profile. " \
+            + "Please check your aiida configuration."
+    # warnings.warn("ProfileConfigurationError has occured.",
+    #               "Please check your aiida configuration.")
+    warnings.warn(err_msg)
 
 
 def get_twinpy_from_cell(cell:tuple,
