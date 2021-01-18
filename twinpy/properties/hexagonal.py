@@ -104,7 +104,7 @@ def convert_direction_from_four_to_three(four:Union[list,
         AssertionError: Let be four=[u,v,t,w], u + v + t is not zero.
 
     Returns:
-        np.array: three indices
+        np.array: Direction with three indices.
     """
     assert len(four) == 4, "The number of elements of input list is not four."
     u, v, t, w = four
@@ -128,7 +128,7 @@ def convert_direction_from_three_to_four(three:Union[list,
         AssertionError: The number of element of input list 'three' is not three.
 
     Returns:
-        np.array: four indices
+        np.array: Direction with four indices.
     """
     assert len(three) == 3, "The number of elements of input list is not three."
     U, V, W = three
@@ -181,7 +181,7 @@ class HexagonalDirection(Lattice):
                       three:Union[list,np.array,tuple]=None,
                       four:Union[list,np.array,tuple]=None):
         """
-        The indices for hexagonal direction is reset.
+        The indices for hexagonal direction are reset.
 
         Args:
             three: Direction with three indices.
@@ -228,7 +228,6 @@ class HexagonalDirection(Lattice):
             return cart_coords
 
 
-
 def convert_plane_from_four_to_three(four:Union[list,
                                                 np.array,
                                                 tuple]) -> np.array:
@@ -236,16 +235,16 @@ def convert_plane_from_four_to_three(four:Union[list,
     Convert plane from four to three.
 
     Args:
-        four: four indices of hexagonal plane
+        four: Four indices of hexagonal plane.
 
     Raises:
         AssertionError: len(four) != 4
         AssertionError: (h+k+i) != 0
 
     Returns:
-        tuple: three indices
+        tuple: Plane three indices.
     """
-    assert len(four) == 4, "the length of input list is not four"
+    assert len(four) == 4, "The number of elements of input list is not four."
     h, k, i, l = four
     assert (h+k+i) == 0, "h+k+i is not equal to 0"
     H = h
@@ -261,18 +260,18 @@ def convert_plane_from_three_to_four(three:Union[list,
     Convert plane from three to four.
 
     Args:
-        three: three indices of hexagonal plane
+        three: Three indices of hexagonal plane.
 
     Raises:
         AssertionError: len(four) != 3
 
     Returns:
-        np.array: four indices
+        np.array: Direction with three indices.
     """
-    assert len(three) == 3, "the length of input list is not three"
+    assert len(three) == 3, "The length of input list is not three."
     h, k, l = three
     i = - ( h + k )
-    return (h, k, i, l)
+    return np.array([h, k, i, l])
 
 
 class HexagonalPlane(Lattice):
@@ -287,14 +286,16 @@ class HexagonalPlane(Lattice):
            four:Union[list,np.array,tuple]=None,
            ):
         """
+        Setup.
+
         Args:
             lattice (np.array): lattice
             three: plane indice (three)
             four: plane indice (four)
         """
         super().__init__(lattice=lattice)
-        self._three = three
-        self._four = four
+        self._three = np.array(three)
+        self._four = np.array(four)
         self.reset_indices(self._three, self._four)
 
     @property
@@ -315,24 +316,24 @@ class HexagonalPlane(Lattice):
                       three:Union[list,np.array,tuple]=None,
                       four:Union[list,np.array,tuple]=None):
         """
-        Reset indices.
+        The indices for hexagonal plane are reset.
 
         Args:
-            three: plane indice (three)
-            four: plane indice (four)
+            three: Plane with three indices.
+            four: Plane with four indices.
 
         Raises:
-            RuntimeError: both 'three' and 'four' are None or
-                          both 'three' and 'four' are not None
+            RuntimeError: Both 'three' and 'four' are None or
+                          both 'three' and 'four' are not None.
         """
         if three is None and four is None:
-            raise RuntimeError("both 'three' and 'four' are None")
+            raise RuntimeError("Both 'three' and 'four' are None.")
         elif three is not None:
             four = convert_plane_from_three_to_four(three)
         elif four is not None:
             three = convert_plane_from_four_to_three(four)
         else:
-            raise RuntimeError("both 'three' and 'four' are not None")
+            raise RuntimeError("Both 'three' and 'four' are not None.")
 
         self._three = np.array(three)
         self._four = np.array(four)
@@ -348,7 +349,8 @@ class HexagonalPlane(Lattice):
         Get direction normal to input plane.
 
         Returns:
-            HexagonalDirection: direction normal to plane
+            HexagonalDirection: Hexagonal direction object
+                                which is normal to plane.
         """
         tf_matrix = self.lattice.T
         res_tf_matrix = self.reciprocal_lattice.T
@@ -358,15 +360,16 @@ class HexagonalPlane(Lattice):
         return HexagonalDirection(lattice=self.lattice,
                                   three=direction)
 
-    def get_distance_from_plane(self, frac_coord) -> np.array:
+    def get_distance_from_plane(self, frac_coord:np.array) -> float:
         """
-        Get dicstance from plane.
+        Get dicstance from plane which contains origin point
+        to input fractional coordinate.
 
         Args:
-            frac_coord (np.array): fractional coorinate
+            frac_coord (np.array): Fractional coorinate.
 
         Returns:
-            float: distance
+            float: Distance from plane.
         """
         frac_coord = frac_coord.reshape(1,3)
         k = self.get_direction_normal_to_plane()
@@ -376,15 +379,15 @@ class HexagonalPlane(Lattice):
         d = np.dot(e_k_cart, x_cart)
         return d
 
-    def get_cartesian(self, frac_coord) -> np.array:
+    def get_cartesian(self, frac_coord:np.array) -> np.array:
         """
         Get cartesian coordinate of the input frac_coord.
 
         Args:
-            frac_coord (np.array): fractional coorinate
+            frac_coord (np.array): Fractional coorinate.
 
         Returns:
-            np.array: cartesian coorinate
+            np.array: Cartesian coorinate.
         """
         frac_coord = frac_coord.reshape(1,3)
         cart_coord = np.dot(self._lattice.T, frac_coord.T).reshape(3)
