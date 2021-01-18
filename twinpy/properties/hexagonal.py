@@ -69,10 +69,15 @@ def get_hcp_atom_positions(wyckoff:str) -> np.array:
     Args:
         wyckoff (str): Wyckoff letter, choose 'c' or 'd'.
 
+    Raises:
+        AssertionError: Input wyckoff is neither 'c' nor 'd'.
+
     Returns:
         np.array: Atom positions with fractional coordinate.
     """
-    assert wyckoff in ['c', 'd'], "wyckoff must be 'c' or 'd'"
+    assert wyckoff in ['c', 'd'], \
+             "Input wyckoff must be 'c' or 'd' (input:{})".format(wyckoff)
+
     if wyckoff == 'c':
         atom_positions = \
             np.array([[ 1/3, -1/3,  1/4],
@@ -81,6 +86,7 @@ def get_hcp_atom_positions(wyckoff:str) -> np.array:
         atom_positions = \
             np.array([[ 1/3, -1/3, -1/4],
                       [-1/3,  1/3,  1/4]])  # No.194, wyckoff 'd'
+
     return atom_positions
 
 
@@ -91,18 +97,18 @@ def convert_direction_from_four_to_three(four:Union[list,
     Convert direction from four to three.
 
     Args:
-        four: four indices of hexagonal direction [uvtw]
+        four: Four indices of hexagonal direction [uvtw].
 
     Raises:
-        AssertionError: len(four) != 4
-        AssertionError: (u+v+t) != 0
+        AssertionError: The number of elements of input list 'four' is not four.
+        AssertionError: Let be four=[u,v,t,w], u + v + t is not zero.
 
     Returns:
         np.array: three indices
     """
-    assert len(four) == 4, "the length of input list is not four"
+    assert len(four) == 4, "The number of elements of input list is not four."
     u, v, t, w = four
-    assert (u+v+t) == 0, "u+v+t is not equal to 0"
+    assert (u+v+t) == 0, "Input elements u+v+t is not equal to 0."
     U = u - t
     V = v - t
     W = w
@@ -116,15 +122,15 @@ def convert_direction_from_three_to_four(three:Union[list,
     Convert direction from three to four.
 
     Args:
-        three: three indices of hexagonal direction [UVW]
+        three: Three indices of hexagonal direction [UVW].
 
     Raises:
-        AssertionError: len(four) != 3
+        AssertionError: The number of element of input list 'three' is not three.
 
     Returns:
         np.array: four indices
     """
-    assert len(three) == 3, "the length of input list is not three"
+    assert len(three) == 3, "The number of elements of input list is not three."
     U, V, W = three
     u = ( 2 * U - V ) / 3
     v = ( 2 * V - U ) / 3
@@ -135,7 +141,7 @@ def convert_direction_from_three_to_four(three:Union[list,
 
 class HexagonalDirection(Lattice):
     """
-    Deals with hexagonal direction.
+    This class deals with hexagonal direction.
     """
 
     def __init__(
@@ -145,7 +151,7 @@ class HexagonalDirection(Lattice):
            four:Union[list,np.array,tuple]=None,
            ):
         """
-        Deals with hexagonal direction.
+        Setup.
 
         Args:
             lattice: lattice.
@@ -159,41 +165,48 @@ class HexagonalDirection(Lattice):
 
     @property
     def three(self):
+        """
+        Hexagonal direction with three direction indices.
+        """
         return self._three
 
     @property
     def four(self):
+        """
+        Hexagonal direction with four direction indices.
+        """
         return self._four
 
     def reset_indices(self,
                       three:Union[list,np.array,tuple]=None,
                       four:Union[list,np.array,tuple]=None):
         """
-        Reset indices.
+        The indices for hexagonal direction is reset.
 
         Args:
-            three: direction indice (three)
-            four: direction indice (four)
+            three: Direction with three indices.
+            four: Direction with four indices.
 
         Raises:
-            RuntimeError: both 'three' and 'four' are None or
-                          both 'three' and 'four' are not None
+            RuntimeError: Both 'three' and 'four' are None or
+                          both 'three' and 'four' are not None.
         """
         if three is None and four is None:
-            raise RuntimeError("both 'three' and 'four' are None")
+            raise RuntimeError("Both 'three' and 'four' are None.")
         elif three is not None:
             four = convert_direction_from_three_to_four(three)
         elif four is not None:
             three = convert_direction_from_four_to_three(four)
         else:
-            raise RuntimeError("both 'three' and 'four' are not None")
+            raise RuntimeError("Both 'three' and 'four' are not None.")
 
         self._three = np.array(three)
         self._four = np.array(four)
 
     def inverse(self):
         """
-        Set inversed plane ex. (10-12) => (-101-2).
+        Set inversed plane. In the case direction is [10-12],
+        indices are reset from [10-12] to [-101-2].
         """
         self.reset_indices(three=self.three*(-1))
 
@@ -202,10 +215,10 @@ class HexagonalDirection(Lattice):
         Get direction with the cartesian coordinate.
 
         Args:
-            normalize: if True, normalized the norm of the vector to 1
+            normalize: If True, the norm of the vector is normalized to one.
 
         Returns:
-            np.array: direction with the cartesian coordinate
+            np.array: Direction with the cartesian coordinate.
         """
         cart_coords = np.dot(self.lattice.T,
                              self.three.reshape([3,1])).reshape(3)
