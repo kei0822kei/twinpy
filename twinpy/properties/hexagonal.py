@@ -10,15 +10,67 @@ from typing import Union
 from twinpy.structure.lattice import Lattice
 
 
-def get_atom_positions(wyckoff:str) -> np.array:
+def check_hexagonal_lattice(lattice:np.array):
+    """
+    Check input lattice is hexagonal lattice.
+
+    Args:
+        lattice (np.array): lattice
+
+    Raises:
+        AssertionError: The angles are not (90, 90, 120).
+
+    Note:
+        Check the angles of input lattice are (90, 90, 120).
+    """
+    hexagonal = Lattice(lattice)
+    expected = np.array([90., 90., 120.])
+    actual = hexagonal.angles
+    err_msg = "The angles of lattice was {}, "
+              "which does not match [90., 90., 120.]".format(actual)
+    np.testing.assert_allclose(
+            actual,
+            expected,
+            err_msg=err_msg,
+                    format(actual),
+            )
+
+
+def get_hexagonal_lattice_from_a_c(a:float, c:float) -> np.array:
+    """
+    Get hexagonal lattice from the norms of a and c axes.
+
+    Args:
+        a (str): The norm of a axis.
+        c (str): The norm of c axis.
+
+    Returns:
+        np.array: Hexagonal lattice with its length of basis vectors
+                  are [a, a, c].
+
+    Raises:
+        ValueError: Either a or c is negative value.
+    """
+    if not a > 0. and c > 0.:
+        err_msg = "input value was a={} and c={} " \
+                  "but both a and c must be positive".format(a, c)
+        raise ValueError(err_msg)
+
+    lattice = np.array([[  1.,           0., 0.],
+                        [-0.5, np.sqrt(3)/2, 0.],
+                        [  0.,           0., 1.]]) * np.array([a,a,c])
+    return lattice
+
+
+def get_hcp_atom_positions(wyckoff:str) -> np.array:
     """
     Get atom positions in Hexagonal Close-Packed.
 
     Args:
-        wyckoff (str): wyckoff letter, choose 'c' or 'd'
+        wyckoff (str): Wyckoff letter, choose 'c' or 'd'.
 
     Returns:
-        np.array: atom positions
+        np.array: Atom positions with fractional coordinate.
     """
     assert wyckoff in ['c', 'd'], "wyckoff must be 'c' or 'd'"
     if wyckoff == 'c':
