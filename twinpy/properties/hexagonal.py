@@ -6,7 +6,7 @@ Hexagonal property.
 """
 
 import numpy as np
-from typing import Union
+from typing import Union, Optional
 from twinpy.structure.lattice import Lattice
 
 
@@ -15,7 +15,7 @@ def check_hexagonal_lattice(lattice:np.array):
     Check input lattice is hexagonal lattice.
 
     Args:
-        lattice (np.array): lattice
+        lattice (np.array): Lattice.
 
     Raises:
         AssertionError: The angles are not (90, 90, 120).
@@ -34,6 +34,66 @@ def check_hexagonal_lattice(lattice:np.array):
             err_msg=err_msg,
                     format(actual),
             )
+
+
+def check_cell_is_hcp(lattice:np.array,
+                      symbols:list,
+                      positions:np.array=None,
+                      scaled_positions:np.array=None,
+                      get_wyckoff:bool=False) -> Optional[str]:
+    """
+    Check input cell is hexagonal close-packed.
+
+    Args:
+        lattice (np.array): Lattice.
+        symbols (list): Atomic symbols.
+        positions (np.array): Cartesian atom positions.
+        scaled_positions (np.array): Fractional atom positions.
+        get_wyckoff (bool): If True,
+                            return wyckoff letter, which is 'c' or 'd'.
+
+    Raises:
+        RuntimeError: Both positions and scaled_positions are specified.
+        RuntimeError: Input symbol is not unique.
+        RuntimeError: The number of symbols are not two,
+                      which is the number of atoms
+                      for hexagonal close-packed structure.
+        RuntimeError: Space group of input cell is not 'P6_3/mmc'.
+        AssertionError: Input cell is not
+                        hexagonal close-packed.
+
+    Returns:
+        str: If get_wyckoff is True, return wyckoff letter.
+
+    Note:
+        The spglib software is used for getting space group.
+    """
+    if positions is not None and scaled_positions is not None:
+        raise RuntimeError("Both positions and scaled_positions "
+                           "are specified.")
+    if len(set(symbols)) != 1:
+        raise RuntimeError("Symbol is not unique.")
+    if len(symbols) != 2:
+        raise RuntimeError("The number of symbols are not two.")
+
+    if positions is not None:
+        scaled_positions = np.dot(np.linalg.inv(lattice.T), positions.T).T
+    dataset = spglib.get_symmetry_dataset((lattice,
+                                           scaled_positions,
+                                           [0, 0]))
+
+    spg_symbol = dataset['international']
+    if spg_symbol != 'P6_3/mmc':
+        raise RuntimeError("Space group of input structure is {} "
+                           "not 'P6_3/mmc'.".format(spg_symbol)
+
+    wyckoffs = dataset['wyckoffs']
+    if wyckoffs not in [['c'] * 2, ['d'] * 2]:
+        raise RuntimeError("wyckoff letters are {}, which must be "
+                           "['c', 'c'] or ['d', 'd']".format(wyckoffs))
+
+    if get_wyckoff:
+        return wyckoffs[0]
 
 
 def get_hexagonal_lattice_from_a_c(a:float, c:float) -> np.array:
@@ -88,6 +148,77 @@ def get_hcp_atom_positions(wyckoff:str) -> np.array:
                       [-1/3,  1/3,  1/4]])  # No.194, wyckoff 'd'
 
     return atom_positions
+
+
+def get_hcp_cell(a:float,
+                 c:float,
+                 symbol:str,
+                 wyckoff:str='c') -> tuple:
+    """
+    Get hexagonal close-packed cell.
+
+    Args:
+        a (float): The norm of a axis.
+        c (float): The norm of c axis.
+        symbol (str): Element symbol.
+        wyckoff (str): Wyckoff letter.
+
+    Note:
+        Input wyckoff must be 'c' or 'd'.
+
+    Returns:
+        tuple: Hexagonal close-packed cell.
+    """
+    lattice = get_hexagonal_lattice_from_a_c(a=a, c=c)
+    scaled_positions = get_atom_positions(wyckoff=wyckoff)
+    symbols = [symbol] * len(scaled_positions)
+    return (lattice, scaled_positions, symbols)
+
+
+def is_hcp(lattice:np.array,
+           symbols:list,
+           positions:np.array=None,
+           scaled_positions:np.array=None,
+           get_wyckoff:bool=False):
+    """
+    Check input structure is Hexagonal Close-Packed structure.
+
+    Args:
+        lattice (np.array): lattice
+        symbols: list of atomic symbols
+        positions (np.array): atom cartesian positions
+        scaled_positions (np.array): atom fractional positions
+        get_wyckoff (bool): if True, return wyckoff letter, which is 'c' or 'd'
+
+    Raises:
+        RuntimeError: both positions and scaled_positions are specified
+        AssertionError: input symbols are not unique
+        AssertionError: input structure is not
+                        Hexagonal Close-Packed structure
+
+    Returns:
+        str: if get_wyckoff=True, return wyckoff letter
+    """
+    if positions is not None and scaled_positions is not None:
+        raise RuntimeError("both positions and scaled_positions "
+                           "are specified")
+
+    assert (len(set(symbols)) == 1 and len(symbols) == 2), \
+        "symbols is not unique or the number of atoms are not two"
+
+    if positions is not None:
+        scaled_positions = np.dot(np.linalg.inv(lattice.T), positions.T).T
+    dataset = spglib.get_symmetry_dataset((lattice,
+                                           scaled_positions,
+                                           [0, 0]))
+    spg_symbol = dataset['international']
+    wyckoffs = dataset['wyckoffs']
+    assert spg_symbol == 'P6_3/mmc', \
+            "space group of input structure is {} not 'P6_3/mmc'" \
+            .format(spg_symbol)
+    assert wyckoffs in [['c'] * 2, ['d'] * 2]
+    if get_wyckoff:
+        return wyckoffs[0]
 
 
 def convert_direction_from_four_to_three(four:Union[list,
