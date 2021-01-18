@@ -17,7 +17,7 @@ def check_hexagonal_lattice(lattice:np.array):
         lattice (np.array): lattice
 
     Raises:
-        AssertionError: The angles are not (90, 90, 120)
+        AssertionError: The angles are not (90, 90, 120).
 
     Note:
         Check the angles of input lattice are (90, 90, 120).
