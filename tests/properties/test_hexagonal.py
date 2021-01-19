@@ -119,6 +119,7 @@ def test_hexagonal_plane(ti_cell_wyckoff_c):
     hex_pln_twin = hexagonal.HexagonalPlane(lattice=lattice,
                                             four=twin_four)
     c_four = np.array([0.,0.,0.,1.])
+    frac_coord = np.array([0.,0.,1.])
 
     # reset_indices
     _hex_pln_basal = deepcopy(hex_pln_twin)
@@ -132,7 +133,7 @@ def test_hexagonal_plane(ti_cell_wyckoff_c):
     _inv_twin_four = _inv_hex_pln_twin.four
     np.testing.assert_allclose(_inv_twin_four, (-1.)*twin_four)
 
-    # get_direction_normal_to_plane
-    _hex_dr_c = hex_pln_basal.get_direction_normal_to_plane()
-    _c_four = _hex_dr_c.four
-    np.testing.assert_allclose(_c_four, c_four)
+    # get_distance_from_plane
+    _c_norm = hex_pln_basal.get_distance_from_plane(
+            frac_coord=frac_coord)
+    np.testing.assert_allclose(_c_norm, c)
