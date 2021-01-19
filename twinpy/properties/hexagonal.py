@@ -7,6 +7,7 @@ Hexagonal property.
 
 import numpy as np
 from typing import Union, Optional
+import spglib
 from twinpy.structure.lattice import Lattice
 
 
@@ -15,7 +16,7 @@ def check_hexagonal_lattice(lattice:np.array):
     Check input lattice is hexagonal lattice.
 
     Args:
-        lattice (np.array): Lattice.
+        lattice: Lattice.
 
     Raises:
         AssertionError: The angles are not (90, 90, 120).
@@ -26,13 +27,12 @@ def check_hexagonal_lattice(lattice:np.array):
     hexagonal = Lattice(lattice)
     expected = np.array([90., 90., 120.])
     actual = hexagonal.angles
-    err_msg = "The angles of lattice was {}, "
-              "which does not match [90., 90., 120.]".format(actual)
+    err_msg = "The angles of lattice was {}, \
+               which does not match [90., 90., 120.]".format(actual)
     np.testing.assert_allclose(
             actual,
             expected,
             err_msg=err_msg,
-                    format(actual),
             )
 
 
@@ -45,11 +45,11 @@ def check_cell_is_hcp(lattice:np.array,
     Check input cell is hexagonal close-packed.
 
     Args:
-        lattice (np.array): Lattice.
-        symbols (list): Atomic symbols.
-        positions (np.array): Cartesian atom positions.
-        scaled_positions (np.array): Fractional atom positions.
-        get_wyckoff (bool): If True,
+        lattice: Lattice.
+        symbols: Atomic symbols.
+        positions: Cartesian atom positions.
+        scaled_positions: Fractional atom positions.
+        get_wyckoff: If True,
                             return wyckoff letter, which is 'c' or 'd'.
 
     Raises:
@@ -85,7 +85,7 @@ def check_cell_is_hcp(lattice:np.array,
     spg_symbol = dataset['international']
     if spg_symbol != 'P6_3/mmc':
         raise RuntimeError("Space group of input structure is {} "
-                           "not 'P6_3/mmc'.".format(spg_symbol)
+                           "not 'P6_3/mmc'.".format(spg_symbol))
 
     wyckoffs = dataset['wyckoffs']
     if wyckoffs not in [['c'] * 2, ['d'] * 2]:
@@ -101,8 +101,8 @@ def get_hexagonal_lattice_from_a_c(a:float, c:float) -> np.array:
     Get hexagonal lattice from the norms of a and c axes.
 
     Args:
-        a (str): The norm of a axis.
-        c (str): The norm of c axis.
+        a: The norm of a axis.
+        c: The norm of c axis.
 
     Returns:
         np.array: Hexagonal lattice with its length of basis vectors
@@ -127,7 +127,7 @@ def get_hcp_atom_positions(wyckoff:str) -> np.array:
     Get atom positions in Hexagonal Close-Packed.
 
     Args:
-        wyckoff (str): Wyckoff letter, choose 'c' or 'd'.
+        wyckoff: Wyckoff letter, choose 'c' or 'd'.
 
     Raises:
         AssertionError: Input wyckoff is neither 'c' nor 'd'.
@@ -158,10 +158,10 @@ def get_hcp_cell(a:float,
     Get hexagonal close-packed cell.
 
     Args:
-        a (float): The norm of a axis.
-        c (float): The norm of c axis.
-        symbol (str): Element symbol.
-        wyckoff (str): Wyckoff letter.
+        a: The norm of a axis.
+        c: The norm of c axis.
+        symbol: Element symbol.
+        wyckoff: Wyckoff letter.
 
     Note:
         Input wyckoff must be 'c' or 'd'.
@@ -170,55 +170,9 @@ def get_hcp_cell(a:float,
         tuple: Hexagonal close-packed cell.
     """
     lattice = get_hexagonal_lattice_from_a_c(a=a, c=c)
-    scaled_positions = get_atom_positions(wyckoff=wyckoff)
+    scaled_positions = get_hcp_atom_positions(wyckoff=wyckoff)
     symbols = [symbol] * len(scaled_positions)
     return (lattice, scaled_positions, symbols)
-
-
-def is_hcp(lattice:np.array,
-           symbols:list,
-           positions:np.array=None,
-           scaled_positions:np.array=None,
-           get_wyckoff:bool=False):
-    """
-    Check input structure is Hexagonal Close-Packed structure.
-
-    Args:
-        lattice (np.array): lattice
-        symbols: list of atomic symbols
-        positions (np.array): atom cartesian positions
-        scaled_positions (np.array): atom fractional positions
-        get_wyckoff (bool): if True, return wyckoff letter, which is 'c' or 'd'
-
-    Raises:
-        RuntimeError: both positions and scaled_positions are specified
-        AssertionError: input symbols are not unique
-        AssertionError: input structure is not
-                        Hexagonal Close-Packed structure
-
-    Returns:
-        str: if get_wyckoff=True, return wyckoff letter
-    """
-    if positions is not None and scaled_positions is not None:
-        raise RuntimeError("both positions and scaled_positions "
-                           "are specified")
-
-    assert (len(set(symbols)) == 1 and len(symbols) == 2), \
-        "symbols is not unique or the number of atoms are not two"
-
-    if positions is not None:
-        scaled_positions = np.dot(np.linalg.inv(lattice.T), positions.T).T
-    dataset = spglib.get_symmetry_dataset((lattice,
-                                           scaled_positions,
-                                           [0, 0]))
-    spg_symbol = dataset['international']
-    wyckoffs = dataset['wyckoffs']
-    assert spg_symbol == 'P6_3/mmc', \
-            "space group of input structure is {} not 'P6_3/mmc'" \
-            .format(spg_symbol)
-    assert wyckoffs in [['c'] * 2, ['d'] * 2]
-    if get_wyckoff:
-        return wyckoffs[0]
 
 
 def convert_direction_from_four_to_three(four:Union[list,
@@ -231,7 +185,8 @@ def convert_direction_from_four_to_three(four:Union[list,
         four: Four indices of hexagonal direction [uvtw].
 
     Raises:
-        AssertionError: The number of elements of input list 'four' is not four.
+        AssertionError: The number of elements of input list
+                       'four' is not four.
         AssertionError: Let be four=[u,v,t,w], u + v + t is not zero.
 
     Returns:
@@ -256,12 +211,14 @@ def convert_direction_from_three_to_four(three:Union[list,
         three: Three indices of hexagonal direction [UVW].
 
     Raises:
-        AssertionError: The number of element of input list 'three' is not three.
+        AssertionError: The number of element of input list 'three'
+                        is not three.
 
     Returns:
         np.array: Direction with four indices.
     """
-    assert len(three) == 3, "The number of elements of input list is not three."
+    assert len(three) == 3, "The number of elements of input list \
+                             is not three."
     U, V, W = three
     u = ( 2 * U - V ) / 3
     v = ( 2 * V - U ) / 3
@@ -285,9 +242,9 @@ class HexagonalDirection(Lattice):
         Setup.
 
         Args:
-            lattice: lattice.
-            three: direction indice (three).
-            four: direction indice (four).
+            lattice: Lattice.
+            three: Direction indice (three).
+            four: Direction indice (four).
         """
         super().__init__(lattice=lattice)
         self._three = three
@@ -377,7 +334,7 @@ def convert_plane_from_four_to_three(four:Union[list,
     """
     assert len(four) == 4, "The number of elements of input list is not four."
     h, k, i, l = four
-    assert (h+k+i) == 0, "h+k+i is not equal to 0"
+    assert (h+k+i) == 0, "h+k+i is not equal to 0."
     H = h
     K = k
     L = l
@@ -420,14 +377,20 @@ class HexagonalPlane(Lattice):
         Setup.
 
         Args:
-            lattice (np.array): lattice
-            three: plane indice (three)
-            four: plane indice (four)
+            lattice: Lattice.
+            three: Plane indice (three).
+            four: Plane indice (four).
         """
         super().__init__(lattice=lattice)
-        self._three = np.array(three)
-        self._four = np.array(four)
-        self.reset_indices(self._three, self._four)
+        if three is None:
+            self._three = None
+        else:
+            self._three = np.array(three)
+        if four is None:
+            self._four = None
+        else:
+            self._four = np.array(four)
+        self.reset_indices(three=self._three, four=self._four)
 
     @property
     def three(self):
@@ -478,6 +441,7 @@ class HexagonalPlane(Lattice):
     def get_direction_normal_to_plane(self) -> HexagonalDirection:
         """
         Get direction normal to input plane.
+        The norm of the direction vector is normalized to one.
 
         Returns:
             HexagonalDirection: Hexagonal direction object
@@ -488,8 +452,8 @@ class HexagonalPlane(Lattice):
         direction = np.dot(np.linalg.inv(tf_matrix),
                            np.dot(res_tf_matrix,
                                   self._three.reshape([3,1]))).reshape(3)
-        return HexagonalDirection(lattice=self.lattice,
-                                  three=direction)
+        hex_dr = HexagonalDirection(lattice=self.lattice,
+                                    three=direction)
 
     def get_distance_from_plane(self, frac_coord:np.array) -> float:
         """
@@ -497,7 +461,7 @@ class HexagonalPlane(Lattice):
         to input fractional coordinate.
 
         Args:
-            frac_coord (np.array): Fractional coorinate.
+            frac_coord: Fractional coorinate.
 
         Returns:
             float: Distance from plane.
@@ -515,7 +479,7 @@ class HexagonalPlane(Lattice):
         Get cartesian coordinate of the input frac_coord.
 
         Args:
-            frac_coord (np.array): Fractional coorinate.
+            frac_coord: Fractional coorinate.
 
         Returns:
             np.array: Cartesian coorinate.
