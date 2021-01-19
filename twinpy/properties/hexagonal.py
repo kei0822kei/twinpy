@@ -441,7 +441,6 @@ class HexagonalPlane(Lattice):
     def get_direction_normal_to_plane(self) -> HexagonalDirection:
         """
         Get direction normal to input plane.
-        The norm of the direction vector is normalized to one.
 
         Returns:
             HexagonalDirection: Hexagonal direction object
@@ -454,6 +453,7 @@ class HexagonalPlane(Lattice):
                                   self._three.reshape([3,1]))).reshape(3)
         hex_dr = HexagonalDirection(lattice=self.lattice,
                                     three=direction)
+        return hex_dr
 
     def get_distance_from_plane(self, frac_coord:np.array) -> float:
         """
