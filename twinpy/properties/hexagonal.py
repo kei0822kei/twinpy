@@ -473,17 +473,3 @@ class HexagonalPlane(Lattice):
         x_cart = np.dot(self.lattice.T, frac_coord.T).reshape(3)
         d = np.dot(e_k_cart, x_cart)
         return d
-
-    def get_cartesian(self, frac_coord:np.array) -> np.array:
-        """
-        Get cartesian coordinate of the input frac_coord.
-
-        Args:
-            frac_coord: Fractional coorinate.
-
-        Returns:
-            np.array: Cartesian coorinate.
-        """
-        frac_coord = frac_coord.reshape(1,3)
-        cart_coord = np.dot(self._lattice.T, frac_coord.T).reshape(3)
-        return cart_coord
