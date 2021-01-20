@@ -41,48 +41,58 @@ def test_convert_direction():
         Let basis vectors for hexagonal lattice be a_1, a_2 and c,
         a_1 = [1,0,0] = 1/3[2,-1,-1,0].
     """
+    def _test_convert_direction_from_three_to_four(three, four_expected):
+        _four = hexagonal.convert_direction_from_three_to_four(
+                three=a_1_three)
+        np.testing.assert_allclose(_four, four_expected)
+
+    def _test_convert_direction_from_four_to_three(four, three_expected):
+        _three = hexagonal.convert_direction_from_four_to_three(
+                four=four)
+        np.testing.assert_allclose(_three, three_expected)
+
     a_1_three = np.array([1.,0.,0.])
     a_1_four = np.array([2.,-1.,-1.,0.]) / 3.
-
-    # convert_direction_from_three_to_four
-    _a_1_four = hexagonal.convert_direction_from_three_to_four(
-            three=a_1_three)
-    np.testing.assert_allclose(_a_1_four, a_1_four)
-
-    # convert_direction_from_four_to_three
-    _a_1_three = hexagonal.convert_direction_from_four_to_three(
-            four=a_1_four)
-    np.testing.assert_allclose(_a_1_three, a_1_three)
+    _test_convert_direction_from_three_to_four(three=a_1_three,
+                                               four_expected=a_1_four)
+    _test_convert_direction_from_four_to_three(four=a_1_four,
+                                               three_expected=a_1_three)
 
 
 def test_hexagonal_direction(ti_cell_wyckoff_c):
     """
     Check HexagonalDirection.
     """
+    def _test_reset_indices(hex_dr, three):
+        _hex_dr = deepcopy(hex_dr)
+        _hex_dr.reset_indices(three=three)
+        _three_expected = _hex_dr.three
+        np.testing.assert_allclose(three, _three_expected)
+
+    def _test_inverse(hex_dr):
+        _inv_hex_dr = deepcopy(hex_dr)
+        _inv_hex_dr.inverse()
+        _three = hex_dr.three
+        _inv_three = _inv_hex_dr.three
+        np.testing.assert_allclose(_three, _inv_three*(-1.))
+
+    def _test_get_cartesian(hex_dr, cart_expected):
+        _cart = hex_dr.get_cartesian(normalize=False)
+        _cart_normalized = hex_dr.get_cartesian(normalize=True)
+        _norm = np.linalg.norm(_cart_normalized)
+        np.testing.assert_allclose(_cart, cart_expected)
+        np.testing.assert_allclose(_norm, 1.)
+
     lattice = ti_cell_wyckoff_c[0]
     three_a1 = np.array([1.,0.,0.])  # a_1
     three_c = np.array([0.,0.,1.])  # c
+    a1_cart = np.array([a,0.,0.])  # cartesian coordinate for vector a_1
     hex_dr_a1 = hexagonal.HexagonalDirection(lattice=lattice, three=three_a1)
 
-    # reset_indices
-    _hex_dr_c = deepcopy(hex_dr_a1)
-    _hex_dr_c.reset_indices(three=three_c)
-    _three_c = _hex_dr_c.three
-    np.testing.assert_allclose(_three_c, three_c)
-
-    # inverse
-    _inv_hex_dr_a1 = deepcopy(hex_dr_a1)
-    _inv_hex_dr_a1.inverse()
-    _inv_a1_three = _inv_hex_dr_a1.three
-    np.testing.assert_allclose(_inv_a1_three, (-1.)*three_a1)
-
-    # get_cartesian
-    a1_cart = np.array([a,0.,0.])
-    a1_cart_norm = np.array([1.,0.,0.])
-    _a1_cart = hex_dr_a1.get_cartesian(normalize=False)
-    np.testing.assert_allclose(_a1_cart, a1_cart)
-    _a1_cart_norm = hex_dr_a1.get_cartesian(normalize=True)
-    np.testing.assert_allclose(_a1_cart_norm, a1_cart_norm)
+    _test_reset_indices(hex_dr=hex_dr_a1,
+                        three=three_c)
+    _test_inverse(hex_dr=hex_dr_a1)
+    _test_get_cartesian(hex_dr=hex_dr_a1, cart_expected=a1_cart)
 
 
 def test_convert_plane():
@@ -93,24 +103,46 @@ def test_convert_plane():
     Note:
         (10-12) plane is equal to (102).
     """
-    plane_three = np.array([1.,0.,2.])
-    plane_four = np.array([1.,0.,-1.,2.])
+    def _test_convert_plane_from_three_to_four(three, four_expected):
+        _four = hexagonal.convert_plane_from_three_to_four(
+                three=three)
+        np.testing.assert_allclose(_four, four_expected)
 
-    # convert_plane_from_three_to_four
-    _plane_four = hexagonal.convert_plane_from_three_to_four(
-            three=plane_three)
-    np.testing.assert_allclose(plane_four, _plane_four)
+    def _test_convert_plane_from_four_to_three(four, three_expected):
+        _three = hexagonal.convert_plane_from_four_to_three(
+                four=four)
+        np.testing.assert_allclose(_three, three_expected)
 
-    # convert_plane_from_four_to_three
-    _plane_three = hexagonal.convert_plane_from_four_to_three(
-            four=plane_four)
-    np.testing.assert_allclose(plane_three, _plane_three)
+    twin_three = np.array([1.,0.,2.])
+    twin_four = np.array([1.,0.,-1.,2.])
+
+    _test_convert_plane_from_three_to_four(three=twin_three,
+                                           four_expected=twin_four)
+    _test_convert_plane_from_four_to_three(four=twin_four,
+                                           three_expected=twin_three)
 
 
 def test_hexagonal_plane(ti_cell_wyckoff_c):
     """
     Check HexagonalPlane.
     """
+    def _test_reset_indices(hex_pln, four):
+        _hex_pln = deepcopy(hex_pln)
+        _hex_pln.reset_indices(four=four)
+        _four = _hex_pln.four
+        np.testing.assert_allclose(_four, four)
+
+    def _test_inverse(hex_pln):
+        _inv_hex_pln = deepcopy(hex_pln)
+        _inv_hex_pln.inverse()
+        four = hex_pln.four
+        _inv_four = _inv_hex_pln.four
+        np.testing.assert_allclose(_inv_four, four*(-1))
+
+    def _test_get_distance_from_plane(hex_pln, frac_coord, d_expected):
+        _d = hex_pln.get_distance_from_plane(frac_coord=frac_coord)
+        np.testing.assert_allclose(_d, d_expected)
+
     lattice = ti_cell_wyckoff_c[0]
     basal_four = np.array([0.,0.,0.,1.])
     twin_four = np.array([1.,0.,-1.,2.])
@@ -118,22 +150,11 @@ def test_hexagonal_plane(ti_cell_wyckoff_c):
                                              four=basal_four)
     hex_pln_twin = hexagonal.HexagonalPlane(lattice=lattice,
                                             four=twin_four)
-    c_four = np.array([0.,0.,0.,1.])
-    frac_coord = np.array([0.,0.,1.])
+    c_three = np.array([0.,0.,1.])
 
-    # reset_indices
-    _hex_pln_basal = deepcopy(hex_pln_twin)
-    _hex_pln_basal.reset_indices(four=basal_four)
-    _hex_pln_basal_four = _hex_pln_basal.four
-    np.testing.assert_allclose(_hex_pln_basal_four, basal_four)
-
-    # inverse
-    _inv_hex_pln_twin = deepcopy(hex_pln_twin)
-    _inv_hex_pln_twin.inverse()
-    _inv_twin_four = _inv_hex_pln_twin.four
-    np.testing.assert_allclose(_inv_twin_four, (-1.)*twin_four)
-
-    # get_distance_from_plane
-    _c_norm = hex_pln_basal.get_distance_from_plane(
-            frac_coord=frac_coord)
-    np.testing.assert_allclose(_c_norm, c)
+    _test_reset_indices(hex_pln=hex_pln_twin,
+                        four=basal_four)
+    _test_inverse(hex_pln=hex_pln_twin)
+    _test_get_distance_from_plane(hex_pln=hex_pln_basal,
+                                  frac_coord=c_three,
+                                  d_expected=c)
