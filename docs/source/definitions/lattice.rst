@@ -9,8 +9,8 @@ In this page, some formulations are provided used in hexagonal.py file.
    :local:
 
 
-Lattice
-=======
+Lattice Matrix
+==============
 
 Inner Product and Metric Tensor
 -------------------------------

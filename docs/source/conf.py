@@ -18,7 +18,7 @@ extensions = [
     'sphinx.ext.intersphinx',   # link to other projects
     'sphinxcontrib.contentui',  # content html
     'sphinx.ext.autodoc',       # read doc automatically
-    'sphinx.ext.mathjax',       # math support
+    'sphinx.ext.imgmath',       # math support
     'sphinx.ext.viewcode',      # go to class and def to search the docstring
     'sphinx.ext.napoleon',      # to read various kinds of style of docstring
     'sphinx.ext.todo',
