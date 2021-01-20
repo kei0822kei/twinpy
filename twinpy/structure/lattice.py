@@ -2,11 +2,37 @@
 # -*- coding: utf-8 -*-
 
 """
-Lattice class
+Lattice.
 """
 
 from copy import deepcopy
 import numpy as np
+from phonopy.structure.atoms import PhonopyAtoms
+from phonopy.structure.cells import Supercell
+from twinpy.common.utils import reshape_dimension
+
+
+def get_lattice_points_from_supercell(lattice:np.array,
+                                      dim:np.array) -> np.array:
+    """
+    Get lattice points from supercell.
+
+    Args:
+        lattice: Lattice.
+        dim: Dimension with its shape is (3,) or (3,3).
+
+    Returns:
+        np.array: Lattice points.
+    """
+    unitcell = PhonopyAtoms(symbols=['H'],
+                            cell=lattice,
+                            scaled_positions=np.array([[0.,0.,0]]),
+                            )
+    super_lattice = Supercell(unitcell=unitcell,
+                              supercell_matrix=reshape_dimension(dim))
+    lattice_points = super_lattice.scaled_positions
+
+    return lattice_points
 
 
 class Lattice():
@@ -133,31 +159,12 @@ class Lattice():
         """
         return self._sin_angles
 
-    def _set_metric(self, is_old_style=False):
+    def _set_metric(self):
         """
         Set metric tensor.
         """
-        if is_old_style:
-            self._set_metric_legacy()
-        else:
-            metric = np.dot(self._lattice,
-                            self._lattice.T)
-            self._metric = metric
-
-    def _set_metric_legacy(self):
-        """
-        FUTURE REMOVED.
-        """
-        metric = np.zeros([3,3])
-        for i in range(3):
-            for j in range(3):
-                if i == j:
-                    metric[i,j] = self._abc[i]**2
-                else:
-                    k = 3 - (i + j)
-                    metric[i,j] = self._abc[i] \
-                        * self._abc[j] \
-                        * self._cos_angles[k]
+        metric = np.dot(self._lattice,
+                        self._lattice.T)
         self._metric = metric
 
     @property
