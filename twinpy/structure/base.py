@@ -36,25 +36,6 @@ def get_symbols_from_numbers(numbers):
     return symbols
 
 
-def get_hexagonal_cell(a:float,
-                       c:float,
-                       symbol:str,
-                       wyckoff:str='c') -> tuple:
-    """
-    Get hexagonal cell.
-
-    Args:
-        a (float): the norm of a axis
-        c (float): the norm of c axis
-        symbol (str): element symbol
-        wyckoff (str): wyckoff letter
-    """
-    lattice = get_hexagonal_lattice_from_a_c(a=a, c=c)
-    scaled_positions = get_atom_positions(wyckoff=wyckoff)
-    symbols = [symbol] * len(scaled_positions)
-    return (lattice, scaled_positions, symbols)
-
-
 def check_same_cells(first_cell:tuple,
                      second_cell:tuple) -> bool:
     """
@@ -74,52 +55,6 @@ def check_same_cells(first_cell:tuple,
                and is_scaled_positions_same
                and is_symbols_same)
     return is_same
-
-
-def is_hcp(lattice:np.array,
-           symbols:list,
-           positions:np.array=None,
-           scaled_positions:np.array=None,
-           get_wyckoff:bool=False):
-    """
-    Check input structure is Hexagonal Close-Packed structure.
-
-    Args:
-        lattice (np.array): lattice
-        symbols: list of atomic symbols
-        positions (np.array): atom cartesian positions
-        scaled_positions (np.array): atom fractional positions
-        get_wyckoff (bool): if True, return wyckoff letter, which is 'c' or 'd'
-
-    Raises:
-        RuntimeError: both positions and scaled_positions are specified
-        AssertionError: input symbols are not unique
-        AssertionError: input structure is not
-                        Hexagonal Close-Packed structure
-
-    Returns:
-        str: if get_wyckoff=True, return wyckoff letter
-    """
-    if positions is not None and scaled_positions is not None:
-        raise RuntimeError("both positions and scaled_positions "
-                           "are specified")
-
-    assert (len(set(symbols)) == 1 and len(symbols) == 2), \
-        "symbols is not unique or the number of atoms are not two"
-
-    if positions is not None:
-        scaled_positions = np.dot(np.linalg.inv(lattice.T), positions.T).T
-    dataset = spglib.get_symmetry_dataset((lattice,
-                                           scaled_positions,
-                                           [0, 0]))
-    spg_symbol = dataset['international']
-    wyckoffs = dataset['wyckoffs']
-    assert spg_symbol == 'P6_3/mmc', \
-            "space group of input structure is {} not 'P6_3/mmc'" \
-            .format(spg_symbol)
-    assert wyckoffs in [['c'] * 2, ['d'] * 2]
-    if get_wyckoff:
-        return wyckoffs[0]
 
 
 def get_atom_positions_from_lattice_points(lattice_points:np.array,
