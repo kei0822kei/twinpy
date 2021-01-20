@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-This is pytest for twinpy.hexagonal
+This is pytest for twinpy.properties.hexagonal.
 """
 
 import numpy as np
