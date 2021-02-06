@@ -19,6 +19,31 @@ def get_numbers_from_symbols(symbols:list):
     Get atomic numbers from symbols.
 
     Args:
+        symbols (list): Atomic symbols.
+    """
+    numbers = [ symbol_map[symbol] for symbol in symbols ]
+    return numbers
+
+
+def get_symbols_from_numbers(numbers):
+    """
+    Get symbols from atomic numbers.
+
+    Args:
+        numbers (list): Atomic numbers.
+    """
+    symbols = [ atom_data[number][1] for number in numbers ]
+    return symbols
+
+
+def get_hexagonal_cell(a:float,
+                       c:float,
+                       symbol:str,
+                       wyckoff:str='c') -> tuple:
+    """
+    Get atomic numbers from symbols.
+
+    Args:
         symbols: Atomic symbols.
     """
     numbers = [ symbol_map[symbol] for symbol in symbols ]
