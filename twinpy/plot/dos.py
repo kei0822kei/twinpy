@@ -151,8 +151,8 @@ class TotalDosPlot(_DosPlot):
         """
         return self._total_dos
 
-    def plot_total_dos(self, ax, label:str=None, c='r', linestyle='-',
-                       alpha=1., linewidth=1.5):
+    def plot_total_dos(self, ax, label:str=None, is_cumulative=False, c='r', linestyle='-',
+                       alpha=1., linewidth=1.5, multi=1.):
         """
         Plot total dos
 
@@ -161,12 +161,17 @@ class TotalDosPlot(_DosPlot):
         """
         freq = self._total_dos.frequency_points
         dos = self._total_dos.dos
-        if self._flip_xy:
-            X = dos
-            Y = freq
+
+        X = freq
+        if is_cumulative:
+            _width = X[1] - X[0]
+            # Warning: probably not correct when useing tetrahedron => probably OK
+            Y = np.cumsum(dos) * _width * multi  # unit []
         else:
-            X = freq
-            Y = dos
+            Y = dos * multi  # unit [/THz]
+
+        if self._flip_xy:
+            X, Y = Y, X
 
         ax.plot(X, Y, c=c, linestyle=linestyle, alpha=alpha,
                 linewidth=linewidth, label=label)
@@ -229,6 +234,7 @@ class PartialDosPlot(_DosPlot):
                          ax,
                          indices=None,
                          labels=None,
+                         is_cumulative=False,
                          cs=None,
                          linestyle='-',
                          alpha=1.,
@@ -269,12 +275,16 @@ class PartialDosPlot(_DosPlot):
                     raise ValueError
                 pdos_sum += pdos.partial_dos[i]
 
-            if self._flip_xy:
-                X = pdos_sum
-                Y = pdos.frequency_points
+            X = pdos.frequency_points
+            if is_cumulative:
+                # Warning: probably not correct when useing tetrahedron => probably OK
+                _width = X[1] - X[0]
+                Y = np.cumsum(pdos_sum) * _width
             else:
-                X = pdos.frequency_points
                 Y = pdos_sum
+
+            if self._flip_xy:
+                X, Y = Y, X
 
             ax.plot(X, Y,
                     label=labels[j],
