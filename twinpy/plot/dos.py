@@ -19,12 +19,12 @@ class _DosPlot():
                  min_freq:float,
                  max_freq:float,
                  max_dos:float,
-                 flip_xy:bool=False,
+                 flip_xy:bool=false,
                  ):
         """
-        Args:
-            flip_xy (bool): Whether to flip x and y.
-                            This cannot change later.
+        args:
+            flip_xy (bool): whether to flip x and y.
+                            this cannot change later.
         """
         self._min_frequency = min_freq
         self._max_frequency = max_freq
@@ -34,49 +34,49 @@ class _DosPlot():
     @property
     def min_frequency(self):
         """
-        Min frequency.
+        min frequency.
         """
         return self._min_frequency
 
     @property
     def max_frequency(self):
         """
-        Max frequency.
+        max frequency.
         """
         return self._max_frequency
 
-    def set_xlim(self, ax, xmin:float=None, xmax:float=None):
+    def set_xlim(self, ax, xmin:float=none, xmax:float=none):
         """
-        Set xlim.
+        set xlim.
 
-        Args:
-            xmin (float): If None, min(frequences) -
+        args:
+            xmin (float): if none, min(frequences) -
                           (max(frequences) - min(frequences)) * 1.05 is set.
-            xmax (float): If None, max(frequences) +
+            xmax (float): if none, max(frequences) +
                           (max(frequences) - min(frequences)) * 1.05 is set.
         """
         freq_min = self._min_frequency
         freq_max = self._max_frequency
         span = freq_max - freq_min
-        if xmin is None:
+        if xmin is none:
             _xmin = freq_min - span * 0.05
         else:
             _xmin = xmin
-        if xmax is None:
+        if xmax is none:
             _xmax = freq_max + span * 0.05
         else:
             _xmax = xmax
         ax.set_xlim(_xmin, _xmax)
 
-    def set_ylim(self, ax, ymin:float=0.01, ymax:float=None):
+    def set_ylim(self, ax, ymin:float=0.01, ymax:float=none):
         """
-        Set ylim.
+        set ylim.
 
-        Args:
-            ymax (float): If None, max(dos) * 1.05 is set.
+        args:
+            ymax (float): if none, max(dos) * 1.05 is set.
         """
         dos_max = self._max_dos
-        if ymax is None:
+        if ymax is none:
             _ymax = dos_max * 0.05
         else:
             _ymax = ymax
@@ -84,9 +84,9 @@ class _DosPlot():
 
     def plot_xlabel(self, ax):
         """
-        Show x label.
+        show x label.
         """
-        label = "Frequency [THz]"
+        label = "frequency [thz]"
         if self._flip_xy:
             ax.set_ylabel(label,
                           fontsize=20)
@@ -151,8 +151,8 @@ class TotalDosPlot(_DosPlot):
         """
         return self._total_dos
 
-    def plot_total_dos(self, ax, label:str=None, c='r', linestyle='-',
-                       alpha=1., linewidth=1.5):
+    def plot_total_dos(self, ax, label:str=None, is_cumulative=False, c='r', linestyle='-',
+                       alpha=1., linewidth=1.5, multi=1.):
         """
         Plot total dos
 
@@ -161,12 +161,17 @@ class TotalDosPlot(_DosPlot):
         """
         freq = self._total_dos.frequency_points
         dos = self._total_dos.dos
-        if self._flip_xy:
-            X = dos
-            Y = freq
+
+        X = freq
+        if is_cumulative:
+            _width = X[1] - X[0]
+            # Warning: probably not correct when useing tetrahedron => probably OK
+            Y = np.cumsum(dos) * _width * multi  # unit []
         else:
-            X = freq
-            Y = dos
+            Y = dos * multi  # unit [/THz]
+
+        if self._flip_xy:
+            X, Y = Y, X
 
         ax.plot(X, Y, c=c, linestyle=linestyle, alpha=alpha,
                 linewidth=linewidth, label=label)
@@ -229,6 +234,7 @@ class PartialDosPlot(_DosPlot):
                          ax,
                          indices=None,
                          labels=None,
+                         is_cumulative=False,
                          cs=None,
                          linestyle='-',
                          alpha=1.,
@@ -269,12 +275,16 @@ class PartialDosPlot(_DosPlot):
                     raise ValueError
                 pdos_sum += pdos.partial_dos[i]
 
-            if self._flip_xy:
-                X = pdos_sum
-                Y = pdos.frequency_points
+            X = pdos.frequency_points
+            if is_cumulative:
+                # Warning: probably not correct when useing tetrahedron => probably OK
+                _width = X[1] - X[0]
+                Y = np.cumsum(pdos_sum) * _width
             else:
-                X = pdos.frequency_points
                 Y = pdos_sum
+
+            if self._flip_xy:
+                X, Y = Y, X
 
             ax.plot(X, Y,
                     label=labels[j],
