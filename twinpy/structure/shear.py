@@ -7,12 +7,12 @@ Hexagonal shear structure
 
 import numpy as np
 from scipy.linalg import sqrtm
-from twinpy.lattice.hexagonal_plane import HexagonalPlane
+from twinpy.properties.hexagonal import HexagonalPlane
 from twinpy.structure.base import (get_lattice_points_from_supercell,
-                                   _BaseStructure)
+                                   _BaseTwinStructure)
 
 
-class ShearStructure(_BaseStructure):
+class ShearStructure(_BaseTwinStructure):
     """
     Shear structure class.
     """
@@ -26,11 +26,17 @@ class ShearStructure(_BaseStructure):
            wyckoff:str='c',
            ):
         """
+        Setup.
+
         Args:
-            shear_strain_ratio (float): shear strain ratio
+            lattice: Lattice.
+            symbol: Element symbol.
+            twinmode: Twin mode.
+            wyckoff: No.194 Wycoff letter ('c' or 'd').
+            shear_strain_ratio: Shear strain ratio.
 
         Note:
-            to see detail, visit _BaseStructure class
+            To see detail, visit _BaseStructure class.
         """
         super().__init__(lattice=lattice,
                          symbol=symbol,
@@ -38,6 +44,7 @@ class ShearStructure(_BaseStructure):
                          wyckoff=wyckoff)
         self._dim = None
         self._shear_strain_ratio = shear_strain_ratio
+        self._output_structure = None
 
     @property
     def dim(self):
@@ -61,13 +68,13 @@ class ShearStructure(_BaseStructure):
         """
         return self._output_structure
 
-    def get_gamma(self):
+    def get_gamma(self) -> float:
         """
         Get gamma.
 
         Returns:
-            float: gamma used for computing shear value
-                   more detail, see documentaion
+            float: Gamma used for computing shear value
+                   more detail, see documentaion.
         """
         shear_strain_function = self._indices.get_shear_strain_function()
         gamma = shear_strain_function(self._r)
@@ -161,7 +168,7 @@ class ShearStructure(_BaseStructure):
             yshift (float): y shift
 
         Returns:
-            tuple: shear lattice
+            tuple: Shear lattice.
         """
         shear_matrix = self.get_shear_matrix()
         parent_matrix = self._indices.get_supercell_matrix_for_parent()
@@ -247,14 +254,16 @@ def get_shear(lattice:np.array,
     Get shear structure object.
 
     Args:
-        lattice (np.array): lattice
-        symbol (str): element symbol
-        wyckoff (str): No.194 Wycoff position ('c' or 'd')
-        xshift (float): x shift
-        yshift (float): y shift
-        dim (np.array): dimension
-        shear_strain_ratio (float): shear strain ratio
-        is_primitive (bool): If primitive, multiplied M^(-1)
+        lattice: Lattice.
+        symbol: Element symbol.
+        twinmode: Twin mode.
+        wyckoff: No.194 Wycoff letter ('c' or 'd').
+        xshift: Structure x shift.
+        yshift: Structure y shift.
+        dim: Supercell dimension.
+        shear_strain_ratio: Shear strain ratio.
+        is_primitive: If primitive, by multiplying M^(-1)
+                      toward conventional structure.
     """
     shear = ShearStructure(lattice=lattice,
                            symbol=symbol,

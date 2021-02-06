@@ -2,35 +2,35 @@
 # -*- coding: utf-8 -*-
 
 """
-HexagonalStructure
+Hexagonal twin structure.
 """
 
+from copy import deepcopy
 import numpy as np
-import spglib
-from phonopy.structure.atoms import PhonopyAtoms, atom_data, symbol_map
-from phonopy.structure.cells import Supercell
-from twinpy.properties.hexagonal import get_atom_positions
+from phonopy.structure.atoms import atom_data, symbol_map
+from twinpy.properties.hexagonal import (get_hcp_atom_positions,
+                                         check_cell_is_hcp)
 from twinpy.properties.twinmode import TwinIndices
-from twinpy.lattice.lattice import get_hexagonal_lattice_from_a_c, Lattice
+from twinpy.structure.lattice import Lattice
 
 
-def get_numbers_from_symbols(symbols):
+def get_numbers_from_symbols(symbols:list):
     """
     Get atomic numbers from symbols.
 
     Args:
-        symbols (list): Atomic symbols.
+        symbols: Atomic symbols.
     """
     numbers = [ symbol_map[symbol] for symbol in symbols ]
     return numbers
 
 
-def get_symbols_from_numbers(numbers):
+def get_symbols_from_numbers(numbers:list):
     """
     Get symbols from atomic numbers.
 
     Args:
-        numbers (list): Atomic numbers.
+        numbers: Atomic numbers.
     """
     symbols = [ atom_data[number][1] for number in numbers ]
     return symbols
@@ -42,11 +42,11 @@ def check_same_cells(first_cell:tuple,
     Check first cell and second cell are same.
 
     Args:
-        first_cell (tuple): first cell
-        second_cell (tuple): second cell
+        first_cell: First cell.
+        second_cell: Second cell.
 
     Returns:
-        bool: return True if two cells are same
+        bool: Return True if two cells are same.
     """
     is_lattice_same = np.allclose(first_cell[0], second_cell[0])
     is_scaled_positions_same = np.allclose(first_cell[1], second_cell[1])
@@ -60,12 +60,12 @@ def check_same_cells(first_cell:tuple,
 def get_atom_positions_from_lattice_points(lattice_points:np.array,
                                            atoms_from_lp:np.array) -> np.array:
     """
-    Get atom positions from lattice points.
+    Get atom positions by embedding primitive atoms to lattice points.
     Both lattice points and atom positions must be cartesian coordinates.
 
     Args:
-        lattice_points (np.array): lattice points
-        atoms_from_lp (np.array): atoms from lattice_points
+        lattice_points: Lattice points.
+        atoms_from_lp: Atoms from lattice_points.
 
     Returns:
         np.array: atom positions
@@ -77,48 +77,7 @@ def get_atom_positions_from_lattice_points(lattice_points:np.array,
     return np.array(scaled_positions)
 
 
-def get_lattice_points_from_supercell(lattice:np.array,
-                                      dim:np.array) -> np.array:
-    """
-    Get lattice points from supercell.
-
-    Args:
-        lattice (np.array): lattice
-        dim (np.array): dimension, its shape is (3,) or (3,3)
-
-    Returns:
-        np.array: lattice points
-    """
-    unitcell = PhonopyAtoms(symbols=['H'],
-                            cell=lattice,
-                            scaled_positions=np.array([[0.,0.,0]]),
-                            )
-    super_lattice = Supercell(unitcell=unitcell,
-                              supercell_matrix=reshape_dimension(dim))
-    lattice_points = super_lattice.scaled_positions
-    return lattice_points
-
-
-def reshape_dimension(dim:np.array) -> np.array:
-    """
-    If dim.shape == (3,), reshape to (3,3) numpy array.
-
-    Raises:
-        ValueError: input dim is not (3,) and (3,3) array
-
-    Returns:
-        np.array: 3x3 dimention matrix
-    """
-    if np.array(dim).shape == (3,3):
-        dim_matrix = np.array(dim)
-    elif np.array(dim).shape == (3,):
-        dim_matrix = np.diag(dim)
-    else:
-        raise ValueError("input dim is not (3,) and (3,3) array")
-    return dim_matrix
-
-
-class _BaseStructure():
+class _BaseTwinStructure():
     """
     Base structure class which is inherited
     ShearStructure class and TwinBoundaryStructure class.
@@ -132,25 +91,29 @@ class _BaseStructure():
            wyckoff:str='c',
            ):
         """
+        Setup.
+
         Args:
-            lattice (np.array): lattice
-            symbol (str): element symbol
-            twinmode (str): twin mode
-            wyckoff (str): No.194 Wycoff position ('c' or 'd')
+            lattice: Lattice.
+            symbol: Element symbol.
+            twinmode: Twin mode.
+            wyckoff: No.194 Wycoff letter ('c' or 'd').
         """
-        atoms_from_lp = get_atom_positions(wyckoff)
+        atoms_from_lp = get_hcp_atom_positions(wyckoff)
         symbols = [symbol] * 2
-        is_hcp(lattice=lattice,
-               scaled_positions=atoms_from_lp,
-               symbols=symbols)
-        self._hcp_lattice = Lattice(lattice)
-        self._a, _, self._c = self._hcp_lattice.abc
+        check_cell_is_hcp(lattice=lattice,
+                          scaled_positions=atoms_from_lp,
+                          symbols=symbols)
+        self._lattice = lattice
+        self._hexagonal_lattice = deepcopy(self._lattice)
+        self._lat = Lattice(self._lattice)
+        self._hexagonal_lat = deepcopy(self._lat)
+        self._a, _, self._c = self._hcp_lat.abc
         self._r = self._c / self._a
         self._symbol = symbol
         self._wyckoff = wyckoff
         self._atoms_from_lattice_points = \
-                get_atom_positions(wyckoff=self._wyckoff)
-        self._hexagonal_lattice = Lattice(lattice)
+                get_hcp_atom_positions(wyckoff=self._wyckoff)
         self._natoms = 2
         self._twinmode = None
         self._indices = None
@@ -158,7 +121,7 @@ class _BaseStructure():
         self._xshift = None
         self._yshift = None
         self._output_structure = \
-                {'lattice': lattice,
+                {'lattice': self._lattice,
                  'lattice_points': {
                      'white': np.array([0.,0.,0.])},
                  'atoms_from_lattice_points': {
@@ -170,16 +133,26 @@ class _BaseStructure():
         Set parent.
 
         Args:
-            twinmode (str): twinmode
-
-        Note:
-            set attribute 'twinmode'
-            set attribute 'indices'
+            twinmode: Twinmode.
         """
         self._twinmode = twinmode
         self._indices = TwinIndices(twinmode=self._twinmode,
                                     lattice=self._hexagonal_lattice,
                                     wyckoff=self._wyckoff)
+
+    @property
+    def lattice(self):
+        """
+        Lattice matrix.
+        """
+        return self._lattice
+
+    @property
+    def lat(self):
+        """
+        Lattice class object.
+        """
+        return self._lat
 
     @property
     def r(self):
@@ -198,7 +171,7 @@ class _BaseStructure():
     @property
     def wyckoff(self):
         """
-        Wyckoff position.
+        Wyckoff letter.
         """
         return self._wyckoff
 
@@ -266,11 +239,11 @@ class _BaseStructure():
         Get cell for export.
 
         Args:
-            get_lattice (str): get lattice points not crystal structure
-            move_atoms_into_unitcell (bool): if True, move atoms to unitcell
+            get_lattice: Get lattice points not crystal structure.
+            move_atoms_into_unitcell: if True, move atoms to unitcell.
 
         Returns:
-            tuple: output cell
+            tuple: Output cell.
         """
         _dummy = {'white': 'H', 'white_tb': 'Li',
                   'black': 'He', 'black_tb': 'Be'}
