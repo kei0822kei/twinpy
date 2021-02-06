@@ -264,7 +264,11 @@ class BandPlot():
         """
         ax.axhline(hval, c='grey', linestyle='--', linewidth=0.5)
 
-    def plot_band_structure(self, figsize=(8,6), dosplot=None, dos_distance=0.3):
+    def plot_band_structure(self,
+                            figsize=(8,6),
+                            dosplot=None,
+                            dos_distance=0.3,
+                            c='r'):
         """
         Plot band structure.
         """
@@ -283,6 +287,7 @@ class BandPlot():
                 show_yscale = False
 
             self.plot_segment_band_structure(
+                    c=c,
                     ax=axes[i],
                     frequences=self._segment_frequences[i],
                     distances=self._segment_distances[i],
@@ -293,7 +298,7 @@ class BandPlot():
             axes[i].set_ylim(self._ylim)
 
         if dosplot is not None:
-            dosplot.plot_total_dos(ax=axes[-1])
+            dosplot.plot_total_dos(ax=axes[-1], c=c)
             axes[-1].tick_params(labelleft=False)
             axes[-1].set_ylim(self._ylim)
             self.plot_hline(axes[-1])
