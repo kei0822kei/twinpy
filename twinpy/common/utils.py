@@ -151,3 +151,22 @@ def round_off(x:float):
             -5
     """
     return int(Decimal(str(x)).quantize(Decimal('0'), rounding=ROUND_HALF_UP))
+
+
+def reshape_dimension(dim:np.array) -> np.array:
+    """
+    If dim.shape == (3,), reshape to (3,3) numpy array.
+
+    Raises:
+        ValueError: Input dimension is neither (3,) or (3,3) np.array.
+
+    Returns:
+        np.array: 3x3 dimention matrix
+    """
+    if np.array(dim).shape == (3,3):
+        dim_matrix = np.array(dim)
+    elif np.array(dim).shape == (3,):
+        dim_matrix = np.diag(dim)
+    else:
+        raise ValueError("Input dimension is neither (3,) or (3,3) np.array.")
+    return dim_matrix

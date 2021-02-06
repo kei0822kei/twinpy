@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """
 Hexagonal property.
 """
@@ -134,6 +133,12 @@ def get_hcp_atom_positions(wyckoff:str) -> np.array:
 
     Returns:
         np.array: Atom positions with fractional coordinate.
+
+    Note:
+        origin point is  plane in the middle of hcp primitive atom pairs.
+        The atom positions of wyckoff 'c', for example, are
+        [[ 1/3 -1/3  1/4 ], [ -1/3 1/3 -1/4 ]] not
+        [[ 1/3  2/3  1/4 ], [  2/3 1/3  3/4 ]].
     """
     assert wyckoff in ['c', 'd'], \
              "Input wyckoff must be 'c' or 'd' (input:{})".format(wyckoff)
