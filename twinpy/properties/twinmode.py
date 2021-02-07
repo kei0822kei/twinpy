@@ -15,16 +15,16 @@ from twinpy.properties.hexagonal import get_atom_positions
 from twinpy.common.utils import get_ratio
 
 
-def check_supported_twinmode(twinmode):
+def check_supported_twinmode(twinmode:str):
     """
     Check input twinmode is supported.
 
     Args:
-        twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
-                        (which are supported)
+        twinmode: Choose from '10-12', '10-11', '11-22' or '11-21'
+                  (which are supported).
 
     Raises:
-        AssertionError: input twinmode is not supported
+        AssertionError: Input twinmode is not supported.
     """
     supported_twinmodes = ['10-12', '10-11', '11-22', '11-21']
     assert twinmode in supported_twinmodes, '%s is not supported' % twinmode
@@ -35,12 +35,12 @@ def get_shear_strain_function(twinmode:str):
     Get shear strain.
 
     Args:
-        twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
-                        (which are supported)
+        twinmode: Choose from '10-12', '10-11', '11-22' or '11-21'
+                  (which are supported).
 
     Returns:
-        function: function which returns shear strain
-                  input arg is r
+        function: Function which returns shear strain
+                  input arg is r.
     """
     check_supported_twinmode(twinmode)
     if twinmode == '10-12':
@@ -63,11 +63,11 @@ def get_number_of_layers(twinmode:str) -> int:
     Get the number of layers.
 
     Args:
-        twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
-                        (which are supported)
+        twinmode: Choose from '10-12', '10-11', '11-22' or '11-21'
+                  (which are supported).
 
     Returns:
-        int: the number of layes
+        int: The number of layes.
     """
     check_supported_twinmode(twinmode)
     if twinmode == '10-12':
@@ -86,7 +86,7 @@ def get_twin_indices_by_Yoo() -> dict:
     Get twin indices Yoo showed in his paper.
 
     Returns:
-        dict: twin indices
+        dict: Twin indices.
     """
     dataset = {
             '10-12': {
@@ -120,12 +120,13 @@ def get_twin_indices_by_Yoo() -> dict:
                         'eta2' : np.array([ 2/3, 2/3,-4/3,  1.]),
                      },
               }
+
     return dataset
 
 
 class TwinIndices():
     """
-    Deals with twin indices
+    Deals with twin indices.
     """
 
     def __init__(
@@ -139,13 +140,13 @@ class TwinIndices():
         Twinmode must be '10-11', '10-12', '11-21' or '11-22'.
 
         Args:
-            twinmode (str): currently supported \
-                            '10-11', '10-12', '11-22' and '11-21'
-            lattice (Lattice): lattice
-            wyckoff (str): wyckoff letter, 'c' or 'd'
+            twinmode: Currently supported \
+                            '10-11', '10-12', '11-22' and '11-21'.
+            lattice: Lattice class object.
+            wyckoff: Wyckoff letter, 'c' or 'd'.
 
         Returns:
-            dict: twin indices
+            dict: Twin indices.
 
         Note:
             You can find customs how to set the four indices
@@ -336,10 +337,10 @@ class TwinIndices():
         Set shear plane.
 
         Raises:
-            RuntimeError: could not find shear plane
+            RuntimeError: Could not find shear plane.
 
         Note:
-            set shear plane which fulfill the following conditions
+            Set shear plane which fulfill the following conditions
             from six candidates
             ((hkil), (hikl), (khil), (kihl), (ihkl), (ikhl)).
         """
@@ -377,15 +378,16 @@ class TwinIndices():
         Get supercell matrix for creating parent matrix.
 
         Returns:
-            np.array: sueprcell matrix
+            np.array: Sueprcell matrix.
 
         Note:
-            create lattice basis with integerized m, eta1 and eta2
+            Create lattice basis with integerized m, eta1 and eta2.
         """
         tf1 = np.array(get_ratio(self._indices['m'].three))
         tf2 = np.array(get_ratio(self._indices['eta1'].three))
         tf3 = np.array(get_ratio(self._indices['eta2'].three))
         supercell_matrix = np.vstack([tf1, tf2, tf3]).T
+
         return supercell_matrix
 
     def get_shear_strain_function(self):
