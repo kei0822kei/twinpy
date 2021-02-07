@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Hexagonal twin structure.
+This module deals with hexagonal twin structure.
 """
 
 from copy import deepcopy
@@ -25,37 +25,12 @@ def get_numbers_from_symbols(symbols:list):
     return numbers
 
 
-def get_symbols_from_numbers(numbers):
-    """
-    Get symbols from atomic numbers.
-
-    Args:
-        numbers (list): Atomic numbers.
-    """
-    symbols = [ atom_data[number][1] for number in numbers ]
-    return symbols
-
-
-def get_hexagonal_cell(a:float,
-                       c:float,
-                       symbol:str,
-                       wyckoff:str='c') -> tuple:
-    """
-    Get atomic numbers from symbols.
-
-    Args:
-        symbols: Atomic symbols.
-    """
-    numbers = [ symbol_map[symbol] for symbol in symbols ]
-    return numbers
-
-
 def get_symbols_from_numbers(numbers:list):
     """
     Get symbols from atomic numbers.
 
     Args:
-        numbers: Atomic numbers.
+        numbers (list): Atomic numbers.
     """
     symbols = [ atom_data[number][1] for number in numbers ]
     return symbols
