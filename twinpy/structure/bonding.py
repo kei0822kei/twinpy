@@ -3,6 +3,11 @@
 
 """
 Bonding base.
+
+Note:
+    Currently writen by python but it is time consuming to
+    excute the functions in this module. They are written
+    by C++ in the near future.
 """
 import numpy as np
 import itertools
