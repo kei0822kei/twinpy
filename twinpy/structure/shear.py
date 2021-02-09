@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Hexagonal shear structure
+This module deals with hexagonal shear structure.
 """
 
 import numpy as np

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Hexagonal Twinboudnary Structure.
+This module deals with hexagonal twinboundary structure.
 """
 
 import numpy as np

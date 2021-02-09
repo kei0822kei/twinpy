@@ -19,7 +19,7 @@ def get_numbers_from_symbols(symbols:list):
     Get atomic numbers from symbols.
 
     Args:
-        symbols (list): Atomic symbols.
+        symbols: Atomic symbols.
     """
     numbers = [ symbol_map[symbol] for symbol in symbols ]
     return numbers
@@ -30,7 +30,7 @@ def get_symbols_from_numbers(numbers:list):
     Get symbols from atomic numbers.
 
     Args:
-        numbers (list): Atomic numbers.
+        numbers: Atomic numbers.
     """
     symbols = [ atom_data[number][1] for number in numbers ]
     return symbols

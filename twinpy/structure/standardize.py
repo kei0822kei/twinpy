@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Symmetry Analyzer
+This module deals with crystal symmetry.
 """
 
 import numpy as np
