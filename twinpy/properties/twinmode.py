@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Provide properties of twin modes.
+This module deals with properties of twin modes.
 """
 
 import numpy as np

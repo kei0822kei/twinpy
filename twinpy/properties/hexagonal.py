@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Hexagonal property.
+This module deals with hexagonal property.
 """
 
 import numpy as np
