@@ -9,7 +9,6 @@ from copy import deepcopy
 from itertools import permutations
 import numpy as np
 from twinpy.properties.hexagonal import check_hexagonal_lattice
-from twinpy.structure.lattice import Lattice
 from twinpy.properties.hexagonal import (HexagonalPlane,
                                          HexagonalDirection,
                                          get_hcp_atom_positions)
@@ -132,7 +131,7 @@ class TwinIndices():
 
     def __init__(
            self,
-           lattice:Lattice,
+           lattice:np.array,
            twinmode:str,
            wyckoff:str,
            ):
@@ -141,9 +140,9 @@ class TwinIndices():
         Twinmode must be '10-11', '10-12', '11-21' or '11-22'.
 
         Args:
+            lattice: Hexagonal lattice matrix.
             twinmode: Currently supported \
                             '10-11', '10-12', '11-22' and '11-21'.
-            lattice: Lattice class object.
             wyckoff: Wyckoff letter, 'c' or 'd'.
 
         Returns:
@@ -175,15 +174,15 @@ class TwinIndices():
 
         Todo:
             _twin_indices_orig is a little bit
-            different from the ones 1981. Yoo especially 'S'
+            different from the ones 1981. Yoo especially 'S'.
         """
-        check_hexagonal_lattice(lattice.lattice)
+        check_hexagonal_lattice(lattice)
         check_supported_twinmode(twinmode)
         self._lattice = lattice
         self._twinmode = twinmode
         self._layers = get_number_of_layers(twinmode)
         self._wyckoff = wyckoff
-        self._indices_Yoo = self._get_indices_Yoo(self._lattice.lattice,
+        self._indices_Yoo = self._get_indices_Yoo(self._lattice,
                                                   self._twinmode)
         self._indices = deepcopy(self._indices_Yoo)
         self._set_K1()
@@ -233,20 +232,20 @@ class TwinIndices():
         """
         return self._indices
 
-    def _get_indices_Yoo(self, lattice, twinmode) -> dict:
+    def _get_indices_Yoo(self) -> dict:
         """
         Get specific twinmode indices which are found in Yoo's paper.
 
         Returns:
             dict: indices by Yoo
         """
-        indices_ = get_twin_indices_by_Yoo()[twinmode]
+        indices_ = get_twin_indices_by_Yoo()[self._twinmode]
         indices = {}
         for plane in ['S', 'K1', 'K2']:
-            indices[plane] = HexagonalPlane(lattice,
+            indices[plane] = HexagonalPlane(lattice=self._lattice,
                                             four=indices_[plane])
         for direction in ['eta1', 'eta2']:
-            indices[direction] = HexagonalDirection(lattice,
+            indices[direction] = HexagonalDirection(lattice=self._lattice,
                                                     four=indices_[direction])
         return indices
 
@@ -352,7 +351,7 @@ class TwinIndices():
         normal_directions = ['k1', 'k2', 'eta1', 'eta2']
         flag = 1
         for trial_S_four in trial_S_fours:
-            trial_S = HexagonalPlane(self.lattice.lattice,
+            trial_S = HexagonalPlane(self._lattice,
                                      four=np.array(trial_S_four, dtype='intc'))
             trial_m = trial_S.get_direction_normal_to_plane()
             dots = [ self.lattice.dot(trial_m.three,
