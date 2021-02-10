@@ -391,11 +391,11 @@ class CrystalLattice():
 
         if with_periodic:
             diff = self.get_diff(first_coord=first_coord,
-    #                              second_coord=second_coord,
-    #                              is_cartesian=is_cartesian,
-    #                              with_periodic=with_periodic)
-    #         midpoint = np.round((_first_frac + diff / 2) % 1., decimals=8)
-    #     else:
-    #         midpoint = (_second_frac - _first_frac) / 2
+                                 second_coord=second_coord,
+                                 is_cartesian=is_cartesian,
+                                 with_periodic=with_periodic)
+            midpoint = np.round((_first_frac + diff / 2) % 1., decimals=8)
+        else:
+            midpoint = (_second_frac - _first_frac) / 2
 
-    #     return midpoint
+        return midpoint
