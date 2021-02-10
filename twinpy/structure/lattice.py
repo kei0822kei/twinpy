@@ -35,7 +35,7 @@ def get_lattice_points_from_supercell(lattice:np.array,
     return lattice_points
 
 
-class Lattice():
+class CrystalLattice():
     """
     Deals with lattice.
     """

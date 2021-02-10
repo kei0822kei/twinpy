@@ -5,13 +5,14 @@
 This module deals with properties of twin modes.
 """
 
-import numpy as np
 from copy import deepcopy
 from itertools import permutations
-from twinpy.lattice.lattice import Lattice, check_hexagonal_lattice
-from twinpy.lattice.hexagonal_plane import HexagonalPlane
-from twinpy.lattice.hexagonal_direction import HexagonalDirection
-from twinpy.properties.hexagonal import get_atom_positions
+import numpy as np
+from twinpy.properties.hexagonal import check_hexagonal_lattice
+from twinpy.structure.lattice import Lattice
+from twinpy.properties.hexagonal import (HexagonalPlane,
+                                         HexagonalDirection,
+                                         get_hcp_atom_positions)
 from twinpy.common.utils import get_ratio
 
 
@@ -264,7 +265,7 @@ class TwinIndices():
             are fixed by multiplied (-1, -1, -1, 1).
         """
         arr = np.array([-1,-1,-1,1])
-        atoms = get_atom_positions(self.wyckoff)
+        atoms = get_hcp_atom_positions(wyckoff=self.wyckoff)
         K1_1 = self._indices['K1']
         K1_2 = deepcopy(K1_1)
         K1_2.reset_indices(four=K1_2.four*arr)

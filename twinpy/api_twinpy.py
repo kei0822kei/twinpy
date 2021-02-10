@@ -6,12 +6,9 @@ This module provides API for twinpy.
 """
 
 from pprint import pprint
-import numpy as np
 import warnings
-from aiida.orm import load_node
-from aiida.common.exceptions import ProfileConfigurationError
-from aiida import load_profile
-from twinpy.structure.base import is_hcp
+import numpy as np
+from twinpy.properties.hexagonal import check_cell_is_hcp
 from twinpy.structure.shear import get_shear
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
@@ -19,14 +16,7 @@ from twinpy.file_io import read_yaml, write_yaml, write_poscar
 from twinpy.interfaces.aiida.shear import AiidaShearWorkChain
 from twinpy.interfaces.aiida.twinboundary \
         import AiidaTwinBoudnaryRelaxWorkChain
-
-try:
-    load_profile()
-except ProfileConfigurationError:
-    err_msg = "Failed to load aiida profile. " \
-            + "Please check your aiida configuration."
-    warnings.warn(err_msg)
-
+from twinpy.interfaces.aiida.base import load_aiida_profile
 
 class Twinpy():
     """
@@ -55,6 +45,8 @@ class Twinpy():
         self._shear_analyzer = None
         self._twinboundary_analyzer = None
         self._twinboundary_shear_analyzer = None
+
+        self._is_aiida_profile_load = False
 
     def _check_shear_is_set(self):
         """
@@ -120,6 +112,11 @@ class Twinpy():
         """
         Set shear from AiidaShearWorkChain.
         """
+        from aiida.orm import load_node
+
+        if not self._is_aiida_profile_load:
+            load_aiida_profile()
+
         aiida_shear = AiidaShearWorkChain(load_node(shear_pk))
         shear_analyzer = aiida_shear.get_shear_analyzer()
         twinmode = aiida_shear.shear_conf['twinmode']
@@ -145,6 +142,11 @@ class Twinpy():
         """
         Set twinboundary from AiidaTwinBoudnaryRelaxWorkChain.
         """
+        from aiida.orm import load_node
+
+        if not self._is_aiida_profile_load:
+            load_aiida_profile()
+
         aiida_tb_relax = AiidaTwinBoudnaryRelaxWorkChain(
                 load_node(twinboundary_relax_pk))
         tb_settings = aiida_tb_relax.twinboundary_settings
@@ -594,10 +596,10 @@ def get_twinpy_from_cell(cell:tuple,
         Return Twinpy class object.
     """
     lattice, scaled_positions, symbols = cell
-    wyckoff = is_hcp(lattice=lattice,
-                     scaled_positions=scaled_positions,
-                     symbols=symbols,
-                     get_wyckoff=True)
+    wyckoff = check_cell_is_hcp(lattice=lattice,
+                                scaled_positions=scaled_positions,
+                                symbols=symbols,
+                                get_wyckoff=True)
     twinpy = Twinpy(lattice=lattice,
                     twinmode=twinmode,
                     symbol=symbols[0],

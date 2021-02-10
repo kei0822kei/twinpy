@@ -4,8 +4,8 @@
 This module deals with hexagonal property.
 """
 
-import numpy as np
 from typing import Union, Optional
+import numpy as np
 import spglib
 from twinpy.structure.lattice import Lattice
 

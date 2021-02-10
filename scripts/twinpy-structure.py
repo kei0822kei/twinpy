@@ -7,7 +7,7 @@ Get twinpy strucuture
 
 import argparse
 import numpy as np
-from twinpy.lattice.lattice import get_hexagonal_lattice_from_a_c
+from twinpy.properties.hexagonal import get_hexagonal_lattice_from_a_c
 from twinpy.interfaces.pymatgen import get_hexagonal_cell_wyckoff_from_pymatgen
 from twinpy.api_twinpy import Twinpy
 from twinpy.file_io import write_poscar

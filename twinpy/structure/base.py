@@ -108,7 +108,7 @@ class _BaseTwinStructure():
         self._hexagonal_lattice = deepcopy(self._lattice)
         self._lat = Lattice(self._lattice)
         self._hexagonal_lat = deepcopy(self._lat)
-        self._a, _, self._c = self._hcp_lat.abc
+        self._a, _, self._c = self._lat.abc
         self._r = self._c / self._a
         self._symbol = symbol
         self._wyckoff = wyckoff
