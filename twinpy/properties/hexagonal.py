@@ -4,6 +4,7 @@
 This module deals with hexagonal property.
 """
 
+from typing import Union
 import numpy as np
 import spglib
 from twinpy.structure.lattice import CrystalLattice

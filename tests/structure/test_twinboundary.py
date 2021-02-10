@@ -5,7 +5,6 @@
 This is pytest for twinpy.structure.twinboudnary.
 """
 
-import numpy as np
 from twinpy.structure.twinboundary import TwinBoundaryStructure
 
 

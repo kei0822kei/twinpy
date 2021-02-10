@@ -6,6 +6,7 @@ This module deals with crystal lattice.
 """
 
 from copy import deepcopy
+import warnings
 import numpy as np
 from phonopy.structure.atoms import PhonopyAtoms
 from phonopy.structure.cells import Supercell
@@ -37,7 +38,7 @@ def get_lattice_points_from_supercell(lattice:np.array,
 
 class CrystalLattice():
     """
-    Deals with lattice.
+    This class deals with crystal lattice.
     """
 
     def __init__(self, lattice:np.array):
@@ -280,6 +281,11 @@ class CrystalLattice():
         Returns:
             np.array: Atom diff (second_coord - first_coord)
                       in fractional coordinate.
+
+        Todo:
+            Check it is best to use deepcopy.
+            Currenly get_diff with with_periodic=True may return incorrect
+            result.
         """
         if is_cartesian:
             _first_frac = \
@@ -291,6 +297,7 @@ class CrystalLattice():
             _second_frac = deepcopy(second_coord)
 
         if with_periodic:
+            warnings.warn("with_periodic=True may returns incorrect result.")
             _diff = np.round((_second_frac - _first_frac) % 1., decimals=8)
             diff = np.where(_diff>0.5, _diff-1, _diff)
         else:
@@ -349,41 +356,41 @@ class CrystalLattice():
 
         return distance
 
-    # def get_midpoint(self,
-    #                  first_coord:np.array,
-    #                  second_coord:np.array,
-    #                  is_cartesian:bool=False,
-    #                  with_periodic:bool=True) -> np.array:
-    #     """
-    #     Get midpoint.
+    def get_midpoint(self,
+                     first_coord:np.array,
+                     second_coord:np.array,
+                     is_cartesian:bool=False,
+                     with_periodic:bool=True) -> np.array:
+        """
+        Get midpoint.
 
-    #     Args:
-    #         first_coord: First fractional coordinate.
-    #         second_coord: Second fractional coordinate.
-    #         is_cartesian: If True input coord is recognized
-    #                       as cartesian.
-    #         with_periodic: If True, consider periodic condition.
+        Args:
+            first_coord: First fractional coordinate.
+            second_coord: Second fractional coordinate.
+            is_cartesian: If True input coord is recognized
+                          as cartesian.
+            with_periodic: If True, consider periodic condition.
 
-    #     Returns:
-    #         np.array: Atom diff (second_coord - first_coord)
-    #                   in fractional coordinate.
+        Returns:
+            np.array: Atom diff (second_coord - first_coord)
+                      in fractional coordinate.
 
-    #     Todo:
-    #         It is necessary to fix this function because
-    #         in the case 'with_periodic=True', there are two different points
-    #         which can be defined as midpoint.
-    #     """
-    #     if is_cartesian:
-    #         _first_frac = \
-    #             self.convert_cartesian_to_fractional(cart_coords=first_coord)
-    #         _second_frac = \
-    #             self.convert_cartesian_to_fractional(cart_coords=second_coord)
-    #     else:
-    #         _first_frac = deepcopy(first_coord)
-    #         _second_frac = deepcopy(second_coord)
+        Todo:
+            It is necessary to fix this function because
+            in the case 'with_periodic=True', there are two different points
+            which can be defined as midpoint.
+        """
+        if is_cartesian:
+            _first_frac = \
+                self.convert_cartesian_to_fractional(cart_coords=first_coord)
+            _second_frac = \
+                self.convert_cartesian_to_fractional(cart_coords=second_coord)
+        else:
+            _first_frac = deepcopy(first_coord)
+            _second_frac = deepcopy(second_coord)
 
-    #     if with_periodic:
-    #         diff = self.get_diff(first_coord=first_coord,
+        if with_periodic:
+            diff = self.get_diff(first_coord=first_coord,
     #                              second_coord=second_coord,
     #                              is_cartesian=is_cartesian,
     #                              with_periodic=with_periodic)
