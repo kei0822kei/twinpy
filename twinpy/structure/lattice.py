@@ -18,7 +18,7 @@ def get_lattice_points_from_supercell(lattice:np.array,
     Get lattice points from supercell.
 
     Args:
-        lattice: Lattice class object.
+        lattice: Lattice matrix.
         dim: Dimension with its shape is (3,) or (3,3).
 
     Returns:
@@ -43,7 +43,7 @@ class CrystalLattice():
     def __init__(self, lattice:np.array):
         """
         Args:
-            lattice: Crystal lattice.
+            lattice: Lattice matrix.
 
         Raises:
             AssertionError: Input lattice is not 3x3 numpy array.
@@ -323,45 +323,6 @@ class CrystalLattice():
         return np.dot(np.linalg.inv(np.transpose(self._lattice)),
                       cart_coords.T).T
 
-    def get_midpoint(self,
-                     first_coord:np.array,
-                     second_coord:np.array,
-                     is_cartesian:bool=False,
-                     with_periodic:bool=True) -> np.array:
-        """
-        Get midpoint.
-
-        Args:
-            first_coord: First fractional coordinate.
-            second_coord: Second fractional coordinate.
-            is_cartesian: If True input coord is recognized
-                          as cartesian.
-            with_periodic: If True, consider periodic condition.
-
-        Returns:
-            np.array: Atom diff (second_coord - first_coord)
-                      in fractional coordinate.
-        """
-        if is_cartesian:
-            _first_frac = \
-                self.convert_cartesian_to_fractional(cart_coords=first_coord)
-            _second_frac = \
-                self.convert_cartesian_to_fractional(cart_coords=second_coord)
-        else:
-            _first_frac = deepcopy(first_coord)
-            _second_frac = deepcopy(second_coord)
-
-        if with_periodic:
-            diff = self.get_diff(first_coord=first_coord,
-                                 second_coord=second_coord,
-                                 is_cartesian=is_cartesian,
-                                 with_periodic=with_periodic)
-            midpoint = np.round((_first_frac + diff / 2) % 1., decimals=8)
-        else:
-            midpoint = (_second_frac - _first_frac) / 2
-
-        return midpoint
-
     def get_distance(self,
                      first_coord:np.array,
                      second_coord:np.array,
@@ -387,3 +348,47 @@ class CrystalLattice():
         distance = np.linalg.norm(np.dot(self.lattice.T, diff.T))
 
         return distance
+
+    # def get_midpoint(self,
+    #                  first_coord:np.array,
+    #                  second_coord:np.array,
+    #                  is_cartesian:bool=False,
+    #                  with_periodic:bool=True) -> np.array:
+    #     """
+    #     Get midpoint.
+
+    #     Args:
+    #         first_coord: First fractional coordinate.
+    #         second_coord: Second fractional coordinate.
+    #         is_cartesian: If True input coord is recognized
+    #                       as cartesian.
+    #         with_periodic: If True, consider periodic condition.
+
+    #     Returns:
+    #         np.array: Atom diff (second_coord - first_coord)
+    #                   in fractional coordinate.
+
+    #     Todo:
+    #         It is necessary to fix this function because
+    #         in the case 'with_periodic=True', there are two different points
+    #         which can be defined as midpoint.
+    #     """
+    #     if is_cartesian:
+    #         _first_frac = \
+    #             self.convert_cartesian_to_fractional(cart_coords=first_coord)
+    #         _second_frac = \
+    #             self.convert_cartesian_to_fractional(cart_coords=second_coord)
+    #     else:
+    #         _first_frac = deepcopy(first_coord)
+    #         _second_frac = deepcopy(second_coord)
+
+    #     if with_periodic:
+    #         diff = self.get_diff(first_coord=first_coord,
+    #                              second_coord=second_coord,
+    #                              is_cartesian=is_cartesian,
+    #                              with_periodic=with_periodic)
+    #         midpoint = np.round((_first_frac + diff / 2) % 1., decimals=8)
+    #     else:
+    #         midpoint = (_second_frac - _first_frac) / 2
+
+    #     return midpoint
