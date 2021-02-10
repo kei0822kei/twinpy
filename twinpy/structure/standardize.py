@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Symmetry Analyzer
+This module deals with crystal symmetry.
 """
 
 import numpy as np
@@ -307,7 +307,6 @@ class StandardizeCell():
             'primitive' in this function means 'primitive idealized'.
         """
         def __get_kpt_transformation_matrix():
-            R = self.rotation_matrix
             M_p = self.get_standardized_cell(to_primitive=True,
                                              no_idealize=True)[0].T
             M = self.cell[0].T
@@ -341,18 +340,3 @@ class StandardizeCell():
                                .format(kpoints_type))
 
         return kpts
-
-    # def add_standardized_to_original_operation(cell:tuple, cell_is_primitve=True):
-    #     """
-    #     Add primitive to original operation toward input cell.
-    #     """
-    #     # lattice
-    #     R = self._rotation_matrix
-    #     P = self._transformation_matrix
-    #     P_c = self._conv_to_prim_matrix
-    #     p = self._origin_shift
-
-    #     if cell_is_primitve:
-    #         M_bar_p = np.transpose(cell[0])
-    #         M_p = np.dot(R.T, M_bar_p)
-    #         M_s = np.dot(M_p, np.linalg.inv(P_c))

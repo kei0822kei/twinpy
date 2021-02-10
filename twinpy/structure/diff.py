@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-compare structures
+This module deals with structures difference.
 """
 
 import numpy as np
@@ -16,18 +16,18 @@ def get_structure_diff(cells:list,
     Get structure diff with first cell in cells.
 
     Args:
-        cells (list): List of cells.
-        base_index (int): Base cell index.
-        include_base (bool): If True, include base cell in output dict.
+        cells: List of cells.
+        base_index: Base cell index.
+        include_base: If True, include base cell in output dict.
 
     Returns:
-        dict: Containing 'lattice_diffs', 'scaled_posi_diffs',
+        dict: Containing 'lattice_diffs', 'frac_posi_diffs',
               'cart_posi_diffs' and 'cart_norm_diffs'.
 
     Note:
         Return diff compared with base cell.
         ex. lattice_diffs[i] = ith_lattice - base_lattice.
-        The value 'scaled_posi_diffs' are the difference between two
+        The value 'frac_posi_diffs' are the difference between two
         fractional coordinates which is not consider lattice change,
         which can be defined as 'shuffle'.
         The value 'cart_posi_diffs' are the difference between two
@@ -36,13 +36,13 @@ def get_structure_diff(cells:list,
     """
     cart_posis = [ np.dot(cells[i][0].T, cells[i][1].T).T
                        for i in range(len(cells)) ]
-    base_lat, base_scaled_posi, _ = cells[base_index]
+    base_lat, base_frac_posi, _ = cells[base_index]
     base_cart_posi = cart_posis[base_index]
     lattice_diffs = [ cell[0] - base_lat for cell in cells ]
-    _scaled_posi_diffs = [ np.round(cell[1] - base_scaled_posi, decimals=8)
+    _frac_posi_diffs = [ np.round(cell[1] - base_frac_posi, decimals=8)
                                for cell in cells ]
-    scaled_posi_diffs = [ np.where(diff>0.5, diff-1, diff)
-                              for diff in _scaled_posi_diffs ]
+    frac_posi_diffs = [ np.where(diff>0.5, diff-1, diff)
+                              for diff in _frac_posi_diffs ]
 
     cart_posi_diffs = []
     for cell, cart_posi in zip(cells, cart_posis):
@@ -58,13 +58,13 @@ def get_structure_diff(cells:list,
 
     if not include_base:
         del lattice_diffs[base_index]
-        del scaled_posi_diffs[base_index]
+        del frac_posi_diffs[base_index]
         del cart_posi_diffs[base_index]
         del cart_norm_diffs[base_index]
 
     return {
               'lattice_diffs': np.array(lattice_diffs),
-              'scaled_posi_diffs': np.array(scaled_posi_diffs),
+              'frac_posi_diffs': np.array(frac_posi_diffs),
               'cart_posi_diffs': np.array(cart_posi_diffs),
               'cart_norm_diffs': np.array(cart_norm_diffs),
            }

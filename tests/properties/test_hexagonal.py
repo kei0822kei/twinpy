@@ -5,9 +5,9 @@
 This is pytest for twinpy.properties.hexagonal.
 """
 
+from copy import deepcopy
 import numpy as np
 from twinpy.properties import hexagonal
-from copy import deepcopy
 
 a = 2.93
 c = 4.65
@@ -26,10 +26,7 @@ def test_check_cell_is_hcp(ti_cell_wyckoff_c, ti_cell_wyckoff_d):
     Check check_cell_is_hcp.
     """
     for cell in [ti_cell_wyckoff_c, ti_cell_wyckoff_d]:
-        lattice, scaled_positions, symbols = cell
-        hexagonal.check_cell_is_hcp(lattice=lattice,
-                                    scaled_positions=scaled_positions,
-                                    symbols=symbols)
+        hexagonal.check_cell_is_hcp(cell=cell)
 
 
 def test_convert_direction():
@@ -43,7 +40,7 @@ def test_convert_direction():
     """
     def _test_convert_direction_from_three_to_four(three, four_expected):
         _four = hexagonal.convert_direction_from_three_to_four(
-                three=a_1_three)
+                three=three)
         np.testing.assert_allclose(_four, four_expected)
 
     def _test_convert_direction_from_four_to_three(four, three_expected):

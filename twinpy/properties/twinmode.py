@@ -2,29 +2,29 @@
 # -*- coding: utf-8 -*-
 
 """
-Provide properties of twin modes.
+This module deals with properties of twin modes.
 """
 
-import numpy as np
 from copy import deepcopy
 from itertools import permutations
-from twinpy.lattice.lattice import Lattice, check_hexagonal_lattice
-from twinpy.lattice.hexagonal_plane import HexagonalPlane
-from twinpy.lattice.hexagonal_direction import HexagonalDirection
-from twinpy.properties.hexagonal import get_atom_positions
+import numpy as np
+from twinpy.properties.hexagonal import check_hexagonal_lattice
+from twinpy.properties.hexagonal import (HexagonalPlane,
+                                         HexagonalDirection,
+                                         get_hcp_atom_positions)
 from twinpy.common.utils import get_ratio
 
 
-def check_supported_twinmode(twinmode):
+def check_supported_twinmode(twinmode:str):
     """
     Check input twinmode is supported.
 
     Args:
-        twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
-                        (which are supported)
+        twinmode: Choose from '10-12', '10-11', '11-22' or '11-21'
+                  (which are supported).
 
     Raises:
-        AssertionError: input twinmode is not supported
+        AssertionError: Input twinmode is not supported.
     """
     supported_twinmodes = ['10-12', '10-11', '11-22', '11-21']
     assert twinmode in supported_twinmodes, '%s is not supported' % twinmode
@@ -35,12 +35,12 @@ def get_shear_strain_function(twinmode:str):
     Get shear strain.
 
     Args:
-        twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
-                        (which are supported)
+        twinmode: Choose from '10-12', '10-11', '11-22' or '11-21'
+                  (which are supported).
 
     Returns:
-        function: function which returns shear strain
-                  input arg is r
+        function: Function which returns shear strain
+                  input arg is r.
     """
     check_supported_twinmode(twinmode)
     if twinmode == '10-12':
@@ -63,11 +63,11 @@ def get_number_of_layers(twinmode:str) -> int:
     Get the number of layers.
 
     Args:
-        twinmode (str): choose from '10-12', '10-11', '11-22' or '11-21'
-                        (which are supported)
+        twinmode: Choose from '10-12', '10-11', '11-22' or '11-21'
+                  (which are supported).
 
     Returns:
-        int: the number of layes
+        int: The number of layes.
     """
     check_supported_twinmode(twinmode)
     if twinmode == '10-12':
@@ -86,7 +86,7 @@ def get_twin_indices_by_Yoo() -> dict:
     Get twin indices Yoo showed in his paper.
 
     Returns:
-        dict: twin indices
+        dict: Twin indices.
     """
     dataset = {
             '10-12': {
@@ -120,17 +120,18 @@ def get_twin_indices_by_Yoo() -> dict:
                         'eta2' : np.array([ 2/3, 2/3,-4/3,  1.]),
                      },
               }
+
     return dataset
 
 
 class TwinIndices():
     """
-    Deals with twin indices
+    Deals with twin indices.
     """
 
     def __init__(
            self,
-           lattice:Lattice,
+           lattice:np.array,
            twinmode:str,
            wyckoff:str,
            ):
@@ -139,13 +140,13 @@ class TwinIndices():
         Twinmode must be '10-11', '10-12', '11-21' or '11-22'.
 
         Args:
-            twinmode (str): currently supported \
-                            '10-11', '10-12', '11-22' and '11-21'
-            lattice (Lattice): lattice
-            wyckoff (str): wyckoff letter, 'c' or 'd'
+            lattice: Hexagonal lattice matrix.
+            twinmode: Currently supported \
+                            '10-11', '10-12', '11-22' and '11-21'.
+            wyckoff: Wyckoff letter, 'c' or 'd'.
 
         Returns:
-            dict: twin indices
+            dict: Twin indices.
 
         Note:
             You can find customs how to set the four indices
@@ -173,15 +174,15 @@ class TwinIndices():
 
         Todo:
             _twin_indices_orig is a little bit
-            different from the ones 1981. Yoo especially 'S'
+            different from the ones 1981. Yoo especially 'S'.
         """
-        check_hexagonal_lattice(lattice.lattice)
+        check_hexagonal_lattice(lattice)
         check_supported_twinmode(twinmode)
         self._lattice = lattice
         self._twinmode = twinmode
         self._layers = get_number_of_layers(twinmode)
         self._wyckoff = wyckoff
-        self._indices_Yoo = self._get_indices_Yoo(self._lattice.lattice,
+        self._indices_Yoo = self._get_indices_Yoo(self._lattice,
                                                   self._twinmode)
         self._indices = deepcopy(self._indices_Yoo)
         self._set_K1()
@@ -192,7 +193,7 @@ class TwinIndices():
     @property
     def lattice(self):
         """
-        Lattice.
+        Lattice matrix.
         """
         return self._lattice
 
@@ -231,20 +232,20 @@ class TwinIndices():
         """
         return self._indices
 
-    def _get_indices_Yoo(self, lattice, twinmode) -> dict:
+    def _get_indices_Yoo(self) -> dict:
         """
         Get specific twinmode indices which are found in Yoo's paper.
 
         Returns:
             dict: indices by Yoo
         """
-        indices_ = get_twin_indices_by_Yoo()[twinmode]
+        indices_ = get_twin_indices_by_Yoo()[self._twinmode]
         indices = {}
         for plane in ['S', 'K1', 'K2']:
-            indices[plane] = HexagonalPlane(lattice,
+            indices[plane] = HexagonalPlane(lattice=self._lattice,
                                             four=indices_[plane])
         for direction in ['eta1', 'eta2']:
-            indices[direction] = HexagonalDirection(lattice,
+            indices[direction] = HexagonalDirection(lattice=self._lattice,
                                                     four=indices_[direction])
         return indices
 
@@ -263,7 +264,7 @@ class TwinIndices():
             are fixed by multiplied (-1, -1, -1, 1).
         """
         arr = np.array([-1,-1,-1,1])
-        atoms = get_atom_positions(self.wyckoff)
+        atoms = get_hcp_atom_positions(wyckoff=self.wyckoff)
         K1_1 = self._indices['K1']
         K1_2 = deepcopy(K1_1)
         K1_2.reset_indices(four=K1_2.four*arr)
@@ -336,10 +337,10 @@ class TwinIndices():
         Set shear plane.
 
         Raises:
-            RuntimeError: could not find shear plane
+            RuntimeError: Could not find shear plane.
 
         Note:
-            set shear plane which fulfill the following conditions
+            Set shear plane which fulfill the following conditions
             from six candidates
             ((hkil), (hikl), (khil), (kihl), (ihkl), (ikhl)).
         """
@@ -350,7 +351,7 @@ class TwinIndices():
         normal_directions = ['k1', 'k2', 'eta1', 'eta2']
         flag = 1
         for trial_S_four in trial_S_fours:
-            trial_S = HexagonalPlane(self.lattice.lattice,
+            trial_S = HexagonalPlane(self._lattice,
                                      four=np.array(trial_S_four, dtype='intc'))
             trial_m = trial_S.get_direction_normal_to_plane()
             dots = [ self.lattice.dot(trial_m.three,
@@ -377,15 +378,16 @@ class TwinIndices():
         Get supercell matrix for creating parent matrix.
 
         Returns:
-            np.array: sueprcell matrix
+            np.array: Sueprcell matrix.
 
         Note:
-            create lattice basis with integerized m, eta1 and eta2
+            Create lattice basis with integerized m, eta1 and eta2.
         """
         tf1 = np.array(get_ratio(self._indices['m'].three))
         tf2 = np.array(get_ratio(self._indices['eta1'].three))
         tf3 = np.array(get_ratio(self._indices['eta2'].three))
         supercell_matrix = np.vstack([tf1, tf2, tf3]).T
+
         return supercell_matrix
 
     def get_shear_strain_function(self):

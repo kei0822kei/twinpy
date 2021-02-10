@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Hexagonal twin structure.
+This module deals with hexagonal twin structure.
 """
 
 from copy import deepcopy
@@ -11,35 +11,10 @@ from phonopy.structure.atoms import atom_data, symbol_map
 from twinpy.properties.hexagonal import (get_hcp_atom_positions,
                                          check_cell_is_hcp)
 from twinpy.properties.twinmode import TwinIndices
-from twinpy.structure.lattice import Lattice
+from twinpy.structure.lattice import CrystalLattice
 
 
 def get_numbers_from_symbols(symbols:list):
-    """
-    Get atomic numbers from symbols.
-
-    Args:
-        symbols (list): Atomic symbols.
-    """
-    numbers = [ symbol_map[symbol] for symbol in symbols ]
-    return numbers
-
-
-def get_symbols_from_numbers(numbers):
-    """
-    Get symbols from atomic numbers.
-
-    Args:
-        numbers (list): Atomic numbers.
-    """
-    symbols = [ atom_data[number][1] for number in numbers ]
-    return symbols
-
-
-def get_hexagonal_cell(a:float,
-                       c:float,
-                       symbol:str,
-                       wyckoff:str='c') -> tuple:
     """
     Get atomic numbers from symbols.
 
@@ -123,17 +98,17 @@ class _BaseTwinStructure():
             symbol: Element symbol.
             twinmode: Twin mode.
             wyckoff: No.194 Wycoff letter ('c' or 'd').
+
+        Todo:
+            Check it is best to use 'deepcopy'.
         """
         atoms_from_lp = get_hcp_atom_positions(wyckoff)
         symbols = [symbol] * 2
-        check_cell_is_hcp(lattice=lattice,
-                          scaled_positions=atoms_from_lp,
-                          symbols=symbols)
+        crylat = CrystalLattice(lattice=lattice)
+        check_cell_is_hcp(cell=(lattice, atoms_from_lp, symbols))
         self._lattice = lattice
         self._hexagonal_lattice = deepcopy(self._lattice)
-        self._lat = Lattice(self._lattice)
-        self._hexagonal_lat = deepcopy(self._lat)
-        self._a, _, self._c = self._hcp_lat.abc
+        self._a, _, self._c = crylat.abc
         self._r = self._c / self._a
         self._symbol = symbol
         self._wyckoff = wyckoff
@@ -171,13 +146,6 @@ class _BaseTwinStructure():
         Lattice matrix.
         """
         return self._lattice
-
-    @property
-    def lat(self):
-        """
-        Lattice class object.
-        """
-        return self._lat
 
     @property
     def r(self):

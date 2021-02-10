@@ -2,14 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """
-Hexagonal shear structure
+This module deals with hexagonal shear structure.
 """
 
 import numpy as np
 from scipy.linalg import sqrtm
 from twinpy.properties.hexagonal import HexagonalPlane
-from twinpy.structure.base import (get_lattice_points_from_supercell,
-                                   _BaseTwinStructure)
+from twinpy.structure.lattice import get_lattice_points_from_supercell
+from twinpy.structure.base import _BaseTwinStructure
 
 
 class ShearStructure(_BaseTwinStructure):
@@ -162,10 +162,10 @@ class ShearStructure(_BaseTwinStructure):
         Get shear lattice.
 
         Args:
-            is_primitive (bool): If primitive, multiplied M^(-1)
-            dim (np.array): dimension
-            xshift (float): x shift
-            yshift (float): y shift
+            is_primitive: If primitive, multiplied M^(-1).
+            dim: Dimension.
+            xshift: x shift.
+            yshift: y shift.
 
         Returns:
             tuple: Shear lattice.
@@ -200,13 +200,13 @@ class ShearStructure(_BaseTwinStructure):
         Build structure.
 
         Args:
-            is_primitive (bool): If primitive, multiplied M^(-1)
-            dim (np.array): dimension
-            xshift (float): x shift
-            yshift (float): y shift
+            is_primitive: If primitive, multiplied M^(-1).
+            dim: Dimension.
+            xshift: x shift
+            yshift: y shift
 
         Note:
-            the built structure is set to self.output_structure
+            The built structure is set to self.output_structure.
         """
         if type(dim) is list:
             dim = np.array(dim, dtype='intc')

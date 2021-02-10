@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Hexagonal Twinboudnary Structure.
+This module deals with hexagonal twinboundary structure.
 """
 
 import numpy as np
@@ -27,10 +27,10 @@ class TwinBoundaryStructure(_BaseStructure):
            ):
         """
         Args:
-            twintype (int): twin type choose 1 or 2
+            twintype: Twin type choose 1 or 2.
 
         Note:
-            to see detail, visit _BaseStructure class
+            To see detail, visit _BaseStructure class.
         """
         super().__init__(lattice=lattice,
                          symbol=symbol,
@@ -47,7 +47,7 @@ class TwinBoundaryStructure(_BaseStructure):
 
     def _set_rotation_matrix(self):
         """
-        Set rotation matrix
+        Set rotation matrix.
         """
         indices = self._indices.indices
         rotation_matrix = np.array([
@@ -83,7 +83,7 @@ class TwinBoundaryStructure(_BaseStructure):
         Set dichromatic operation.
 
         Raises:
-            ValueError: twintype not equal 1 nor 2
+            ValueError: Twintype is neither equal 1 nor 2.
         """
         twintype = self._twintype
         if twintype == 1:
@@ -95,7 +95,7 @@ class TwinBoundaryStructure(_BaseStructure):
                           [ 0, 1, 0],
                           [ 0, 0,-1]])
         else:
-            msg = "twintype must be 1 or 2"
+            msg = "Twintype must be 1 or 2."
             raise ValueError(msg)
         self._dichromatic_operation = W
 
@@ -183,10 +183,10 @@ class TwinBoundaryStructure(_BaseStructure):
         Get twinboundary lattice.
 
         Args:
-            layers (int): the number of layers in bulk
-            delta (float): additional interval both sites of twin boundary
-            xshift (float): x shift
-            yshift (float): y shift
+            layers: The number of layers in bulk.
+            delta: Additional interval both sites of twin boundary.
+            xshift: x shift.
+            yshift: y shift.
         """
         tot_layers = layers + 1
         prim_layers = self._indices.layers
@@ -252,14 +252,14 @@ class TwinBoundaryStructure(_BaseStructure):
         Build structure.
 
         Args:
-            layers (int): the number of layers
-            delta (float): additional interval both sites of twin boundary
-            xshift (float): x shift
-            yshift (float): y shift
-            shear_strain_ratio (float): shear strain ratio
+            layers: The number of layers.
+            delta: Additional interval both sites of twin boundary.
+            xshift: x shift.
+            yshift: y shift.
+            shear_strain_ratio: Shear strain ratio.
 
         Note:
-            the structure built is set self.output_structure
+            The structure built is set self.output_structure.
         """
         tb_frame, lat_points, dichs = self.get_twinboudnary_lattice(
                 layers=layers, delta=delta, xshift=xshift, yshift=yshift)
@@ -333,16 +333,16 @@ def get_twinboundary(lattice:np.array,
     Get twinboudnary structure object.
 
     Args:
-        lattice (np.array): lattice
-        symbol (str): element symbol
-        twinmode (str): twinmode
-        layers (int): the number of layers
-        wyckoff (str): No.194 Wycoff position ('c' or 'd')
-        delta (float): additional interval both sites of twin boundary
-        twintype (int): twintype, choose from 1 and 2
-        xshift (float): x shift
-        yshift (float): y shift
-        shear_strain_ratio (float): shear twinboundary ratio
+        lattice: Lattice matrix.
+        symbol: Element symbol.
+        twinmode: Twinmode.
+        layers: The number of layers.
+        wyckoff: No.194 Wycoff position ('c' or 'd').
+        delta: Additional interval both sites of twin boundary.
+        twintype: Twintype, choose from 1 and 2.
+        xshift: x shift.
+        yshift: y shift.
+        shear_strain_ratio (float): Shear twinboundary ratio.
     """
     tb = TwinBoundaryStructure(lattice=lattice,
                                symbol=symbol,
