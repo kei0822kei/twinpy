@@ -4,10 +4,9 @@
 This module deals with hexagonal property.
 """
 
-from typing import Union, Optional
 import numpy as np
 import spglib
-from twinpy.structure.lattice import Lattice
+from twinpy.structure.lattice import CrystalLattice
 
 
 def check_hexagonal_lattice(lattice:np.array):
@@ -15,7 +14,7 @@ def check_hexagonal_lattice(lattice:np.array):
     Check input lattice is hexagonal lattice.
 
     Args:
-        lattice: Lattice.
+        lattice: Lattice matrix.
 
     Raises:
         AssertionError: The angles are not (90, 90, 120).
@@ -23,7 +22,7 @@ def check_hexagonal_lattice(lattice:np.array):
     Note:
         Check the angles of input lattice are (90, 90, 120).
     """
-    hexagonal = Lattice(lattice)
+    hexagonal = CrystalLattice(lattice)
     expected = np.array([90., 90., 120.])
     actual = hexagonal.angles
     err_msg = "The angles of lattice was {}, \
@@ -35,21 +34,12 @@ def check_hexagonal_lattice(lattice:np.array):
             )
 
 
-def check_cell_is_hcp(lattice:np.array,
-                      symbols:list,
-                      positions:np.array=None,
-                      scaled_positions:np.array=None,
-                      get_wyckoff:bool=False) -> Optional[str]:
+def check_cell_is_hcp(cell:tuple):
     """
     Check input cell is hexagonal close-packed.
 
     Args:
-        lattice: Lattice.
-        symbols: Atomic symbols.
-        positions: Cartesian atom positions.
-        scaled_positions: Fractional atom positions.
-        get_wyckoff: If True,
-                            return wyckoff letter, which is 'c' or 'd'.
+        cell: (lattice, scaled_positions, symbols).
 
     Raises:
         RuntimeError: Both positions and scaled_positions are specified.
@@ -61,22 +51,16 @@ def check_cell_is_hcp(lattice:np.array,
         AssertionError: Input cell is not
                         hexagonal close-packed.
 
-    Returns:
-        str: If get_wyckoff is True, return wyckoff letter.
-
     Note:
-        The spglib software is used for getting space group.
+        The spglib software is used to get space group.
     """
-    if positions is not None and scaled_positions is not None:
-        raise RuntimeError("Both positions and scaled_positions "
-                           "are specified.")
+    lattice, scaled_positions, symbols = cell
+
     if len(set(symbols)) != 1:
         raise RuntimeError("Symbol is not unique.")
     if len(symbols) != 2:
         raise RuntimeError("The number of symbols are not two.")
 
-    if positions is not None:
-        scaled_positions = np.dot(np.linalg.inv(lattice.T), positions.T).T
     dataset = spglib.get_symmetry_dataset((lattice,
                                            scaled_positions,
                                            [0, 0]))
@@ -91,8 +75,25 @@ def check_cell_is_hcp(lattice:np.array,
         raise RuntimeError("wyckoff letters are {}, which must be "
                            "['c', 'c'] or ['d', 'd']".format(wyckoffs))
 
-    if get_wyckoff:
-        return wyckoffs[0]
+
+def get_wyckoff_from_hcp(cell) -> str:
+    """
+    Get wyckoff letter from HCP crystal structure.
+
+    Args:
+        cell: (lattice, scaled_positions, symbols).
+
+    Returns:
+        str: Wyckoff letter.
+    """
+    check_cell_is_hcp(cell=cell)
+    lattice, scaled_positions, _ = cell
+    dataset = spglib.get_symmetry_dataset((lattice,
+                                           scaled_positions,
+                                           [0, 0]))
+    wyckoff = dataset['wyckoffs'][0]
+
+    return wyckoff
 
 
 def get_hexagonal_lattice_from_a_c(a:float, c:float) -> np.array:
@@ -232,7 +233,7 @@ def convert_direction_from_three_to_four(three:Union[list,
     return np.array([u, v, t, w])
 
 
-class HexagonalDirection(Lattice):
+class HexagonalDirection(CrystalLattice):
     """
     This class deals with hexagonal direction.
     """
@@ -247,7 +248,7 @@ class HexagonalDirection(Lattice):
         Setup.
 
         Args:
-            lattice: Lattice.
+            lattice: Lattice matrix.
             three: Direction indice (three).
             four: Direction indice (four).
         """
@@ -284,17 +285,21 @@ class HexagonalDirection(Lattice):
             RuntimeError: Both 'three' and 'four' are None or
                           both 'three' and 'four' are not None.
         """
-        if three is None and four is None:
-            raise RuntimeError("Both 'three' and 'four' are None.")
-        elif three is not None:
-            four = convert_direction_from_three_to_four(three)
-        elif four is not None:
-            three = convert_direction_from_four_to_three(four)
+        if three is not None:
+            if four is None:
+                _three = three
+                _four = convert_direction_from_three_to_four(three)
+            else:
+                raise RuntimeError("Both 'three' and 'four' are not None.")
         else:
-            raise RuntimeError("Both 'three' and 'four' are not None.")
+            if four is not None:
+                _three = convert_direction_from_four_to_three(four)
+                _four = four
+            else:
+                raise RuntimeError("Both 'three' and 'four' are None.")
 
-        self._three = np.array(three)
-        self._four = np.array(four)
+        self._three = np.array(_three)
+        self._four = np.array(_four)
 
     def inverse(self):
         """
@@ -316,9 +321,9 @@ class HexagonalDirection(Lattice):
         cart_coords = np.dot(self.lattice.T,
                              self.three.reshape([3,1])).reshape(3)
         if normalize:
-            return cart_coords / np.linalg.norm(cart_coords)
-        else:
-            return cart_coords
+            cart_coords /= np.linalg.norm(cart_coords)
+
+        return cart_coords
 
 
 def convert_plane_from_four_to_three(four:Union[list,
@@ -367,7 +372,7 @@ def convert_plane_from_three_to_four(three:Union[list,
     return np.array([h, k, i, l])
 
 
-class HexagonalPlane(Lattice):
+class HexagonalPlane(CrystalLattice):
     """
     Deals with hexagonal plane.
     """
@@ -425,17 +430,21 @@ class HexagonalPlane(Lattice):
             RuntimeError: Both 'three' and 'four' are None or
                           both 'three' and 'four' are not None.
         """
-        if three is None and four is None:
-            raise RuntimeError("Both 'three' and 'four' are None.")
-        elif three is not None:
-            four = convert_plane_from_three_to_four(three)
-        elif four is not None:
-            three = convert_plane_from_four_to_three(four)
+        if three is not None:
+            if four is None:
+                _three = three
+                _four = convert_plane_from_three_to_four(three)
+            else:
+                raise RuntimeError("Both 'three' and 'four' are not None.")
         else:
-            raise RuntimeError("Both 'three' and 'four' are not None.")
+            if four is not None:
+                _three = convert_plane_from_four_to_three(four)
+                _four = four
+            else:
+                raise RuntimeError("Both 'three' and 'four' are None.")
 
-        self._three = np.array(three)
-        self._four = np.array(four)
+        self._three = np.array(_three)
+        self._four = np.array(_four)
 
     def inverse(self):
         """

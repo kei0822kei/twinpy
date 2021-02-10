@@ -193,7 +193,7 @@ class TwinIndices():
     @property
     def lattice(self):
         """
-        Lattice.
+        Lattice matrix.
         """
         return self._lattice
 
