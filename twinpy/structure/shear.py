@@ -8,8 +8,8 @@ This module deals with hexagonal shear structure.
 import numpy as np
 from scipy.linalg import sqrtm
 from twinpy.properties.hexagonal import HexagonalPlane
-from twinpy.structure.base import (get_lattice_points_from_supercell,
-                                   _BaseTwinStructure)
+from twinpy.structure.lattice import get_lattice_points_from_supercell
+from twinpy.structure.base import _BaseTwinStructure
 
 
 class ShearStructure(_BaseTwinStructure):

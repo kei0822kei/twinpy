@@ -98,13 +98,14 @@ class _BaseTwinStructure():
             symbol: Element symbol.
             twinmode: Twin mode.
             wyckoff: No.194 Wycoff letter ('c' or 'd').
+
+        Todo:
+            Check it is best to use 'deepcopy'.
         """
         atoms_from_lp = get_hcp_atom_positions(wyckoff)
         symbols = [symbol] * 2
         crylat = CrystalLattice(lattice=lattice)
-        check_cell_is_hcp(lattice=lattice,
-                          scaled_positions=atoms_from_lp,
-                          symbols=symbols)
+        check_cell_is_hcp(cell=(lattice, atoms_from_lp, symbols))
         self._lattice = lattice
         self._hexagonal_lattice = deepcopy(self._lattice)
         self._a, _, self._c = crylat.abc
