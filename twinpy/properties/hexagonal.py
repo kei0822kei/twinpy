@@ -453,9 +453,13 @@ class HexagonalPlane(CrystalLattice):
         """
         self.reset_indices(three=self.three*(-1))
 
-    def get_direction_normal_to_plane(self) -> HexagonalDirection:
+    def get_direction_normal_to_plane(self, normalize=False) -> HexagonalDirection:
         """
         Get direction normal to input plane.
+
+        Args:
+            normalize: If True, normalized direction is returned.
+                       Else, the norm of the vector is the plane interval.
 
         Returns:
             HexagonalDirection: Hexagonal direction object
@@ -463,12 +467,31 @@ class HexagonalPlane(CrystalLattice):
         """
         tf_matrix = self.lattice.T
         res_tf_matrix = self.reciprocal_lattice.T
+        direction_cart = np.dot(res_tf_matrix,
+                                self._three.reshape([3,1])).reshape(3)
+        if normalize:
+            direction_cart /= np.linalg.norm(direction_cart)
+        else:
+            direction_cart /= np.linalg.norm(direction_cart) ** 2
+
         direction = np.dot(np.linalg.inv(tf_matrix),
-                           np.dot(res_tf_matrix,
-                                  self._three.reshape([3,1]))).reshape(3)
+                           direction_cart.reshape([3,1])).reshape(3)
         hex_dr = HexagonalDirection(lattice=self.lattice,
                                     three=direction)
         return hex_dr
+
+    def get_plane_interval(self) -> float:
+        """
+        Get plane interval.
+
+        Returns:
+            float: Plane interval.
+        """
+        hex_dr = self.get_direction_normal_to_plane(normalize=False)
+        direction = hex_dr.get_cartesian(normalize=False)
+        norm = np.linalg.norm(direction)
+
+        return norm
 
     def get_distance_from_plane(self, frac_coord:np.array) -> float:
         """
@@ -487,4 +510,5 @@ class HexagonalPlane(CrystalLattice):
         e_k_cart = k_cart / np.linalg.norm(k_cart)
         x_cart = np.dot(self.lattice.T, frac_coord.T).reshape(3)
         d = np.dot(e_k_cart, x_cart)
+
         return d
