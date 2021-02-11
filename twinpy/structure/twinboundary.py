@@ -8,11 +8,11 @@ This module deals with hexagonal twinboundary structure.
 import numpy as np
 from copy import deepcopy
 import math
-from twinpy.structure.base import _BaseStructure
+from twinpy.structure.base import _BaseTwinStructure
 from twinpy.structure.shear import ShearStructure
 
 
-class TwinBoundaryStructure(_BaseStructure):
+class TwinBoundaryStructure(_BaseTwinStructure):
     """
     Twinboundary structure class.
     """
@@ -30,7 +30,7 @@ class TwinBoundaryStructure(_BaseStructure):
             twintype: Twin type choose 1 or 2.
 
         Note:
-            To see detail, visit _BaseStructure class.
+            To see detail, visit _BaseTwinStructure class.
         """
         super().__init__(lattice=lattice,
                          symbol=symbol,

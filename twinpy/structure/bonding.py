@@ -11,7 +11,7 @@ Note:
 """
 import numpy as np
 import itertools
-from twinpy.lattice.lattice import Lattice
+from twinpy.structure.lattice import CrystalLattice
 
 
 def get_neighbors(cell:tuple,

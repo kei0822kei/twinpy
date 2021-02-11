@@ -6,7 +6,7 @@ This module deals with structures difference.
 """
 
 import numpy as np
-from twinpy.lattice.lattice import Lattice
+from twinpy.structure.lattice import CrystalLattice
 
 
 def get_structure_diff(cells:list,

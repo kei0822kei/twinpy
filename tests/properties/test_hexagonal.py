@@ -140,6 +140,10 @@ def test_hexagonal_plane(ti_cell_wyckoff_c):
         _d = hex_pln.get_distance_from_plane(frac_coord=frac_coord)
         np.testing.assert_allclose(_d, d_expected)
 
+    def _test_get_plane_interval(hex_pln, d_expected):
+        _d = hex_pln.get_plane_interval()
+        np.testing.assert_allclose(_d, d_expected)
+
     lattice = ti_cell_wyckoff_c[0]
     basal_four = np.array([0.,0.,0.,1.])
     twin_four = np.array([1.,0.,-1.,2.])
@@ -155,3 +159,5 @@ def test_hexagonal_plane(ti_cell_wyckoff_c):
     _test_get_distance_from_plane(hex_pln=hex_pln_basal,
                                   frac_coord=c_three,
                                   d_expected=c)
+    _test_get_plane_interval(hex_pln=hex_pln_basal,
+                             d_expected=c)

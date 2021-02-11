@@ -12,7 +12,7 @@ try:
 except ImportError:
     from yaml import Loader, Dumper
 import numpy as np
-from twinpy.structure.lattice import Lattice
+from twinpy.structure.lattice import CrystalLattice
 
 
 def write_poscar(
@@ -102,7 +102,7 @@ def write_thermal_ellipsoid(cell:tuple,
     if filetype != 'CrystalMaker':
         raise ValueError("Only filetype='CrystalMaker' is supported.")
     lines = []
-    lattice = Lattice(cell[0])
+    lattice = CrystalLattice(cell[0])
     abc = lattice.abc
     abc_str = ' '.join(map(str, list(abc)))
     angles = lattice.angles

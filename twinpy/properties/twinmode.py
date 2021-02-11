@@ -12,6 +12,7 @@ from twinpy.properties.hexagonal import check_hexagonal_lattice
 from twinpy.properties.hexagonal import (HexagonalPlane,
                                          HexagonalDirection,
                                          get_hcp_atom_positions)
+from twinpy.structure.lattice import CrystalLattice
 from twinpy.common.utils import get_ratio
 
 
@@ -179,11 +180,11 @@ class TwinIndices():
         check_hexagonal_lattice(lattice)
         check_supported_twinmode(twinmode)
         self._lattice = lattice
+        self._crylat = CrystalLattice(self._lattice)
         self._twinmode = twinmode
         self._layers = get_number_of_layers(twinmode)
         self._wyckoff = wyckoff
-        self._indices_Yoo = self._get_indices_Yoo(self._lattice,
-                                                  self._twinmode)
+        self._indices_Yoo = self._get_indices_Yoo()
         self._indices = deepcopy(self._indices_Yoo)
         self._set_K1()
         self._set_k1_k2()
@@ -279,9 +280,11 @@ class TwinIndices():
         Set k1 and k2.
         """
         self._indices['k1'] = \
-                self._indices['K1'].get_direction_normal_to_plane()
+                self._indices['K1'].get_direction_normal_to_plane(
+                        normalize=False)
         self._indices['k2'] = \
-                self._indices['K2'].get_direction_normal_to_plane()
+                self._indices['K2'].get_direction_normal_to_plane(
+                        normalize=False)
 
     def _reset_indices(self):
         """
@@ -301,32 +304,34 @@ class TwinIndices():
             - check k2 is orthogonal to eta2
         """
         # reset eta2
-        if self.lattice.dot(self._indices['k1'].three,
+        if self._crylat.dot(self._indices['k1'].three,
                             self._indices['eta2'].three) < 0:
             self._indices['eta2'].inverse()
 
         # reset eta1
-        if self.lattice.dot(self._indices['eta1'].three,
+        if self._crylat.dot(self._indices['eta1'].three,
                             self._indices['eta2'].three) > 0:
             self._indices['eta1'].inverse()
 
         # reset K2
-        if self.lattice.dot(self._indices['eta1'].three,
+        if self._crylat.dot(self._indices['eta1'].three,
                             self._indices['k2'].three) < 0:
             self._indices['K2'].inverse()
             self._indices['k2'].inverse()
 
         # check k1 is orthogonal to eta1
         np.testing.assert_allclose(
-                actual=self.lattice.dot(self._indices['k1'].three,
+                actual=self._crylat.dot(self._indices['k1'].three,
                                         self._indices['eta1'].three),
                 desired=0,
                 atol=1e-6,
                 err_msg="k1 is not orthogonal to eta1")
 
         # check k2 is orthogonal to eta2
+        print(self._indices['k2'].three)
+        print(self._indices['eta2'].three)
         np.testing.assert_allclose(
-                actual=self.lattice.dot(self._indices['k2'].three,
+                actual=self._crylat.dot(self._indices['k2'].three,
                                         self._indices['eta2'].three),
                 desired=0,
                 atol=1e-6,
@@ -353,8 +358,8 @@ class TwinIndices():
         for trial_S_four in trial_S_fours:
             trial_S = HexagonalPlane(self._lattice,
                                      four=np.array(trial_S_four, dtype='intc'))
-            trial_m = trial_S.get_direction_normal_to_plane()
-            dots = [ self.lattice.dot(trial_m.three,
+            trial_m = trial_S.get_direction_normal_to_plane(normalize=False)
+            dots = [ self._crylat.dot(trial_m.three,
                                       self._indices[direction].three)
                      for direction in normal_directions ]
             if np.allclose(np.array(dots), np.zeros(4), atol=1e-4):
