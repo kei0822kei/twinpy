@@ -6,7 +6,6 @@ This module deals with hexagonal shear structure.
 """
 
 import numpy as np
-from scipy.linalg import sqrtm
 from twinpy.properties.hexagonal import HexagonalPlane
 from twinpy.structure.lattice import get_lattice_points_from_supercell
 from twinpy.structure.base import _BaseTwinStructure
@@ -85,13 +84,14 @@ class ShearStructure(_BaseTwinStructure):
         Get shear value.
         """
         ratio = self._shear_strain_ratio
-        plane = HexagonalPlane(lattice=self._hexagonal_lattice.lattice,
+        plane = HexagonalPlane(lattice=self._hexagonal_lattice,
                                four=self._indices.indices['K1'].four)
-        d = plane.get_distance_from_plane(self._indices.indices['eta2'].three)
+        d = plane.get_plane_interval()
         gamma = self.get_gamma()
-        norm_eta1 = np.linalg.norm(
-                plane.get_cartesian(self._indices.indices['eta1'].three))
-        s = ratio * gamma * d / norm_eta1
+        norm_eta1 = \
+                np.linalg.norm(self._indices.indices['eta1'].get_cartesian())
+        z_norm = d * self._indices.layers
+        s = ratio * gamma * z_norm / norm_eta1
         return s
 
     def get_shear_matrix(self):
@@ -103,55 +103,56 @@ class ShearStructure(_BaseTwinStructure):
         shear_matrix[1,2] = s
         return shear_matrix
 
-    def get_shear_properties(self) -> dict:
-        """
-        Get various properties related to shear.
+    # def get_shear_properties(self) -> dict:
+    #     """
+    #     Get various properties related to shear.
 
-        Note:
-            key variables are
-            - shear value (s)
-            - shear ratio (alpha)
-            - strain matrix (S)
-            - deformation gradient tensor (F)
-            - right Cauchy-Green tensor (C)
-            - left Cauchy-Green tensor (b)
-            - matrial stretch tensor (U)
-            - spatial stretch tensor (V)
-            - rotation (R)
-            for more detail and definition, see documentation
+    #     Note:
+    #         key variables are
+    #         - shear value (s)
+    #         - shear ratio (alpha)
+    #         - strain matrix (S)
+    #         - deformation gradient tensor (F)
+    #         - right Cauchy-Green tensor (C)
+    #         - left Cauchy-Green tensor (b)
+    #         - matrial stretch tensor (U)
+    #         - spatial stretch tensor (V)
+    #         - rotation (R)
+    #         for more detail and definition, see documentation
 
-        Todo:
-            FUTURE EDITED
-        """
-        H = self.hexagonal_lattice.lattice.T
-        M = self._parent_matrix
-        S = self.get_shear_matrix()
-        F = np.eye(3) + \
-            np.dot(H,
-                   np.dot(M,
-                          np.dot(S,
-                                 np.dot(np.linalg.inv(M),
-                                        np.linalg.inv(H)))))
-        s = self._get_shear_value()
-        alpha = self._shear_strain_ratio
-        C = np.dot(F.T, F)
-        b = np.dot(F, F.T)
-        U = sqrtm(C)
-        V = sqrtm(b)
-        R = np.dot(F, np.linalg.inv(U))
-        R_ = np.dot(np.linalg.inv(V), F)
-        np.testing.assert_allclose(R, R_)
-        return {
-                 'shear_value': s,
-                 'shear_ratio': alpha,
-                 'strain_matrix': S,
-                 'deformation_gradient_tensor': F,
-                 'material_stretch_tensor': U,
-                 'spatial_stretch_tensor': V,
-                 'right_Cauchy': C,
-                 'left_Cauchy': b,
-                 'rotation':R,
-               }
+    #     Todo:
+    #         FUTURE EDITED
+    #     """
+    #     from scipy.linalg import sqrtm
+    #     H = self.hexagonal_lattice.lattice.T
+    #     M = self._parent_matrix
+    #     S = self.get_shear_matrix()
+    #     F = np.eye(3) + \
+    #         np.dot(H,
+    #                np.dot(M,
+    #                       np.dot(S,
+    #                              np.dot(np.linalg.inv(M),
+    #                                     np.linalg.inv(H)))))
+    #     s = self._get_shear_value()
+    #     alpha = self._shear_strain_ratio
+    #     C = np.dot(F.T, F)
+    #     b = np.dot(F, F.T)
+    #     U = sqrtm(C)
+    #     V = sqrtm(b)
+    #     R = np.dot(F, np.linalg.inv(U))
+    #     R_ = np.dot(np.linalg.inv(V), F)
+    #     np.testing.assert_allclose(R, R_)
+    #     return {
+    #              'shear_value': s,
+    #              'shear_ratio': alpha,
+    #              'strain_matrix': S,
+    #              'deformation_gradient_tensor': F,
+    #              'material_stretch_tensor': U,
+    #              'spatial_stretch_tensor': V,
+    #              'right_Cauchy': C,
+    #              'left_Cauchy': b,
+    #              'rotation':R,
+    #            }
 
     def get_shear_lattice(self,
                           is_primitive:bool=False,
@@ -174,11 +175,11 @@ class ShearStructure(_BaseTwinStructure):
         parent_matrix = self._indices.get_supercell_matrix_for_parent()
         supercell_matrix = parent_matrix * dim
         shear_lattice = \
-            np.dot(self._hexagonal_lattice.lattice.T,
+            np.dot(self._hexagonal_lattice.T,
                    np.dot(supercell_matrix,
                           shear_matrix)).T
         lattice_points = get_lattice_points_from_supercell(
-                lattice=self._hexagonal_lattice.lattice,
+                lattice=self._hexagonal_lattice,
                 dim=supercell_matrix)
         lattice_points += np.array([xshift, yshift, 0]) / np.array(dim)
 
@@ -208,7 +209,7 @@ class ShearStructure(_BaseTwinStructure):
         Note:
             The built structure is set to self.output_structure.
         """
-        if type(dim) is list:
+        if isinstance(dim, list):
             dim = np.array(dim, dtype='intc')
 
         shear_lattice, lattice_points, _ = \

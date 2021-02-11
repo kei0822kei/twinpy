@@ -7,11 +7,11 @@ Get twinpy strucuture
 
 import argparse
 import numpy as np
+from pymatgen.io.vasp import Poscar
 from twinpy.properties.hexagonal import get_hexagonal_lattice_from_a_c
 from twinpy.interfaces.pymatgen import get_hexagonal_cell_wyckoff_from_pymatgen
 from twinpy.api_twinpy import Twinpy
 from twinpy.file_io import write_poscar
-from pymatgen.io.vasp import Poscar
 
 
 # argparse
@@ -53,9 +53,9 @@ def get_argparse():
                         help="get conventional standardized")
     parser.add_argument('--dump', action='store_true',
                         help="dump twinpy structure object to yaml")
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    return args
+    return arguments
 
 
 def _get_output_name(structure, get_lattice, shear_strain_ratio, twinmode):

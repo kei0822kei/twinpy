@@ -453,7 +453,8 @@ class HexagonalPlane(CrystalLattice):
         """
         self.reset_indices(three=self.three*(-1))
 
-    def get_direction_normal_to_plane(self, normalize=False) -> HexagonalDirection:
+    def get_direction_normal_to_plane(self,
+                                      normalize=False) -> HexagonalDirection:
         """
         Get direction normal to input plane.
 
