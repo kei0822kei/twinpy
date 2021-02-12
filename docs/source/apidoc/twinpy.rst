@@ -5,11 +5,11 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    twinpy.analysis
    twinpy.common
    twinpy.interfaces
-   twinpy.lattice
    twinpy.plot
    twinpy.properties
    twinpy.structure
@@ -24,7 +24,6 @@ twinpy.api\_twinpy module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.file\_io module
 ----------------------
@@ -33,8 +32,6 @@ twinpy.file\_io module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
-
 
 Module contents
 ---------------
@@ -43,4 +40,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

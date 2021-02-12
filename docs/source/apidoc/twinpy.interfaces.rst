@@ -5,6 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    twinpy.interfaces.aiida
 
@@ -18,7 +19,6 @@ twinpy.interfaces.phonopy module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.interfaces.pymatgen module
 ---------------------------------
@@ -27,8 +27,6 @@ twinpy.interfaces.pymatgen module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
-
 
 Module contents
 ---------------
@@ -37,4 +35,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
