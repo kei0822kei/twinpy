@@ -14,7 +14,7 @@ from twinpy.interfaces.aiida.base import (check_process_class,
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from twinpy.common.utils import print_header
 from twinpy.plot.relax import RelaxPlot
-from twinpy.lattice.lattice import Lattice
+from twinpy.structure.lattice import CrystalLattice
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError

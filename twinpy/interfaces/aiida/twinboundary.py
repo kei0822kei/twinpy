@@ -22,7 +22,7 @@ from twinpy.interfaces.aiida.base import (check_process_class,
 from twinpy.interfaces.aiida.vasp import (AiidaRelaxWorkChain,
                                           AiidaRelaxCollection)
 from twinpy.interfaces.aiida.phonopy import AiidaPhonopyWorkChain
-from twinpy.structure.base import is_hcp
+from twinpy.properties.hexagonal import get_wyckoff_from_hcp
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
 from twinpy.analysis.twinboundary_analyzer import TwinBoundaryAnalyzer
@@ -114,13 +114,10 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         Set twinpy structure object and standardize object.
         """
         params = self._twinboundary_settings
-        lattice, scaled_positions, symbols = \
-                get_cell_from_aiida(
+        cell = get_cell_from_aiida(
                         load_node(self._structure_pks['hexagonal_pk']))
-        wyckoff = is_hcp(lattice=lattice,
-                         scaled_positions=scaled_positions,
-                         symbols=symbols,
-                         get_wyckoff=True)
+        lattice, scaled_positions, symbols = cell
+        wyckoff = get_wyckoff_from_hcp(cell=cell)
         twinboundary = get_twinboundary(
                            lattice=lattice,
                            symbol=symbols[0],

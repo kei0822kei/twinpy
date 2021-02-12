@@ -10,6 +10,21 @@ from aiida.orm import Node, QueryBuilder, StructureData
 from twinpy.common.utils import print_header
 
 
+def load_aiida_profile():
+    """
+    Load aiida profile.
+    """
+    from aiida import load_profile
+    from aiida.common.exceptions import ProfileConfigurationError
+
+    try:
+        load_profile()
+    except ProfileConfigurationError:
+        err_msg = "Failed to load aiida profile. " \
+                + "Please check your aiida configuration."
+        warnings.warn(err_msg)
+
+
 def check_process_class(node:Node,
                         expected_process_class:str):
     """

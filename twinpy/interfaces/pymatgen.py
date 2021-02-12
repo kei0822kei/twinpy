@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+This module is the interface for pymatgen.
+"""
+
 from pymatgen.core.structure import Structure
-from twinpy.structure.base import is_hcp
+from twinpy.properties.hexagonal import check_cell_is_hcp
 
 
 def get_pymatgen_structure(cell:tuple) -> Structure:
@@ -30,6 +34,7 @@ def get_cell_from_pymatgen_structure(pmgstructure:Structure) -> tuple:
     lattice = pmgstructure.lattice.matrix
     scaled_positions = pmgstructure.frac_coords
     symbols = [ specie.value for specie in pmgstructure.species ]
+
     return (lattice, scaled_positions, symbols)
 
 
@@ -45,8 +50,9 @@ def get_hexagonal_cell_wyckoff_from_pymatgen(pmgstructure:Structure) -> tuple:
     """
     lattice, scaled_positions, symbols = \
             get_cell_from_pymatgen_structure(pmgstructure)
-    wyckoff = is_hcp(lattice=lattice,
-                     scaled_positions=scaled_positions,
-                     symbols=symbols,
-                     get_wyckoff=True)
+    wyckoff = check_cell_is_hcp(lattice=lattice,
+                                scaled_positions=scaled_positions,
+                                symbols=symbols,
+                                get_wyckoff=True)
+
     return (lattice, scaled_positions, symbols[0], wyckoff)

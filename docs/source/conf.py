@@ -63,12 +63,3 @@ for line in open('nitpick-exceptions'):
     dtype, target = line.split(None, 1)
     target = target.strip()
     nitpick_ignore.append((dtype, six.u(target)))
-
-
-
-# nitpick_ignore = [
-#     ('py:class', 'np.array'),
-#     ('py:class', 'Phonopy'),
-#     ('py:class', 'plt.figure'),
-#     ('py:class', 'numpy.array'),  # If delete this, Warning occurs.
-# ]

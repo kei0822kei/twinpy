@@ -358,6 +358,9 @@ class PhononAnalyzer():
         else:
             _phonon = deepcopy(self._phonon)
 
+        if use_tetrahedron_method and sigma is not None:
+            raise RuntimeError("It is prohibited to set use_tetrahedron_method=True and sigma=<float_val>")
+
         _phonon.run_total_dos(sigma=sigma,
                               freq_min=freq_min,
                               freq_max=freq_max,
@@ -381,6 +384,9 @@ class PhononAnalyzer():
         Args:
             is_store (bool): If True, result is stored in self._phonon.projected_dos
         """
+        if use_tetrahedron_method and sigma is not None:
+            raise RuntimeError("It is prohibited to set use_tetrahedron_method=True and sigma=<float_val>")
+
         if is_store:
             _phonon = self._phonon
         else:
