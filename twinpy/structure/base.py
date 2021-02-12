@@ -5,7 +5,6 @@
 This module deals with hexagonal twin structure.
 """
 
-from copy import deepcopy
 import numpy as np
 from phonopy.structure.atoms import atom_data, symbol_map
 from twinpy.properties.hexagonal import (get_hcp_atom_positions,
@@ -106,8 +105,7 @@ class _BaseTwinStructure():
         symbols = [symbol] * 2
         crylat = CrystalLattice(lattice=lattice)
         check_cell_is_hcp(cell=(lattice, atoms_from_lp, symbols))
-        self._lattice = lattice
-        self._hexagonal_lattice = deepcopy(self._lattice)
+        self._hexagonal_lattice = lattice
         self._a, _, self._c = crylat.abc
         self._r = self._c / self._a
         self._symbol = symbol
@@ -121,7 +119,7 @@ class _BaseTwinStructure():
         self._xshift = None
         self._yshift = None
         self._output_structure = \
-                {'lattice': self._lattice,
+                {'lattice': self._hexagonal_lattice,
                  'lattice_points': {
                      'white': np.array([0.,0.,0.])},
                  'atoms_from_lattice_points': {
@@ -139,13 +137,6 @@ class _BaseTwinStructure():
         self._indices = TwinIndices(twinmode=self._twinmode,
                                     lattice=self._hexagonal_lattice,
                                     wyckoff=self._wyckoff)
-
-    @property
-    def lattice(self):
-        """
-        Lattice matrix.
-        """
-        return self._lattice
 
     @property
     def r(self):

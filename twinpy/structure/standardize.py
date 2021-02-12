@@ -212,17 +212,17 @@ class StandardizeCell():
         def __check_atom_positions(P, p, P_c, x, x_s, x_p):
             # check x_s = P x + p
             x_s_ = np.round((np.dot(P, np.transpose(x)).T + p),
-                            decimals=8) % 1
+                            decimals=7) % 1
             for i in range(len(x_s_)):
                 # assert x_s_[i] in x_s, \
-                assert np.round(x_s_[i], decimals=8) \
-                       in np.round(x_s, decimals=8), \
+                assert np.round(x_s_[i], decimals=7) \
+                       in np.round(x_s, decimals=7), \
                        "x_s != Px+p, check script"
             # check x_p = P_c^{-1} x_s
             x_p_ = (np.dot(np.linalg.inv(P_c), np.transpose(x_s)).T) % 1
             for i in range(len(x_p_)):
-                assert np.round(x_p_[i], decimals=8) \
-                       in np.round(x_p, decimals=8), \
+                assert np.round(x_p_[i], decimals=7) \
+                       in np.round(x_p, decimals=7), \
                        'x_p != P_c^{-1} x_s, check script'
 
         atol = 1e-5
