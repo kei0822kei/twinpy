@@ -4,24 +4,24 @@
 """
 Interface for Aiida-Vasp.
 """
-import numpy as np
 from pprint import pprint
 import warnings
+import numpy as np
 from matplotlib import pyplot as plt
-from twinpy.interfaces.aiida.base import (check_process_class,
-                                          get_cell_from_aiida,
-                                          _WorkChain)
-from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
-from twinpy.common.utils import print_header
-from twinpy.plot.relax import RelaxPlot
-from twinpy.structure.lattice import CrystalLattice
-from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.common import NotExistentAttributeError
 from aiida.orm import (load_node,
                        Node,
                        WorkChainNode,
                        QueryBuilder)
+from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
+from twinpy.common.utils import print_header
+from twinpy.structure.lattice import CrystalLattice
+from twinpy.interfaces.aiida.base import (check_process_class,
+                                          get_cell_from_aiida,
+                                          _WorkChain)
+from twinpy.analysis.relax_analyzer import RelaxAnalyzer
+from twinpy.plot.relax import RelaxPlot
 
 
 class _AiidaVaspWorkChain(_WorkChain):
@@ -251,16 +251,6 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
                                  energy=self._energy)
         return analyzer
 
-    def get_outputs(self):
-        """
-        Get outputs.
-        """
-        dic = self._get_outputs()
-        lattice = Lattice(lattice=self._final_cell[0])
-        dic['abc'] = lattice.abc
-
-        return dic
-
     def get_description(self):
         """
         Get description.
@@ -332,8 +322,8 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                 else:
                     aiida_vasp = AiidaVaspWorkChain(load_node(relax_pks[-1]))
                     self._current_final_structure_pk = \
-                            aiida_vasp._initial_structure_pk
-                    self._current_final_cell = aiida_vasp._initial_cell
+                            aiida_vasp.get_pks()['initial_structure_pk']
+                    self._current_final_cell = aiida_vasp.initial_cell
 
     @property
     def current_final_cell(self):
@@ -466,8 +456,9 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                                for relax_vasp in relax_vasps ])
         relax_data['energy'] = np.array([ relax_vasp.energy
                                               for relax_vasp in relax_vasps ])
-        relax_data['abc'] = np.array([ Lattice(relax_vasp.final_cell[0]).abc
-                                           for relax_vasp in relax_vasps ])
+        relax_data['abc'] = \
+                np.array([ CrystalLattice(relax_vasp.final_cell[0]).abc
+                               for relax_vasp in relax_vasps ])
         relax_data['steps'] = \
                 np.array([ i+1 for i in range(len(relax_vasps)) ])
 
@@ -478,7 +469,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     'max_force': static_vasp.get_max_force(),
                     'stress': static_vasp.stress.flatten()[[0,4,8,5,6,1]] ,
                     'energy': static_vasp.energy,
-                    'abc': Lattice(static_vasp.initial_cell[0]).abc,
+                    'abc': CrystalLattice(static_vasp.initial_cell[0]).abc,
                     }
 
         relax_plot = RelaxPlot(relax_data=relax_data,
@@ -657,7 +648,7 @@ class AiidaRelaxCollection():
         start_step = 1
         for relax_plot in relax_plots:
             relax_plot.set_steps(start_step=start_step)
-            start_step = relax_plot._relax_data['steps'][-1]
+            start_step = relax_plot.relax_data['steps'][-1]
 
         return relax_plots
 
@@ -674,10 +665,8 @@ class AiidaRelaxCollection():
         relax_plots = self.get_relaxplots()
 
         for i, relax_plot in enumerate(relax_plots):
-            if i == 0:
-                decorate = True
-            else:
-                decorate = False
+            decorate = bool(i == 0)
+
             relax_plot.plot_max_force(ax1, decorate=decorate)
             relax_plot.plot_energy(ax2, decorate=decorate)
             relax_plot.plot_stress(ax3, decorate=decorate)
