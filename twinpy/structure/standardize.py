@@ -7,14 +7,15 @@ This module deals with crystal symmetry.
 
 import numpy as np
 import spglib
-from phonopy.structure.atoms import symbol_map, atom_data
 from phonopy.interface.vasp import sort_positions_by_symbols
+from twinpy.structure.base import (get_numbers_from_symbols,
+                                   get_symbols_from_numbers)
 
 
 def get_standardized_cell(cell:tuple,
                           to_primitive:bool,
                           no_idealize:bool,
-                          symprec:float=1.e-5,
+                          symprec:float=1e-5,
                           no_sort:bool=False,
                           get_sort_list:list=False,
                           ) -> tuple:
@@ -40,33 +41,11 @@ def get_standardized_cell(cell:tuple,
     """
     std = StandardizeCell(cell)
     std_cell = std.get_standardized_cell(to_primitive=to_primitive,
-                                         no_idealize=False,
+                                         no_idealize=no_idealize,
                                          symprec=symprec,
                                          no_sort=no_sort,
-                                         get_sort_list=False)
+                                         get_sort_list=get_sort_list)
     return std_cell
-
-
-def get_atomic_numbers(symbols:list) -> list:
-    """
-    Get atomic numbers from symbols.
-
-    Returns:
-        list: list of element numbers
-    """
-    numbers = [ symbol_map[symbol] for symbol in symbols ]
-    return numbers
-
-
-def get_chemical_symbols(numbers) -> list:
-    """
-    Get chemical symbols from atomic numbers.
-
-    Returns:
-        list: list of symbols
-    """
-    symbols = [ atom_data[num][1] for num in numbers ]
-    return symbols
 
 
 def get_conventional_to_primitive_matrix(centering:str) -> np.array:
@@ -123,7 +102,7 @@ class StandardizeCell():
             cell: cell = (lattice, scaled_positions, symbols)
         """
         self._cell = cell
-        self._atomic_numbers = get_atomic_numbers(self._cell[2])
+        self._atomic_numbers = get_numbers_from_symbols(self._cell[2])
         self._cell_for_spglib = (self._cell[0],
                                  self._cell[1],
                                  self._atomic_numbers)
@@ -213,15 +192,15 @@ class StandardizeCell():
             # check x_s = P x + p
             x_s_ = np.round((np.dot(P, np.transpose(x)).T + p),
                             decimals=7) % 1
-            for i in range(len(x_s_)):
+            for _x in x_s_:
                 # assert x_s_[i] in x_s, \
-                assert np.round(x_s_[i], decimals=7) \
+                assert np.round(_x, decimals=7) \
                        in np.round(x_s, decimals=7), \
                        "x_s != Px+p, check script"
             # check x_p = P_c^{-1} x_s
             x_p_ = (np.dot(np.linalg.inv(P_c), np.transpose(x_s)).T) % 1
-            for i in range(len(x_p_)):
-                assert np.round(x_p_[i], decimals=7) \
+            for _x in x_p_:
+                assert np.round(_x, decimals=7) \
                        in np.round(x_p, decimals=7), \
                        'x_p != P_c^{-1} x_s, check script'
 
@@ -276,24 +255,26 @@ class StandardizeCell():
                                            to_primitive=to_primitive,
                                            no_idealize=no_idealize,
                                            symprec=symprec)
-        symbols = get_chemical_symbols(spg_cell[2])
+        symbols = get_symbols_from_numbers(spg_cell[2])
         std_cell = (spg_cell[0], spg_cell[1], symbols)
+
         if no_sort:
             return std_cell
-        else:
-            num_atoms, unique_symbols, scaled_positions, sort_list = \
-                sort_positions_by_symbols(
-                        symbols=std_cell[2],
-                        positions=std_cell[1])
-            symbols = []
-            for num, symbol in zip(num_atoms, unique_symbols):
-                symbols.extend([symbol] * num)
 
-            sort_std_cell = (std_cell[0], scaled_positions, symbols)
-            if get_sort_list:
-                return (sort_std_cell, sort_list)
-            else:
-                return sort_std_cell
+        num_atoms, unique_symbols, scaled_positions, sort_list = \
+            sort_positions_by_symbols(
+                    symbols=std_cell[2],
+                    positions=std_cell[1])
+        symbols = []
+        for num, symbol in zip(num_atoms, unique_symbols):
+            symbols.extend([symbol] * num)
+
+        sort_std_cell = (std_cell[0], scaled_positions, symbols)
+
+        if get_sort_list:
+            return (sort_std_cell, sort_list)
+
+        return sort_std_cell
 
     def convert_kpoints(self, kpoints:tuple, kpoints_type:str) -> tuple:
         """
