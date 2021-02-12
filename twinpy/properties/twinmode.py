@@ -328,8 +328,6 @@ class TwinIndices():
                 err_msg="k1 is not orthogonal to eta1")
 
         # check k2 is orthogonal to eta2
-        print(self._indices['k2'].three)
-        print(self._indices['eta2'].three)
         np.testing.assert_allclose(
                 actual=self._crylat.dot(self._indices['k2'].three,
                                         self._indices['eta2'].three),
