@@ -25,6 +25,7 @@ py:class aiida.orm.nodes.data.structure.StructureData
 py:class StructureData
 
 # twinpy
+py:class twinpy.structure.lattice.CrystalLattice
 py:class twinpy.plot.dos.PartialDosPlot
 py:class twinpy.plot.dos.TotalDosPlot
 

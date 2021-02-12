@@ -11,7 +11,6 @@ twinpy.properties.hexagonal module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.properties.twinmode module
 ---------------------------------
@@ -20,8 +19,6 @@ twinpy.properties.twinmode module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
-
 
 Module contents
 ---------------
@@ -30,4 +27,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

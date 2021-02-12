@@ -19,7 +19,7 @@ class _DosPlot():
                  min_freq:float,
                  max_freq:float,
                  max_dos:float,
-                 flip_xy:bool=false,
+                 flip_xy:bool=False,
                  ):
         """
         args:
@@ -45,38 +45,38 @@ class _DosPlot():
         """
         return self._max_frequency
 
-    def set_xlim(self, ax, xmin:float=none, xmax:float=none):
+    def set_xlim(self, ax, xmin:float=None, xmax:float=None):
         """
         set xlim.
 
         args:
-            xmin (float): if none, min(frequences) -
+            xmin (float): if None, min(frequences) -
                           (max(frequences) - min(frequences)) * 1.05 is set.
-            xmax (float): if none, max(frequences) +
+            xmax (float): if None, max(frequences) +
                           (max(frequences) - min(frequences)) * 1.05 is set.
         """
         freq_min = self._min_frequency
         freq_max = self._max_frequency
         span = freq_max - freq_min
-        if xmin is none:
+        if xmin is None:
             _xmin = freq_min - span * 0.05
         else:
             _xmin = xmin
-        if xmax is none:
+        if xmax is None:
             _xmax = freq_max + span * 0.05
         else:
             _xmax = xmax
         ax.set_xlim(_xmin, _xmax)
 
-    def set_ylim(self, ax, ymin:float=0.01, ymax:float=none):
+    def set_ylim(self, ax, ymin:float=0.01, ymax:float=None):
         """
         set ylim.
 
         args:
-            ymax (float): if none, max(dos) * 1.05 is set.
+            ymax (float): if None, max(dos) * 1.05 is set.
         """
         dos_max = self._max_dos
-        if ymax is none:
+        if ymax is None:
             _ymax = dos_max * 0.05
         else:
             _ymax = ymax

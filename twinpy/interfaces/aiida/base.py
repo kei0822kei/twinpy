@@ -13,9 +13,6 @@ from twinpy.common.utils import print_header
 def load_aiida_profile():
     """
     Load aiida profile.
-
-    Raises:
-        ProfileConfigurationError: Fail to load aiida profile.
     """
     from aiida import load_profile
     from aiida.common.exceptions import ProfileConfigurationError
