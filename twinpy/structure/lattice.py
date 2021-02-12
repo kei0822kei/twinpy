@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-Lattice.
+This module deals with crystal lattice.
 """
 
 from copy import deepcopy
+import warnings
 import numpy as np
 from phonopy.structure.atoms import PhonopyAtoms
 from phonopy.structure.cells import Supercell
@@ -18,7 +19,7 @@ def get_lattice_points_from_supercell(lattice:np.array,
     Get lattice points from supercell.
 
     Args:
-        lattice: Lattice.
+        lattice: Lattice matrix.
         dim: Dimension with its shape is (3,) or (3,3).
 
     Returns:
@@ -35,15 +36,15 @@ def get_lattice_points_from_supercell(lattice:np.array,
     return lattice_points
 
 
-class Lattice():
+class CrystalLattice():
     """
-    Deals with lattice.
+    This class deals with crystal lattice.
     """
 
     def __init__(self, lattice:np.array):
         """
         Args:
-            lattice: Lattice.
+            lattice: Lattice matrix.
 
         Raises:
             AssertionError: Input lattice is not 3x3 numpy array.
@@ -175,8 +176,9 @@ class Lattice():
         return self._metric
 
     def dot(self,
-            frac_coord_first:np.array,
-            frac_coord_second:np.array) -> float:
+            first_coord:np.array,
+            second_coord:np.array,
+            is_cartesian:bool=False) -> float:
         """
         Return inner product of two vectors.
         Two vectors must be given as fractional coordinate.
@@ -184,16 +186,24 @@ class Lattice():
         Args:
             frac_coord_first: Firest fractional coordinate.
             frac_coord_second: Second fractional coordinate.
+            is_cartesian: If True input coord are recognized
+                          as cartesian.
 
         Returns:
             float: Inner product.
         """
-        first = frac_coord_first.reshape(3,1)
-        second = frac_coord_second.reshape(3,1)
+        if is_cartesian:
+            frac_first = self.convert_cartesian_to_fractional(first_coord)
+            frac_second = self.convert_cartesian_to_fractional(second_coord)
+        else:
+            frac_first = first_coord
+            frac_second = second_coord
+        frac_first = frac_first.reshape(3,1)
+        frac_second = frac_second.reshape(3,1)
 
-        return float(np.dot(np.dot(first.T,
+        return float(np.dot(np.dot(frac_first.T,
                                    self._metric),
-                            second))
+                            frac_second))
 
     def get_norm(self,
                  coord:np.array,
@@ -241,11 +251,13 @@ class Lattice():
         norm_second = self.get_distance(frac_coord_second,
                                         origin,
                                         with_periodic=False)
-        inner_product = self.dot(frac_coord_first=frac_coord_first,
-                                 frac_coord_second=frac_coord_second)
+        inner_product = self.dot(first_coord=frac_coord_first,
+                                 second_coord=frac_coord_second,
+                                 is_cartesian=False)
         cos_angle = np.round(inner_product / (norm_first * norm_second),
                              decimals=8)
         angle = np.arccos(cos_angle) * 180 / np.pi
+
         if get_acute:
             angle = min(angle, 180-angle)
 
@@ -269,62 +281,54 @@ class Lattice():
         Returns:
             np.array: Atom diff (second_coord - first_coord)
                       in fractional coordinate.
+
+        Todo:
+            Check it is best to use deepcopy.
+            Currenly get_diff with with_periodic=True may return incorrect
+            result.
         """
         if is_cartesian:
-            _first_frac = np.dot(np.linalg.inv(self._lattice.T),
-                                 first_coord.T).T
-            _second_frac = np.dot(np.linalg.inv(self._lattice.T),
-                                  second_coord.T).T
+            _first_frac = \
+                self.convert_cartesian_to_fractional(cart_coords=first_coord)
+            _second_frac = \
+                self.convert_cartesian_to_fractional(cart_coords=second_coord)
         else:
             _first_frac = deepcopy(first_coord)
             _second_frac = deepcopy(second_coord)
 
         if with_periodic:
-            _diff = np.round((_second_frac - _first_frac) % 1, decimals=8)
+            warnings.warn("with_periodic=True may returns incorrect result.")
+            _diff = np.round((_second_frac - _first_frac) % 1., decimals=8)
             diff = np.where(_diff>0.5, _diff-1, _diff)
         else:
             diff = _second_frac - _first_frac
 
         return diff
 
-    def get_midpoint(self,
-                     first_coord:np.array,
-                     second_coord:np.array,
-                     is_cartesian:bool=False,
-                     with_periodic:bool=True) -> np.array:
+    def convert_fractional_to_cartesian(self, frac_coords:np.array):
         """
-        Get midpoint.
+        Convert list of fractional coordinates to cartesian coordinates.
 
         Args:
-            coord_first: First fractional coordinate.
-            coord_second: Second fractional coordinate.
-            is_cartesian: If True input coord are recognized
-                                 as cartesian.
-            with_periodic: If True, consider periodic condition.
+            frac_coords: List of fractional coordinates.
 
         Returns:
-            np.array: Atom diff (second_coord - first_coord)
-                      in fractional coordinate.
+            np.array: List of cartesian coordinates.
         """
-        if is_cartesian:
-            _first_frac = np.dot(np.linalg.inv(self._lattice.T),
-                                 first_coord.T).T
-            _second_frac = np.dot(np.linalg.inv(self._lattice.T),
-                                  second_coord.T).T
-        else:
-            _first_frac = deepcopy(first_coord)
-            _second_frac = deepcopy(second_coord)
+        return np.dot(np.transpose(self._lattice), frac_coords.T).T
 
-        if with_periodic:
-            diff = self.get_diff(first_coord=first_coord,
-                                 second_coord=second_coord,
-                                 is_cartesian=is_cartesian,
-                                 with_periodic=with_periodic)
-            midpoint = np.round((_first_frac + diff / 2) % 1, decimals=8)
-        else:
-            midpoint = (_second_frac - _first_frac) / 2
+    def convert_cartesian_to_fractional(self, cart_coords:np.array):
+        """
+        Convert list of cartesian coordinates to fractional coordinates.
 
-        return midpoint
+        Args:
+            cart_coords: Cartesian coordinates.
+
+        Returns:
+            np.array: Fractional coordinates.
+        """
+        return np.dot(np.linalg.inv(np.transpose(self._lattice)),
+                      cart_coords.T).T
 
     def get_distance(self,
                      first_coord:np.array,
@@ -351,3 +355,47 @@ class Lattice():
         distance = np.linalg.norm(np.dot(self.lattice.T, diff.T))
 
         return distance
+
+    def get_midpoint(self,
+                     first_coord:np.array,
+                     second_coord:np.array,
+                     is_cartesian:bool=False,
+                     with_periodic:bool=True) -> np.array:
+        """
+        Get midpoint.
+
+        Args:
+            first_coord: First fractional coordinate.
+            second_coord: Second fractional coordinate.
+            is_cartesian: If True input coord is recognized
+                          as cartesian.
+            with_periodic: If True, consider periodic condition.
+
+        Returns:
+            np.array: Atom diff (second_coord - first_coord)
+                      in fractional coordinate.
+
+        Todo:
+            It is necessary to fix this function because
+            in the case 'with_periodic=True', there are two different points
+            which can be defined as midpoint.
+        """
+        if is_cartesian:
+            _first_frac = \
+                self.convert_cartesian_to_fractional(cart_coords=first_coord)
+            _second_frac = \
+                self.convert_cartesian_to_fractional(cart_coords=second_coord)
+        else:
+            _first_frac = deepcopy(first_coord)
+            _second_frac = deepcopy(second_coord)
+
+        if with_periodic:
+            diff = self.get_diff(first_coord=first_coord,
+                                 second_coord=second_coord,
+                                 is_cartesian=is_cartesian,
+                                 with_periodic=with_periodic)
+            midpoint = np.round((_first_frac + diff / 2) % 1., decimals=8)
+        else:
+            midpoint = (_second_frac - _first_frac) / 2
+
+        return midpoint

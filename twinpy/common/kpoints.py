@@ -6,7 +6,7 @@ Deals with kpoints.
 """
 
 import numpy as np
-from twinpy.lattice.lattice import Lattice
+from twinpy.structure.lattice import CrystalLattice
 
 
 def _get_mesh_from_interval(lattice:np.array,

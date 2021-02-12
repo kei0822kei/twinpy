@@ -5,9 +5,9 @@
 This is pytest for twinpy.properties.hexagonal.
 """
 
+from copy import deepcopy
 import numpy as np
 from twinpy.properties import hexagonal
-from copy import deepcopy
 
 a = 2.93
 c = 4.65
@@ -26,10 +26,7 @@ def test_check_cell_is_hcp(ti_cell_wyckoff_c, ti_cell_wyckoff_d):
     Check check_cell_is_hcp.
     """
     for cell in [ti_cell_wyckoff_c, ti_cell_wyckoff_d]:
-        lattice, scaled_positions, symbols = cell
-        hexagonal.check_cell_is_hcp(lattice=lattice,
-                                    scaled_positions=scaled_positions,
-                                    symbols=symbols)
+        hexagonal.check_cell_is_hcp(cell=cell)
 
 
 def test_convert_direction():
@@ -43,7 +40,7 @@ def test_convert_direction():
     """
     def _test_convert_direction_from_three_to_four(three, four_expected):
         _four = hexagonal.convert_direction_from_three_to_four(
-                three=a_1_three)
+                three=three)
         np.testing.assert_allclose(_four, four_expected)
 
     def _test_convert_direction_from_four_to_three(four, three_expected):
@@ -143,6 +140,10 @@ def test_hexagonal_plane(ti_cell_wyckoff_c):
         _d = hex_pln.get_distance_from_plane(frac_coord=frac_coord)
         np.testing.assert_allclose(_d, d_expected)
 
+    def _test_get_plane_interval(hex_pln, d_expected):
+        _d = hex_pln.get_plane_interval()
+        np.testing.assert_allclose(_d, d_expected)
+
     lattice = ti_cell_wyckoff_c[0]
     basal_four = np.array([0.,0.,0.,1.])
     twin_four = np.array([1.,0.,-1.,2.])
@@ -158,3 +159,5 @@ def test_hexagonal_plane(ti_cell_wyckoff_c):
     _test_get_distance_from_plane(hex_pln=hex_pln_basal,
                                   frac_coord=c_three,
                                   d_expected=c)
+    _test_get_plane_interval(hex_pln=hex_pln_basal,
+                             d_expected=c)

@@ -11,6 +11,7 @@ a = 2.93
 c = 4.65
 symbol = 'Ti'
 
+
 @pytest.fixture(autouse=True, scope='session')
 def ti_cell_wyckoff_c():
     """
