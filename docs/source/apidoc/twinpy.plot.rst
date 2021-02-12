@@ -11,7 +11,6 @@ twinpy.plot.band\_structure module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.plot.base module
 -----------------------
@@ -20,7 +19,6 @@ twinpy.plot.base module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.plot.dos module
 ----------------------
@@ -29,7 +27,6 @@ twinpy.plot.dos module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.plot.relax module
 ------------------------
@@ -38,7 +35,6 @@ twinpy.plot.relax module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.plot.twinboundary module
 -------------------------------
@@ -47,8 +43,6 @@ twinpy.plot.twinboundary module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
-
 
 Module contents
 ---------------
@@ -57,4 +51,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

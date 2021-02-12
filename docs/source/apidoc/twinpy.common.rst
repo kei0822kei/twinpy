@@ -11,7 +11,6 @@ twinpy.common.band\_path module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.common.kpoints module
 ----------------------------
@@ -20,7 +19,6 @@ twinpy.common.kpoints module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.common.utils module
 --------------------------
@@ -29,8 +27,6 @@ twinpy.common.utils module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
-
 
 Module contents
 ---------------
@@ -39,4 +35,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

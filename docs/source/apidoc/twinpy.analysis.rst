@@ -11,7 +11,6 @@ twinpy.analysis.phonon\_analyzer module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.analysis.relax\_analyzer module
 --------------------------------------
@@ -20,7 +19,6 @@ twinpy.analysis.relax\_analyzer module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.analysis.shear\_analyzer module
 --------------------------------------
@@ -29,7 +27,6 @@ twinpy.analysis.shear\_analyzer module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.analysis.twinboundary\_analyzer module
 ---------------------------------------------
@@ -38,8 +35,6 @@ twinpy.analysis.twinboundary\_analyzer module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
-
 
 Module contents
 ---------------
@@ -48,4 +43,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

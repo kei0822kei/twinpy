@@ -11,7 +11,6 @@ twinpy.structure.base module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.structure.bonding module
 -------------------------------
@@ -20,7 +19,6 @@ twinpy.structure.bonding module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.structure.diff module
 ----------------------------
@@ -29,7 +27,14 @@ twinpy.structure.diff module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
+
+twinpy.structure.lattice module
+-------------------------------
+
+.. automodule:: twinpy.structure.lattice
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 twinpy.structure.shear module
 -----------------------------
@@ -38,7 +43,6 @@ twinpy.structure.shear module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.structure.standardize module
 -----------------------------------
@@ -47,7 +51,6 @@ twinpy.structure.standardize module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.structure.twinboundary module
 ------------------------------------
@@ -56,8 +59,6 @@ twinpy.structure.twinboundary module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
-
 
 Module contents
 ---------------
@@ -66,4 +67,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
