@@ -250,7 +250,7 @@ class _BaseTwinStructure():
                     self._output_structure['lattice_points'][color],
                     self._output_structure['atoms_from_lattice_points'][color])
                 scaled_positions.extend(posi.tolist())
-            scaled_positions = np.array(scaled_positions)
+            scaled_positions = np.round(np.array(scaled_positions), decimals=8)
 
             if move_atoms_into_unitcell:
                 scaled_positions = scaled_positions % 1.
