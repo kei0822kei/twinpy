@@ -9,11 +9,11 @@ import warnings
 import numpy as np
 from matplotlib import pyplot as plt
 from aiida.cmdline.utils.decorators import with_dbenv
-from aiida.common import NotExistentAttributeError
 from aiida.orm import (load_node,
                        Node,
                        WorkChainNode,
                        QueryBuilder)
+from aiida.common.exceptions import NotExistentAttributeError
 from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from twinpy.common.utils import print_header
 from twinpy.structure.lattice import CrystalLattice
@@ -44,6 +44,7 @@ class _AiidaVaspWorkChain(_WorkChain):
         self._stress = None
         self._forces = None
         self._energy = None
+        self._step_energies = None
         if self._process_state == 'finished':
             self._set_properties()
 
@@ -68,8 +69,21 @@ class _AiidaVaspWorkChain(_WorkChain):
         """
         self._forces = self._node.outputs.forces.get_array('final')
         self._stress = self._node.outputs.stress.get_array('final')
-        self._energy = \
-                self._node.outputs.energies.get_array('energy_no_entropy')[0]
+
+        eg = self._node.outputs.energies
+        try:
+            self._step_energies = {
+                'energy_extrapolated': eg.get_array('energy_extrapolated'),
+                'energy_extrapolated_final':
+                    eg.get_array('energy_extrapolated_final'),
+                    }
+            self._energy = self._step_energies['energy_extrapolated'][-1]
+        except NotExistentAttributeError:
+            warnings.warn("Could not find 'energy_extrapolated' in ",
+                          "outputs.energies.")
+
+            _misc = self._node.outputs.misc.get_dict()
+            self._energy = _misc['total_energies']['energy_no_entropy']
 
     @property
     def forces(self):
@@ -91,6 +105,13 @@ class _AiidaVaspWorkChain(_WorkChain):
         Total energy.
         """
         return self._energy
+
+    @property
+    def step_energies(self):
+        """
+        Energy for each steps.
+        """
+        return self._step_energies
 
     def get_max_force(self) -> float:
         """
