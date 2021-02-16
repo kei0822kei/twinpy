@@ -40,7 +40,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             ):
         """
         Args:
-            node: TwinBoundaryRelaxWorkChain node
+            node: TwinBoundaryRelaxWorkChain node.
         """
         process_class = 'TwinBoundaryRelaxWorkChain'
         check_process_class(node, process_class)
@@ -116,7 +116,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         params = self._twinboundary_settings
         cell = get_cell_from_aiida(
                         load_node(self._structure_pks['hexagonal_pk']))
-        lattice, scaled_positions, symbols = cell
+        lattice, _, symbols = cell
         wyckoff = get_wyckoff_from_hcp(cell=cell)
         twinboundary = get_twinboundary(
                            lattice=lattice,
@@ -160,16 +160,16 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         pks['relax_pk'] = relax_pk
         return pks
 
-    def get_aiida_relax(self, additional_relax_pks:list=None):
+    def get_aiida_relax(
+            self, additional_relax_pks:list=None) -> AiidaRelaxCollection:
         """
         Get relax collection.
 
         Args:
-            additional_relax_pks (list): List of additinal relax calculation
-                                         pks.
+            additional_relax_pks: List of additinal relax calculation pks.
 
         Returns:
-            dict: description
+            AiidaRelaxCollection: Collection of aiida relax.
         """
         relax_pk = self.get_pks()['relax_pk']
         if additional_relax_pks is None:
@@ -183,20 +183,24 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
 
         return aiida_relax
 
-    def get_twinboundary_analyzer(self,
-                                  twinboundary_phonon_pk:int=None,
-                                  additional_relax_pks:list=None,
-                                  hexagonal_relax_pk:int=None,
-                                  hexagonal_phonon_pk:int=None):
+    def get_twinboundary_analyzer(
+            self,
+            twinboundary_phonon_pk:int=None,
+            additional_relax_pks:list=None,
+            hexagonal_relax_pk:int=None,
+            hexagonal_phonon_pk:int=None) -> TwinBoundaryAnalyzer:
         """
         Get TwinBoundaryAnalyzer class object.
 
         Args:
-            twinboudnary_phonon_pk (int): Twinboundary phonon calculation pk.
-            additional_relax_pks (list): List of additinal relax calculation
+            twinboudnary_phonon_pk: Twinboundary phonon calculation pk.
+            additional_relax_pks: List of additinal relax calculation
                                          pks.
-            hexagonal_relax_pk (int): Hexagonal relax calculation pk.
-            hexagonal_phonon_pk (int): Hexagonal phonon calculation pk.
+            hexagonal_relax_pk: Hexagonal relax calculation pk.
+            hexagonal_phonon_pk: Hexagonal phonon calculation pk.
+
+        Returns:
+            TwinBoundaryAnalyzer: TwinBoundaryAnalyzer class object.
         """
         twinboundary_structure = self._twinboundary_structure
         original_cell = self.cells['twinboundary_original']

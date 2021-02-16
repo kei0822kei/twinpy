@@ -4,8 +4,8 @@
 """
 Interface for Aiida Node.
 """
-import numpy as np
 import warnings
+import numpy as np
 from aiida.orm import Node, QueryBuilder, StructureData
 from twinpy.common.utils import print_header
 
@@ -31,11 +31,11 @@ def check_process_class(node:Node,
     Check process class of node is the same as the expected.
 
     Args:
-        node: aiida node
-        expected_process_class (str): expected process class
+        node: Aiida node.
+        expected_process_class: Expected process class.
 
     Raises:
-        AssertionError: input node is not the same as expected
+        AssertionError: Input node is not the same as expected.
     """
     assert node.process_class.get_name() == expected_process_class, \
             "input node: {}, expected: {} (NOT MATCH)". \
@@ -47,7 +47,7 @@ def get_aiida_structure(cell:tuple) -> StructureData:
     Get aiida structure from input cell.
 
     Args:
-        cell (tuple): (lattice, scaled_positions, symbols).
+        cell: Cell (lattice, scaled_positions, symbols).
 
     Returns:
         StructureData: Aiida structure data.
@@ -65,7 +65,7 @@ def get_workflow_pks(node, workflow) -> list:
     Get workflow pks in the node.
 
     Args:
-        node: node
+        node: Aiida node.
         workflow: Workflow, ex. workflow = WorkflowFactory('vasp.relax').
 
     Returns:
@@ -85,11 +85,11 @@ def get_cell_from_aiida(structure:StructureData,
     Get cell from input aiida structure.
 
     Args:
-        structure (StructureData): Aiida structure data.
-        get_scaled_positions (bool): If True, return scaled positions.
+        structure: Aiida structure data.
+        get_scaled_positions: If True, return scaled positions.
 
     Returns:
-        tuple: (lattice, positions, symbols).
+        tuple: Cell (lattice, positions, symbols).
     """
     lattice = np.array(structure.cell)
     positions = np.array([ site.position for site in structure.sites ])

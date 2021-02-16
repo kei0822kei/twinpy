@@ -15,17 +15,17 @@ def _get_mesh_from_interval(lattice:np.array,
     Get mesh from interval.
 
     Args:
-        lattice (np.array): lattice matrix
-        interval (float): grid interval
+        lattice: Lattice matrix.
+        interval: Grid interval.
 
     Returns:
-        dict: containing abc norms, mesh
+        dict: Containing abc norms, mesh.
 
     Note:
         mesh * interval => abc
         If even becomes zero, fix to one.
     """
-    lat = Lattice(lattice=lattice)
+    lat = CrystalLattice(lattice=lattice)
     abc = lat.abc
     mesh_float = abc / interval
     mesh = np.int64(np.round(mesh_float))
@@ -39,13 +39,13 @@ def _get_intervals_from_mesh(lattice:np.array,
     Get interval from mesh.
 
     Args:
-        lattice (np.array): lattice matrix
-        mesh (list): the number of mesh of each axis
+        lattice: Lattice matrix.
+        mesh: The number of mesh of each axis.
 
     Returns:
-        dict: containing abc norms, intervals
+        dict: Containing abc norms, intervals.
     """
-    lat = Lattice(lattice=lattice)
+    lat = CrystalLattice(lattice=lattice)
     abc = lat.abc
     intervals = abc / np.array(mesh)
     return {'abc': abc, 'intervals': intervals}
@@ -59,17 +59,17 @@ def get_mesh_offset_from_direct_lattice(lattice:np.array,
     Get kpoints mesh and offset from input lattice and interval.
 
     Args:
-        lattice (np.array): lattice matrix
-        interval (float): grid interval
-        mesh (list): mesh
-        include_two_pi (bool): if True, include 2 * pi
+        lattice: Lattice matrix.
+        interval: Grid interval.
+        mesh: Mesh.
+        include_two_pi: If True, include 2 * pi.
 
     Returns:
-        dict: containing abc norms, mesh, offset
+        dict: Containing abc norms, mesh, offset.
 
     Raises:
-        ValueError: both mesh and interval are not specified
-        ValueError: both mesh and interval are specified
+        ValueError: Both mesh and interval are not specified.
+        ValueError: Both mesh and interval are specified.
 
     Note:
         Please input 'interval' or 'mesh', not both.
@@ -87,12 +87,12 @@ def get_mesh_offset_from_direct_lattice(lattice:np.array,
     if interval is not None and mesh is not None:
         raise ValueError("both mesh and interval are specified")
 
-    lat = Lattice(lattice=lattice)
+    lat = CrystalLattice(lattice=lattice)
 
     if include_two_pi:
-        recip_lat = Lattice(2*np.pi*lat.reciprocal_lattice)
+        recip_lat = CrystalLattice(2*np.pi*lat.reciprocal_lattice)
     else:
-        recip_lat = Lattice(lat.reciprocal_lattice)
+        recip_lat = CrystalLattice(lat.reciprocal_lattice)
 
     if interval is not None:
         mesh = _get_mesh_from_interval(lattice=recip_lat.lattice,

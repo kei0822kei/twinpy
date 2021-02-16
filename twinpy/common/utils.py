@@ -6,9 +6,9 @@ This module deals wtih various convenient tools
 used by other scripts in twinpy.
 """
 
-import numpy as np
 import math
 from decimal import Decimal, ROUND_HALF_UP
+import numpy as np
 
 
 def print_header(string:str):
@@ -21,22 +21,24 @@ def print_header(string:str):
     Raises:
         TypeError: input is not str object
     """
-    if type(string) is not str:
+    if not isinstance(string, str):
         raise TypeError("Input must be str object not %s." % type(string))
     print("# " + '-' * len(string))
     print("# %s" % string)
     print("# " + '-' * len(string))
 
 
-def float2frac(var:float, accuracy:int=3, denominator:int=10) -> str:
+def float2frac(var:float, denominator:int=10, atol=1.e-3, rtol=0.) -> str:
     """
     Transform float to fractional (str object).
 
     Args:
         var: Input value.
-        accuracy: Threshold of whether two values are the same of not.
-                  In the case of 'accuracy=3', check the third decimal place.
         denominator: If 'denominator=10', check from 1/2 to 12/13.
+        atol: Used when checking two values are the same or not.
+              See documentation for np.allclose.
+        rtol: Used when checking two values are the same or not.
+              See documentation for np.allclose.
 
     Returns:
         str: Fractional value.
@@ -48,26 +50,26 @@ def float2frac(var:float, accuracy:int=3, denominator:int=10) -> str:
         >>> float2frac(-1.333333, 3)
           '-4/3'
     """
-    def _decimal_part2frac(deci_part, accuracy, denominator):
+    def _decimal_part2frac(deci_part, denominator, atol, rtol):
         flag = 1
         for i in range(2, denominator+1):
-            for j in (range(1, i)):
-                if np.allclose(deci_part, j/i):
+
+            for j in range(1, i):
+                if np.allclose(deci_part, j/i, rtol=rtol, atol=atol):
                     flag = 0
                     pair = (j, i)
                     break
-                else:
-                    continue
+                continue
+
             if flag == 0:
                 break
-            else:
-                continue
+            continue
+
         if flag == 1:
             raise RuntimeError(
                     "Could not find fractional representation of %s."
                     % deci_part)
-        else:
-            return pair
+        return pair
 
     if var < 0:
         sign = '-'
@@ -77,13 +79,14 @@ def float2frac(var:float, accuracy:int=3, denominator:int=10) -> str:
     deci_part = abs(var) - int_part
 
     if np.allclose(deci_part, 0.):
+
         if int_part == 0:
             return str(int_part)
-        else:
-            return sign+str(int_part)
-    else:
-        pair = _decimal_part2frac(deci_part, accuracy, denominator)
-        return sign+str(int_part*pair[1]+pair[0])+'/'+str(pair[1])
+
+        return sign+str(int_part)
+
+    pair = _decimal_part2frac(deci_part, denominator, atol, rtol)
+    return sign+str(int_part*pair[1]+pair[0])+'/'+str(pair[1])
 
 
 def get_ratio(nums:list,
@@ -94,6 +97,8 @@ def get_ratio(nums:list,
 
     Args:
         nums: Numbers.
+        threshold: If abs(a - b) < threshold, a and b are considered the same.
+        maxmultiply: Max multiply for looking for ratio.
 
     Returns:
         list: Ratio.
@@ -118,10 +123,10 @@ def get_ratio(nums:list,
             if abs(trial_num - trial_num_round_off) < threshold:
                 multinum = i
                 break
-            else:
-                if i == 100:
-                    raise RuntimeError("could not find multiply number "
-                                       "for make input number integer")
+
+            if i == 100:
+                raise RuntimeError("could not find multiply number "
+                                   "for make input number integer")
         return multinum
 
     inputs = np.array(nums)

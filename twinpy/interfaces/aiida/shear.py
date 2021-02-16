@@ -4,6 +4,13 @@
 """
 Aiida interface for twinpy.
 """
+from aiida.cmdline.utils.decorators import with_dbenv
+from aiida.plugins import WorkflowFactory
+from aiida.orm import (load_node,
+                       Node,
+                       QueryBuilder,
+                       StructureData,
+                       CalcFunctionNode)
 from twinpy.analysis.phonon_analyzer import PhononAnalyzer
 from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from twinpy.interfaces.aiida.base import (check_process_class,
@@ -14,13 +21,6 @@ from twinpy.interfaces.aiida.vasp import AiidaRelaxWorkChain
 from twinpy.interfaces.aiida.phonopy import AiidaPhonopyWorkChain
 from twinpy.properties.hexagonal import get_wyckoff_from_hcp
 from twinpy.structure.shear import get_shear
-from aiida.cmdline.utils.decorators import with_dbenv
-from aiida.plugins import WorkflowFactory
-from aiida.orm import (load_node,
-                       Node,
-                       QueryBuilder,
-                       StructureData,
-                       CalcFunctionNode)
 
 
 @with_dbenv()
@@ -72,7 +72,7 @@ class AiidaShearWorkChain(_WorkChain):
         Set twinpy structure object.
         """
         twinmode = self._shear_conf['twinmode']
-        lattice, scaled_positions, symbols = self._cells['hexagonal']
+        lattice, _, symbols = self._cells['hexagonal']
         wyckoff = get_wyckoff_from_hcp(self._cells['hexagonal'])
         shear = get_shear(lattice=lattice,
                           symbol=symbols[0],
