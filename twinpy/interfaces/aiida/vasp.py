@@ -164,7 +164,7 @@ class _AiidaVaspWorkChain(_WorkChain):
             }
 
         settings = {
-            'incar': self._node.inputs.parameters.get_dict(),
+            'incar': self._node.inputs.parameters.get_dict()['incar'],
             'potcar': potcar,
             'kpoints': self._node.inputs.kpoints.get_kpoints_mesh(),
             'parser_settings':
@@ -296,13 +296,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
             ):
         """
         Args:
-            node: aiida Node
-
-        Todo:
-            Fix names. Name 'final_cell' 'final_structure_pk' 'cuurent-'
-            are strange because final_cell and final_structure_pk are
-            the results from first relax pk. Therefore, 'current-'
-            is truely final structure pk and final cell.
+            node: Aiida Node.
         """
         process_class = 'RelaxWorkChain'
         check_process_class(node, process_class)
@@ -318,9 +312,9 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         Set final structure.
         """
         try:
-            self._final_structure_pk = self._node.outputs.relax__structure.pk
-            self._final_cell = get_cell_from_aiida(
-                    load_node(self._final_structure_pk))
+            relax_structure = self._node.outputs.relax__structure
+            self._final_structure_pk = relax_structure.pk
+            self._final_cell = get_cell_from_aiida(relax_structure)
             self._current_final_structure_pk = self._final_structure_pk
             self._current_final_cell = self._final_cell
 
@@ -360,8 +354,7 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         Returns:
             dict: Contains relax settings.
         """
-        keys = [ key for key in self._node.inputs._get_keys()
-                     if 'relax' in key ]
+        keys = [ key for key in dir(self._node.inputs) if 'relax' in key ]
         settings = {}
         for key in keys:
             name = key.replace('relax__', '')
