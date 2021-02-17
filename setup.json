@@ -21,7 +21,6 @@
     ],
     "extras_require": {
         "develop": [
-            "numpy>=1.20.1",
             "phonopy",
             "pymatgen<=2020.12.3"
         ],
