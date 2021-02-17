@@ -38,8 +38,7 @@ def test_ShearStructure(ti_cell_wyckoff_c):
         assert is_same
 
     _twinpy_dir = os.path.dirname(os.path.dirname(twinpy.__file__))
-    # for _twinmode in ['10-11', '10-12', '11-21', '11-22']:
-    for _twinmode in ['11-21']:
+    for _twinmode in ['10-11', '10-12', '11-21', '11-22']:
         for _ratio in [0, 1]:
             _name = 'shr_{}_s{}.poscar'.format(_twinmode, _ratio)
             _filename = os.path.join(_twinpy_dir,

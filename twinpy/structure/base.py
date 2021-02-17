@@ -50,11 +50,6 @@ def check_same_cells(first_cell:tuple,
     is_lattice_same = np.allclose(first_cell[0], second_cell[0])
     is_scaled_positions_same = np.allclose(first_cell[1], second_cell[1])
     is_symbols_same = (first_cell[2] == second_cell[2])
-    print(first_cell[0])
-    print(second_cell[0])
-    # print("lattice {}".format(is_lattice_same))
-    # print("posi {}".format(is_scaled_positions_same))
-    # print("sym {}".format(is_symbols_same))
     is_same = (is_lattice_same
                and is_scaled_positions_same
                and is_symbols_same)
