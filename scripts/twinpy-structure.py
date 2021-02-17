@@ -8,8 +8,9 @@ Get twinpy strucuture
 import argparse
 import numpy as np
 from pymatgen.io.vasp import Poscar
-from twinpy.properties.hexagonal import get_hexagonal_lattice_from_a_c
-from twinpy.interfaces.pymatgen import get_hexagonal_cell_wyckoff_from_pymatgen
+from twinpy.properties.hexagonal import (get_hexagonal_lattice_from_a_c,
+                                         get_wyckoff_from_hcp)
+from twinpy.interfaces.pymatgen import get_cell_from_pymatgen_structure
 from twinpy.api_twinpy import Twinpy
 from twinpy.file_io import write_poscar
 
@@ -111,8 +112,10 @@ def main(structure,
     else:
         poscar = Poscar.from_file(posfile)
         pmgstructure = poscar.structure
-        lattice, _, symbol, wyckoff = \
-            get_hexagonal_cell_wyckoff_from_pymatgen(pmgstructure)
+        cell = get_cell_from_pymatgen_structure(pmgstructure)
+        lattice = cell[0]
+        symbol = cell[2][0]
+        wyckoff = get_wyckoff_from_hcp(cell)
 
     twinpy = Twinpy(lattice=lattice,
                     twinmode=twinmode,
