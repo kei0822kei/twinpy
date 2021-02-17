@@ -243,7 +243,7 @@ class StandardizeCell():
 
         Args:
             to_primitive (bool): True => primitive,
-                                 False => conventional
+                                 False => conventional.
             no_idealize (bool): True => not rotate crystal body,
                                 False => rotate crystal body
             symprec (float): symmetry tolerance, for more detail
@@ -255,6 +255,7 @@ class StandardizeCell():
                                            to_primitive=to_primitive,
                                            no_idealize=no_idealize,
                                            symprec=symprec)
+        print(spg_cell)
         symbols = get_symbols_from_numbers(spg_cell[2])
         std_cell = (spg_cell[0], spg_cell[1], symbols)
 
