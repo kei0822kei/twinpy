@@ -13,7 +13,9 @@ branches:
     - "/release*/"
     - "/feature*/"
 
-language: python - "3.7"
+language: python
+python:
+  - "3.7"
 
 before_install:
   - echo "test starts"
