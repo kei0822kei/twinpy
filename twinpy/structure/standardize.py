@@ -243,13 +243,17 @@ class StandardizeCell():
 
         Args:
             to_primitive (bool): True => primitive,
-                                 False => conventional
+                                 False => conventional.
             no_idealize (bool): True => not rotate crystal body,
                                 False => rotate crystal body
             symprec (float): symmetry tolerance, for more detail
                              see spglib documentation
             no_sort (bool): does not change atoms order
             get_sort_list (bool): When no_sort=True, return sort list
+
+        Returns:
+            tuple: If get_sort_list=False, return cell.
+                   If get_sort_list=True, return (cell, sort_list).
         """
         spg_cell = spglib.standardize_cell(self._cell_for_spglib,
                                            to_primitive=to_primitive,

@@ -22,7 +22,7 @@
     "extras_require": {
         "develop": [
             "phonopy",
-            "pymatgen"
+            "pymatgen<=2020.12.3"
         ],
         "docs": [
             "sphinx>='3.4.3'",
