@@ -66,7 +66,7 @@ def test_kpoints(ti_cell_wyckoff_c):
     _inputs = {
             'kpt': _unit_kpt,
             'reciprocal_lattice_expected': np.eye(3) * 2 * np.pi,
-            'interval': 0.2,
+            'interval': np.array([0.2, 0.2, 0.2]),
             'mesh': None,
             'include_two_pi': True,
             'decimal_handling': None,

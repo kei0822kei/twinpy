@@ -5,6 +5,7 @@
 Deals with kpoints.
 """
 
+from typing import Union
 import numpy as np
 from twinpy.properties.hexagonal import check_hexagonal_lattice
 from twinpy.structure.lattice import CrystalLattice
@@ -18,7 +19,7 @@ class Kpoints():
     def __init__(
            self,
            lattice:np.array,
-       ):
+           ):
         """
         Args:
             lattice: Lattice matrix.
@@ -46,7 +47,7 @@ class Kpoints():
             pass
 
     def get_mesh_from_interval(self,
-                               interval:float,
+                               interval:Union[float,np.array],
                                decimal_handling:str=None,
                                include_two_pi:bool=True) -> list:
         """
@@ -67,6 +68,11 @@ class Kpoints():
             make float to int using the rule specified with 'decimal_handling'.
             If the final mesh includes 0, fix 0 to 1.
         """
+        if isinstance(interval, np.ndarray):
+            assert interval.shape == (3,), \
+                       "Shape of interval is {}, which must be (3,)".format(
+                               interval.shape)
+
         recip_abc = self._reciprocal_abc.copy()
         if include_two_pi:
             recip_abc *= 2 * np.pi
@@ -122,7 +128,7 @@ class Kpoints():
             But '1' is kept fixed during this operation.
         """
         if self._is_hexagonal:
-            condition = lambda x: int(x%2==0)  # If True, get 1, if False get 0.
+            condition = lambda x: int(x%2==0)  # If True, get 1, else get 0.
             arr = [ condition(m) for m in mesh[:2] ]
             if (mesh[2]!=1 and mesh[2]%2==1):
                 arr.append(1)
@@ -151,7 +157,7 @@ class Kpoints():
         return offset
 
     def get_mesh_offset_auto(self,
-                             interval:float=None,
+                             interval:Union[float,np.array]=None,
                              mesh:list=None,
                              include_two_pi:bool=True,
                              decimal_handling:str='round',
@@ -193,7 +199,7 @@ class Kpoints():
         return (_mesh, offset)
 
     def get_dict(self,
-                 interval:float=None,
+                 interval:Union[float,np.array]=None,
                  mesh:list=None,
                  include_two_pi:bool=True,
                  decimal_handling:str='round',
