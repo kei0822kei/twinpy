@@ -142,9 +142,13 @@ class Kpoints():
 
         return fixed_mesh.tolist()
 
-    def get_offset(self) -> list:
+    def get_offset(self, mesh:list=None) -> list:
         """
         Get offset.
+
+        Args:
+            mesh: Optional. If mesh is parsed,
+                            set offset element 0 where mesh is 1.
 
         Returns:
             list: Offset from origin centered mesh grids.
@@ -153,6 +157,11 @@ class Kpoints():
             offset = [0., 0., 0.5]
         else:
             offset = [0.5, 0.5, 0.5]
+
+        if mesh is not None:
+            offset = np.array(offset)
+            offset[np.where(np.array(mesh)==1)] = 0
+            offset = offset.tolist()
 
         return offset
 
@@ -195,7 +204,7 @@ class Kpoints():
             _mesh = mesh
         if use_symmetry:
             _mesh = self.fix_mesh_based_on_symmetry(mesh=_mesh)
-        offset = self.get_offset()
+        offset = self.get_offset(mesh=_mesh)
         return (_mesh, offset)
 
     def get_dict(self,
