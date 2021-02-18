@@ -187,8 +187,8 @@ class ShearStructure(_BaseTwinStructure):
             shear_lattice = np.dot(shear_lattice.T,
                                    np.linalg.inv(supercell_matrix)).T
             lattice_points = np.array([[xshift, yshift, 0.]])
-
-        lattice_points = np.round(lattice_points, decimals=8) % 1
+        else:
+            lattice_points = np.round(lattice_points, decimals=8) % 1
         symbols = ['white'] * len(lattice_points)
         return (shear_lattice, lattice_points, symbols)
 
