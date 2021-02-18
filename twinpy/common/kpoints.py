@@ -6,132 +6,242 @@ Deals with kpoints.
 """
 
 import numpy as np
+from twinpy.properties.hexagonal import check_hexagonal_lattice
 from twinpy.structure.lattice import CrystalLattice
 
 
-def _get_mesh_from_interval(lattice:np.array,
-                            interval:float) -> dict:
+class Kpoints():
     """
-    Get mesh from interval.
-
-    Args:
-        lattice: Lattice matrix.
-        interval: Grid interval.
-
-    Returns:
-        dict: Containing abc norms, mesh.
-
-    Note:
-        mesh * interval => abc
-        If even becomes zero, fix to one.
+    This class deals with kpoints.
     """
-    lat = CrystalLattice(lattice=lattice)
-    abc = lat.abc
-    mesh_float = abc / interval
-    mesh = np.int64(np.round(mesh_float))
-    fixed_mesh = np.where(mesh==0, 1, mesh)
-    return {'abc': abc, 'mesh': fixed_mesh}
 
+    def __init__(
+           self,
+           lattice:np.array,
+       ):
+        """
+        Args:
+            lattice: Lattice matrix.
+        """
+        self._lattice = lattice
+        self._reciprocal_lattice = None
+        self._reciprocal_abc = None
+        self._reciprocal_volume = None
+        self._is_hexagonal = False
+        self._set_properties()
 
-def _get_intervals_from_mesh(lattice:np.array,
-                             mesh:list) -> dict:
-    """
-    Get interval from mesh.
+    def _set_properties(self):
+        """
+        Set properties.
+        """
+        cry_lat = CrystalLattice(lattice=self._lattice)
+        self._reciprocal_lattice = cry_lat.reciprocal_lattice
+        recip_cry_lat = CrystalLattice(lattice=self._reciprocal_lattice)
+        self._reciprocal_abc = recip_cry_lat.abc
+        self._reciprocal_volume = recip_cry_lat.volume
+        try:
+            check_hexagonal_lattice(self._lattice)
+            self._is_hexagonal = True
+        except AssertionError:
+            pass
 
-    Args:
-        lattice: Lattice matrix.
-        mesh: The number of mesh of each axis.
+    def get_mesh_from_interval(self,
+                               interval:float,
+                               decimal_handling:str=None,
+                               include_two_pi:bool=True) -> list:
+        """
+        Get mesh from interval.
 
-    Returns:
-        dict: Containing abc norms, intervals.
-    """
-    lat = CrystalLattice(lattice=lattice)
-    abc = lat.abc
-    intervals = abc / np.array(mesh)
-    return {'abc': abc, 'intervals': intervals}
+        Args:
+            interval: Grid interval.
+            decimal_handling: Decimal handling. Available choise is 'floor',
+                              'ceil' and 'round'. If 'decimal_handling' is not
+                              'floor' and 'ceil', 'round' is set automatically.
+            include_two_pi: If True, include 2 * pi.
 
+        Returns:
+            list: Sampling mesh.
 
-def get_mesh_offset_from_direct_lattice(lattice:np.array,
-                                        interval:float=None,
-                                        mesh:list=None,
-                                        include_two_pi:bool=True) -> dict:
-    """
-    Get kpoints mesh and offset from input lattice and interval.
+        Note:
+            The basis norms of reciprocal lattice is divided by interval and
+            make float to int using the rule specified with 'decimal_handling'.
+            If the final mesh includes 0, fix 0 to 1.
+        """
+        recip_abc = self._reciprocal_abc.copy()
+        if include_two_pi:
+            recip_abc *= 2 * np.pi
 
-    Args:
-        lattice: Lattice matrix.
-        interval: Grid interval.
-        mesh: Mesh.
-        include_two_pi: If True, include 2 * pi.
-
-    Returns:
-        dict: Containing abc norms, mesh, offset.
-
-    Raises:
-        ValueError: Both mesh and interval are not specified.
-        ValueError: Both mesh and interval are specified.
-
-    Note:
-        Please input 'interval' or 'mesh', not both.
-        If the angles of input lattice is (90., 90., 120.),
-        offset is set (0., 0., 0.5) and mesh is set
-        (odd, odd, even or 1).
-        If even becomes zero, fix to one.
-        Otherwise, set (0.5, 0.5, 0.5) and mesh is set
-        (even or 1, even or 1, even or 1).
-        If you use this function, it is better to input
-        STANDARDIZED CELL.
-    """
-    if interval is None and mesh is None:
-        raise ValueError("both mesh and interval are not specified")
-    if interval is not None and mesh is not None:
-        raise ValueError("both mesh and interval are specified")
-
-    lat = CrystalLattice(lattice=lattice)
-
-    if include_two_pi:
-        recip_lat = CrystalLattice(2*np.pi*lat.reciprocal_lattice)
-    else:
-        recip_lat = CrystalLattice(lat.reciprocal_lattice)
-
-    if interval is not None:
-        mesh = _get_mesh_from_interval(lattice=recip_lat.lattice,
-                                       interval=interval)['mesh']
-    else:
-        mesh = np.int64(mesh)
-
-    # is hexagonal standardized cell
-    recip_a, recip_b, _ = recip_lat.abc
-    is_hexagonal = (np.allclose(recip_lat.angles, (90., 90., 60.),
-                                rtol=0., atol=1e-5)
-                    and np.allclose(recip_a, recip_b,
-                                    rtol=0., atol=1e-5)
-                    )
-
-    # fix mesh from get_mesh_from_interval
-    if is_hexagonal:
-        offset = (0., 0., 0.5)
-        condition = lambda x: int(x%2==0)  # If True, get 1, if False get 0.
-        arr = [ condition(m) for m in mesh[:2] ]
-        if (mesh[2]!=1 and mesh[2]%2==1):
-            arr.append(1)
+        mesh_float = recip_abc / interval
+        if decimal_handling == 'floor':
+            mesh = np.int64(np.floor(mesh_float))
+        elif decimal_handling == 'ceil':
+            mesh = np.int64(np.ceil(mesh_float))
         else:
-            arr.append(0)
-        arr = np.array(arr)
-    else:
-        offset = (0.5, 0.5, 0.5)
-        condition = lambda x: int(x%2==1)
-        arr = np.array([ condition(m) for m in mesh ])
-    fixed_mesh = mesh + arr
+            mesh = np.int64(np.round(mesh_float))
 
-    kpts = _get_intervals_from_mesh(
-               lattice=recip_lat.lattice, mesh=fixed_mesh)
-    kpts['reciprocal_lattice'] = recip_lat.lattice
-    kpts['reciprocal_volume'] = recip_lat.volume
-    kpts['mesh'] = fixed_mesh
-    kpts['total_mesh'] = fixed_mesh[0] * fixed_mesh[1] * fixed_mesh[2]
-    kpts['offset'] = offset
-    kpts['is_hexagonal'] = is_hexagonal
-    kpts['include_two_pi'] = include_two_pi
+        fixed_mesh = np.where(mesh==0, 1, mesh)
 
-    return kpts
+        return fixed_mesh.tolist()
+
+    def get_intervals_from_mesh(self,
+                                mesh:list,
+                                include_two_pi:bool=True) -> np.array:
+        """
+        Get intervals from mesh.
+
+        Args:
+            mesh: Sampling mesh.
+            include_two_pi: If True, include 2 * pi.
+
+        Returns:
+            np.array: Get intervals for each axis.
+        """
+        recip_abc = self._reciprocal_abc.copy()
+        if include_two_pi:
+            recip_abc *= 2 * np.pi
+
+        intervals = recip_abc / np.array(mesh)
+
+        return intervals
+
+    def fix_mesh_based_on_symmetry(self, mesh:list) -> list:
+        """
+        Fix mesh based on lattice symmetry.
+
+        Args:
+            mesh: Sampling mesh.
+
+        Returns:
+            list: Fixed sampling mesh.
+
+        Note:
+            Currenly, check only hexagonal lattice.
+            If crystal lattice is hexagonal,
+            mesh is fixed as: (odd odd even).
+            Else mesh: (even even even).
+            But '1' is kept fixed during this operation.
+        """
+        if self._is_hexagonal:
+            condition = lambda x: int(x%2==0)  # If True, get 1, if False get 0.
+            arr = [ condition(m) for m in mesh[:2] ]
+            if (mesh[2]!=1 and mesh[2]%2==1):
+                arr.append(1)
+            else:
+                arr.append(0)
+            arr = np.array(arr)
+        else:
+            condition = lambda x: int(x%2==1)
+            arr = np.array([ condition(m) for m in mesh ])
+        fixed_mesh = np.array(mesh) + arr
+
+        return fixed_mesh.tolist()
+
+    def get_offset(self) -> list:
+        """
+        Get offset.
+
+        Returns:
+            list: Offset from origin centered mesh grids.
+        """
+        if self._is_hexagonal:
+            offset = [0., 0., 0.5]
+        else:
+            offset = [0.5, 0.5, 0.5]
+
+        return offset
+
+    def get_mesh_offset_auto(self,
+                             interval:float=None,
+                             mesh:list=None,
+                             include_two_pi:bool=True,
+                             decimal_handling:str='round',
+                             use_symmetry:bool=True):
+        """
+        Get mesh and offset.
+
+        Args:
+            interval: Grid interval.
+            mesh: Sampling mesh.
+            include_two_pi: If True, include 2 * pi.
+            decimal_handling: Decimal handling. Available choise is 'floor',
+                              'ceil' and 'round'. If 'decimal_handling' is not
+                              'floor' and 'ceil', 'round' is set automatically.
+            use_symmetry: If True, run 'fix_mesh_based_on_symmetry'.
+
+        Raises:
+            ValueError: Both mesh and interval are not specified.
+            ValueError: Both mesh and interval are specified.
+
+        Returns:
+            tuple: (mesh, offset).
+        """
+        if interval is None and mesh is None:
+            raise ValueError("both mesh and interval are not specified")
+        if interval is not None and mesh is not None:
+            raise ValueError("both mesh and interval are specified")
+
+        if mesh is None:
+            _mesh = self.get_mesh_from_interval(
+                    interval=interval,
+                    decimal_handling=decimal_handling,
+                    include_two_pi=include_two_pi)
+        else:
+            _mesh = mesh
+        if use_symmetry:
+            _mesh = self.fix_mesh_based_on_symmetry(mesh=_mesh)
+        offset = self.get_offset()
+        return (_mesh, offset)
+
+    def get_dict(self,
+                 interval:float=None,
+                 mesh:list=None,
+                 include_two_pi:bool=True,
+                 decimal_handling:str='round',
+                 use_symmetry:bool=True):
+        """
+        Get dict including all properties and settings.
+
+        Args:
+            interval: Grid interval.
+            mesh: Sampling mesh.
+            include_two_pi: If True, include 2 * pi.
+            decimal_handling: Decimal handling. Available choise is 'floor',
+                              'ceil' and 'round'. If 'decimal_handling' is not
+                              'floor' and 'ceil', 'round' is set automatically.
+            use_symmetry: If True, run 'fix_mesh_based_on_symmetry'.
+
+        Raises:
+            ValueError: Both mesh and interval are not specified.
+            ValueError: Both mesh and interval are specified.
+
+        Returns:
+            dict: All properties and settings.
+        """
+        mesh, offset = self.get_mesh_offset_auto(
+                interval=interval,
+                mesh=mesh,
+                include_two_pi=include_two_pi,
+                decimal_handling=decimal_handling,
+                use_symmetry=use_symmetry)
+        intervals = self.get_intervals_from_mesh(
+                mesh=mesh,
+                include_two_pi=include_two_pi,
+                )
+        recip_lattice = self._reciprocal_lattice.copy()
+        recip_abc = self._reciprocal_abc.copy()
+        if include_two_pi:
+            recip_lattice *= 2 * np.pi
+            recip_abc *= 2 * np.pi
+        dic = {
+                'reciprocal_lattice': recip_lattice,
+                'reciprocal_abc': recip_abc,
+                'mesh': mesh,
+                'offset': offset,
+                'input_interval': interval,
+                'intervals': intervals,
+                'include_two_pi': include_two_pi,
+                'decimal_handling': decimal_handling,
+                'use_symmetry': use_symmetry,
+              }
+
+        return dic
