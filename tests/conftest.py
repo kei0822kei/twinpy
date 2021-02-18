@@ -13,7 +13,7 @@ symbol = 'Ti'
 
 
 @pytest.fixture(autouse=True, scope='session')
-def ti_cell_wyckoff_c():
+def ti_cell_wyckoff_c() -> tuple:
     """
     Ti hexagonal cell.
 
@@ -26,7 +26,7 @@ def ti_cell_wyckoff_c():
 
 
 @pytest.fixture(autouse=True, scope='session')
-def ti_cell_wyckoff_d():
+def ti_cell_wyckoff_d() -> tuple:
     """
     Ti hexagonal cell.
 

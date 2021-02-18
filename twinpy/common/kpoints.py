@@ -67,7 +67,7 @@ class Kpoints():
             make float to int using the rule specified with 'decimal_handling'.
             If the final mesh includes 0, fix 0 to 1.
         """
-        recip_abc = self._reciprocal_abc
+        recip_abc = self._reciprocal_abc.copy()
         if include_two_pi:
             recip_abc *= 2 * np.pi
 
@@ -96,7 +96,7 @@ class Kpoints():
         Returns:
             np.array: Get intervals for each axis.
         """
-        recip_abc = self._reciprocal_abc
+        recip_abc = self._reciprocal_abc.copy()
         if include_two_pi:
             recip_abc *= 2 * np.pi
 
@@ -145,7 +145,8 @@ class Kpoints():
         """
         if self._is_hexagonal:
             offset = [0., 0., 0.5]
-        offset =[0.5, 0.5, 0.5]
+        else:
+            offset = [0.5, 0.5, 0.5]
 
         return offset
 
@@ -184,7 +185,8 @@ class Kpoints():
                     interval=interval,
                     decimal_handling=decimal_handling,
                     include_two_pi=include_two_pi)
-        _mesh = mesh
+        else:
+            _mesh = mesh
         if use_symmetry:
             _mesh = self.fix_mesh_based_on_symmetry(mesh=_mesh)
         offset = self.get_offset()
@@ -225,7 +227,14 @@ class Kpoints():
                 mesh=mesh,
                 include_two_pi=include_two_pi,
                 )
+        recip_lattice = self._reciprocal_lattice.copy()
+        recip_abc = self._reciprocal_abc.copy()
+        if include_two_pi:
+            recip_lattice *= 2 * np.pi
+            recip_abc *= 2 * np.pi
         dic = {
+                'reciprocal_lattice': recip_lattice,
+                'reciprocal_abc': recip_abc,
                 'mesh': mesh,
                 'offset': offset,
                 'input_interval': interval,
