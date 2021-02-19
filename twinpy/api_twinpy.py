@@ -6,7 +6,6 @@ This module provides API for twinpy.
 """
 
 from pprint import pprint
-import warnings
 import numpy as np
 from twinpy.properties.hexagonal import check_cell_is_hcp
 from twinpy.structure.shear import get_shear
@@ -17,6 +16,7 @@ from twinpy.interfaces.aiida.shear import AiidaShearWorkChain
 from twinpy.interfaces.aiida.twinboundary \
         import AiidaTwinBoudnaryRelaxWorkChain
 from twinpy.interfaces.aiida.base import load_aiida_profile
+
 
 class Twinpy():
     """

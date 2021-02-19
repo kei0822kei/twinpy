@@ -118,6 +118,7 @@ class _BaseTwinStructure():
         self._set_twinmode(twinmode=twinmode)
         self._xshift = None
         self._yshift = None
+        self._expansion_ratios = np.ones(3)
         self._output_structure = \
                 {'lattice': self._hexagonal_lattice,
                  'lattice_points': {
@@ -209,6 +210,28 @@ class _BaseTwinStructure():
         return self._indices
 
     @property
+    def expansion_ratios(self):
+        """
+        Expansion ratios which is applied when you run 'get_cell_for_export'.
+        """
+        return self._expansion_rations
+
+    @property
+    def set_expansion_ratios(self, expansion_ratios:np.array):
+        """
+        Set expansion ratios which is applied
+        when you run 'get_cell_for_export'.
+
+        Args:
+        """
+        if not isinstance(expansion_ratios, np.ndarray):
+            _expansion_ratios = np.array(expansion_ratios)
+        assert _expansion_ratios.shape == (3,), \
+                 "Shape of expansion_ratios is {}, which must be (3,)".format(
+                         np.array(_expansion_ratios).shape)
+        self._expansion_ratios = _expansion_ratios
+
+    @property
     def output_structure(self):
         """
         Built structure.
@@ -228,6 +251,11 @@ class _BaseTwinStructure():
 
         Returns:
             tuple: Output cell.
+
+        Notes:
+            Lattice matrix is expanded using expansion_ratios.
+            You have to run set_expansion_ratios before run this function
+            if you want to expand lattice.
         """
         _dummy = {'white': 'H', 'white_tb': 'Li',
                   'black': 'He', 'black_tb': 'Be'}
@@ -256,6 +284,11 @@ class _BaseTwinStructure():
                 scaled_positions %= 1.
 
             symbols = self._output_structure['symbols']
-        return (self._output_structure['lattice'],
+
+        lattice = np.transpose(
+                      np.transpose(self._output_structure['lattice']) *
+                      self._expansion_ratios)
+
+        return (lattice,
                 scaled_positions,
                 symbols)

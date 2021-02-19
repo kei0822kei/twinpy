@@ -38,6 +38,8 @@ def get_argparse():
                         help="layers for twin boundary structure")
     parser.add_argument('--delta', type=float, default=0.,
                         help="delta")
+    parser.add_argument('--expansion_ratios', type=str, default='1 1 1',
+                        help="expansion_ratios")
     parser.add_argument('-c', '--posfile', default=None,
                         help="POSCAR file")
     parser.add_argument('--get_poscar', action='store_true',
@@ -192,6 +194,7 @@ if __name__ == '__main__':
          dim=dimension,
          layers=args.layers,
          delta=args.delta,
+         expansion_ratios=args.expansion_ratios,
          posfile=args.posfile,
          get_poscar=args.get_poscar,
          get_lattice=args.get_lattice,
