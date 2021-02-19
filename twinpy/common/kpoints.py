@@ -244,12 +244,16 @@ class Kpoints():
                 )
         recip_lattice = self._reciprocal_lattice.copy()
         recip_abc = self._reciprocal_abc.copy()
+        total_mesh =  mesh[0] * mesh[1] * mesh[2]
         if include_two_pi:
             recip_lattice *= 2 * np.pi
             recip_abc *= 2 * np.pi
+            recip_vol *= (2 * np.pi)**3
         dic = {
                 'reciprocal_lattice': recip_lattice,
                 'reciprocal_abc': recip_abc,
+                'reciprocal_volume': recip_vol,
+                'total_mesh': total_mesh,
                 'mesh': mesh,
                 'offset': offset,
                 'input_interval': interval,
