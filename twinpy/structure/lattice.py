@@ -399,22 +399,23 @@ class CrystalLattice():
 
         return midpoint
 
-    def get_superlattice(self, dim:np.array=np.eye(3)) -> np.array:
+    def get_expanded_lattice(self,
+                             expansion_ratios:np.array=np.eye(3)) -> np.array:
         """
         Get super lattice.
 
         Args:
-            dim: Dimension.
+            expansion_ratios: Expansion ratios.
 
         Returns:
-            np.array: Super lattice.
+            np.array: Expanded lattice.
         """
-        _dim = dim
-        if not isinstance(_dim, np.ndarray):
-            _dim = np.array(_dim)
-        assert dim.shape == (3,), \
-                   "Shape of dim is {}, which must be (3,)".format(
-                           np.array(_dim).shape)
-        super_lattice = np.transpose(np.transpose(self._lattice) * _dim)
+        _expansion_ratios = expansion_ratios
+        if not isinstance(_expansion_ratios, np.ndarray):
+            _expansion_ratios = np.array(_expansion_ratios)
+        assert expansion_ratios.shape == (3,), \
+                   "Shape of expansion_ratios is {}, which must be (3,)".format(
+                           np.array(_expansion_ratios).shape)
+        expanded_lattice = np.transpose(np.transpose(self._lattice) * _expansion_ratios)
 
-        return super_lattice
+        return expanded_lattice

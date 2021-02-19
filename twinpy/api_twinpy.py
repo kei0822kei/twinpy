@@ -184,6 +184,7 @@ class Twinpy():
                   yshift:float=0.,
                   dim:np.array=np.ones(3, dtype='intc'),
                   shear_strain_ratio:float=0.,
+                  expansion_ratios:np.array=np.ones(3),
                   is_primitive:bool=False,
                   ):
         """
@@ -194,6 +195,7 @@ class Twinpy():
             yshift: y shift.
             dim: Dimension.
             shear_strain_ratio: Shear strain ratio.
+            expansion_ratios: Expansion ratios.
             is_primitive: If True, output shear structure is primitive.
         """
         self._shear = get_shear(
@@ -205,6 +207,7 @@ class Twinpy():
                 yshift=yshift,
                 dim=dim,
                 shear_strain_ratio=shear_strain_ratio,
+                expansion_ratios=expansion_ratios,
                 is_primitive=is_primitive)
         self._shear_is_primitive = is_primitive
 
@@ -222,6 +225,7 @@ class Twinpy():
                          xshift:float=0.,
                          yshift:float=0.,
                          shear_strain_ratio:float=0.,
+                         expansion_ratios:np.array=np.ones(3),
                          ):
         """
         Set twinboundary structure object.
@@ -233,6 +237,7 @@ class Twinpy():
             xshift: x shift.
             yshift: y shift.
             shear_strain_ratio: Shear twinboundary ratio.
+            expansion_ratios: Expansion ratios.
         """
         self._twinboundary = get_twinboundary(
                 lattice=self._hexagonal_lattice,
@@ -243,6 +248,7 @@ class Twinpy():
                 xshift=xshift,
                 yshift=yshift,
                 shear_strain_ratio=shear_strain_ratio,
+                expansion_ratios=expansion_ratios,
                 layers=layers,
                 delta=delta)
 
@@ -364,7 +370,8 @@ class Twinpy():
             shear['yshift'] = self._shear.yshift
             shear['dim'] = self._shear.dim
             shear['shear_strain_ratio'] = self._shear.shear_strain_ratio
-            shear['is_primitive'] = self._shear._shear_is_primitive
+            shear['is_primitive'] = self._shear_is_primitive
+            shear['expansion_ratios'] = self._shear.expansion_ratios
 
         if self._twinboundary is None:
             tb = None
@@ -377,6 +384,7 @@ class Twinpy():
             tb['shear_strain_ratio'] = self._twinboundary.shear_strain_ratio
             tb['layers'] = self._twinboundary.layers
             tb['delta'] = self._twinboundary.delta
+            tb['expansion_ratios'] = self._twinboundary.expansion_ratios
 
         dic = {}
         dic['hexagonal_lattice'] = self._hexagonal_lattice

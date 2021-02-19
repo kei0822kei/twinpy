@@ -79,9 +79,9 @@ def test_lattice(ti_cell_wyckoff_c):
         np.testing.assert_allclose(_a_norm_from_frac, _a_norm_expected)
         np.testing.assert_allclose(_a_norm_from_cart, _a_norm_expected)
 
-    def _test_superlattice(crylat):
+    def _test_expanded_lattice(crylat):
         _dim = np.array([2,3,4])
-        _sup_lat = crylat.get_superlattice(dim=_dim)
+        _sup_lat = crylat.get_expanded_lattice(expansion_ratios=_dim)
         _sup_lat_expected = crylat.lattice.copy()
         for i in range(3):
             _sup_lat_expected[i] *= _dim[i]
@@ -94,4 +94,4 @@ def test_lattice(ti_cell_wyckoff_c):
     _test_abc_angles_cos_angles_dot(crylat=hex_crylat)
     _test_convert_coordinate(crylat=hex_crylat)
     _test_get_norm(crylat=hex_crylat)
-    _test_superlattice(crylat=hex_crylat)
+    _test_expanded_lattice(crylat=hex_crylat)
