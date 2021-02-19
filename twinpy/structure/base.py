@@ -253,7 +253,7 @@ class _BaseTwinStructure():
             scaled_positions = np.round(np.array(scaled_positions), decimals=8)
 
             if move_atoms_into_unitcell:
-                scaled_positions = scaled_positions % 1.
+                scaled_positions %= 1.
 
             symbols = self._output_structure['symbols']
         return (self._output_structure['lattice'],

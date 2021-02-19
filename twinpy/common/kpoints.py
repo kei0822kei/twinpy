@@ -5,6 +5,7 @@
 Deals with kpoints.
 """
 
+from typing import Union
 import numpy as np
 from twinpy.properties.hexagonal import check_hexagonal_lattice
 from twinpy.structure.lattice import CrystalLattice
@@ -18,7 +19,7 @@ class Kpoints():
     def __init__(
            self,
            lattice:np.array,
-       ):
+           ):
         """
         Args:
             lattice: Lattice matrix.
@@ -46,7 +47,7 @@ class Kpoints():
             pass
 
     def get_mesh_from_interval(self,
-                               interval:float,
+                               interval:Union[float,np.array],
                                decimal_handling:str=None,
                                include_two_pi:bool=True) -> list:
         """
@@ -67,6 +68,11 @@ class Kpoints():
             make float to int using the rule specified with 'decimal_handling'.
             If the final mesh includes 0, fix 0 to 1.
         """
+        if isinstance(interval, np.ndarray):
+            assert interval.shape == (3,), \
+                       "Shape of interval is {}, which must be (3,)".format(
+                               interval.shape)
+
         recip_abc = self._reciprocal_abc.copy()
         if include_two_pi:
             recip_abc *= 2 * np.pi
@@ -122,7 +128,7 @@ class Kpoints():
             But '1' is kept fixed during this operation.
         """
         if self._is_hexagonal:
-            condition = lambda x: int(x%2==0)  # If True, get 1, if False get 0.
+            condition = lambda x: int(x%2==0)  # If True, get 1, else get 0.
             arr = [ condition(m) for m in mesh[:2] ]
             if (mesh[2]!=1 and mesh[2]%2==1):
                 arr.append(1)
@@ -136,9 +142,13 @@ class Kpoints():
 
         return fixed_mesh.tolist()
 
-    def get_offset(self) -> list:
+    def get_offset(self, mesh:list=None) -> list:
         """
         Get offset.
+
+        Args:
+            mesh: Optional. If mesh is parsed,
+                            set offset element 0 where mesh is 1.
 
         Returns:
             list: Offset from origin centered mesh grids.
@@ -148,10 +158,15 @@ class Kpoints():
         else:
             offset = [0.5, 0.5, 0.5]
 
+        if mesh is not None:
+            offset = np.array(offset)
+            offset[np.where(np.array(mesh)==1)] = 0
+            offset = offset.tolist()
+
         return offset
 
     def get_mesh_offset_auto(self,
-                             interval:float=None,
+                             interval:Union[float,np.array]=None,
                              mesh:list=None,
                              include_two_pi:bool=True,
                              decimal_handling:str='round',
@@ -189,11 +204,11 @@ class Kpoints():
             _mesh = mesh
         if use_symmetry:
             _mesh = self.fix_mesh_based_on_symmetry(mesh=_mesh)
-        offset = self.get_offset()
+        offset = self.get_offset(mesh=_mesh)
         return (_mesh, offset)
 
     def get_dict(self,
-                 interval:float=None,
+                 interval:Union[float,np.array]=None,
                  mesh:list=None,
                  include_two_pi:bool=True,
                  decimal_handling:str='round',
@@ -229,12 +244,16 @@ class Kpoints():
                 )
         recip_lattice = self._reciprocal_lattice.copy()
         recip_abc = self._reciprocal_abc.copy()
+        total_mesh =  mesh[0] * mesh[1] * mesh[2]
         if include_two_pi:
             recip_lattice *= 2 * np.pi
             recip_abc *= 2 * np.pi
+            recip_vol *= (2 * np.pi)**3
         dic = {
                 'reciprocal_lattice': recip_lattice,
                 'reciprocal_abc': recip_abc,
+                'reciprocal_volume': recip_vol,
+                'total_mesh': total_mesh,
                 'mesh': mesh,
                 'offset': offset,
                 'input_interval': interval,

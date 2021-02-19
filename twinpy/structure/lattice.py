@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 This module deals with crystal lattice.
@@ -399,3 +398,23 @@ class CrystalLattice():
             midpoint = (_second_frac - _first_frac) / 2
 
         return midpoint
+
+    def get_superlattice(self, dim:np.array=np.eye(3)) -> np.array:
+        """
+        Get super lattice.
+
+        Args:
+            dim: Dimension.
+
+        Returns:
+            np.array: Super lattice.
+        """
+        _dim = dim
+        if not isinstance(_dim, np.ndarray):
+            _dim = np.array(_dim)
+        assert dim.shape == (3,), \
+                   "Shape of dim is {}, which must be (3,)".format(
+                           np.array(_dim).shape)
+        super_lattice = np.transpose(np.transpose(self._lattice) * _dim)
+
+        return super_lattice

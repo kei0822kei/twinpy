@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Interface for Aiida-Vasp.
@@ -14,7 +13,7 @@ from aiida.orm import (load_node,
                        WorkChainNode,
                        QueryBuilder)
 from aiida.common.exceptions import NotExistentAttributeError
-from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
+from twinpy.common.kpoints import Kpoints
 from twinpy.common.utils import print_header
 from twinpy.structure.lattice import CrystalLattice
 from twinpy.interfaces.aiida.base import (check_process_class,
@@ -129,27 +128,19 @@ class _AiidaVaspWorkChain(_WorkChain):
         """
         mesh, offset = self._node.inputs.kpoints.get_kpoints_mesh()
         total_mesh = mesh[0] * mesh[1] * mesh[2]
-        twinpy_kpoints = get_mesh_offset_from_direct_lattice(
-                lattice=self._initial_cell[0],
-                mesh=mesh,
-                include_two_pi=include_two_pi)
-        kpts = {
-                'mesh': mesh,
-                'total_mesh': twinpy_kpoints['total_mesh'],
-                'offset': offset,
-                'reciprocal_lattice': twinpy_kpoints['reciprocal_lattice'],
-                'reciprocal_volume': twinpy_kpoints['reciprocal_volume'],
-                'reciprocal_abc': twinpy_kpoints['abc'],
-                'intervals': twinpy_kpoints['intervals'],
-                'include_two_pi': twinpy_kpoints['include_two_pi'],
-                }
+        kpt = Kpoints(lattice=self._initial_cell[0])
+        dic = kpt.get_dict(mesh=mesh, include_two_pi=include_two_pi)
+        dic['offset'] = offset
+        del dic['input_interval']
+        del dic['decimal_handling']
+        del dic['use_symmetry']
         if self._exit_status is not None:
             sampling_kpoints = self._node.outputs.kpoints.get_array('kpoints')
             weights = self._node.outputs.kpoints.get_array('weights')
             weights_num = (weights * total_mesh).astype(int)
-            kpts['sampling_kpoints'] = sampling_kpoints
-            kpts['weights'] = weights_num
-        return kpts
+            dic['sampling_kpoints'] = sampling_kpoints
+            dic['weights'] = weights_num
+        return dic
 
     def get_vasp_settings(self) -> dict:
         """

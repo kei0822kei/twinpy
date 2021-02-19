@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 This is pytest for twinpy.structure.lattice.
@@ -80,6 +79,14 @@ def test_lattice(ti_cell_wyckoff_c):
         np.testing.assert_allclose(_a_norm_from_frac, _a_norm_expected)
         np.testing.assert_allclose(_a_norm_from_cart, _a_norm_expected)
 
+    def _test_superlattice(crylat):
+        _dim = np.array([2,3,4])
+        _sup_lat = crylat.get_superlattice(dim=_dim)
+        _sup_lat_expected = crylat.lattice.copy()
+        for i in range(3):
+            _sup_lat_expected[i] *= _dim[i]
+        np.testing.assert_allclose(_sup_lat, _sup_lat_expected)
+
     hex_lattice = ti_cell_wyckoff_c[0]
     hex_crylat = CrystalLattice(lattice=hex_lattice)
 
@@ -87,3 +94,4 @@ def test_lattice(ti_cell_wyckoff_c):
     _test_abc_angles_cos_angles_dot(crylat=hex_crylat)
     _test_convert_coordinate(crylat=hex_crylat)
     _test_get_norm(crylat=hex_crylat)
+    _test_superlattice(crylat=hex_crylat)
