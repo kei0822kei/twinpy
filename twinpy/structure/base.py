@@ -214,9 +214,8 @@ class _BaseTwinStructure():
         """
         Expansion ratios which is applied when you run 'get_cell_for_export'.
         """
-        return self._expansion_rations
+        return self._expansion_ratios
 
-    @property
     def set_expansion_ratios(self, expansion_ratios:np.array):
         """
         Set expansion ratios which is applied
@@ -224,8 +223,9 @@ class _BaseTwinStructure():
 
         Args:
         """
+        _expansion_ratios = expansion_ratios.copy()
         if not isinstance(expansion_ratios, np.ndarray):
-            _expansion_ratios = np.array(expansion_ratios)
+            _expansion_ratios = np.array(_expansion_ratios)
         assert _expansion_ratios.shape == (3,), \
                  "Shape of expansion_ratios is {}, which must be (3,)".format(
                          np.array(_expansion_ratios).shape)
@@ -286,8 +286,8 @@ class _BaseTwinStructure():
             symbols = self._output_structure['symbols']
 
         lattice = np.transpose(
-                      np.transpose(self._output_structure['lattice']) *
-                      self._expansion_ratios)
+                      np.transpose(self._output_structure['lattice'])
+                      * self._expansion_ratios)
 
         return (lattice,
                 scaled_positions,

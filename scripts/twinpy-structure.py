@@ -87,6 +87,7 @@ def main(structure,
          dim,
          layers,
          delta,
+         expansion_ratios,
          posfile,
          get_poscar,
          get_lattice,
@@ -136,6 +137,7 @@ def main(structure,
                          yshift=yshift,
                          dim=dim,
                          shear_strain_ratio=shear_strain_ratio,
+                         expansion_ratios=expansion_ratios,
                          is_primitive=is_primitive)
         std = twinpy.get_shear_standardize(
                 get_lattice=get_lattice,
@@ -148,7 +150,8 @@ def main(structure,
                                 yshift=yshift,
                                 layers=layers,
                                 delta=delta,
-                                shear_strain_ratio=shear_strain_ratio)
+                                shear_strain_ratio=shear_strain_ratio,
+                                expansion_ratios=expansion_ratios)
         std = twinpy.get_twinboundary_standardize(
                 get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
