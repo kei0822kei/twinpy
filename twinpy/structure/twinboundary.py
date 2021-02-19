@@ -327,6 +327,7 @@ def get_twinboundary(lattice:np.array,
                      xshift:float=0.,
                      yshift:float=0.,
                      shear_strain_ratio:float=0.,
+                     expansion_ratios:np.array=np.ones(3),
                      ) -> TwinBoundaryStructure:
     """
     Get twinboudnary structure object.
@@ -342,12 +343,14 @@ def get_twinboundary(lattice:np.array,
         xshift: x shift.
         yshift: y shift.
         shear_strain_ratio (float): Shear twinboundary ratio.
+        expansion_ratios: Expansion ratios.
     """
     tb = TwinBoundaryStructure(lattice=lattice,
                                symbol=symbol,
                                twinmode=twinmode,
                                twintype=twintype,
                                wyckoff=wyckoff)
+    tb.set_expansion_ratios(expansion_ratios)
     tb.run(layers=layers,
            delta=delta,
            xshift=xshift,

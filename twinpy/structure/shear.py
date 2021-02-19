@@ -249,6 +249,7 @@ def get_shear(lattice:np.array,
               yshift:float=0.,
               dim:np.array=np.ones(3, dtype='intc'),
               shear_strain_ratio:float=0.,
+              expansion_ratios:np.array=np.ones(3),
               is_primitive:bool=False,
               ) -> ShearStructure:
     """
@@ -263,6 +264,7 @@ def get_shear(lattice:np.array,
         yshift: Structure y shift.
         dim: Supercell dimension.
         shear_strain_ratio: Shear strain ratio.
+        expansion_ratios: Expansion ratios.
         is_primitive: If primitive, by multiplying M^(-1)
                       toward conventional structure.
     """
@@ -271,6 +273,7 @@ def get_shear(lattice:np.array,
                            twinmode=twinmode,
                            shear_strain_ratio=shear_strain_ratio,
                            wyckoff=wyckoff)
+    shear.set_expansion_ratios(expansion_ratios)
     shear.run(dim=dim,
               xshift=xshift,
               yshift=yshift,
