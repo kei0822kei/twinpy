@@ -244,7 +244,8 @@ class Kpoints():
                 )
         recip_lattice = self._reciprocal_lattice.copy()
         recip_abc = self._reciprocal_abc.copy()
-        total_mesh =  mesh[0] * mesh[1] * mesh[2]
+        recip_vol = self._reciprocal_volume
+        total_mesh = mesh[0] * mesh[1] * mesh[2]
         if include_two_pi:
             recip_lattice *= 2 * np.pi
             recip_abc *= 2 * np.pi
