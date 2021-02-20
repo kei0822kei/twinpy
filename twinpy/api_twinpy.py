@@ -7,7 +7,7 @@ This module provides API for twinpy.
 
 from pprint import pprint
 import numpy as np
-from twinpy.properties.hexagonal import check_cell_is_hcp
+from twinpy.properties.hexagonal import get_wyckoff_from_hcp
 from twinpy.structure.shear import get_shear
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
@@ -603,11 +603,8 @@ def get_twinpy_from_cell(cell:tuple,
     Note:
         Return Twinpy class object.
     """
-    lattice, scaled_positions, symbols = cell
-    wyckoff = check_cell_is_hcp(lattice=lattice,
-                                scaled_positions=scaled_positions,
-                                symbols=symbols,
-                                get_wyckoff=True)
+    wyckoff = get_wyckoff_from_hcp(cell)
+    lattice, _, symbols = cell
     twinpy = Twinpy(lattice=lattice,
                     twinmode=twinmode,
                     symbol=symbols[0],

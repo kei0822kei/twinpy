@@ -11,7 +11,7 @@ from phonopy.phonon.band_structure import (
         get_band_qpoints_and_path_connections,
         BandStructure)
 from twinpy.interfaces.phonopy import get_cell_from_phonopy_structure
-from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
+# from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
 from twinpy.common.band_path import get_seekpath
 from twinpy.structure.base import check_same_cells
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
@@ -290,55 +290,55 @@ class PhononAnalyzer():
 
         return band_structure
 
-    def run_mesh(self,
-                 interval:float=0.1,
-                 is_store:bool=True,
-                 get_phonon:bool=False,
-                 dry_run:bool=False,
-                 is_eigenvectors:bool=False,
-                 is_gamma_center:bool=True,
-                 verbose:bool=True):
-        """
-        Run mesh for both hexagonal and twinboundary phonon.
+    # def run_mesh(self,
+    #              interval:float=0.1,
+    #              is_store:bool=True,
+    #              get_phonon:bool=False,
+    #              dry_run:bool=False,
+    #              is_eigenvectors:bool=False,
+    #              is_gamma_center:bool=True,
+    #              verbose:bool=True):
+    #     """
+    #     Run mesh for both hexagonal and twinboundary phonon.
 
-        Args:
-            interval (float): mesh interval
-            is_store (bool): If True, result is stored in self._phonon.
-            get_phonon (bool): If True, return Phonopy class obejct,
-                               which is independent from self._phonon.
-            dry_run (bool): If True, show sampling mesh information
-                            and not run.
+    #     Args:
+    #         interval (float): mesh interval
+    #         is_store (bool): If True, result is stored in self._phonon.
+    #         get_phonon (bool): If True, return Phonopy class obejct,
+    #                            which is independent from self._phonon.
+    #         dry_run (bool): If True, show sampling mesh information
+    #                         and not run.
 
-        Todo:
-            Fix get_phonon because currenly cannot get thermal_displacement_matrices for gottern phonon object.
-        """
-        kpt = get_mesh_offset_from_direct_lattice(
-                lattice=self._primitive_cell[0],
-                interval=interval,
-                )
-        if dry_run:
-            print("# interval: {}".format(interval))
-            print("# sampling mesh: {}".format(kpt['mesh']))
-            print("# dry_run is evoked.")
+    #     Todo:
+    #         Fix get_phonon because currenly cannot get thermal_displacement_matrices for gottern phonon object.
+    #     """
+    #     kpt = get_mesh_offset_from_direct_lattice(
+    #             lattice=self._primitive_cell[0],
+    #             interval=interval,
+    #             )
+    #     if dry_run:
+    #         print("# interval: {}".format(interval))
+    #         print("# sampling mesh: {}".format(kpt['mesh']))
+    #         print("# dry_run is evoked.")
 
-        else:
-            if verbose:
-                print("run mesh with {}".format(kpt['mesh']))
-            if is_store:
-                _phonon = self._phonon
-            else:
-                _phonon = deepcopy(self._phonon)
-            _phonon.set_mesh(
-                    mesh=kpt['mesh'],
-                    shift=None,
-                    is_time_reversal=True,
-                    is_mesh_symmetry=False,  # necessary for calc ellipsoid
-                    is_eigenvectors=is_eigenvectors,
-                    is_gamma_center=is_gamma_center,
-                    run_immediately=True)
+    #     else:
+    #         if verbose:
+    #             print("run mesh with {}".format(kpt['mesh']))
+    #         if is_store:
+    #             _phonon = self._phonon
+    #         else:
+    #             _phonon = deepcopy(self._phonon)
+    #         _phonon.set_mesh(
+    #                 mesh=kpt['mesh'],
+    #                 shift=None,
+    #                 is_time_reversal=True,
+    #                 is_mesh_symmetry=False,  # necessary for calc ellipsoid
+    #                 is_eigenvectors=is_eigenvectors,
+    #                 is_gamma_center=is_gamma_center,
+    #                 run_immediately=True)
 
-        if get_phonon:
-            return _phonon
+    #     if get_phonon:
+    #         return _phonon
 
     def get_total_dos(self,
                       is_store:bool=True,
