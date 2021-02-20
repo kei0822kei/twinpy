@@ -79,7 +79,7 @@ def read_yaml(filename:str) -> dict:
     Returns:
         dict: Dictionary object.
     """
-    with open(filename, 'w') as f:
+    with open(filename, 'r') as f:
         dic = yaml.load(f, Loader=Loader)
     return dic
 
