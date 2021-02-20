@@ -413,7 +413,7 @@ class CrystalLattice():
         _expansion_ratios = expansion_ratios
         if not isinstance(_expansion_ratios, np.ndarray):
             _expansion_ratios = np.array(_expansion_ratios)
-        assert expansion_ratios.shape == (3,), \
+        assert _expansion_ratios.shape == (3,), \
                    "Shape of expansion_ratios is {}, which must be (3,)".format(
                            np.array(_expansion_ratios).shape)
         expanded_lattice = np.transpose(np.transpose(self._lattice) * _expansion_ratios)
