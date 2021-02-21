@@ -20,6 +20,7 @@ from twinpy.interfaces.aiida.base import (check_process_class,
                                           get_cell_from_aiida,
                                           _WorkChain)
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
+from twinpy.plot.base import line_chart
 from twinpy.plot.relax import RelaxPlot
 
 
@@ -68,7 +69,7 @@ class _AiidaVaspWorkChain(_WorkChain):
         misc = self._node.outputs.misc.get_dict()
         self._forces = self._node.outputs.forces.get_array('final')
         self._stress = self._node.outputs.stress.get_array('final')
-        self._energy = misc['total_energies']['energy_no_entropy']
+        self._energy = misc['total_energies']['energy_extrapolated']
 
     @property
     def forces(self):
@@ -162,15 +163,15 @@ class _AiidaVaspWorkChain(_WorkChain):
 
         print_header('VASP settings')
         pprint(self.get_vasp_settings())
-        print("\n\n")
+        print("\n")
         print_header("kpoints information")
         pprint(kpoints_info_for_print)
         if self._process_state == 'finished':
-            print("\n\n")
+            print("\n")
             print_header('VASP outputs')
             print("# stress")
             pprint(self._stress)
-            print("\n")
+            print("")
             print("# max force acting on atoms")
             print(str(self.get_max_force())+"\n")
 
@@ -270,6 +271,20 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
                                  energy=self._energy)
         return analyzer
 
+    def plot_energy_convergence(self, ax):
+        """
+        Plot energy convergence.
+        """
+        energies = self._step_energies['energy_extrapolated']
+        steps = [ i+1 for i in range(len(energies)) ]
+        line_chart(ax,
+                   xdata=steps,
+                   ydata=energies,
+                   xlabel='Relax steps',
+                   ylabel='Energy [eV]',
+                   )
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+
     def get_description(self):
         """
         Get description.
@@ -277,7 +292,7 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
         self._print_common_information()
         print_header('PKs')
         pprint(self.get_pks())
-        print("\n\n")
+        print("\n")
         self._print_vasp_results()
 
 
