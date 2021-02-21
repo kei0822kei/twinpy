@@ -43,7 +43,6 @@ class _AiidaVaspWorkChain(_WorkChain):
         self._stress = None
         self._forces = None
         self._energy = None
-        self._step_energies = None
         if self._process_state == 'finished':
             self._set_properties()
 
@@ -66,23 +65,10 @@ class _AiidaVaspWorkChain(_WorkChain):
         """
         Set properties.
         """
+        misc = self._node.outputs.misc.get_dict()
         self._forces = self._node.outputs.forces.get_array('final')
         self._stress = self._node.outputs.stress.get_array('final')
-
-        eg = self._node.outputs.energies
-        try:
-            self._step_energies = {
-                'energy_extrapolated': eg.get_array('energy_extrapolated'),
-                'energy_extrapolated_final':
-                    eg.get_array('energy_extrapolated_final'),
-                    }
-            self._energy = self._step_energies['energy_extrapolated'][-1]
-        except NotExistentAttributeError:
-            warnings.warn("Could not find 'energy_extrapolated' in ",
-                          "outputs.energies.")
-
-            _misc = self._node.outputs.misc.get_dict()
-            self._energy = _misc['total_energies']['energy_no_entropy']
+        self._energy = misc['total_energies']['energy_no_entropy']
 
     @property
     def forces(self):
@@ -104,13 +90,6 @@ class _AiidaVaspWorkChain(_WorkChain):
         Total energy.
         """
         return self._energy
-
-    @property
-    def step_energies(self):
-        """
-        Energy for each steps.
-        """
-        return self._step_energies
 
     def get_max_force(self) -> float:
         """
@@ -217,6 +196,19 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
         self._final_structure_pk = None
         self._final_cell = None
         self._set_final_structure(ignore_warning=ignore_warning)
+        self._step_energies = None
+        self._set_step_energies()
+
+    def _set_step_energies(self):
+        """
+        Set step energies.
+        """
+        eg = self._node.outputs.energies
+        self._step_energies = {
+            'energy_extrapolated': eg.get_array('energy_extrapolated'),
+            'energy_extrapolated_final':
+                eg.get_array('energy_extrapolated_final'),
+                }
 
     def _set_final_structure(self, ignore_warning):
         """
@@ -238,6 +230,13 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
         Final cell.
         """
         return self._final_cell
+
+    @property
+    def step_energies(self):
+        """
+        Energy for each steps.
+        """
+        return self._step_energies
 
     def get_pks(self) -> dict:
         """
