@@ -119,9 +119,12 @@ class _AiidaVaspWorkChain(_WorkChain):
         max_force = float(np.linalg.norm(self._forces, axis=1).max())
         return max_force
 
-    def get_kpoints_info(self, include_two_pi=True) -> dict:
+    def get_kpoints_info(self, include_two_pi:bool=True) -> dict:
         """
         Get sampling kpoints information.
+
+        Args:
+            include_two_pi: If True, 2*pi is included for reciprocal lattice.
 
         Returns:
             dict: Contains kpoints information.
@@ -140,6 +143,7 @@ class _AiidaVaspWorkChain(_WorkChain):
             weights_num = (weights * total_mesh).astype(int)
             dic['sampling_kpoints'] = sampling_kpoints
             dic['weights'] = weights_num
+            dic['total_irreducible_kpoints'] =len(weights_num)
         return dic
 
     def get_vasp_settings(self) -> dict:
@@ -173,11 +177,15 @@ class _AiidaVaspWorkChain(_WorkChain):
         """
         Print VASP run results.
         """
+        kpoints_info_for_print = self.get_kpoints_info()
+        del kpoints_info_for_print['sampling_kpoints']
+        del kpoints_info_for_print['weights']
+
         print_header('VASP settings')
         pprint(self.get_vasp_settings())
         print("\n\n")
         print_header("kpoints information")
-        pprint(self.get_kpoints_info())
+        pprint(kpoints_info_for_print)
         if self._process_state == 'finished':
             print("\n\n")
             print_header('VASP outputs')
