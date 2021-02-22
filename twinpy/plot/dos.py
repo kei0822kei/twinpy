@@ -22,9 +22,9 @@ class _DosPlot():
                  flip_xy:bool=False,
                  ):
         """
-        args:
-            flip_xy (bool): whether to flip x and y.
-                            this cannot change later.
+        Args:
+            flip_xy (bool): Whether to flip x and y.
+                            This cannot change later.
         """
         self._min_frequency = min_freq
         self._max_frequency = max_freq
@@ -34,25 +34,25 @@ class _DosPlot():
     @property
     def min_frequency(self):
         """
-        min frequency.
+        Min frequency.
         """
         return self._min_frequency
 
     @property
     def max_frequency(self):
         """
-        max frequency.
+        Max frequency.
         """
         return self._max_frequency
 
     def set_xlim(self, ax, xmin:float=None, xmax:float=None):
         """
-        set xlim.
+        Set xlim.
 
-        args:
-            xmin (float): if None, min(frequences) -
+        Args:
+            xmin (float): If None, min(frequences) -
                           (max(frequences) - min(frequences)) * 1.05 is set.
-            xmax (float): if None, max(frequences) +
+            xmax (float): If None, max(frequences) +
                           (max(frequences) - min(frequences)) * 1.05 is set.
         """
         freq_min = self._min_frequency
@@ -70,10 +70,10 @@ class _DosPlot():
 
     def set_ylim(self, ax, ymin:float=0.01, ymax:float=None):
         """
-        set ylim.
+        Set ylim.
 
-        args:
-            ymax (float): if None, max(dos) * 1.05 is set.
+        Args:
+            ymax (float): If None, max(dos) * 1.05 is set.
         """
         dos_max = self._max_dos
         if ymax is None:
@@ -84,9 +84,9 @@ class _DosPlot():
 
     def plot_xlabel(self, ax):
         """
-        show x label.
+        Show x label.
         """
-        label = "frequency [thz]"
+        label = "Frequency [THz]"
         if self._flip_xy:
             ax.set_ylabel(label,
                           fontsize=20)

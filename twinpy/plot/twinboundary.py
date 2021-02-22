@@ -71,8 +71,7 @@ def plot_angle(ax,
                angles:list,
                z_coords:list,
                label:str=None,
-               decorate:bool=True,
-               **kwargs):
+               decorate:bool=True):
     """
     Plot angle.
 
@@ -99,8 +98,7 @@ def plot_angle(ax,
                xlabel=xlabel,
                ylabel=ylabel,
                label=label,
-               sort_by='y',
-               **kwargs)
+               sort_by='y')
 
     if decorate:
         num = len(_z_coords)
