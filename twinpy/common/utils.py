@@ -2,69 +2,74 @@
 # -*- coding: utf-8 -*-
 
 """
-This file provides various convenient tools used by other scripts in twinpy.
+This module deals wtih various convenient tools
+used by other scripts in twinpy.
 """
 
-import numpy as np
 import math
 from decimal import Decimal, ROUND_HALF_UP
+import numpy as np
 
 
-def print_header(string):
+def print_header(string:str):
     """
     Print heading with specified string.
+
+    Args:
+        string: Head string.
 
     Raises:
         TypeError: input is not str object
     """
-    if type(string) is not str:
-        raise TypeError("input must be str object not %s" % type(string))
+    if not isinstance(string, str):
+        raise TypeError("Input must be str object not %s." % type(string))
     print("# " + '-' * len(string))
     print("# %s" % string)
     print("# " + '-' * len(string))
 
 
-def float2frac(var, accuracy=3, denominator=10) -> str:
+def float2frac(var:float, denominator:int=10, atol=1.e-3, rtol=0.) -> str:
     """
     Transform float to fractional (str object).
 
     Args:
-        var (float): input value
-        accuracy (int): threshold of whether two values are the same of not, \
-                        In the case of 'accuracy=3', \
-                        check the third decimal place.
-        denominator (int): if 'denominator=10', \
-                           check from 1/2 to 12/13
+        var: Input value.
+        denominator: If 'denominator=10', check from 1/2 to 12/13.
+        atol: Used when checking two values are the same or not.
+              See documentation for np.allclose.
+        rtol: Used when checking two values are the same or not.
+              See documentation for np.allclose.
 
     Returns:
-        str: fractional value
+        str: Fractional value.
 
     Raises:
-        RuntimeError: could not find fractional representation of input 'var'
+        RuntimeError: Could not find fractional representation of input 'var'.
 
     Examples:
         >>> float2frac(-1.333333, 3)
           '-4/3'
     """
-    def _decimal_part2frac(deci_part, accuracy, denominator):
+    def _decimal_part2frac(deci_part, denominator, atol, rtol):
         flag = 1
         for i in range(2, denominator+1):
-            for j in (range(1, i)):
-                if np.allclose(deci_part, j/i):
+
+            for j in range(1, i):
+                if np.allclose(deci_part, j/i, rtol=rtol, atol=atol):
                     flag = 0
                     pair = (j, i)
                     break
-                else:
-                    continue
+                continue
+
             if flag == 0:
                 break
-            else:
-                continue
+            continue
+
         if flag == 1:
-            raise RuntimeError("could not find fractional representation of %s"
-                               % deci_part)
-        else:
-            return pair
+            raise RuntimeError(
+                    "Could not find fractional representation of %s."
+                    % deci_part)
+        return pair
 
     if var < 0:
         sign = '-'
@@ -74,13 +79,14 @@ def float2frac(var, accuracy=3, denominator=10) -> str:
     deci_part = abs(var) - int_part
 
     if np.allclose(deci_part, 0.):
+
         if int_part == 0:
             return str(int_part)
-        else:
-            return sign+str(int_part)
-    else:
-        pair = _decimal_part2frac(deci_part, accuracy, denominator)
-        return sign+str(int_part*pair[1]+pair[0])+'/'+str(pair[1])
+
+        return sign+str(int_part)
+
+    pair = _decimal_part2frac(deci_part, denominator, atol, rtol)
+    return sign+str(int_part*pair[1]+pair[0])+'/'+str(pair[1])
 
 
 def get_ratio(nums:list,
@@ -90,14 +96,16 @@ def get_ratio(nums:list,
     Get ration of input nums.
 
     Args:
-        nums (list): numbers
+        nums: Numbers.
+        threshold: If abs(a - b) < threshold, a and b are considered the same.
+        maxmultiply: Max multiply for looking for ratio.
 
     Returns:
-        list: ratio
+        list: Ratio.
 
     Raises:
-        RuntimeError: could not find multiply number
-                      for making input number integer
+        RuntimeError: Could not find multiply number
+                      for making input number integer.
 
     Examples:
         >>> get_ratio([ 1.33333, 5, 7.5])
@@ -106,7 +114,7 @@ def get_ratio(nums:list,
           [-8, -30, -45]
 
     Note:
-        as you can find in 'Examples', 'get_ratio' keeps sign
+        As you can find in 'Examples', 'get_ratio' keeps sign.
     """
     def _get_multinum_for_int(num, threshold, maxmultiply):
         for i in range(1,maxmultiply+1):
@@ -115,10 +123,10 @@ def get_ratio(nums:list,
             if abs(trial_num - trial_num_round_off) < threshold:
                 multinum = i
                 break
-            else:
-                if i == 100:
-                    raise RuntimeError("could not find multiply number "
-                                       "for make input number integer")
+
+            if i == 100:
+                raise RuntimeError("could not find multiply number "
+                                   "for make input number integer")
         return multinum
 
     inputs = np.array(nums)
@@ -136,13 +144,13 @@ def get_ratio(nums:list,
 
 def round_off(x:float):
     """
-    round off for input value 'x'
+    Round off for input value 'x'.
 
     Args:
-        x (float): some value
+        x: Some value.
 
     Returns:
-        int: rouned off value
+        int: Rouned off value.
 
     Examples:
         >>> round_off(4.5)
@@ -151,3 +159,22 @@ def round_off(x:float):
             -5
     """
     return int(Decimal(str(x)).quantize(Decimal('0'), rounding=ROUND_HALF_UP))
+
+
+def reshape_dimension(dim:np.array) -> np.array:
+    """
+    If dim.shape == (3,), reshape to (3,3) numpy array.
+
+    Raises:
+        ValueError: Input dimension is neither (3,) or (3,3) np.array.
+
+    Returns:
+        np.array: 3x3 dimention matrix.
+    """
+    if np.array(dim).shape == (3,3):
+        dim_matrix = np.array(dim)
+    elif np.array(dim).shape == (3,):
+        dim_matrix = np.diag(dim)
+    else:
+        raise ValueError("Input dimension is neither (3,) or (3,3) np.array.")
+    return dim_matrix

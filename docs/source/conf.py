@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import six
 import twinpy
 import sphinx_rtd_theme
 
@@ -10,14 +11,14 @@ import sphinx_rtd_theme
 # --------
 # packages
 # --------
-needs_sphinx = '2.4.4'
+needs_sphinx = '3.4.3'
 html_theme = 'sphinx_rtd_theme'
 
 extensions = [
     'sphinx.ext.intersphinx',   # link to other projects
     'sphinxcontrib.contentui',  # content html
     'sphinx.ext.autodoc',       # read doc automatically
-    'sphinx.ext.mathjax',       # math support
+    'sphinx.ext.imgmath',       # math support
     'sphinx.ext.viewcode',      # go to class and def to search the docstring
     'sphinx.ext.napoleon',      # to read various kinds of style of docstring
     'sphinx.ext.todo',
@@ -29,7 +30,7 @@ extensions = [
 # -------------------
 project = 'twinpy'
 release = twinpy.__version__
-version = '.'.join(release.split('.')[:2])
+version = '.'.join(release.split('.'))
 
 
 # ---------
@@ -52,64 +53,13 @@ copyright = '{}, {}. All rights reserved'.format(
 # ---------------------
 # ignore error patterns
 # ---------------------
-nitpick_ignore = [
-    ('py:exc', 'ArithmeticError'),
-    ('py:exc', 'AssertionError'),
-    ('py:exc', 'AttributeError'),
-    ('py:exc', 'BaseException'),
-    ('py:exc', 'BufferError'),
-    ('py:exc', 'DeprecationWarning'),
-    ('py:exc', 'EOFError'),
-    ('py:exc', 'EnvironmentError'),
-    ('py:exc', 'Exception'),
-    ('py:exc', 'FloatingPointError'),
-    ('py:exc', 'FutureWarning'),
-    ('py:exc', 'GeneratorExit'),
-    ('py:exc', 'IOError'),
-    ('py:exc', 'ImportError'),
-    ('py:exc', 'ImportWarning'),
-    ('py:exc', 'IndentationError'),
-    ('py:exc', 'IndexError'),
-    ('py:exc', 'KeyError'),
-    ('py:exc', 'KeyboardInterrupt'),
-    ('py:exc', 'LookupError'),
-    ('py:exc', 'MemoryError'),
-    ('py:exc', 'NameError'),
-    ('py:exc', 'NotImplementedError'),
-    ('py:exc', 'OSError'),
-    ('py:exc', 'OverflowError'),
-    ('py:exc', 'PendingDeprecationWarning'),
-    ('py:exc', 'ReferenceError'),
-    ('py:exc', 'RuntimeError'),
-    ('py:exc', 'RuntimeWarning'),
-    ('py:exc', 'StandardError'),
-    ('py:exc', 'StopIteration'),
-    ('py:exc', 'SyntaxError'),
-    ('py:exc', 'SyntaxWarning'),
-    ('py:exc', 'SystemError'),
-    ('py:exc', 'SystemExit'),
-    ('py:exc', 'TabError'),
-    ('py:exc', 'TypeError'),
-    ('py:exc', 'UnboundLocalError'),
-    ('py:exc', 'UnicodeDecodeError'),
-    ('py:exc', 'UnicodeEncodeError'),
-    ('py:exc', 'UnicodeError'),
-    ('py:exc', 'UnicodeTranslateError'),
-    ('py:exc', 'UnicodeWarning'),
-    ('py:exc', 'UserWarning'),
-    ('py:exc', 'VMSError'),
-    ('py:exc', 'ValueError'),
-    ('py:exc', 'Warning'),
-    ('py:exc', 'WindowsError'),
-    ('py:exc', 'ZeroDivisionError'),
-    ('py:obj', 'str'),
-    ('py:obj', 'list'),
-    ('py:obj', 'tuple'),
-    ('py:obj', 'int'),
-    ('py:obj', 'float'),
-    ('py:obj', 'bool'),
-    ('py:obj', 'Mapping'),
-    ('py:class', 'list'),
-    ('py:class', 'np.array'),
-    ('py:class', 'function'),
-]
+# ref. https://www.366service.com/jp/qa/eb1d0865228adc35d6bdcdbf18749793
+nitpicky = True
+nitpick_ignore = []
+
+for line in open('nitpick-exceptions'):
+    if line.strip() == "" or line.startswith("#"):
+        continue
+    dtype, target = line.split(None, 1)
+    target = target.strip()
+    nitpick_ignore.append((dtype, six.u(target)))

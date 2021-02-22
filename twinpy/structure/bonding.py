@@ -3,10 +3,15 @@
 
 """
 Bonding base.
+
+Note:
+    Currently writen by python but it is time consuming to
+    excute the functions in this module. They are written
+    by C++ in the near future.
 """
 import numpy as np
 import itertools
-from twinpy.lattice.lattice import Lattice
+from twinpy.structure.lattice import CrystalLattice
 
 
 def get_neighbors(cell:tuple,
@@ -25,8 +30,8 @@ def get_neighbors(cell:tuple,
     Returns:
         list: List of neighboring atoms. Each data contains
               atom_index in the first element and periorics
-              in the remaining elements.
-        list: Optional. If get_distances=True, return distances
+              in the remaining elements. If get_distances=True,
+              this function also returns distances.
     """
     lattice = Lattice(cell[0])
     periodics = np.floor(distance_cutoff / lattice.abc).astype(int)  # round up

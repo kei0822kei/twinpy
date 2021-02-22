@@ -1,0 +1,33 @@
+# numpy
+py:class np.array
+py:class numpy.array
+
+# matplotlib
+py:class matplotlib.pyplot.figure
+py:class fig
+
+# phonopy
+py:class phonopy.api_phonopy.Phonopy
+py:class phonopy.structure.atoms.PhonopyAtoms
+py:class phonopy.phonon.band_structure.BandStructure
+py:class phonopy.phonon.dos.TotalDos
+py:class phonopy.phonon.dos.PartialDos
+py:class Phonopy
+py:class PhonopyAtoms
+
+# pymatgen
+py:class pymatgen.core.structure.Structure
+py:class Structure
+
+# aiida
+py:class aiida.orm.nodes.node.Node
+py:class aiida.orm.nodes.data.structure.StructureData
+py:class StructureData
+
+# twinpy
+py:class twinpy.structure.lattice.CrystalLattice
+py:class twinpy.plot.dos.PartialDosPlot
+py:class twinpy.plot.dos.TotalDosPlot
+
+# others
+py:class function

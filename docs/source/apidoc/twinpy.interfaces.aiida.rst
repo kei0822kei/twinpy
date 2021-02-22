@@ -11,7 +11,6 @@ twinpy.interfaces.aiida.base module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.interfaces.aiida.phonopy module
 --------------------------------------
@@ -20,7 +19,6 @@ twinpy.interfaces.aiida.phonopy module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.interfaces.aiida.shear module
 ------------------------------------
@@ -29,7 +27,6 @@ twinpy.interfaces.aiida.shear module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.interfaces.aiida.twinboundary module
 -------------------------------------------
@@ -38,7 +35,6 @@ twinpy.interfaces.aiida.twinboundary module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
 
 twinpy.interfaces.aiida.vasp module
 -----------------------------------
@@ -47,8 +43,6 @@ twinpy.interfaces.aiida.vasp module
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:
-
 
 Module contents
 ---------------
@@ -57,4 +51,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :private-members:

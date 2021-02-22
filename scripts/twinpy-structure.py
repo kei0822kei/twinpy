@@ -7,11 +7,12 @@ Get twinpy strucuture
 
 import argparse
 import numpy as np
-from twinpy.lattice.lattice import get_hexagonal_lattice_from_a_c
-from twinpy.interfaces.pymatgen import get_hexagonal_cell_wyckoff_from_pymatgen
+from pymatgen.io.vasp import Poscar
+from twinpy.properties.hexagonal import (get_hexagonal_lattice_from_a_c,
+                                         get_wyckoff_from_hcp)
+from twinpy.interfaces.pymatgen import get_cell_from_pymatgen_structure
 from twinpy.api_twinpy import Twinpy
 from twinpy.file_io import write_poscar
-from pymatgen.io.vasp import Poscar
 
 
 # argparse
@@ -37,6 +38,8 @@ def get_argparse():
                         help="layers for twin boundary structure")
     parser.add_argument('--delta', type=float, default=0.,
                         help="delta")
+    parser.add_argument('--expansion_ratios', type=str, default='1 1 1',
+                        help="expansion_ratios")
     parser.add_argument('-c', '--posfile', default=None,
                         help="POSCAR file")
     parser.add_argument('--get_poscar', action='store_true',
@@ -53,9 +56,9 @@ def get_argparse():
                         help="get conventional standardized")
     parser.add_argument('--dump', action='store_true',
                         help="dump twinpy structure object to yaml")
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    return args
+    return arguments
 
 
 def _get_output_name(structure, get_lattice, shear_strain_ratio, twinmode):
@@ -84,6 +87,7 @@ def main(structure,
          dim,
          layers,
          delta,
+         expansion_ratios,
          posfile,
          get_poscar,
          get_lattice,
@@ -111,8 +115,10 @@ def main(structure,
     else:
         poscar = Poscar.from_file(posfile)
         pmgstructure = poscar.structure
-        lattice, _, symbol, wyckoff = \
-            get_hexagonal_cell_wyckoff_from_pymatgen(pmgstructure)
+        cell = get_cell_from_pymatgen_structure(pmgstructure)
+        lattice = cell[0]
+        symbol = cell[2][0]
+        wyckoff = get_wyckoff_from_hcp(cell)
 
     twinpy = Twinpy(lattice=lattice,
                     twinmode=twinmode,
@@ -131,6 +137,7 @@ def main(structure,
                          yshift=yshift,
                          dim=dim,
                          shear_strain_ratio=shear_strain_ratio,
+                         expansion_ratios=expansion_ratios,
                          is_primitive=is_primitive)
         std = twinpy.get_shear_standardize(
                 get_lattice=get_lattice,
@@ -143,7 +150,8 @@ def main(structure,
                                 yshift=yshift,
                                 layers=layers,
                                 delta=delta,
-                                shear_strain_ratio=shear_strain_ratio)
+                                shear_strain_ratio=shear_strain_ratio,
+                                expansion_ratios=expansion_ratios)
         std = twinpy.get_twinboundary_standardize(
                 get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
@@ -189,6 +197,7 @@ if __name__ == '__main__':
          dim=dimension,
          layers=args.layers,
          delta=args.delta,
+         expansion_ratios=args.expansion_ratios,
          posfile=args.posfile,
          get_poscar=args.get_poscar,
          get_lattice=args.get_lattice,

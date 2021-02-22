@@ -9,8 +9,8 @@ In this page, some formulations are provided used in hexagonal.py file.
    :local:
 
 
-Lattice
-=======
+Lattice Matrix
+==============
 
 Inner Product and Metric Tensor
 -------------------------------
@@ -92,7 +92,7 @@ where
    \end{pmatrix}.
 
 
-indices
+Indices
 -------
 
 Let input direction :math:`\boldsymbol{k}` is :math:`(UVW)`
@@ -135,7 +135,7 @@ and
 Hexagonal Plane
 ===============
 
-indices
+Indices
 -------
 
 Let input plane :math:`\boldsymbol{K}` is :math:`(HKL)`
@@ -234,6 +234,20 @@ so
 
 where :math:`\boldsymbol{H}^*` is reciprocal lattice of hexagonal lattice
 :math:`\boldsymbol{H}`.
+
+Let plane interval vector be :math:`\boldsymbol{d}` and its norm be :math:`d`,
+
+.. math::
+
+   \boldsymbol{d}
+   =
+   \frac{1}{|\bm{k}|} \frac{\bm{k}}{|\bm{k}|}
+
+and
+
+.. math::
+
+   d = \frac{1}{|\bm{k}|}.
 
 
 distance from plane

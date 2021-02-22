@@ -5,14 +5,14 @@
 make structures
 """
 
-import numpy as np
 from copy import deepcopy
 import yaml
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
     from yaml import Loader, Dumper
-from twinpy.lattice.lattice import Lattice
+import numpy as np
+from twinpy.structure.lattice import CrystalLattice
 
 
 def write_poscar(
@@ -24,8 +24,8 @@ def write_poscar(
     even if its lattice basis is left handed.
 
     Args:
-        cell (tuple): (lattice, scaled_positions, symbols).
-        filename (str): Poscar filename.
+        cell: (lattice, scaled_positions, symbols).
+        filename: Poscar filename.
     """
     lattice, scaled_positions, symbols = cell
     symbol_sets = list(set(symbols))
@@ -62,24 +62,24 @@ def write_yaml(dic:dict, filename:str):
     Write yaml file from dic.
 
     Args:
-        dic (dict): dictionary
-        filename (str): output file name
+        dict: Dictionary object.
+        filename: Output file name.
     """
     with open(filename, 'w') as f:
         yaml.dump(dic, f, indent=4, default_flow_style=False, Dumper=Dumper)
 
 
-def read_yaml(filename:str):
+def read_yaml(filename:str) -> dict:
     """
     Return dic from yaml.
 
     Args:
-        filename (str): Output file name.
+        filename: Output file name.
 
     Returns:
         dict: Dictionary object.
     """
-    with open(filename, 'w') as f:
+    with open(filename, 'r') as f:
         dic = yaml.load(f, Loader=Loader)
     return dic
 
@@ -93,16 +93,16 @@ def write_thermal_ellipsoid(cell:tuple,
     Write thermal ellipsoid.
 
     Args:
-        cell (tuple): (lattice, scaled_positions, symbols).
-        matrices (np.array): Thermal ellipsoid.
-        temperatures (list): Temperature list.
-        filetype (str): Currently only 'CrystalMaker' is supported.
-        header (str): Header of filename.
+        cell: (lattice, scaled_positions, symbols).
+        matrices: Thermal ellipsoid.
+        temperatures: Temperature list.
+        filetype: Currently only 'CrystalMaker' is supported.
+        header: Header of filename.
     """
     if filetype != 'CrystalMaker':
         raise ValueError("Only filetype='CrystalMaker' is supported.")
     lines = []
-    lattice = Lattice(cell[0])
+    lattice = CrystalLattice(cell[0])
     abc = lattice.abc
     abc_str = ' '.join(map(str, list(abc)))
     angles = lattice.angles

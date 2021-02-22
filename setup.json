@@ -22,10 +22,10 @@
     "extras_require": {
         "develop": [
             "phonopy",
-            "pymatgen"
+            "pymatgen<=2020.12.3"
         ],
         "docs": [
-            "sphinx",
+            "sphinx>='3.4.3'",
             "sphinxcontrib-contentui",
             "sphinxcontrib-details-directive; python_version>='3.0'",
             "sphinx-rtd-theme"
