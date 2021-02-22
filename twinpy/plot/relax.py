@@ -71,7 +71,6 @@ class RelaxPlot():
             count += len(cols['energy_extrapolated'])
             vasp_final_steps.append(count)
         self._vasp_final_steps = vasp_final_steps
-        print(self._vasp_final_steps)
 
     def plot_max_force(self,
                        ax,
@@ -187,7 +186,6 @@ class RelaxPlot():
         if self._exist_static:
             static_step = steps[-1] + 0.1
             static_stress = self._static_data['stress']
-            print(static_stress)
             for i in range(6):
                 ax.scatter(static_step, static_stress[i],
                            c=DEFAULT_COLORS[i], marker='*', s=150)

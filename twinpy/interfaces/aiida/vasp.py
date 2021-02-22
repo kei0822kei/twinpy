@@ -271,10 +271,12 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
                                  energy=self._energy)
         return analyzer
 
-    def plot_energy_convergence(self, ax):
+    def plot_energy_convergence(self):
         """
         Plot energy convergence.
         """
+        fig = plt.figure()
+        ax =fig.add_subplot(111)
         energies = self._step_energies['energy_extrapolated']
         steps = [ i+1 for i in range(len(energies)) ]
         line_chart(ax,
@@ -518,9 +520,6 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
     def plot_convergence(self):
         """
         Plot convergence.
-
-        Todo:
-            This function must be moved in plot directory.
         """
         plt.rcParams["font.size"] = 14
 
