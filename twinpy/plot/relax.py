@@ -19,18 +19,25 @@ class RelaxPlot():
            self,
            relax_data:dict,
            static_data:dict=None,
+           start_step:int=1,
            ):
         """
         Args:
-            relax_data (dict): Relax data.
-            static_data (dict): Static data.
+            relax_data: Relax data.
+            static_data: Static data.
+            start_step: The step number of the first relax in this WorkChain.
+                        If you relax 20 steps in the privious RelaxWorkChain,
+                        for example, start_step becomes 21.
         """
         self._relax_data = relax_data
         self._static_data = static_data
+        self._start_step = start_step
         if self._static_data is None:
             self._exist_static = False
         else:
             self._exist_static = True
+        self._vasp_final_steps = None
+        self._set_vasp_final_steps()
 
     @property
     def relax_data(self):
@@ -46,26 +53,34 @@ class RelaxPlot():
         """
         return self._static_data
 
-    def set_steps(self, start_step:int):
+    @property
+    def start_step(self):
         """
-        Set steps.
+        Start step.
+        """
+        return self._start_step
 
-        Args:
-            start_step (int): Start step.
+    def _set_vasp_final_steps(self):
         """
-        steps = np.array(self._relax_data['steps'])
-        self._relax_data['steps'] = list(steps + start_step - 1)
+        Set vasp final steps.
+        """
+        eg_cols = self._relax_data['step_energies_collection']
+        vasp_final_steps = []
+        count = self._start_step - 1
+        for cols in eg_cols:
+            count += len(cols['energy_extrapolated'])
+            vasp_final_steps.append(count)
+        self._vasp_final_steps = vasp_final_steps
+        print(self._vasp_final_steps)
 
     def plot_max_force(self,
                        ax,
-                       is_logscale:bool=True,
                        decorate:bool=True):
         """
         Plot max force.
 
         Args:
             ax: Matplotlib subplot.
-            is_logscale (bool): If True, plot with log scale.
             decorate (bool): If True, decorate figure.
         """
         if decorate:
@@ -74,7 +89,7 @@ class RelaxPlot():
         else:
             xlabel = ylabel = None
 
-        steps = self._relax_data['steps']
+        steps = self._vasp_final_steps
         max_forces = self._relax_data['max_force']
         line_chart(
                 ax,
@@ -92,9 +107,6 @@ class RelaxPlot():
             ax.scatter(static_step, static_max_force,
                        c=DEFAULT_COLORS[0], marker='*', s=150)
 
-        if is_logscale:
-            ax.set_yscale('log')
-
     def plot_energy(self,
                     ax,
                     decorate:bool=True):
@@ -111,34 +123,42 @@ class RelaxPlot():
         else:
             xlabel = ylabel = None
 
-        steps = self._relax_data['steps']
+        steps = self._vasp_final_steps
         energies = self._relax_data['energy']
+        eg_cols = self._relax_data['step_energies_collection']
+        vasp_energies = []
+        for cols in eg_cols:
+            vasp_energies.extend(cols['energy_extrapolated'])
+        vasp_steps = [ i+1 for i in range(len(vasp_energies)) ]
+
         line_chart(
                 ax,
-                steps,
-                energies,
+                vasp_steps,
+                vasp_energies,
                 xlabel,
                 ylabel,
                 c=DEFAULT_COLORS[0],
                 marker=DEFAULT_MARKERS[0],
+                s=5,
                 facecolor='None')
+        ax.scatter(self._vasp_final_steps, energies, c=DEFAULT_COLORS[0],
+                   marker=DEFAULT_MARKERS[1], facecolor=DEFAULT_MARKERS[0])
 
         if self._exist_static:
             static_step = steps[-1] + 0.1
             static_energy = self._static_data['energy']
             ax.scatter(static_step, static_energy,
-                       c=DEFAULT_COLORS[0], marker='*', s=150)
+                       edgecolor=DEFAULT_COLORS[0], marker='*', s=150,
+                       facecolor='None')
 
     def plot_stress(self,
                     ax,
-                    is_logscale:bool=False,
                     decorate:bool=True):
         """
         Plot stress.
 
         Args:
             ax: Matplotlib subplot.
-            is_logscale: If True, plot with log scale.
             decorate (bool): If True, decorate figure.
         """
         if decorate:
@@ -149,7 +169,7 @@ class RelaxPlot():
             xlabel = ylabel = None
             stress_labels = [None] * 6
 
-        steps = self._relax_data['steps']
+        steps = self._vasp_final_steps
         stresses = self._relax_data['stress']
 
         for i in range(6):
@@ -167,24 +187,21 @@ class RelaxPlot():
         if self._exist_static:
             static_step = steps[-1] + 0.1
             static_stress = self._static_data['stress']
+            print(static_stress)
             for i in range(6):
                 ax.scatter(static_step, static_stress[i],
                            c=DEFAULT_COLORS[i], marker='*', s=150)
 
         ax.legend(loc='upper left')
-        if is_logscale:
-            ax.set_yscale('log')
 
     def plot_abc(self,
                  ax,
-                 is_logscale:bool=True,
                  decorate:bool=True):
         """
         Plot abc.
 
         Args:
             ax: Matplotlib subplot.
-            is_logscale: If True, plot with log scale.
             decorate (bool): If True, decorate figure.
         """
         if decorate:
@@ -195,7 +212,7 @@ class RelaxPlot():
             xlabel = ylabel = None
             abc_labels = [None] * 3
 
-        steps = self._relax_data['steps']
+        steps = self._vasp_final_steps
         abcs = self._relax_data['abc']
 
         for i in range(3):
@@ -218,7 +235,6 @@ class RelaxPlot():
                            c=DEFAULT_COLORS[i], marker='*', s=150)
 
         ax.legend(loc='upper left')
-        ax.set_ylim((0, None))
 
 
 def plot_atom_diff(ax,

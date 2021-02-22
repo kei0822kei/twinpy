@@ -469,25 +469,35 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         print("\n\n")
         self._print_vasp_results()
 
-    def get_relaxplot(self) -> dict:
+    def get_relaxplot(self, start_step:int=1) -> RelaxPlot:
         """
         Get RelaxPlot class object.
+
+        Args:
+            start_step: The step number of the first relax in this WorkChain.
+                        If you relax 20 steps in the privious RelaxWorkChain,
+                        for example, start_step becomes 21.
+
+        Returns:
+            RelaxPlot: RelaxPlot class object.
         """
         relax_vasps, static_vasp = self.get_vasp_calculations()
         relax_data = {}
-        relax_data['max_force'] = np.array(
-                [ relax_vasp.get_max_force() for relax_vasp in relax_vasps ])
+        relax_data['max_force'] = \
+                np.array([ relax_vasp.get_max_force()
+                               for relax_vasp in relax_vasps ])
         # stress xx yy zz yz zx xy
         relax_data['stress'] = \
                 np.array([ relax_vasp.stress.flatten()[[0,4,8,5,6,1]]
                                for relax_vasp in relax_vasps ])
-        relax_data['energy'] = np.array([ relax_vasp.energy
-                                              for relax_vasp in relax_vasps ])
+        relax_data['energy'] = \
+                np.array([ relax_vasp.energy
+                               for relax_vasp in relax_vasps ])
         relax_data['abc'] = \
                 np.array([ CrystalLattice(relax_vasp.final_cell[0]).abc
                                for relax_vasp in relax_vasps ])
-        relax_data['steps'] = \
-                np.array([ i+1 for i in range(len(relax_vasps)) ])
+        relax_data['step_energies_collection'] = \
+                [ relax_vasp.step_energies for relax_vasp in relax_vasps ]
 
         if static_vasp is None:
             static_data = None
@@ -500,7 +510,8 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     }
 
         relax_plot = RelaxPlot(relax_data=relax_data,
-                               static_data=static_data)
+                               static_data=static_data,
+                               start_step=start_step)
 
         return relax_plot
 
