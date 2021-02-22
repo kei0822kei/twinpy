@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Aiida interface for twinpy.
@@ -46,8 +45,7 @@ class AiidaShearWorkChain(_WorkChain):
         super().__init__(node=node)
 
         self._shear_conf = node.inputs.shear_conf.get_dict()
-        self._shear_ratios = \
-            node.called[-1].outputs.shear_settings.get_dict()['shear_ratios']
+        self._shear_ratios = node.outputs.shear_ratios['shear_ratios']
         self._gamma = node.outputs.gamma.value
         self._is_phonon = node.inputs.is_phonon.value
 
@@ -242,7 +240,7 @@ class AiidaShearWorkChain(_WorkChain):
         """
         pks = {
                 'shear_pk': self._pk,
-                'get_shear_structures_pk': self._create_shears_pk,
+                'shear_structures_pk': self._create_shears_pk,
                 'relax_pks': self._relax_pks,
                 'phonon_pks': self._phonon_pks,
               }

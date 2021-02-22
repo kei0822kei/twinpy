@@ -183,4 +183,4 @@ class _WorkChain():
         print("label:%s" % self._label)
         print("description:%s" % self._description)
         print("exit status:%s" % self._exit_status)
-        print("\n\n")
+        print("\n")

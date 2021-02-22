@@ -20,6 +20,7 @@ from twinpy.interfaces.aiida.base import (check_process_class,
                                           get_cell_from_aiida,
                                           _WorkChain)
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
+from twinpy.plot.base import line_chart
 from twinpy.plot.relax import RelaxPlot
 
 
@@ -43,7 +44,6 @@ class _AiidaVaspWorkChain(_WorkChain):
         self._stress = None
         self._forces = None
         self._energy = None
-        self._step_energies = None
         if self._process_state == 'finished':
             self._set_properties()
 
@@ -66,23 +66,10 @@ class _AiidaVaspWorkChain(_WorkChain):
         """
         Set properties.
         """
+        misc = self._node.outputs.misc.get_dict()
         self._forces = self._node.outputs.forces.get_array('final')
         self._stress = self._node.outputs.stress.get_array('final')
-
-        eg = self._node.outputs.energies
-        try:
-            self._step_energies = {
-                'energy_extrapolated': eg.get_array('energy_extrapolated'),
-                'energy_extrapolated_final':
-                    eg.get_array('energy_extrapolated_final'),
-                    }
-            self._energy = self._step_energies['energy_extrapolated'][-1]
-        except NotExistentAttributeError:
-            warnings.warn("Could not find 'energy_extrapolated' in ",
-                          "outputs.energies.")
-
-            _misc = self._node.outputs.misc.get_dict()
-            self._energy = _misc['total_energies']['energy_no_entropy']
+        self._energy = misc['total_energies']['energy_extrapolated']
 
     @property
     def forces(self):
@@ -104,13 +91,6 @@ class _AiidaVaspWorkChain(_WorkChain):
         Total energy.
         """
         return self._energy
-
-    @property
-    def step_energies(self):
-        """
-        Energy for each steps.
-        """
-        return self._step_energies
 
     def get_max_force(self) -> float:
         """
@@ -183,15 +163,15 @@ class _AiidaVaspWorkChain(_WorkChain):
 
         print_header('VASP settings')
         pprint(self.get_vasp_settings())
-        print("\n\n")
+        print("\n")
         print_header("kpoints information")
         pprint(kpoints_info_for_print)
         if self._process_state == 'finished':
-            print("\n\n")
+            print("\n")
             print_header('VASP outputs')
             print("# stress")
             pprint(self._stress)
-            print("\n")
+            print("")
             print("# max force acting on atoms")
             print(str(self.get_max_force())+"\n")
 
@@ -217,6 +197,19 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
         self._final_structure_pk = None
         self._final_cell = None
         self._set_final_structure(ignore_warning=ignore_warning)
+        self._step_energies = None
+        self._set_step_energies()
+
+    def _set_step_energies(self):
+        """
+        Set step energies.
+        """
+        eg = self._node.outputs.energies
+        self._step_energies = {
+            'energy_extrapolated': eg.get_array('energy_extrapolated'),
+            'energy_extrapolated_final':
+                eg.get_array('energy_extrapolated_final'),
+                }
 
     def _set_final_structure(self, ignore_warning):
         """
@@ -238,6 +231,13 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
         Final cell.
         """
         return self._final_cell
+
+    @property
+    def step_energies(self):
+        """
+        Energy for each steps.
+        """
+        return self._step_energies
 
     def get_pks(self) -> dict:
         """
@@ -271,6 +271,22 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
                                  energy=self._energy)
         return analyzer
 
+    def plot_energy_convergence(self):
+        """
+        Plot energy convergence.
+        """
+        fig = plt.figure()
+        ax =fig.add_subplot(111)
+        energies = self._step_energies['energy_extrapolated']
+        steps = [ i+1 for i in range(len(energies)) ]
+        line_chart(ax,
+                   xdata=steps,
+                   ydata=energies,
+                   xlabel='Relax steps',
+                   ylabel='Energy [eV]',
+                   )
+        ax.ticklabel_format(axis='y', style='sci', scilimits=(0,0))
+
     def get_description(self):
         """
         Get description.
@@ -278,7 +294,7 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
         self._print_common_information()
         print_header('PKs')
         pprint(self.get_pks())
-        print("\n\n")
+        print("\n")
         self._print_vasp_results()
 
 
@@ -455,25 +471,35 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
         print("\n\n")
         self._print_vasp_results()
 
-    def get_relaxplot(self) -> dict:
+    def get_relaxplot(self, start_step:int=1) -> RelaxPlot:
         """
         Get RelaxPlot class object.
+
+        Args:
+            start_step: The step number of the first relax in this WorkChain.
+                        If you relax 20 steps in the privious RelaxWorkChain,
+                        for example, start_step becomes 21.
+
+        Returns:
+            RelaxPlot: RelaxPlot class object.
         """
         relax_vasps, static_vasp = self.get_vasp_calculations()
         relax_data = {}
-        relax_data['max_force'] = np.array(
-                [ relax_vasp.get_max_force() for relax_vasp in relax_vasps ])
+        relax_data['max_force'] = \
+                np.array([ relax_vasp.get_max_force()
+                               for relax_vasp in relax_vasps ])
         # stress xx yy zz yz zx xy
         relax_data['stress'] = \
                 np.array([ relax_vasp.stress.flatten()[[0,4,8,5,6,1]]
                                for relax_vasp in relax_vasps ])
-        relax_data['energy'] = np.array([ relax_vasp.energy
-                                              for relax_vasp in relax_vasps ])
+        relax_data['energy'] = \
+                np.array([ relax_vasp.energy
+                               for relax_vasp in relax_vasps ])
         relax_data['abc'] = \
                 np.array([ CrystalLattice(relax_vasp.final_cell[0]).abc
                                for relax_vasp in relax_vasps ])
-        relax_data['steps'] = \
-                np.array([ i+1 for i in range(len(relax_vasps)) ])
+        relax_data['step_energies_collection'] = \
+                [ relax_vasp.step_energies for relax_vasp in relax_vasps ]
 
         if static_vasp is None:
             static_data = None
@@ -486,16 +512,14 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     }
 
         relax_plot = RelaxPlot(relax_data=relax_data,
-                               static_data=static_data)
+                               static_data=static_data,
+                               start_step=start_step)
 
         return relax_plot
 
     def plot_convergence(self):
         """
         Plot convergence.
-
-        Todo:
-            This function must be moved in plot directory.
         """
         plt.rcParams["font.size"] = 14
 
