@@ -158,8 +158,9 @@ class _AiidaVaspWorkChain(_WorkChain):
         Print VASP run results.
         """
         kpoints_info_for_print = self.get_kpoints_info()
-        del kpoints_info_for_print['sampling_kpoints']
-        del kpoints_info_for_print['weights']
+        if self._process_state == 'finished':
+            del kpoints_info_for_print['sampling_kpoints']
+            del kpoints_info_for_print['weights']
 
         print_header('VASP settings')
         pprint(self.get_vasp_settings())
@@ -198,18 +199,24 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
         self._final_cell = None
         self._set_final_structure(ignore_warning=ignore_warning)
         self._step_energies = None
-        self._set_step_energies()
+        self._set_step_energies(ignore_warning=ignore_warning)
 
-    def _set_step_energies(self):
+    def _set_step_energies(self, ignore_warning):
         """
         Set step energies.
         """
-        eg = self._node.outputs.energies
-        self._step_energies = {
-            'energy_extrapolated': eg.get_array('energy_extrapolated'),
-            'energy_extrapolated_final':
-                eg.get_array('energy_extrapolated_final'),
-                }
+        try:
+            eg = self._node.outputs.energies
+            self._step_energies = {
+                'energy_extrapolated': eg.get_array('energy_extrapolated'),
+                'energy_extrapolated_final':
+                    eg.get_array('energy_extrapolated_final'),
+                    }
+        except NotExistentAttributeError:
+            if not ignore_warning:
+                warnings.warn("Output energy could not find.\n"
+                              "process state:{} (pk={})".format(
+                                  self.process_state, self._node.pk))
 
     def _set_final_structure(self, ignore_warning):
         """
