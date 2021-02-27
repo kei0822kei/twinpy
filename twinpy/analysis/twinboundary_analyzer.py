@@ -4,8 +4,8 @@
 """
 Analize twinboudnary relax calculation.
 """
-import numpy as np
 from copy import deepcopy
+import numpy as np
 from matplotlib import pyplot as plt
 from aiida.orm import load_node
 from twinpy.structure.bonding import _get_atomic_environment
@@ -217,6 +217,7 @@ class TwinBoundaryAnalyzer():
             frac_coords = atom_positions
 
         shear_cell = (shear_lat, frac_coords, orig_relax_cell[2])
+
         if is_standardize:
             std_cell = get_standardized_cell(
                     cell=shear_cell,
@@ -224,8 +225,8 @@ class TwinBoundaryAnalyzer():
                     no_idealize=False,
                     no_sort=True)
             return std_cell
-        else:
-            return shear_cell
+
+        return shear_cell
 
     def get_twinboundary_shear_analyzer(self,
                                         shear_strain_ratios:list,
@@ -381,10 +382,7 @@ class TwinBoundaryAnalyzer():
         ax = fig.add_subplot(111)
 
         for direction in ['x', 'y', 'z']:
-            if direction == 'z':
-                decorate = True
-            else:
-                decorate = False
+            decorate = (direction == 'z')
             plot_atom_diff(ax,
                            initial_cell=initial_cell,
                            final_cell=final_cell,
