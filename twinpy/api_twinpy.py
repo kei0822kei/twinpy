@@ -7,11 +7,11 @@ This module provides API for twinpy.
 
 from pprint import pprint
 import numpy as np
+from twinpy.file_io import write_poscar
 from twinpy.properties.hexagonal import get_wyckoff_from_hcp
 from twinpy.structure.shear import get_shear
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
-from twinpy.file_io import read_yaml, write_yaml, write_poscar
 from twinpy.interfaces.aiida.shear import AiidaShearWorkChain
 from twinpy.interfaces.aiida.twinboundary \
         import AiidaTwinBoudnaryRelaxWorkChain
@@ -41,7 +41,6 @@ class Twinpy():
         self._shear = None
         self._twinboundary = None
         self._is_shear_primitive = None
-
         self._shear_analyzer = None
         self._twinboundary_analyzer = None
         self._twinboundary_shear_analyzer = None
@@ -125,7 +124,7 @@ class Twinpy():
                          dim=[1,1,1],
                          shear_strain_ratio=0.,
                          is_primitive=True)
-        twinpy._set_shear_analyzer(shear_analyzer)
+        twinpy.set_shear_analyzer(shear_analyzer)
 
         return twinpy
 
@@ -169,7 +168,7 @@ class Twinpy():
                 yshift=tb_parameters['yshift'],
                 shear_strain_ratio=tb_parameters['shear_strain_ratio'],
                 )
-        twinpy._set_twinboundary_analyzer(twinboundary_analyzer)
+        twinpy.set_twinboundary_analyzer(twinboundary_analyzer)
 
         return twinpy
 
@@ -260,7 +259,7 @@ class Twinpy():
         """
         return self._twinboundary
 
-    def _set_shear_analyzer(self, shear_analyzer):
+    def set_shear_analyzer(self, shear_analyzer):
         """
         Set shear_analyzer.
         """
@@ -273,7 +272,7 @@ class Twinpy():
         """
         return self._shear_analyzer
 
-    def _set_twinboundary_analyzer(self, twinboundary_analyzer):
+    def set_twinboundary_analyzer(self, twinboundary_analyzer):
         """
         Set twinboundary_analyzer.
         """
@@ -350,32 +349,6 @@ class Twinpy():
                 )
         return StandardizeCell(cell)
 
-    def _get_cells(self,
-                   relax_analyzers:list,
-                   is_original_frame:bool=True,
-                   is_relax:bool=True):
-        """
-        Get cells.
-
-        Args:
-            relax_analyzers: List of relax analyzer.
-            is_original_frame: If True, returns cells in original frame.
-            is_relax: If True, return relax cells.
-        """
-        if is_original_frame:
-            if is_relax:
-                cells = [ relax.final_cell_in_original_frame
-                              for relax in relax_analyzers ]
-            else:
-                cells = [ relax.original_cell for relax in relax_analyzers ]
-        else:
-            if is_relax:
-                cells = [ relax.final_cell for relax in relax_analyzers ]
-            else:
-                cells = [ relax.initial_cell for relax in relax_analyzers ]
-
-        return cells
-
     def get_shear_cells(self,
                         is_original_frame:bool=True,
                         is_relax:bool=True):
@@ -388,16 +361,16 @@ class Twinpy():
         """
         self._check_shear_analyzer_is_set()
         relax_analyzers = self._shear_analyzer.relax_analyzers
-        cells = self._get_cells(relax_analyzers=relax_analyzers,
-                                is_original_frame=is_original_frame,
-                                is_relax=is_relax)
+        cells = _get_cells(relax_analyzers=relax_analyzers,
+                           is_original_frame=is_original_frame,
+                           is_relax=is_relax)
 
         return cells
 
     def write_shear_cells(self,
                           is_original_frame:bool=True,
                           is_relax:bool=True,
-                          header:str=''):
+                          header:str='shear'):
         """
         Write shear cells to POSCAR.
 
@@ -406,10 +379,12 @@ class Twinpy():
             is_relax: If True, return relax cells.
             header: File header.
         """
-        cells = self.get_shear_cells()
-        for i, cell in enumerate(cells):
-            filename = "shear_%1.2f.poscar" % \
-                           self._shear_analyzer.shear_strain_ratios
+        cells = self.get_shear_cells(
+                is_original_frame=is_original_frame,
+                is_relax=is_relax)
+        ratios = self._shear_analyzer.shear_strain_ratios
+        for cell, ratio in zip(cells, ratios):
+            filename = header + '_%1.2f.poscar' % ratio
             write_poscar(cell=cell,
                          filename=filename)
 
@@ -425,16 +400,16 @@ class Twinpy():
         """
         self._check_twinboundary_shear_analyzer_is_set()
         relax_analyzers = self._twinboundary_shear_analyzer.relax_analyzers
-        cells = self._get_cells(relax_analyzers=relax_analyzers,
-                                is_original_frame=is_original_frame,
-                                is_relax=is_relax)
+        cells = _get_cells(relax_analyzers=relax_analyzers,
+                           is_original_frame=is_original_frame,
+                           is_relax=is_relax)
 
         return cells
 
     def write_twinboundary_shear_cells(self,
                                        is_original_frame:bool=True,
                                        is_relax:bool=True,
-                                       header:str=''):
+                                       header:str='twinboundary_shear'):
         """
         write twinboundary shear cells to POSCAR.
 
@@ -443,10 +418,12 @@ class Twinpy():
             is_relax: If True, return relax cells.
             header: File header.
         """
-        cells = self.get_twinboundary_shear_cells()
+        cells = self.get_twinboundary_shear_cells(
+                is_original_frame=is_original_frame,
+                is_relax=is_relax)
         for i, cell in enumerate(cells):
             ratio = self._twinboundary_shear_analyzer.shear_strain_ratios[i]
-            filename = "twinboundary_shear_%1.2f.poscar" % ratio
+            filename = header + '_%1.2f.poscar' % ratio
             write_poscar(cell=cell,
                          filename=filename)
 
@@ -458,10 +435,9 @@ class Twinpy():
         """
         Plot twinboundary shear band structure.
         """
-        from matplotlib import pyplot as plt
-        from twinpy.plot.band_structure \
-                import (get_labels_band_paths_from_seekpath,
-                        BandsPlot)
+        from twinpy.common.band_path \
+                import get_labels_band_paths_from_seekpath
+        from twinpy.plot.band_structure import BandsPlot
 
         self._check_twinboundary_shear_analyzer_is_set()
 
@@ -474,13 +450,13 @@ class Twinpy():
                 tb_shear.get_band_structures(
                         base_band_paths=base_band_paths,
                         labels=labels,
-                        npoints=51,
+                        npoints=npoints,
                         with_eigenvectors=with_eigenvectors,
                         use_reciprocal_lattice=use_reciprocal_lattice,
                         )
         bsp = BandsPlot(band_structures=band_structures)
         fig, _ = bsp.plot_band_structures()
-        plt.show()
+        fig.show()
 
     def show_twinboundary_reciprocal_high_symmetry_points(self):
         """
@@ -510,3 +486,29 @@ def get_twinpy_from_cell(cell:tuple,
                     symbol=symbols[0],
                     wyckoff=wyckoff)
     return twinpy
+
+
+def _get_cells(relax_analyzers:list,
+               is_original_frame:bool=True,
+               is_relax:bool=True):
+    """
+    Get cells.
+
+    Args:
+        relax_analyzers: List of relax analyzer.
+        is_original_frame: If True, returns cells in original frame.
+        is_relax: If True, return relax cells.
+    """
+    if is_original_frame:
+        if is_relax:
+            cells = [ relax.final_cell_in_original_frame
+                          for relax in relax_analyzers ]
+        else:
+            cells = [ relax.original_cell for relax in relax_analyzers ]
+    else:
+        if is_relax:
+            cells = [ relax.final_cell for relax in relax_analyzers ]
+        else:
+            cells = [ relax.initial_cell for relax in relax_analyzers ]
+
+    return cells
