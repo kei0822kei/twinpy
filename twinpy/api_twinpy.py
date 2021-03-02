@@ -40,13 +40,11 @@ class Twinpy():
         self._wyckoff = wyckoff
         self._shear = None
         self._twinboundary = None
-        self._shear_is_primitive = None
+        self._is_shear_primitive = None
 
         self._shear_analyzer = None
         self._twinboundary_analyzer = None
         self._twinboundary_shear_analyzer = None
-
-        self._is_aiida_profile_load = False
 
     def _check_shear_is_set(self):
         """
@@ -113,9 +111,7 @@ class Twinpy():
         Set shear from AiidaShearWorkChain.
         """
         from aiida.orm import load_node
-
-        if not self._is_aiida_profile_load:
-            load_aiida_profile()
+        load_aiida_profile()
 
         aiida_shear = AiidaShearWorkChain(load_node(shear_pk))
         shear_analyzer = aiida_shear.get_shear_analyzer()
@@ -141,15 +137,20 @@ class Twinpy():
                                            hexagonal_phonon_pk:int=None):
         """
         Set twinboundary from AiidaTwinBoudnaryRelaxWorkChain.
+
+        Args:
+            twinboundary_relax_pk: Twinboundary relax pk.
+            twinboundary_phonon_pk: Twinboundary phonon pk.
+            additional_relax_pks: Additional relax pks.
+            hexagonal_relax_pk: Hexagonal relax pk.
+            hexagonal_phonon_pk: Hexagonal phonon pk.
         """
         from aiida.orm import load_node
-
-        if not self._is_aiida_profile_load:
-            load_aiida_profile()
+        load_aiida_profile()
 
         aiida_tb_relax = AiidaTwinBoudnaryRelaxWorkChain(
                 load_node(twinboundary_relax_pk))
-        tb_settings = aiida_tb_relax.twinboundary_settings
+        tb_parameters = aiida_tb_relax.twinboundary_parameters
         twinboundary_analyzer = \
                 aiida_tb_relax.get_twinboundary_analyzer(
                     twinboundary_phonon_pk=twinboundary_phonon_pk,
@@ -159,14 +160,14 @@ class Twinpy():
 
         twinpy = get_twinpy_from_cell(
                      cell=aiida_tb_relax.cells['hexagonal'],
-                     twinmode=tb_settings['twinmode'])
+                     twinmode=tb_parameters['twinmode'])
         twinpy.set_twinboundary(
-                layers=tb_settings['layers'],
-                delta=tb_settings['delta'],
-                twintype=tb_settings['twintype'],
-                xshift=tb_settings['xshift'],
-                yshift=tb_settings['yshift'],
-                shear_strain_ratio=tb_settings['shear_strain_ratio'],
+                layers=tb_parameters['layers'],
+                delta=tb_parameters['delta'],
+                twintype=tb_parameters['twintype'],
+                xshift=tb_parameters['xshift'],
+                yshift=tb_parameters['yshift'],
+                shear_strain_ratio=tb_parameters['shear_strain_ratio'],
                 )
         twinpy._set_twinboundary_analyzer(twinboundary_analyzer)
 
@@ -209,14 +210,14 @@ class Twinpy():
                 shear_strain_ratio=shear_strain_ratio,
                 expansion_ratios=expansion_ratios,
                 is_primitive=is_primitive)
-        self._shear_is_primitive = is_primitive
+        self._is_shear_primitive = is_primitive
 
     @property
-    def shear_is_primitive(self):
+    def is_shear_primitive(self):
         """
         Shear structure object.
         """
-        return self._shear_is_primitive
+        return self._is_shear_primitive
 
     def set_twinboundary(self,
                          layers:int,
@@ -319,6 +320,10 @@ class Twinpy():
                               ) -> StandardizeCell:
         """
         Get shear standardized structure object.
+
+        Args:
+            get_lattice: Get lattice not crystal structure.
+            move_atoms_into_unitcell: If True, move atoms to unitcell.
         """
         self._check_shear_is_set()
         cell = self._shear.get_cell_for_export(
@@ -333,6 +338,10 @@ class Twinpy():
                                      ) -> StandardizeCell:
         """
         Get twinboundary standardized structure object.
+
+        Args:
+            get_lattice: Get lattice not crystal structure.
+            move_atoms_into_unitcell: If True, move atoms to unitcell.
         """
         self._check_twinboundary_is_set()
         cell = self._twinboundary.get_cell_for_export(
@@ -340,61 +349,6 @@ class Twinpy():
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
                 )
         return StandardizeCell(cell)
-
-    def dump_yaml(self, filename:str='twinpy.yaml'):
-        """
-        Dump Twinpy object in yaml file.
-
-        Args:
-            filename: Dump to yaml file.
-
-        Todo:
-            FUTURE EDITED, currently dic contains numpy array
-            which is not well stored in yaml file.
-        """
-        dic = self.dump_dict()
-        write_yaml(dic=dic, filename=filename)
-
-    def dump_dict(self) -> dict:
-        """
-        Dump Twinpy object in yaml file.
-
-        Returns:
-            dict: Dumped dictionary.
-        """
-        if self._shear is None:
-            shear = None
-        else:
-            shear = {}
-            shear['xshift'] = self._shear.xshift
-            shear['yshift'] = self._shear.yshift
-            shear['dim'] = self._shear.dim
-            shear['shear_strain_ratio'] = self._shear.shear_strain_ratio
-            shear['is_primitive'] = self._shear_is_primitive
-            shear['expansion_ratios'] = self._shear.expansion_ratios
-
-        if self._twinboundary is None:
-            tb = None
-        else:
-            tb = {}
-            tb['dim'] = self._twinboundary.dim
-            tb['xshift'] = self._twinboundary.xshift
-            tb['yshift'] = self._twinboundary.yshift
-            tb['twintype'] = self._twinboundary.twintype
-            tb['shear_strain_ratio'] = self._twinboundary.shear_strain_ratio
-            tb['layers'] = self._twinboundary.layers
-            tb['delta'] = self._twinboundary.delta
-            tb['expansion_ratios'] = self._twinboundary.expansion_ratios
-
-        dic = {}
-        dic['hexagonal_lattice'] = self._hexagonal_lattice
-        dic['twinmode'] = self._twinmode
-        dic['symbol'] = self._symbol
-        dic['wyckoff'] = self._wyckoff
-        dic['shear'] = shear
-        dic['twinboundary'] = tb
-
-        return dic
 
     def _get_cells(self,
                    relax_analyzers:list,
@@ -495,60 +449,6 @@ class Twinpy():
             filename = "twinboundary_shear_%1.2f.poscar" % ratio
             write_poscar(cell=cell,
                          filename=filename)
-
-    @staticmethod
-    def load_yaml(filename:str):
-        """
-        Load twinpy from yaml file.
-
-        Args:
-            filename: Yaml file.
-
-        Returns:
-            Twinpy: Twinpy class object.
-        """
-        dic = read_yaml(filename)
-        twinpy = Twinpy.load_dict(dic)
-
-        return twinpy
-
-    @staticmethod
-    def load_dict(dic:dict):
-        """
-        Load twinpy from dic.
-
-        Args:
-            dic: Dictionary contaning necessary infomation
-                 for loading Twinpy object.
-
-        Returns:
-            Twinpy: Twinpy class object
-        """
-        twinpy = Twinpy(lattice=dic['hexagonal_lattice'],
-                        twinmode=dic['twinmode'],
-                        symbol=dic['symbol'],
-                        wyckoff=dic['wyckoff'])
-
-        shear = dic['shear']
-        if shear is not None:
-            twinpy.set_shear(
-                    xshift=shear['xshift'],
-                    yshift=shear['yshift'],
-                    dim=shear['dim'],
-                    shear_strain_ratio=shear['shear_strain_ratio'],
-                    is_primitive=shear['is_primitive'])
-
-        tb = dic['twinboundary']
-        if tb is not None:
-            twinpy.set_twinboundary(
-                    dim=tb['dim'],
-                    xshift=tb['xshift'],
-                    yshift=tb['yshift'],
-                    shear_strain_ratio=tb['shear_strain_ratio'],
-                    delta=tb['delta'],
-                    layers=tb['layers'])
-
-        return twinpy
 
     def plot_twinboundary_shear_bandstructure(
             self,
