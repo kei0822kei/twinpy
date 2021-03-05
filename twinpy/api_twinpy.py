@@ -286,23 +286,48 @@ class Twinpy():
         return self._twinboundary_analyzer
 
     def set_twinboundary_shear_analyzer(self,
-                                        shear_relax_pks:list,
-                                        shear_phonon_pks:list,
-                                        shear_strain_ratios:list):
+                                        shear_relax_pks:list=None,
+                                        shear_strain_ratios:list=None,
+                                        twinboundary_shear_pk:list=None,
+                                        shear_phonon_pks:list=None):
         """
         Set TwinBoundaryShearAnalyzer class object.
 
         Args:
             shear_relax_pks: Relaxes for shear structures.
             shear_phonon_pks: Phonon calculations for shear structures.
+            twinboundary_shear_pk: TwinBoundaryShearWorkChain pk.
             shear_strain_ratios: Shear shear_strain_ratios.
+
+        Note:
+            If twinboundary_shear_pk is not None, twinboundary_shear_analyzer
+            is set using this pk where 'shear_relax_pks' and
+            'shear_strain_ratios' are ignored.
         """
         self._check_twinboundary_analyzer_is_set()
+        tb_analyzer = self._twinboundary_analyzer
+        if twinboundary_shear_pk is not None:
+            from aiida.orm import load_node, Node, QueryBuilder
+            from aiida.plugins import WorkflowFactory
+            relax_wf = WorkflowFactory('vasp.relax')
+            qb = QueryBuilder()
+            qb.append(Node,
+                      filters={'id':{'==': twinboundary_shear_pk}},
+                      tag='wf')
+            qb.append(relax_wf, with_incoming='wf', project='id')
+            _shr_rlx_pks = [ q[0] for q in qb.all() ]
+            node = load_node(twinboundary_shear_pk)
+            _ratios = \
+                    node.inputs.twinboundary_shear_conf['shear_strain_ratios']
+        else:
+            _shr_rlx_pks = shear_relax_pks
+            _ratios = shear_strain_ratios
+
         tb_shear = \
-          self._twinboundary_analyzer.get_twinboundary_shear_analyzer_from_pks(
-                  shear_relax_pks=shear_relax_pks,
+          tb_analyzer.get_twinboundary_shear_analyzer_from_pks(
+                  shear_relax_pks=_shr_rlx_pks,
                   shear_phonon_pks=shear_phonon_pks,
-                  shear_strain_ratios=shear_strain_ratios,
+                  shear_strain_ratios=_ratios,
                   )
         self._twinboundary_shear_analyzer = tb_shear
 

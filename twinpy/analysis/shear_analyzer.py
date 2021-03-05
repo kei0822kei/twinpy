@@ -230,6 +230,7 @@ class ShearAnalyzer(_BaseShearAnalyzer):
     def __init__(
            self,
            shear_structure:ShearStructure,
+           shear_strain_ratios:list,
            phonon_analyzers:list,
            ):
         """
@@ -237,7 +238,8 @@ class ShearAnalyzer(_BaseShearAnalyzer):
 
         Args:
             shear_structure: ShearStructure class object.
-            phonon_analyzers (list): List of PhononAnalyzer class object.
+            shear_strain_ratios: List of shear strain ratios.
+            phonon_analyzer List of PhononAnalyzer class object.
 
         Todo:
             Currently not supported the case the number of original_cells
@@ -252,6 +254,7 @@ class ShearAnalyzer(_BaseShearAnalyzer):
             classes separately.
         """
         super().__init__(phonon_analyzers=phonon_analyzers)
+        self._shear_strain_ratios = shear_strain_ratios
         self._shear_structure = shear_structure
 
     @property
@@ -260,6 +263,13 @@ class ShearAnalyzer(_BaseShearAnalyzer):
         Shear structure.
         """
         return self._shear_structure
+
+    @property
+    def shear_strain_ratios(self):
+        """
+        Shear strain ratios.
+        """
+        return self._shear_strain_ratios
 
 
 class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
