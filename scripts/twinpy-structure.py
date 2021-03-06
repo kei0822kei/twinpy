@@ -185,6 +185,7 @@ def main(structure,
 if __name__ == '__main__':
     args = get_argparse()
     dimension = list(map(int, args.dim.split()))
+    expand = list(map(float, args.expansion_ratios.split()))
     assert args.structure in ['shear', 'twinboundary'], \
         "structure must be 'shear' or 'twinboundary'"
 
@@ -197,7 +198,7 @@ if __name__ == '__main__':
          dim=dimension,
          layers=args.layers,
          delta=args.delta,
-         expansion_ratios=args.expansion_ratios,
+         expansion_ratios=expand,
          posfile=args.posfile,
          get_poscar=args.get_poscar,
          get_lattice=args.get_lattice,
