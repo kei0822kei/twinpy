@@ -45,7 +45,8 @@ class AiidaShearWorkChain(_WorkChain):
         super().__init__(node=node)
 
         self._shear_conf = node.inputs.shear_conf.get_dict()
-        self._shear_ratios = node.outputs.shear_ratios['shear_ratios']
+        self._shear_strain_ratios = \
+                node.outputs.shear_strain_ratios['shear_strain_ratios']
         self._gamma = node.outputs.gamma.value
         self._is_phonon = node.inputs.is_phonon.value
 
@@ -91,11 +92,11 @@ class AiidaShearWorkChain(_WorkChain):
         return self._shear_conf
 
     @property
-    def shear_ratios(self):
+    def shear_strain_ratios(self):
         """
         Output shear ratios.
         """
-        return self._shear_ratios
+        return self._shear_strain_ratios
 
     @property
     def gamma(self):
@@ -227,8 +228,10 @@ class AiidaShearWorkChain(_WorkChain):
             phonon_analyzer = PhononAnalyzer(phonon=phn,
                                              relax_analyzer=relax_analyzer)
             phonon_analyzers.append(phonon_analyzer)
-        shear_analyzer = ShearAnalyzer(shear_structure=self._shear_structure,
-                                       phonon_analyzers=phonon_analyzers)
+        shear_analyzer = ShearAnalyzer(
+                shear_structure=self._shear_structure,
+                shear_strain_ratios=self._shear_strain_ratios,
+                phonon_analyzers=phonon_analyzers)
         return shear_analyzer
 
     def get_pks(self) -> dict:
