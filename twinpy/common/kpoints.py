@@ -181,7 +181,8 @@ class Kpoints():
             decimal_handling: Decimal handling. Available choise is 'floor',
                               'ceil' and 'round'. If 'decimal_handling' is not
                               'floor' and 'ceil', 'round' is set automatically.
-            use_symmetry: If True, run 'fix_mesh_based_on_symmetry'.
+            use_symmetry: When 'mesh' is None, 'use_symmetry' is called.
+                          If True, run 'fix_mesh_based_on_symmetry'.
 
         Raises:
             ValueError: Both mesh and interval are not specified.
@@ -200,10 +201,10 @@ class Kpoints():
                     interval=interval,
                     decimal_handling=decimal_handling,
                     include_two_pi=include_two_pi)
+            if use_symmetry:
+                _mesh = self.fix_mesh_based_on_symmetry(mesh=_mesh)
         else:
             _mesh = mesh
-        if use_symmetry:
-            _mesh = self.fix_mesh_based_on_symmetry(mesh=_mesh)
         offset = self.get_offset(mesh=_mesh)
         return (_mesh, offset)
 
