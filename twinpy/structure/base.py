@@ -5,6 +5,7 @@
 This module deals with hexagonal twin structure.
 """
 
+from pprint import pprint
 import numpy as np
 from phonopy.structure.atoms import atom_data, symbol_map
 from twinpy.properties.hexagonal import (get_hcp_atom_positions,
@@ -36,23 +37,32 @@ def get_symbols_from_numbers(numbers:list):
 
 
 def check_same_cells(first_cell:tuple,
-                     second_cell:tuple) -> bool:
+                     second_cell:tuple,
+                     raise_error:bool=False,
+                     atol:float=1e-6) -> bool:
     """
     Check first cell and second cell are same.
 
     Args:
         first_cell: First cell.
         second_cell: Second cell.
+        raise_error: If True, raise assrtion error.
 
     Returns:
         bool: Return True if two cells are same.
     """
-    is_lattice_same = np.allclose(first_cell[0], second_cell[0])
-    is_scaled_positions_same = np.allclose(first_cell[1], second_cell[1])
+    is_lattice_same = np.allclose(first_cell[0], second_cell[0], atol=atol)
+    is_scaled_positions_same = np.allclose(
+            first_cell[1], second_cell[1], atol=atol)
     is_symbols_same = (first_cell[2] == second_cell[2])
     is_same = (is_lattice_same
                and is_scaled_positions_same
                and is_symbols_same)
+    if not is_same and raise_error:
+        np.testing.assert_allclose(first_cell[0], second_cell[0], atol=atol)
+        np.testing.assert_allclose(first_cell[1], second_cell[1], atol=atol)
+        assert (first_cell[2] == second_cell[2])
+
     return is_same
 
 

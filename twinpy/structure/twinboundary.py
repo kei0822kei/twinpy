@@ -246,6 +246,7 @@ class TwinBoundaryStructure(_BaseTwinStructure):
             xshift:float=0.,
             yshift:float=0.,
             shear_strain_ratio:float=0.,
+            make_tb_flat:bool=True,
             ):
         """
         Build structure.
@@ -256,6 +257,8 @@ class TwinBoundaryStructure(_BaseTwinStructure):
             xshift: x shift.
             yshift: y shift.
             shear_strain_ratio: Shear strain ratio.
+            make_tb_flat: If True, atoms on the twin boundary plane are
+                          projected to twin boundary.
 
         Note:
             The structure built is set self.output_structure.
@@ -274,14 +277,14 @@ class TwinBoundaryStructure(_BaseTwinStructure):
         twin_frac_atoms = np.dot(np.linalg.inv(tb_frame.T),
                                  twin_cart_atoms.T).T
 
-        white_tb_ix = \
-                [ i for i in range(len(dichs)) if dichs[i] == 'white_tb' ]
         white_ix = \
                 [ i for i in range(len(dichs)) if dichs[i] == 'white' ]
-        black_tb_ix = \
-                [ i for i in range(len(dichs)) if dichs[i] == 'black_tb' ]
+        white_tb_ix = \
+                [ i for i in range(len(dichs)) if dichs[i] == 'white_tb' ]
         black_ix = \
                 [ i for i in range(len(dichs)) if dichs[i] == 'black' ]
+        black_tb_ix = \
+                [ i for i in range(len(dichs)) if dichs[i] == 'black_tb' ]
         symbols = [ self._symbol ] * len(lat_points) * len(parent_frac_atoms)
         tb_shear_frame = self._get_shear_twinboundary_lattice(
                 tb_lattice=tb_frame,
@@ -295,11 +298,15 @@ class TwinBoundaryStructure(_BaseTwinStructure):
                 }
 
         atoms_from_lp = {
-                'white_tb': parent_frac_atoms * np.array([1., 1., 0.]),
                 'white': parent_frac_atoms,
-                'black_tb': twin_frac_atoms * np.array([1., 1., 0.]),
-                'black': twin_frac_atoms
+                'white_tb': parent_frac_atoms.copy(),
+                'black': twin_frac_atoms,
+                'black_tb': twin_frac_atoms.copy(),
                 }
+
+        if make_tb_flat:
+            atoms_from_lp['white_tb'] *= np.array([1., 1., 0.])
+            atoms_from_lp['black_tb'] *= np.array([1., 1., 0.])
 
         output_structure = {
                 'lattice': tb_shear_frame,
@@ -328,6 +335,7 @@ def get_twinboundary(lattice:np.array,
                      yshift:float=0.,
                      shear_strain_ratio:float=0.,
                      expansion_ratios:np.array=np.ones(3),
+                     make_tb_flat:bool=True,
                      ) -> TwinBoundaryStructure:
     """
     Get twinboudnary structure object.
@@ -344,6 +352,8 @@ def get_twinboundary(lattice:np.array,
         yshift: y shift.
         shear_strain_ratio (float): Shear twinboundary ratio.
         expansion_ratios: Expansion ratios.
+        make_tb_flat: If True, atoms on the twin boundary plane are
+                      projected to twin boundary.
     """
     tb = TwinBoundaryStructure(lattice=lattice,
                                symbol=symbol,
@@ -355,5 +365,6 @@ def get_twinboundary(lattice:np.array,
            delta=delta,
            xshift=xshift,
            yshift=yshift,
-           shear_strain_ratio=shear_strain_ratio)
+           shear_strain_ratio=shear_strain_ratio,
+           make_tb_flat=make_tb_flat)
     return tb
