@@ -297,16 +297,20 @@ class TwinBoundaryStructure(_BaseTwinStructure):
                 'black': lat_points[black_ix]
                 }
 
-        atoms_from_lp = {
-                'white_tb': parent_frac_atoms,
-                'white': parent_frac_atoms,
-                'black_tb': twin_frac_atoms,
-                'black': twin_frac_atoms
-                }
-
         if make_tb_flat:
-            atoms_from_lp['white_tb'] *= np.array([1., 1., 0.])
-            atoms_from_lp['black_tb'] *= np.array([1., 1., 0.])
+            atoms_from_lp = {
+                    'white_tb': parent_frac_atoms * np.array([1., 1., 0.]),
+                    'white': parent_frac_atoms,
+                    'black_tb': twin_frac_atoms * np.array([1., 1., 0.]),
+                    'black': twin_frac_atoms
+                    }
+        else:
+            atoms_from_lp = {
+                    'white_tb': parent_frac_atoms,
+                    'white': parent_frac_atoms,
+                    'black_tb': twin_frac_atoms,
+                    'black': twin_frac_atoms
+                    }
 
         output_structure = {
                 'lattice': tb_shear_frame,
