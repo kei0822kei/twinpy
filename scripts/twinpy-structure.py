@@ -40,6 +40,8 @@ def get_argparse():
                         help="delta")
     parser.add_argument('--expansion_ratios', type=str, default='1 1 1',
                         help="expansion_ratios")
+    parser.add_argument('--no_make_tb_flat', action='store_true',
+                        help="do not project atoms on the twin boundary")
     parser.add_argument('-c', '--posfile', default=None,
                         help="POSCAR file")
     parser.add_argument('--get_poscar', action='store_true',
@@ -88,6 +90,7 @@ def main(structure,
          layers,
          delta,
          expansion_ratios,
+         no_make_tb_flat,
          posfile,
          get_poscar,
          get_lattice,
@@ -145,13 +148,15 @@ def main(structure,
                 )
 
     else:
+        make_tb_flat = not no_make_tb_flat
         twinpy.set_twinboundary(twintype=twintype,
                                 xshift=xshift,
                                 yshift=yshift,
                                 layers=layers,
                                 delta=delta,
                                 shear_strain_ratio=shear_strain_ratio,
-                                expansion_ratios=expansion_ratios)
+                                expansion_ratios=expansion_ratios,
+                                make_tb_flat=make_tb_flat)
         std = twinpy.get_twinboundary_standardize(
                 get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
@@ -199,6 +204,7 @@ if __name__ == '__main__':
          layers=args.layers,
          delta=args.delta,
          expansion_ratios=expand,
+         no_make_tb_flat=args.no_make_tb_flat,
          posfile=args.posfile,
          get_poscar=args.get_poscar,
          get_lattice=args.get_lattice,

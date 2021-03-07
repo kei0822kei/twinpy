@@ -226,6 +226,7 @@ class Twinpy():
                          yshift:float=0.,
                          shear_strain_ratio:float=0.,
                          expansion_ratios:np.array=np.ones(3),
+                         make_tb_flat:bool=True,
                          ):
         """
         Set twinboundary structure object.
@@ -238,6 +239,8 @@ class Twinpy():
             yshift: y shift.
             shear_strain_ratio: Shear twinboundary ratio.
             expansion_ratios: Expansion ratios.
+            make_tb_flat: If True, atoms on the twin boundary plane are
+                          projected to twin boundary.
         """
         self._twinboundary = get_twinboundary(
                 lattice=self._hexagonal_lattice,
@@ -250,7 +253,8 @@ class Twinpy():
                 shear_strain_ratio=shear_strain_ratio,
                 expansion_ratios=expansion_ratios,
                 layers=layers,
-                delta=delta)
+                delta=delta,
+                make_tb_flat=make_tb_flat)
 
     @property
     def twinboundary(self):
