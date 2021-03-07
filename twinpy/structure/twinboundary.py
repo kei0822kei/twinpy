@@ -277,14 +277,14 @@ class TwinBoundaryStructure(_BaseTwinStructure):
         twin_frac_atoms = np.dot(np.linalg.inv(tb_frame.T),
                                  twin_cart_atoms.T).T
 
-        white_tb_ix = \
-                [ i for i in range(len(dichs)) if dichs[i] == 'white_tb' ]
         white_ix = \
                 [ i for i in range(len(dichs)) if dichs[i] == 'white' ]
-        black_tb_ix = \
-                [ i for i in range(len(dichs)) if dichs[i] == 'black_tb' ]
+        white_tb_ix = \
+                [ i for i in range(len(dichs)) if dichs[i] == 'white_tb' ]
         black_ix = \
                 [ i for i in range(len(dichs)) if dichs[i] == 'black' ]
+        black_tb_ix = \
+                [ i for i in range(len(dichs)) if dichs[i] == 'black_tb' ]
         symbols = [ self._symbol ] * len(lat_points) * len(parent_frac_atoms)
         tb_shear_frame = self._get_shear_twinboundary_lattice(
                 tb_lattice=tb_frame,
@@ -297,20 +297,16 @@ class TwinBoundaryStructure(_BaseTwinStructure):
                 'black': lat_points[black_ix]
                 }
 
+        atoms_from_lp = {
+                'white': parent_frac_atoms,
+                'white_tb': parent_frac_atoms.copy(),
+                'black': twin_frac_atoms,
+                'black_tb': twin_frac_atoms.copy(),
+                }
+
         if make_tb_flat:
-            atoms_from_lp = {
-                    'white_tb': parent_frac_atoms * np.array([1., 1., 0.]),
-                    'white': parent_frac_atoms,
-                    'black_tb': twin_frac_atoms * np.array([1., 1., 0.]),
-                    'black': twin_frac_atoms
-                    }
-        else:
-            atoms_from_lp = {
-                    'white_tb': parent_frac_atoms,
-                    'white': parent_frac_atoms,
-                    'black_tb': twin_frac_atoms,
-                    'black': twin_frac_atoms
-                    }
+            atoms_from_lp['white_tb'] *= np.array([1., 1., 0.])
+            atoms_from_lp['black_tb'] *= np.array([1., 1., 0.])
 
         output_structure = {
                 'lattice': tb_shear_frame,
