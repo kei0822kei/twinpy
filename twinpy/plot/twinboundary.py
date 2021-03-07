@@ -17,6 +17,7 @@ def plot_plane(ax,
                z_coords:list,
                label:str=None,
                decorate:bool=True,
+               show_half:bool=False,
                **kwargs):
     """
     Plot plane.
@@ -27,6 +28,8 @@ def plot_plane(ax,
         z_coords (list): List of z coordinate of each plane.
         label (str): Plot label.
         decorate (bool): If True, ax is decorated.
+        show_half: If True, atom planes which are periodically equivalent are
+                   not showed.
     """
     if decorate:
         xlabel = 'Distance'
@@ -43,7 +46,13 @@ def plot_plane(ax,
 
     c = np.sum(distances)
     fixed_z_coords = _z_coords + distances[0] / 2 - c / 2
+    num = len(fixed_z_coords)
+    bulk_distance = _distances[int(num/4)]
 
+    if show_half:
+        n = int((num + 2) / 4)
+        _distances = _distances[n:3*n]
+        fixed_z_coords = fixed_z_coords[n:3*n]
     line_chart(ax=ax,
                xdata=_distances,
                ydata=fixed_z_coords,
@@ -54,17 +63,24 @@ def plot_plane(ax,
                **kwargs)
 
     if decorate:
-        num = len(fixed_z_coords)
-        tb_idx = [1, int(num/2), num-1]
-        bulk_distance = _distances[int(num/4)]
         xmin = bulk_distance - 0.025
         xmax = bulk_distance + 0.025
-        for idx in tb_idx:
-            ax.hlines(fixed_z_coords[idx]-distances[0]/2,
+        if show_half:
+            ax.hlines(0,
                       xmin=xmin-0.01,
                       xmax=xmax+0.01,
                       linestyle='--',
-                      linewidth=1.5)
+                      color='k',
+                      linewidth=1.)
+        else:
+            tb_idx = [1, int(num/2), num-1]
+            for idx in tb_idx:
+                ax.hlines(fixed_z_coords[idx]-distances[0]/2,
+                          xmin=xmin-0.01,
+                          xmax=xmax+0.01,
+                          linestyle='--',
+                          color='k',
+                          linewidth=1.)
 
 
 def plot_angle(ax,
