@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Aiida interface for twinpy.
 """
+
 from pprint import pprint
 from copy import deepcopy
 import numpy as np
@@ -304,3 +304,31 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         self._print_common_information()
         print_header('PKs')
         pprint(self.get_pks())
+
+
+# @with_dbenv()
+# class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
+#     """
+#     TwinBoundaryShear work chain class.
+#     """
+# 
+#     def __init__(
+#             self,
+#             node:Node,
+#             ):
+#         """
+#         Args:
+#             node: TwinBoundaryShearWorkChain node.
+#         """
+#         process_class = 'TwinBoundaryShearWorkChain'
+#         check_process_class(node, process_class)
+#         super().__init__(node=node)
+#         self._twinboundary_parameters = None
+#         self._cells = None
+#         self._structure_pks = None
+#         self._set_twinboundary()
+#         self._twinboundary_structure = None
+#         self._standardize = None
+#         self._set_twinboundary_structure()
+# 
+#     def _set_twinboundary(self):
