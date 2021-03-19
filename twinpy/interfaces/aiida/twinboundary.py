@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Aiida interface for twinpy.
 """
+
 from pprint import pprint
 from copy import deepcopy
 import numpy as np
