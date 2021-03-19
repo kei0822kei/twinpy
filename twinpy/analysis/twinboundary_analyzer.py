@@ -237,9 +237,9 @@ class TwinBoundaryAnalyzer():
         Get TwinBoundaryShearAnalyzer class object.
 
         Args:
-            shear_phonon_analyzers (list): List of additional shear
+            shear_phonon_analyzers: List of additional shear
                                            phonon analyzers.
-            shear_strain_ratios (list): Shear shear_strain_ratios.
+            shear_strain_ratios: Shear shear_strain_ratios.
         """
         if shear_phonon_analyzers is None:
             _relax_analyzers = [self.phonon_analyzer.relax_analyzer]
