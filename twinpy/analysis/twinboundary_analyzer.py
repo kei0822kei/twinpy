@@ -1,4 +1,4 @@
-#!/usr/bin/env pythoo
+#!/usr/bin/env python
 
 """
 Analize twinboudnary relax calculation.
