@@ -366,9 +366,16 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     self._current_final_cell = aiida_vasp.initial_cell
 
     @property
-    def current_final_cell(self):
+    def final_cell(self):
         """
         Final cell.
+        """
+        return self._final_cell
+
+    @property
+    def current_final_cell(self):
+        """
+        Current final cell.
         """
         return self._current_final_cell
 
