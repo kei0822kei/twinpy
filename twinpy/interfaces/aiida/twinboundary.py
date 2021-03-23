@@ -9,11 +9,12 @@ from copy import deepcopy
 import numpy as np
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.orm import (load_node,
-                       Node,
-                       KpointsData,
+                       Bool,
                        Float,
                        Int,
-                       Bool)
+                       KpointsData,
+                       Node,
+                       )
 from twinpy.common.utils import print_header
 from twinpy.interfaces.aiida.base import (check_process_class,
                                           get_aiida_structure,
