@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Get twinpy strucuture
@@ -58,6 +57,9 @@ def get_argparse():
                         help="get conventional standardized")
     parser.add_argument('--dump', action='store_true',
                         help="dump twinpy structure object to yaml")
+    parser.add_argument('--show_nearest_distance', action='store_true',
+                        help="Show nearest atomic distance.")
+
     arguments = parser.parse_args()
 
     return arguments
@@ -99,6 +101,7 @@ def main(structure,
          get_primitive_standardized,
          get_conventional_standardized,
          dump,
+         show_nearest_distance,
          ):
 
     move_atoms_into_unitcell = True
@@ -162,6 +165,22 @@ def main(structure,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
                 )
 
+        if show_nearest_distance:
+            from twinpy.structure.twinboundary \
+                    import plot_nearest_atomic_distance_of_twinboundary
+            plot_nearest_atomic_distance_of_twinboundary(
+                    lattice=lattice,
+                    symbol=symbol,
+                    twinmode=twinmode,
+                    layers=layers,
+                    wyckoff=wyckoff,
+                    delta=delta,
+                    twintype=twintype,
+                    shear_strain_ratio=shear_strain_ratio,
+                    expansion_ratios=expansion_ratios,
+                    make_tb_flat=make_tb_flat,
+                    )
+
     if get_primitive_standardized:
         to_primitive = True
     elif get_conventional_standardized:
@@ -180,8 +199,9 @@ def main(structure,
                        get_sort_list=get_sort_list,
                        )
 
-    write_poscar(cell=out_cell,
-                 filename=output)
+    if output is not None:
+        write_poscar(cell=out_cell,
+                     filename=output)
 
     if dump:
         twinpy.dump_yaml()
@@ -213,4 +233,5 @@ if __name__ == '__main__':
          get_primitive_standardized=args.get_primitive_standardized,
          get_conventional_standardized=args.get_conventional_standardized,
          dump=args.dump,
+         show_nearest_distance=args.show_nearest_distance,
          )
