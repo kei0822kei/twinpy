@@ -175,14 +175,14 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             AiidaRelaxCollection: Collection of aiida relax.
         """
         relax_pk = self.get_pks()['relax_pk']
-        if additional_relax_pks is None:
-            aiida_relax = AiidaRelaxWorkChain(load_node(relax_pk))
-        else:
+        if additional_relax_pks:
             relax_pks = deepcopy(additional_relax_pks)
             relax_pks.insert(0, relax_pk)
             aiida_relaxes = \
                     [ AiidaRelaxWorkChain(load_node(pk)) for pk in relax_pks ]
             aiida_relax = AiidaRelaxCollection(aiida_relaxes)
+        else:
+            aiida_relax = AiidaRelaxWorkChain(load_node(relax_pk))
 
         return aiida_relax
 
