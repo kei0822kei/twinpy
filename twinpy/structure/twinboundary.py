@@ -412,19 +412,20 @@ def plot_nearest_atomic_distance_of_twinboundary(
                                wyckoff=wyckoff)
     tb.set_expansion_ratios(expansion_ratios)
 
-    x = np.arange(0, 1.05, 0.05)
-    y = np.arange(0, 1.05, 0.05)
+    x = np.arange(0, 1.025, 0.025)
+    y = np.arange(0, 1.025, 0.025)
 
     X, Y = np.meshgrid(x, y)
     shape = X.shape
+    print(shape)
     Z = np.zeros(shape)
 
     for i in range(shape[0]):
         for j in range(shape[1]):
             tb.run(layers=layers,
                    delta=delta,
-                   xshift=x[i],
-                   yshift=y[j],
+                   xshift=X[i,j],
+                   yshift=Y[i,j],
                    shear_strain_ratio=shear_strain_ratio,
                    make_tb_flat=make_tb_flat)
             cell = tb.get_cell_for_export()
