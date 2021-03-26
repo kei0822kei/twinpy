@@ -36,11 +36,11 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
         super().__init__(node=node)
         self._shear_strain_ratios = None
         self._set_shear_strain_ratios()
-        self._structure_pks = None
-        self._set_structure_pks()
         self._shear_relax_pks = None
         self._aiida_relaxes = None
         self._set_aiida_relaxes()
+        self._structure_pks = None
+        self._set_structure_pks()
         self._twinboundary_analyzer = None
 
     def _set_shear_strain_ratios(self):
@@ -75,9 +75,18 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
             cf = load_node(pk)
             orig_pks.append(cf.outputs.twinboundary_shear_structure_orig.pk)
             input_pks.append(cf.outputs.twinboundary_shear_structure.pk)
+
+        rlx_pks = []
+        for aiida_rlx, i_struct_pk in zip(self.aiida_relaxes, input_pks):
+            pks = aiida_rlx.get_pks()
+            assert pks['initial_structure_pk'] == i_struct_pk, \
+                    "Input structure does not match."
+            rlx_pks.append(pks['final_structure_pk'])
+
         self._structure_pks = {
                 'original_structures': orig_pks,
                 'structures': input_pks,
+                'relax_structures': rlx_pks,
                 }
 
     @property
