@@ -12,6 +12,7 @@ Note:
 import itertools
 import numpy as np
 from twinpy.structure.lattice import CrystalLattice
+from twinpy.interfaces.pymatgen import get_pymatgen_structure
 
 
 def get_neighbors(cell:tuple,
@@ -270,3 +271,27 @@ def _get_atomic_environment(cell:tuple, layer_indices:list) -> tuple:
             list(distances),
             list(angles),
             pair_distances)
+
+
+def get_nearest_atomic_distance(cell:tuple,
+                                cutoff_distance:float=4.,
+                                show_center_atom:bool=True):
+    """
+    Get nearest atomic distance.
+
+    Args:
+        cell: Cell.
+        cutoff_distance: Cutoff distance.
+
+    Note:
+        This function enumerate all atomic distances within cutoff distance
+        by using 'get_neighbor_list' in pymatgen.core.structure.Istrucutre
+        class, first and get nearest neighbor atomic distance.
+    """
+    pmgstruct = get_pymatgen_structure(cell)
+    centers, _, _, distances = pmgstruct.get_neighbor_list(cutoff_distance)
+    minimum_distance = min(distances)
+    if show_center_atom:
+        center_idx = centers[np.argmin(distances)]
+        print("center: {}".format(pmgstruct.sites[center_idx].frac_coords))
+    return minimum_distance
