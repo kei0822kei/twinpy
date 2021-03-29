@@ -272,8 +272,8 @@ class TwinBoundaryAnalyzer():
             shear_strain_ratios: Shear shear_strain_ratios.
         """
         def _get_finished_idx(aiida_rlxes):
-            idx = len(aiida_rlxes-1)
-            for i, aiida_rlx in aiida_rlxes:
+            idx = len(aiida_rlxes) - 1
+            for i, aiida_rlx in enumerate(aiida_rlxes):
                 if not aiida_rlx.process_state == 'finished':
                     warnings.warn("{}th RelaxWorkChain has not finished ",
                                   "yet.".format(i))
