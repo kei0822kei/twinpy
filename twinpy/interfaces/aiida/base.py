@@ -60,26 +60,6 @@ def get_aiida_structure(cell:tuple) -> StructureData:
     return structure
 
 
-# def get_workflow_pks(node, workflow) -> list:
-#     """
-#     Get workflow pks in the node.
-# 
-#     Args:
-#         node: Aiida node.
-#         workflow: Workflow, ex. workflow = WorkflowFactory('vasp.relax').
-# 
-#     Returns:
-#         list: PKs.
-#     """
-#     qb = QueryBuilder()
-#     qb.append(Node, filters={'id':{'==': node.pk}}, tag='wf')
-#     qb.append(workflow, with_incoming='wf', project=['id'])
-#     print(qb.all())
-#     pks = [ wf[0] for wf in qb.all() ]
-#     pks.sort(key=lambda x: x)
-#     return pks
-
-
 def get_cell_from_aiida(structure:StructureData,
                         get_scaled_positions:bool=True) -> tuple:
     """
