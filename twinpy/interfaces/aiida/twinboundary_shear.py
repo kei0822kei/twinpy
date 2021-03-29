@@ -202,3 +202,18 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
                 shear_phonon_pks=shear_phonon_pks,
                 )
         return tb_shear_analyzer
+
+    def get_pks(self):
+        """
+        Get workflow pks.
+
+        Returns:
+            dict: Workflow pks.
+        """
+        wf_pks = {
+            'twinboundary_relax_pk': self._aiida_twinboundary_relax.pk,
+            'additional_relax_pks': self._additional_relax_pks,
+            'shear_aiida_relax_pks': [ shr_rlx.pk for shr_rlx
+                                           in self._shear_aiida_relaxes ],
+            }
+        return wf_pks
