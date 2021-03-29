@@ -194,7 +194,6 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
         tb_anal = self._twinboundary_analyzer
         shr_rlx_pks = [ aiida_rlx.pk for aiida_rlx in self._shear_aiida_relaxes ]
         ratios = self.shear_strain_ratios
-        print(shr_rlx_pks)
 
         tb_shear_analyzer = \
             tb_anal.get_twinboundary_shear_analyzer_from_relax_pks(
