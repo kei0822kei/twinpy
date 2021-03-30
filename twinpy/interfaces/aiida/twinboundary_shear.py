@@ -18,8 +18,6 @@ from twinpy.interfaces.aiida.twinboundary \
         import AiidaTwinBoudnaryRelaxWorkChain
 
 
-RLX_WF = WorkflowFactory('vasp.relax')
-TB_RLX_WF = WorkflowFactory('twinpy.twinboundary_relax')
 
 
 @with_dbenv()
@@ -108,8 +106,9 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
         """
         Set twinboundary relax pk.
         """
+        tb_rlx_wf = WorkflowFactory('twinpy.twinboundary_relax')
         tb_rlx_struct_pk = self._node.inputs.twinboundary_relax_structure.pk
-        tb_rlx = get_create_node(tb_rlx_struct_pk, TB_RLX_WF)
+        tb_rlx = get_create_node(tb_rlx_struct_pk, tb_rlx_wf)
         self._aiida_twinboundary_relax \
                 = AiidaTwinBoudnaryRelaxWorkChain(tb_rlx)
 
@@ -117,9 +116,10 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
         """
         Set list of AiidaRelaxWorkChain objects.
         """
+        rlx_wf = WorkflowFactory('vasp.relax')
         qb = QueryBuilder()
         qb.append(Node, filters={'id':{'==': self._pk}}, tag='wf')
-        qb.append(RLX_WF, with_incoming='wf', project=['id'])
+        qb.append(rlx_wf, with_incoming='wf', project=['id'])
         rlx_pks = [ q[0] for q in qb.all() ]
         self._shear_aiida_relaxes = [ AiidaRelaxWorkChain(load_node(pk))
                                          for pk in rlx_pks ]
@@ -132,7 +132,7 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
                               for key in dir(self._node.inputs)
                                 if 'additional_relax__structure' in key ]
         self._additional_relax_pks = \
-                [ get_create_node(pk, RLX_WF).pk for pk in addi_struct_pks ]
+                [ get_create_node(pk, rlx_wf).pk for pk in addi_struct_pks ]
 
     @property
     def shear_aiida_relaxes(self):
