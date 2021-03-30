@@ -11,7 +11,7 @@
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English"
     ],
-    "version": "0.0.1",
+    "version": "1.0.0",
     "include_package_data": true,
     "reentry_register": true,
     "install_requires": [
