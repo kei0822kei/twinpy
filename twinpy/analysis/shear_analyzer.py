@@ -169,7 +169,7 @@ class _BaseShearAnalyzer():
                             dry_run=dry_run,
                             is_eigenvectors=is_eigenvectors,
                             is_gamma_center=is_gamma_center,
-                            verbose=True)
+                            verbose=verbose)
 
     def get_total_doses(self,
                         is_store:bool=True,
@@ -339,10 +339,7 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         ax = fig.add_subplot(111)
 
         for i, ratio in enumerate(self._shear_strain_ratios):
-            if i == len(envs)-1:
-                decorate = True
-            else:
-                decorate = False
+            decorate = bool(i == len(envs)-1)
             label = "shear ratio: %1.2f" % ratio
             plot_plane(ax,
                        distances=envs[i][1],
@@ -363,10 +360,7 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         ax = fig.add_subplot(111)
 
         for i, ratio in enumerate(self._shear_strain_ratios):
-            if i == len(envs)-1:
-                decorate = True
-            else:
-                decorate = False
+            decorate = bool(i == len(envs)-1)
             label = "shear ratio: %1.2f" % ratio
             plot_angle(ax,
                        z_coords=envs[i][0],
@@ -387,10 +381,7 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         ax = fig.add_subplot(111)
 
         for i, ratio in enumerate(self._shear_strain_ratios):
-            if i == len(envs)-1:
-                decorate = True
-            else:
-                decorate = False
+            decorate = bool(i == len(envs)-1)
             label = "shear ratio: %1.2f" % ratio
             plot_pair_distance(ax,
                                z_coords=envs[i][0],
@@ -413,10 +404,7 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
         ax = fig.add_subplot(111)
 
         for i, cells in enumerate(i_f_cells):
-            if i == len(i_f_cells)-1:
-                decorate = True
-            else:
-                decorate = False
+            decorate = bool(i == len(i_f_cells)-1)
             label = "shear ratio: %1.2f" % self._shear_strain_ratios[i]
             plot_atom_diff(ax,
                            initial_cell=cells[0],
@@ -427,13 +415,12 @@ class TwinBoundaryShearAnalyzer(_BaseShearAnalyzer):
                            shuffle=shuffle,
                            )
 
-    def write_poscars(self, header:str='', is_original_frame:bool=True):
+    def write_poscars(self, header:str=''):
         """
-        Write poscars
+        Write poscars with original frame.
 
         Args:
-            header (str): File header.
-            is_original_frame (bool): Poscar is in original frame.
+            header: File header.
         """
         orig_cells = [ relax_analyzer.final_cell_in_original_frame
                            for relax_analyzer in self._relax_analyzers ]

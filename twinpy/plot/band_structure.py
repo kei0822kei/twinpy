@@ -5,14 +5,15 @@
 Band plot.
 """
 
-import numpy as np
 from copy import deepcopy
+import numpy as np
+from matplotlib import pyplot as plt
 from phonopy.phonon.band_structure import BandStructure
 from twinpy.plot.base import (create_figure_axes,
                               get_plot_properties_for_trajectory)
 
-from matplotlib import pyplot as plt
 plt.rcParams["font.family"] = "times new roman"
+
 
 def decorate_string_for_latex(string):
     """
@@ -52,12 +53,13 @@ def get_axes_distances(band_structure:BandStructure) -> list:
     widths = []
     for distance, path_connection in zip(band_structure.get_distances(),
                                          band_structure.path_connections):
-        if path_connection:
+        if not path_connection:
             continue
-        else:
-            width = distance[-1] - min_distance
-            widths.append(width)
-            min_distance = distance[-1]
+
+        width = distance[-1] - min_distance
+        widths.append(width)
+        min_distance = distance[-1]
+
     return widths
 
 
@@ -131,25 +133,28 @@ class BandPlot():
         dis = []
         iter_labels = iter(labels)
         labels_qpoints = []
-        for i in range(len(path_connections)):
+        # for i in range(len(path_connections)):
+        for freq, dis, conn in zip(frequences, distances, path_connections):
             if labels_qpoints == []:
                 labels_qpoints = [(iter_labels.__next__(), 0.)]
-            freqs.append(frequences[i])
-            dis.extend(distances[i])
+            freqs.append(freq)
+            dis.extend(dis)
             labels_qpoints.append((iter_labels.__next__(), dis[-1]-dis[0]))
-            if path_connections[i]:
+
+            if conn:
                 continue
+
+            if len(freqs) == 1:
+                seg_freqs.append(freqs[0])
             else:
-                if len(freqs) == 1:
-                    seg_freqs.append(freqs[0])
-                else:
-                    seg_freqs.append(np.vstack(freqs))
-                dis = np.array(dis) - dis[0]
-                seg_dis.append(dis)
-                seg_labels_qpoints.append(labels_qpoints)
-                freqs = []
-                dis = []
-                labels_qpoints = []
+                seg_freqs.append(np.vstack(freqs))
+            dis = np.array(dis) - dis[0]
+            seg_dis.append(dis)
+            seg_labels_qpoints.append(labels_qpoints)
+            freqs = []
+            dis = []
+            labels_qpoints = []
+
         self._segment_frequences = seg_freqs
         self._segment_distances = seg_dis
         self._segment_labels_distances = seg_labels_qpoints
@@ -211,10 +216,7 @@ class BandPlot():
             ax.plot(distances, frequences[:,i], c=c, linestyle=linestyle,
                     alpha=alpha, linewidth=linewidth, label=_label)
         ax.set_xlim(min(distances), max(distances))
-        if show_yscale:
-            labelleft = True
-        else:
-            labelleft = False
+        labelleft = bool(show_yscale)
         ax.tick_params(axis='y', labelsize=20)
         ax.tick_params(labelbottom=True,
                        labelleft=labelleft,
@@ -251,7 +253,7 @@ class BandPlot():
         """
         labels = [ ld[0] for ld in self._segment_labels_distances[idx] ]
         distances = [ ld[1] for ld in self._segment_labels_distances[idx] ]
-        for label, distance in zip(labels, distances):
+        for distance in distances:
             ax.axvline(distance, c='grey', linestyle='--', linewidth=0.5)
         ax.set_xticks(distances)
         decorated_labels = [ decorate_string_for_latex(label)
@@ -423,7 +425,10 @@ class BandsPlot():
         """
         return self._max_frequency
 
-    def plot_band_structures(self, figsize=(8,6), dosesplot=None, dos_distance=0.3):
+    def plot_band_structures(self,
+                             figsize=(8,6),
+                             dosesplot=None,
+                             dos_distance=0.3):
         """
         Plot band structures.
 
@@ -439,7 +444,7 @@ class BandsPlot():
                                        axes_pad=0.03)
 
         for j, bandplot in enumerate(self._bandplots):
-            for i in range(len((self._bandplots[0]._segment_frequences))):
+            for i in range(len((self._bandplots[0].segment_frequences))):
                 if i == 0 and j == 0:
                     label = 'Initial'
                 elif i == 0 and j == len(self._bandplots)-1:
@@ -447,10 +452,7 @@ class BandsPlot():
                 else:
                     label = None
 
-                if i == 0:
-                    show_yscale = True
-                else:
-                    show_yscale = False
+                show_yscale = bool(i==0)
                 bandplot.plot_segment_band_structure(
                         ax=axes[i],
                         frequences=bandplot.segment_frequences[i],

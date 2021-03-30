@@ -19,6 +19,8 @@ from twinpy.interfaces.aiida.twinboundary \
 
 
 RLX_WF = WorkflowFactory('vasp.relax')
+TB_RLX_WF = WorkflowFactory('twinpy.twinboundary_relax')
+
 
 @with_dbenv()
 class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
@@ -47,6 +49,7 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
         self._set_aiida_twinboundary_relax()
         self._additional_relax_pks = None
         self._set_additional_relax_pks()
+        self._twinboundary_analyzer = None
 
     def _set_shear_strain_ratios(self):
         """
@@ -105,9 +108,8 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
         """
         Set twinboundary relax pk.
         """
-        tb_RLX_WF = WorkflowFactory('twinpy.twinboundary_relax')
         tb_rlx_struct_pk = self._node.inputs.twinboundary_relax_structure.pk
-        tb_rlx = get_create_node(tb_rlx_struct_pk, tb_RLX_WF)
+        tb_rlx = get_create_node(tb_rlx_struct_pk, TB_RLX_WF)
         self._aiida_twinboundary_relax \
                 = AiidaTwinBoudnaryRelaxWorkChain(tb_rlx)
 
@@ -115,7 +117,6 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
         """
         Set list of AiidaRelaxWorkChain objects.
         """
-        RLX_WF = WorkflowFactory('vasp.relax')
         qb = QueryBuilder()
         qb.append(Node, filters={'id':{'==': self._pk}}, tag='wf')
         qb.append(RLX_WF, with_incoming='wf', project=['id'])
@@ -153,7 +154,6 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
             hexagonal_relax_pk: Hexagonal relax calculation pk.
             hexagonal_phonon_pk: Hexagonal phonon calculation pk.
         """
-        conf = self._node.inputs.twinboundary_shear_conf.get_dict()
         tb_rlx_pk = self._aiida_twinboundary_relax.pk
         addi_rlx_pks = self._additional_relax_pks
 
@@ -192,7 +192,8 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
             raise RuntimeError("Please set twinboundary_analyzer before.")
 
         tb_anal = self._twinboundary_analyzer
-        shr_rlx_pks = [ aiida_rlx.pk for aiida_rlx in self._shear_aiida_relaxes ]
+        shr_rlx_pks = \
+                [ aiida_rlx.pk for aiida_rlx in self._shear_aiida_relaxes ]
         ratios = self.shear_strain_ratios
 
         tb_shear_analyzer = \
@@ -202,3 +203,18 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
                 shear_phonon_pks=shear_phonon_pks,
                 )
         return tb_shear_analyzer
+
+    def get_pks(self):
+        """
+        Get workflow pks.
+
+        Returns:
+            dict: Workflow pks.
+        """
+        wf_pks = {
+            'twinboundary_relax_pk': self._aiida_twinboundary_relax.pk,
+            'additional_relax_pks': self._additional_relax_pks,
+            'shear_aiida_relax_pks': [ shr_rlx.pk for shr_rlx
+                                           in self._shear_aiida_relaxes ],
+            }
+        return wf_pks
