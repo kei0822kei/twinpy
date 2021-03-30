@@ -1,11 +1,11 @@
-#!/usr/bin/env pythoo
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python
 
 """
 Analize twinboudnary relax calculation.
 """
-import numpy as np
 from copy import deepcopy
+import warnings
+import numpy as np
 from matplotlib import pyplot as plt
 from aiida.orm import load_node
 from twinpy.structure.bonding import _get_atomic_environment
@@ -217,6 +217,7 @@ class TwinBoundaryAnalyzer():
             frac_coords = atom_positions
 
         shear_cell = (shear_lat, frac_coords, orig_relax_cell[2])
+
         if is_standardize:
             std_cell = get_standardized_cell(
                     cell=shear_cell,
@@ -224,8 +225,8 @@ class TwinBoundaryAnalyzer():
                     no_idealize=False,
                     no_sort=True)
             return std_cell
-        else:
-            return shear_cell
+
+        return shear_cell
 
     def get_twinboundary_shear_analyzer(self,
                                         shear_strain_ratios:list,
@@ -236,9 +237,9 @@ class TwinBoundaryAnalyzer():
         Get TwinBoundaryShearAnalyzer class object.
 
         Args:
-            shear_phonon_analyzers (list): List of additional shear
+            shear_phonon_analyzers: List of additional shear
                                            phonon analyzers.
-            shear_strain_ratios (list): Shear shear_strain_ratios.
+            shear_strain_ratios: Shear shear_strain_ratios.
         """
         if shear_phonon_analyzers is None:
             _relax_analyzers = [self.phonon_analyzer.relax_analyzer]
@@ -257,27 +258,37 @@ class TwinBoundaryAnalyzer():
                 layer_indices=self.get_layer_indeces())
         return twinboundary_shear_analyzer
 
-    def get_twinboundary_shear_analyzer_from_pks(self,
-                                                 shear_relax_pks:list,
-                                                 shear_strain_ratios:list,
-                                                 shear_phonon_pks:list=None,
-                                                 ):
+    def get_twinboundary_shear_analyzer_from_relax_pks(self,
+                                                       shear_relax_pks:list,
+                                                       shear_strain_ratios:list,
+                                                       shear_phonon_pks:list=None,
+                                                       ):
         """
         Get TwinBoundaryShearAnalyzer class object from pks.
 
         Args:
-            shear_relax_pks (list): Relaxes for shear structures.
-            shear_phonon_pks (list): Phonon calculations for shear structures.
-            shear_strain_ratios (list): Shear shear_strain_ratios.
+            shear_relax_pks: Relaxes for shear structures.
+            shear_phonon_pks: Phonon calculations for shear structures.
+            shear_strain_ratios: Shear shear_strain_ratios.
         """
-        original_cells = [ self.get_shear_cell(shear_strain_ratio=ratio,
-                                               is_standardize=False)
-                               for ratio in shear_strain_ratios ]
+        def _get_finished_idx(aiida_rlxes):
+            idx = len(aiida_rlxes) - 1
+            for i, aiida_rlx in enumerate(aiida_rlxes):
+                if not aiida_rlx.process_state == 'finished':
+                    warnings.warn("{}th RelaxWorkChain has not finished ",
+                                  "yet.".format(i))
+                    idx = i - 1
+            return idx
+
         aiida_relaxes = [ AiidaRelaxWorkChain(load_node(pk))
                               for pk in shear_relax_pks ]
+        ix = _get_finished_idx(aiida_relaxes) + 1
+        original_cells = [ self.get_shear_cell(shear_strain_ratio=ratio,
+                                               is_standardize=False)
+                              for ratio in shear_strain_ratios][:ix]
         relax_analyzers = [ relax.get_relax_analyzer(
                                     original_cell=original_cells[i])
-                                for i, relax in enumerate(aiida_relaxes) ]
+                                    for i, relax in enumerate(aiida_relaxes[:ix]) ]
         if shear_phonon_pks is None:
             phonon_analyzers = None
             _relax_analyzers = relax_analyzers
@@ -381,10 +392,7 @@ class TwinBoundaryAnalyzer():
         ax = fig.add_subplot(111)
 
         for direction in ['x', 'y', 'z']:
-            if direction == 'z':
-                decorate = True
-            else:
-                decorate = False
+            decorate = (direction == 'z')
             plot_atom_diff(ax,
                            initial_cell=initial_cell,
                            final_cell=final_cell,

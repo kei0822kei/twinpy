@@ -1,19 +1,20 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Aiida interface for twinpy.
 """
+
 from pprint import pprint
 from copy import deepcopy
 import numpy as np
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.orm import (load_node,
-                       Node,
-                       KpointsData,
+                       Bool,
                        Float,
                        Int,
-                       Bool)
+                       KpointsData,
+                       Node,
+                       )
 from twinpy.common.utils import print_header
 from twinpy.interfaces.aiida.base import (check_process_class,
                                           get_aiida_structure,
@@ -45,7 +46,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         process_class = 'TwinBoundaryRelaxWorkChain'
         check_process_class(node, process_class)
         super().__init__(node=node)
-        self._twinboundary_settings = None
+        self._twinboundary_parameters = None
         self._cells = None
         self._structure_pks = None
         self._set_twinboundary()
@@ -57,43 +58,45 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         Set twinboundary from vasp.
         """
-        parameters = self._node.called[-1].outputs.parameters.get_dict()
-        aiida_hexagonal = self._node.inputs.structure
-        aiida_tb = self._node.called[-1].outputs.twinboundary
-        aiida_tb_original = self._node.called[-1].outputs.twinboundary_orig
-        aiida_tb_relax = self._node.called[-2].outputs.relax__structure
-        tb = get_cell_from_aiida(aiida_tb)
-        tb_original = get_cell_from_aiida(aiida_tb_original)
-        tb_relax = get_cell_from_aiida(aiida_tb_relax)
+        tb_parameters = self._node.outputs.twinboundary_parameters.get_dict()
+        aiida_hex_structure = self._node.inputs.structure
+        aiida_tb_structure = self._node.called[0].outputs.twinboundary
+        aiida_tb_orig_structure = \
+                self._node.called[0].outputs.twinboundary_orig
+        aiida_tb_rlx_structure = \
+                self._node.called[-1].outputs.relax__structure
 
         round_cells = []
-        for cell in [ tb, tb_original, tb_relax ]:
+        for aiida_structure in [ aiida_tb_orig_structure,
+                                 aiida_tb_orig_structure,
+                                 aiida_tb_rlx_structure ]:
+            cell = get_cell_from_aiida(aiida_structure)
             round_lattice = np.round(cell[0], decimals=8)
             round_lattice = cell[0]
             round_atoms = np.round(cell[1], decimals=8) % 1
             round_cell = (round_lattice, round_atoms, cell[2])
             round_cells.append(round_cell)
 
-        self._twinboundary_settings = parameters
+        self._twinboundary_parameters = tb_parameters
         self._cells = {
-                'hexagonal': get_cell_from_aiida(aiida_hexagonal),
+                'hexagonal': get_cell_from_aiida(aiida_hex_structure),
                 'twinboundary': round_cells[0],
                 'twinboundary_original': round_cells[1],
                 'twinboundary_relax': round_cells[2],
                 }
         self._structure_pks = {
-                'hexagonal_pk': aiida_hexagonal.pk,
-                'twinboundary_pk': aiida_tb.pk,
-                'twinboundary_original_pk': aiida_tb_original.pk,
-                'twinboundary_relax_pk': aiida_tb_relax.pk,
+                'hexagonal_pk': aiida_hex_structure.pk,
+                'twinboundary_pk': aiida_tb_structure.pk,
+                'twinboundary_original_pk': aiida_tb_orig_structure.pk,
+                'twinboundary_relax_pk': aiida_tb_rlx_structure.pk,
                 }
 
     @property
-    def twinboundary_settings(self):
+    def twinboundary_parameters(self):
         """
         Twinboundary settings.
         """
-        return self._twinboundary_settings
+        return self._twinboundary_parameters
 
     @property
     def cells(self):
@@ -113,7 +116,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         Set twinpy structure object and standardize object.
         """
-        params = self._twinboundary_settings
+        params = self._twinboundary_parameters
         cell = get_cell_from_aiida(
                         load_node(self._structure_pks['hexagonal_pk']))
         lattice, _, symbols = cell
@@ -154,7 +157,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         Get pks.
         """
-        relax_pk = self._node.called[-2].pk
+        relax_pk = self._node.called[-1].pk
         pks = {}
         pks['twinboundary_pk'] = self._pk
         pks['relax_pk'] = relax_pk
@@ -172,14 +175,14 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
             AiidaRelaxCollection: Collection of aiida relax.
         """
         relax_pk = self.get_pks()['relax_pk']
-        if additional_relax_pks is None:
-            aiida_relax = AiidaRelaxWorkChain(load_node(relax_pk))
-        else:
+        if additional_relax_pks:
             relax_pks = deepcopy(additional_relax_pks)
             relax_pks.insert(0, relax_pk)
             aiida_relaxes = \
                     [ AiidaRelaxWorkChain(load_node(pk)) for pk in relax_pks ]
             aiida_relax = AiidaRelaxCollection(aiida_relaxes)
+        else:
+            aiida_relax = AiidaRelaxWorkChain(load_node(relax_pk))
 
         return aiida_relax
 

@@ -46,7 +46,7 @@ def test_TwinBoundaryStructure(ti_cell_wyckoff_c):
         pos = Poscar.from_file(filename)
         cell_expected = get_cell_from_pymatgen_structure(pos.structure)
 
-        is_same = check_same_cells(cell, cell_expected)
+        is_same = check_same_cells(cell, cell_expected, raise_error=True)
         assert is_same
 
     _twinpy_dir = os.path.dirname(os.path.dirname(twinpy.__file__))

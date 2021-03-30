@@ -10,11 +10,11 @@ from aiida.orm import (load_node,
                        QueryBuilder,
                        StructureData,
                        CalcFunctionNode)
+from aiida_twinpy.common.utils import get_called_nodes
 from twinpy.analysis.phonon_analyzer import PhononAnalyzer
 from twinpy.analysis.shear_analyzer import ShearAnalyzer
 from twinpy.interfaces.aiida.base import (check_process_class,
                                           get_cell_from_aiida,
-                                          get_workflow_pks,
                                           _WorkChain)
 from twinpy.interfaces.aiida.vasp import AiidaRelaxWorkChain
 from twinpy.interfaces.aiida.phonopy import AiidaPhonopyWorkChain
@@ -45,7 +45,8 @@ class AiidaShearWorkChain(_WorkChain):
         super().__init__(node=node)
 
         self._shear_conf = node.inputs.shear_conf.get_dict()
-        self._shear_ratios = node.outputs.shear_ratios['shear_ratios']
+        self._shear_strain_ratios = \
+                node.outputs.shear_strain_ratios['shear_strain_ratios']
         self._gamma = node.outputs.gamma.value
         self._is_phonon = node.inputs.is_phonon.value
 
@@ -91,11 +92,11 @@ class AiidaShearWorkChain(_WorkChain):
         return self._shear_conf
 
     @property
-    def shear_ratios(self):
+    def shear_strain_ratios(self):
         """
         Output shear ratios.
         """
-        return self._shear_ratios
+        return self._shear_strain_ratios
 
     @property
     def gamma(self):
@@ -170,8 +171,8 @@ class AiidaShearWorkChain(_WorkChain):
         Set relax in ShearWorkChain.
         """
         relax_wf = WorkflowFactory('vasp.relax')
-        rlx_pks = get_workflow_pks(node=self._node,
-                                   workflow=relax_wf)
+        rlx_pks = get_called_nodes(pk=self._node.pk,
+                                   called_node_type=relax_wf)
         self._relax_pks = rlx_pks
         self._relaxes = [ AiidaRelaxWorkChain(node=load_node(pk))
                               for pk in self._relax_pks ]
@@ -195,8 +196,8 @@ class AiidaShearWorkChain(_WorkChain):
         Set phonon_pks in ShearWorkChain.
         """
         phonon_wf = WorkflowFactory('phonopy.phonopy')
-        self._phonon_pks = get_workflow_pks(node=self._node,
-                                            workflow=phonon_wf)
+        self._phonon_pks = get_called_nodes(pk=self._node.pk,
+                                            called_node_type=phonon_wf)
         self._phonons = [ AiidaPhonopyWorkChain(node=load_node(pk))
                               for pk in self._phonon_pks ]
 
@@ -227,8 +228,10 @@ class AiidaShearWorkChain(_WorkChain):
             phonon_analyzer = PhononAnalyzer(phonon=phn,
                                              relax_analyzer=relax_analyzer)
             phonon_analyzers.append(phonon_analyzer)
-        shear_analyzer = ShearAnalyzer(shear_structure=self._shear_structure,
-                                       phonon_analyzers=phonon_analyzers)
+        shear_analyzer = ShearAnalyzer(
+                shear_structure=self._shear_structure,
+                shear_strain_ratios=self._shear_strain_ratios,
+                phonon_analyzers=phonon_analyzers)
         return shear_analyzer
 
     def get_pks(self) -> dict:

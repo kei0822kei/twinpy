@@ -9,9 +9,10 @@ Note:
     excute the functions in this module. They are written
     by C++ in the near future.
 """
-import numpy as np
 import itertools
+import numpy as np
 from twinpy.structure.lattice import CrystalLattice
+from twinpy.interfaces.pymatgen import get_pymatgen_structure
 
 
 def get_neighbors(cell:tuple,
@@ -33,7 +34,7 @@ def get_neighbors(cell:tuple,
               in the remaining elements. If get_distances=True,
               this function also returns distances.
     """
-    lattice = Lattice(cell[0])
+    lattice = CrystalLattice(cell[0])
     periodics = np.floor(distance_cutoff / lattice.abc).astype(int)  # round up
 
     neighbors = []
@@ -60,8 +61,8 @@ def get_neighbors(cell:tuple,
 
     if get_distances:
         return (neighbors, distances)
-    else:
-        return neighbors
+
+    return neighbors
 
 
 def get_nth_neighbor_distance(cell:tuple,
@@ -92,8 +93,8 @@ def get_nth_neighbor_distance(cell:tuple,
                                  get_distances=True)
     try:
         nth_distance = np.sort(np.unique(np.round(distances, decimals=1)))[n-1]
-    except IndexError:
-        raise RuntimeError("Please use greater max_distance")
+    except IndexError as no_found_site:
+        raise RuntimeError("Please use greater max_distance") from no_found_site
     return nth_distance
 
 
@@ -208,7 +209,7 @@ def _get_atomic_environment(cell:tuple, layer_indices:list) -> tuple:
     Returns:
         tuple: (planes, distances, angles)
     """
-    lattice = Lattice(cell[0])
+    lattice = CrystalLattice(cell[0])
     angles = lattice.angles
     np.testing.assert_allclose(
             angles[1:], [90., 90.],
@@ -223,15 +224,17 @@ def _get_atomic_environment(cell:tuple, layer_indices:list) -> tuple:
     c_norm = np.linalg.norm(cell[0], axis=1)[2]
     for i, indices in enumerate(layer_indices):
         pair_atoms = cell[1][indices,:]
-        pair_diff = lattice.get_diff(first_coords=pair_atoms[0],
-                                     second_coords=pair_atoms[1],
+        pair_diff = lattice.get_diff(first_coord=pair_atoms[0],
+                                     second_coord=pair_atoms[1],
+                                     is_cartesian=False,
                                      with_periodic=True)
-        pair_distance = lattice.get_norm(frac_coords=pair_diff,
+        pair_distance = lattice.get_norm(coord=pair_diff,
+                                         is_cartesian=False,
                                          with_periodic=True)
         pair_distances.append(pair_distance)
         lattice_point = lattice.get_midpoint(
-                first_coords=pair_atoms[0],
-                second_coords=pair_atoms[1],
+                first_coord=pair_atoms[0],
+                second_coord=pair_atoms[1],
                 with_periodic=True,
                 )
         if i == 0:
@@ -250,8 +253,8 @@ def _get_atomic_environment(cell:tuple, layer_indices:list) -> tuple:
 
     # # angles
         diff = lattice.get_diff(
-                   first_coords=pair_atoms[0],
-                   second_coords=pair_atoms[1],
+                   first_coord=pair_atoms[0],
+                   second_coord=pair_atoms[1],
                    is_cartesian=False,
                    with_periodic=True,
                    )
@@ -268,3 +271,27 @@ def _get_atomic_environment(cell:tuple, layer_indices:list) -> tuple:
             list(distances),
             list(angles),
             pair_distances)
+
+
+def get_nearest_atomic_distance(cell:tuple,
+                                cutoff_distance:float=4.,
+                                show_center_atom:bool=True):
+    """
+    Get nearest atomic distance.
+
+    Args:
+        cell: Cell.
+        cutoff_distance: Cutoff distance.
+
+    Note:
+        This function enumerate all atomic distances within cutoff distance
+        by using 'get_neighbor_list' in pymatgen.core.structure.Istrucutre
+        class, first and get nearest neighbor atomic distance.
+    """
+    pmgstruct = get_pymatgen_structure(cell)
+    centers, _, _, distances = pmgstruct.get_neighbor_list(cutoff_distance)
+    minimum_distance = min(distances)
+    if show_center_atom:
+        center_idx = centers[np.argmin(distances)]
+        print("center: {}".format(pmgstruct.sites[center_idx].frac_coords))
+    return minimum_distance

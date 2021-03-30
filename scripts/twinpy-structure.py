@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 Get twinpy strucuture
@@ -40,6 +39,8 @@ def get_argparse():
                         help="delta")
     parser.add_argument('--expansion_ratios', type=str, default='1 1 1',
                         help="expansion_ratios")
+    parser.add_argument('--no_make_tb_flat', action='store_true',
+                        help="do not project atoms on the twin boundary")
     parser.add_argument('-c', '--posfile', default=None,
                         help="POSCAR file")
     parser.add_argument('--get_poscar', action='store_true',
@@ -56,6 +57,9 @@ def get_argparse():
                         help="get conventional standardized")
     parser.add_argument('--dump', action='store_true',
                         help="dump twinpy structure object to yaml")
+    parser.add_argument('--show_nearest_distance', action='store_true',
+                        help="Show nearest atomic distance.")
+
     arguments = parser.parse_args()
 
     return arguments
@@ -88,6 +92,7 @@ def main(structure,
          layers,
          delta,
          expansion_ratios,
+         no_make_tb_flat,
          posfile,
          get_poscar,
          get_lattice,
@@ -96,6 +101,7 @@ def main(structure,
          get_primitive_standardized,
          get_conventional_standardized,
          dump,
+         show_nearest_distance,
          ):
 
     move_atoms_into_unitcell = True
@@ -145,17 +151,35 @@ def main(structure,
                 )
 
     else:
+        make_tb_flat = not no_make_tb_flat
         twinpy.set_twinboundary(twintype=twintype,
                                 xshift=xshift,
                                 yshift=yshift,
                                 layers=layers,
                                 delta=delta,
                                 shear_strain_ratio=shear_strain_ratio,
-                                expansion_ratios=expansion_ratios)
+                                expansion_ratios=expansion_ratios,
+                                make_tb_flat=make_tb_flat)
         std = twinpy.get_twinboundary_standardize(
                 get_lattice=get_lattice,
                 move_atoms_into_unitcell=move_atoms_into_unitcell,
                 )
+
+        if show_nearest_distance:
+            from twinpy.structure.twinboundary \
+                    import plot_nearest_atomic_distance_of_twinboundary
+            plot_nearest_atomic_distance_of_twinboundary(
+                    lattice=lattice,
+                    symbol=symbol,
+                    twinmode=twinmode,
+                    layers=layers,
+                    wyckoff=wyckoff,
+                    delta=delta,
+                    twintype=twintype,
+                    shear_strain_ratio=shear_strain_ratio,
+                    expansion_ratios=expansion_ratios,
+                    make_tb_flat=make_tb_flat,
+                    )
 
     if get_primitive_standardized:
         to_primitive = True
@@ -175,8 +199,9 @@ def main(structure,
                        get_sort_list=get_sort_list,
                        )
 
-    write_poscar(cell=out_cell,
-                 filename=output)
+    if output is not None:
+        write_poscar(cell=out_cell,
+                     filename=output)
 
     if dump:
         twinpy.dump_yaml()
@@ -185,6 +210,7 @@ def main(structure,
 if __name__ == '__main__':
     args = get_argparse()
     dimension = list(map(int, args.dim.split()))
+    expand = list(map(float, args.expansion_ratios.split()))
     assert args.structure in ['shear', 'twinboundary'], \
         "structure must be 'shear' or 'twinboundary'"
 
@@ -197,7 +223,8 @@ if __name__ == '__main__':
          dim=dimension,
          layers=args.layers,
          delta=args.delta,
-         expansion_ratios=args.expansion_ratios,
+         expansion_ratios=expand,
+         no_make_tb_flat=args.no_make_tb_flat,
          posfile=args.posfile,
          get_poscar=args.get_poscar,
          get_lattice=args.get_lattice,
@@ -206,4 +233,5 @@ if __name__ == '__main__':
          get_primitive_standardized=args.get_primitive_standardized,
          get_conventional_standardized=args.get_conventional_standardized,
          dump=args.dump,
+         show_nearest_distance=args.show_nearest_distance,
          )

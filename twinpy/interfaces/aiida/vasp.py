@@ -44,7 +44,7 @@ class _AiidaVaspWorkChain(_WorkChain):
         self._stress = None
         self._forces = None
         self._energy = None
-        if self._process_state == 'finished':
+        if self._exit_status == 0:
             self._set_properties()
 
     def _set_initial_structure(self):
@@ -66,10 +66,13 @@ class _AiidaVaspWorkChain(_WorkChain):
         """
         Set properties.
         """
-        misc = self._node.outputs.misc.get_dict()
-        self._forces = self._node.outputs.forces.get_array('final')
-        self._stress = self._node.outputs.stress.get_array('final')
-        self._energy = misc['total_energies']['energy_extrapolated']
+        try:
+            misc = self._node.outputs.misc.get_dict()
+            self._forces = self._node.outputs.forces.get_array('final')
+            self._stress = self._node.outputs.stress.get_array('final')
+            self._energy = misc['total_energies']['energy_extrapolated']
+        except NotExistentAttributeError:
+            warnings.warn("Could not extract outputs. Please check report.")
 
     @property
     def forces(self):
@@ -117,7 +120,7 @@ class _AiidaVaspWorkChain(_WorkChain):
         del dic['input_interval']
         del dic['decimal_handling']
         del dic['use_symmetry']
-        if self._exit_status is not None:
+        if self._exit_status == 0:
             sampling_kpoints = self._node.outputs.kpoints.get_array('kpoints')
             weights = self._node.outputs.kpoints.get_array('weights')
             weights_num = (weights * total_mesh).astype(int)
@@ -158,15 +161,16 @@ class _AiidaVaspWorkChain(_WorkChain):
         Print VASP run results.
         """
         kpoints_info_for_print = self.get_kpoints_info()
-        del kpoints_info_for_print['sampling_kpoints']
-        del kpoints_info_for_print['weights']
+        if self._exit_status == 0:
+            del kpoints_info_for_print['sampling_kpoints']
+            del kpoints_info_for_print['weights']
 
         print_header('VASP settings')
         pprint(self.get_vasp_settings())
         print("\n")
         print_header("kpoints information")
         pprint(kpoints_info_for_print)
-        if self._process_state == 'finished':
+        if self._exit_status == 0:
             print("\n")
             print_header('VASP outputs')
             print("# stress")
@@ -198,18 +202,24 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
         self._final_cell = None
         self._set_final_structure(ignore_warning=ignore_warning)
         self._step_energies = None
-        self._set_step_energies()
+        self._set_step_energies(ignore_warning=ignore_warning)
 
-    def _set_step_energies(self):
+    def _set_step_energies(self, ignore_warning):
         """
         Set step energies.
         """
-        eg = self._node.outputs.energies
-        self._step_energies = {
-            'energy_extrapolated': eg.get_array('energy_extrapolated'),
-            'energy_extrapolated_final':
-                eg.get_array('energy_extrapolated_final'),
-                }
+        try:
+            eg = self._node.outputs.energies
+            self._step_energies = {
+                'energy_extrapolated': eg.get_array('energy_extrapolated'),
+                'energy_extrapolated_final':
+                    eg.get_array('energy_extrapolated_final'),
+                    }
+        except NotExistentAttributeError:
+            if not ignore_warning:
+                warnings.warn("Output energy could not find.\n"
+                              "process state:{} (pk={})".format(
+                                  self.process_state, self._node.pk))
 
     def _set_final_structure(self, ignore_warning):
         """
@@ -356,9 +366,16 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                     self._current_final_cell = aiida_vasp.initial_cell
 
     @property
-    def current_final_cell(self):
+    def final_cell(self):
         """
         Final cell.
+        """
+        return self._final_cell
+
+    @property
+    def current_final_cell(self):
+        """
+        Current final cell.
         """
         return self._current_final_cell
 
