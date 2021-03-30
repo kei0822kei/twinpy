@@ -6,7 +6,7 @@ Interface for Aiida Node.
 """
 import warnings
 import numpy as np
-from aiida.orm import Node, QueryBuilder, StructureData
+from aiida.orm import Node, StructureData
 from twinpy.common.utils import print_header
 
 

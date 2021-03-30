@@ -5,10 +5,10 @@
 This module provides API for twinpy.
 """
 
-import warnings
 from pprint import pprint
 import numpy as np
 from aiida.orm import load_node
+from matplotlib import pyplot as plt
 from twinpy.file_io import write_poscar
 from twinpy.properties.hexagonal import get_wyckoff_from_hcp
 from twinpy.structure.shear import get_shear
@@ -438,7 +438,7 @@ class Twinpy():
             write_poscar(cell=cell,
                          filename=filename)
 
-    def plot_twinboundary_shear_bandstructure(
+    def plot_twinboundary_shear_bandstructures(
             self,
             npoints:int=51,
             with_eigenvectors:bool=False,
@@ -466,8 +466,8 @@ class Twinpy():
                         use_reciprocal_lattice=use_reciprocal_lattice,
                         )
         bsp = BandsPlot(band_structures=band_structures)
-        fig, _ = bsp.plot_band_structures()
-        fig.show()
+        _, _ = bsp.plot_band_structures()
+        plt.show()
 
     def show_twinboundary_reciprocal_high_symmetry_points(self):
         """
