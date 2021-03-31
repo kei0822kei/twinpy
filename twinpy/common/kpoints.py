@@ -142,17 +142,21 @@ class Kpoints():
 
         return fixed_mesh.tolist()
 
-    def get_offset(self, mesh:list=None) -> list:
+    def get_offset(self, use_gamma_center:bool=False, mesh:list=None) -> list:
         """
         Get offset.
 
         Args:
+            use_gamma_center: If use_gamma_center is True, return [0., 0., 0.].
             mesh: Optional. If mesh is parsed,
                             set offset element 0 where mesh is 1.
 
         Returns:
             list: Offset from origin centered mesh grids.
         """
+        if use_gamma_center:
+            return [0., 0., 0.]
+
         if self._is_hexagonal:
             offset = [0., 0., 0.5]
         else:
@@ -170,7 +174,8 @@ class Kpoints():
                              mesh:list=None,
                              include_two_pi:bool=True,
                              decimal_handling:str='round',
-                             use_symmetry:bool=True):
+                             use_symmetry:bool=True,
+                             use_gamma_center:bool=False):
         """
         Get mesh and offset.
 
@@ -183,6 +188,8 @@ class Kpoints():
                               'floor' and 'ceil', 'round' is set automatically.
             use_symmetry: When 'mesh' is None, 'use_symmetry' is called.
                           If True, run 'fix_mesh_based_on_symmetry'.
+            use_gamma_center: If use_gamma_center is True,
+                              offset becomes [0., 0., 0.].
 
         Raises:
             ValueError: Both mesh and interval are not specified.
@@ -205,7 +212,8 @@ class Kpoints():
                 _mesh = self.fix_mesh_based_on_symmetry(mesh=_mesh)
         else:
             _mesh = mesh
-        offset = self.get_offset(mesh=_mesh)
+        offset = self.get_offset(use_gamma_center=use_gamma_center,
+                                 mesh=_mesh)
         return (_mesh, offset)
 
     def get_dict(self,
