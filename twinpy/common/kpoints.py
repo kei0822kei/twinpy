@@ -77,7 +77,7 @@ class Kpoints():
         if include_two_pi:
             recip_abc *= 2 * np.pi
 
-        mesh_float = recip_abc / interval
+        mesh_float = np.round(recip_abc / interval, decimals=5)
         if decimal_handling == 'floor':
             mesh = np.int64(np.floor(mesh_float))
         elif decimal_handling == 'ceil':
