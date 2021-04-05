@@ -275,7 +275,7 @@ def _get_atomic_environment(cell:tuple, layer_indices:list) -> tuple:
 
 def get_nearest_atomic_distance(cell:tuple,
                                 cutoff_distance:float=4.,
-                                show_center_atom:bool=True):
+                                show_center_atom:bool=False):
     """
     Get nearest atomic distance.
 
