@@ -409,8 +409,11 @@ class TwinBoundaryAnalyzer():
         Returns:
             list: Layer indices.
         """
-        orig_atoms = self._relax_analyzer.original_cell[1]
-        sort_indices = np.argsort(orig_atoms[:,2])
-        layer_indices = sort_indices.reshape(int(len(sort_indices)/2), 2)
+        orig_atoms_num = len(self._relax_analyzer.original_cell[1])
+        atoms_num_per_layer = self._twinboundary_structure.indices.atom_num_per_layer
+        layer_indices = np.array([ i for i in range(orig_atoms_num) ])
+        layer_indices = layer_indices.reshape(
+                int(orig_atoms_num/atoms_num_per_layer),
+                    atoms_num_per_layer)
 
         return layer_indices

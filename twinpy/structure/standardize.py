@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 This module deals with crystal symmetry.
@@ -86,7 +85,6 @@ def get_conventional_to_primitive_matrix(centering:str) -> np.array:
                         [ 0.5,  0. ,  0.5 ],
                         [ 0.5,  0.5,  0.  ]])
     else:
-        print(centering)
         raise RuntimeError("irrigal centering specified")
     return P_c
 
