@@ -32,6 +32,7 @@ class TwinBoundaryAnalyzer():
            twinboundary_relax_analyzer:RelaxAnalyzer=None,
            twinboundary_phonon_analyzer:PhononAnalyzer=None,
            hexagonal_phonon_analyzer:PhononAnalyzer=None,
+           hexagonal_relax_analyzer:RelaxAnalyzer=None,
            ):
         """
         Args:
@@ -46,7 +47,8 @@ class TwinBoundaryAnalyzer():
                             twinboundary_phonon_analyzer)
         self._hexagonal_relax_analyzer = None
         self._hexagonal_phonon_analyzer = None
-        self._set_hexagonal_analyzers(hexagonal_phonon_analyzer)
+        self._set_hexagonal_analyzers(hexagonal_relax_analyzer,
+                                      hexagonal_phonon_analyzer)
         self._standardize = None
         self._set_standardize()
 
@@ -72,13 +74,15 @@ class TwinBoundaryAnalyzer():
             self._relax_analyzer = phonon_analyzer.relax_analyzer
             self._phonon_analyzer = phonon_analyzer
 
-    def _set_hexagonal_analyzers(self, hex_phonon_analyzer):
+    def _set_hexagonal_analyzers(self, hex_relax_analyzer, hex_phonon_analyzer):
         """
         Set hexagonal analyzers.
         """
         if hex_phonon_analyzer is not None:
             self._hexagonal_relax_analyzer = hex_phonon_analyzer.relax_analyzer
             self._hexagonal_phonon_analyzer = hex_phonon_analyzer
+        else:
+            self._hexagonal_relax_analyzer = hex_relax_analyzer
 
     def _set_standardize(self):
         """
