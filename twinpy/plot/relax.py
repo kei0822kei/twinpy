@@ -71,6 +71,13 @@ class RelaxPlot():
             vasp_final_steps.append(count)
         self._vasp_final_steps = vasp_final_steps
 
+    @property
+    def vasp_final_steps(self):
+        """
+        Final steps of each vasp calculation.
+        """
+        return self._vasp_final_steps
+
     def plot_max_force(self,
                        ax,
                        decorate:bool=True):
@@ -127,7 +134,7 @@ class RelaxPlot():
         vasp_energies = []
         for cols in eg_cols:
             vasp_energies.extend(cols['energy_extrapolated'])
-        vasp_steps = [ i+1 for i in range(len(vasp_energies)) ]
+        vasp_steps = [ i+self._start_step for i in range(len(vasp_energies)) ]
 
         line_chart(
                 ax,

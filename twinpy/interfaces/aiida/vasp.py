@@ -655,6 +655,13 @@ class AiidaRelaxCollection():
             }
         return pks
 
+    def get_description(self):
+        """
+        Print description for first RelaxWorkChain.
+        """
+        print("# Print description for first RelaxWorkChain.")
+        self._aiida_relaxes[0].get_description()
+
     def get_relax_analyzer(self, original_cell:tuple=None):
         """
         Get RelaxAnalyzer class object.
@@ -696,13 +703,11 @@ class AiidaRelaxCollection():
         Get RelaxPlot class objects.
         """
         relax_plots = []
-        for relax in self._aiida_relaxes:
-            relax_plots.append(relax.get_relaxplot())
-
         start_step = 1
-        for relax_plot in relax_plots:
-            relax_plot.set_steps(start_step=start_step)
-            start_step = relax_plot.relax_data['steps'][-1]
+        for relax in self._aiida_relaxes:
+            rlxplot = relax.get_relaxplot(start_step=start_step)
+            relax_plots.append(rlxplot)
+            start_step = rlxplot.vasp_final_steps[-1] + 1
 
         return relax_plots
 
