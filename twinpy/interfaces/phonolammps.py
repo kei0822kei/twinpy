@@ -4,42 +4,23 @@
 Interfaces for PhonoLammps.
 """
 
-from 
+import numpy as np
+from phonolammps import PhonoLammps
+from phonopy import Phonopy
 
 
-def get_phonopy_structure(cell:tuple) -> PhonopyAtoms:
+def get_phonon_from_lammps(self,
+                           lammps_input:list,
+                           supercell_matrix:np.array=np.eye(3),
+                           primitive_matrix:np.array=np.eye(3)):
     """
-    Return phonopy structure.
-
-    Args:
-        cell: (lattice, scaled_positions, symbols).
-
-    Returns:
-        PhonopyAtoms: Phonopy structure.
+    Get Phonopy class object from PhonoLammps.
     """
-    ph_structure = PhonopyAtoms(cell=cell[0],
-                                scaled_positions=cell[1],
-                                symbols=cell[2])
-    return ph_structure
+    phlammps = Phonolammps(strings,
+                       supercell_matrix=supercell_matrix,
+                       primitive_matrix=primitive_matrix)
+    phonon = Phonopy(unitcell,
+                 supercell_matrix)
+    phonon.set_force_constants(force_constants)
 
-
-def get_cell_from_phonopy_structure(ph_structure:PhonopyAtoms,
-                                    use_atomic_number:bool=False) -> tuple:
-    """
-    Get cell from phonopy structure
-
-    Args:
-        ph_structure: PhonopyAtoms object
-        use_atomic_number: if True, use atomic number intead of atomic symbol
-
-    Returns:
-        tuple: (lattice, scaled_positions, symbols).
-
-    """
-    lattice = ph_structure.get_cell()
-    scaled_positions = ph_structure.get_scaled_positions()
-    if use_atomic_number:
-        elements = list(ph_structure.get_atomic_numbers())
-    else:
-        elements = ph_structure.get_chemical_symbols()
-    return (lattice, scaled_positions, elements)
+    return phonon
