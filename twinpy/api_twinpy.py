@@ -477,6 +477,30 @@ class Twinpy():
         recip_high_sym = phonon_analyzer.get_reciprocal_high_symmetry_points()
         pprint(recip_high_sym)
 
+    def run_lammps_relax(self):
+        """
+        Run lammps relax.
+
+        Args:
+            arg1 (str): description
+            arg2 (3x3 numpy array): description
+
+        Returns:
+            dict: description
+
+        Raises:
+            ValueError: description
+
+        Examples:
+            description
+
+            >>> print_test ("test", "message")
+              test message
+
+        Note:
+            description
+        """
+
 
 def get_twinpy_from_cell(cell:tuple,
                          twinmode:str) -> Twinpy:
