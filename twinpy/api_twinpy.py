@@ -303,6 +303,58 @@ class Twinpy():
         """
         self._twinboundary_analyzer = twinboundary_analyzer
 
+    def set_twinboundary_analyzer_from_lammps(
+            self,
+            pair_style:str,
+            lammps_input:str,
+            supercell_matrix,
+            primitive_matrix=None,
+            pair_coeff:str=None,
+            pot_file:str=None,
+            is_relax_lattice:bool=True,
+            move_atoms_into_unitcell:bool=True,
+            is_standardize:bool=True,
+            to_primitive:bool=True,
+            no_idealize:bool=False,
+            symprec:float=1e-5,
+            ):
+        """
+        Set twinboundary_analyzer from lammps.
+        """
+        from twinpy.interfaces.lammps import (get_relax_analyzer_from_lammps,
+                                              get_phonon_analyzer_from_lammps)
+        from twinpy.analysis.twinboundary_analyzer import TwinBoundaryAnalyzer
+        std = self.get_twinboundary_standardize(
+                get_lattice=False,
+                move_atoms_into_unitcell=move_atoms_into_unitcell)
+        if is_standardize:
+            cell = std.get_standardized_cell(to_primitive=to_primitive,
+                                             no_idealize=no_idealize,
+                                             symprec=symprec,
+                                             get_sort_list=False)
+        else:
+            cell = self._twinboundary.get_cell_for_export(
+                    get_lattice=False,
+                    move_atoms_into_unitcell=move_atoms_into_unitcell,
+                    )
+        rlx_analyzer = get_relax_analyzer_from_lammps(cell=cell,
+                                                      pair_style=pair_style,
+                                                      pair_coeff=pair_coeff,
+                                                      pot_file=pot_file,
+                                                      is_relax_lattice=is_relax_lattice,
+                                                      )
+        rlx_cell = rlx_analyzer.get_final_cell()
+        ph_analyzer = get_phonon_analyzer_from_lammps(
+                lammps_input=lammps_input,
+                supercell_matrix=supercell_matrix,
+                primitive_matrix=primitive_matrix,
+                relax_analyzer=rlx_analyzer,
+                )
+        tb_analyzer = TwinBoundaryAnalyzer(twinboundary_structure=self._twinboundary,
+                                           twinboundary_phonon_analyzer=ph_analyzer,
+                                           )
+        self._twinboundary_analyzer = tb_analyzer
+
     def set_twinboundary_shear_analyzer(self, twinboundary_shear_analyzer):
         """
         Set twinboundary_shear_analyzer.
