@@ -71,7 +71,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
                 sub_prc['RelaxWorkChain'].outputs.relax__structure
 
         round_cells = []
-        for aiida_structure in [ aiida_tb_orig_structure,
+        for aiida_structure in [ aiida_tb_structure,
                                  aiida_tb_orig_structure,
                                  aiida_tb_rlx_structure ]:
             cell = get_cell_from_aiida(aiida_structure)
