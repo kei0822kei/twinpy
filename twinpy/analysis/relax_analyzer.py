@@ -9,7 +9,6 @@ because this also can be used in the case lammps is used.
 
 import numpy as np
 from twinpy.structure.base import check_same_cells
-from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.standardize import StandardizeCell
 
 
@@ -136,7 +135,7 @@ class RelaxAnalyzer():
             orig_atoms = np.round(X.T, decimals=8) % 1.
             return orig_atoms
 
-        if no_standardize:
+        if self._no_standardize:
             final_orig_cell = self._final_cell
         else:
             lattice = self._final_cell[0]
@@ -221,28 +220,29 @@ class RelaxAnalyzer():
         """
         return self._no_standardize
 
-    def get_diff(self,
-                 is_original_frame:bool=False):
-        """
-        Get structure diffs between initial cell and final cell.
+    # def get_diff(self,
+    #              is_original_frame:bool=False):
+    #     """
+    #     Get structure diffs between initial cell and final cell.
 
-        Args:
-            is_original_frame (bool): If True, get diff in original frame.
+    #     Args:
+    #         is_original_frame (bool): If True, get diff in original frame.
 
-        Notes:
-            When you use is_original_frame=True, you have to set
-            original_cell before running this function.
-        """
-        if is_original_frame:
-            self._check_original_cell_is_set()
-            initial_cell = self._original_cell
-            final_cell = self._final_cell_in_original_frame
-        else:
-            initial_cell = self._initial_cell
-            final_cell = self._final_cell
+    #     Notes:
+    #         When you use is_original_frame=True, you have to set
+    #         original_cell before running this function.
+    #     """
+    #     from twinpy.structure.diff import get_structure_diff
+    #     if is_original_frame:
+    #         self._check_original_cell_is_set()
+    #         initial_cell = self._original_cell
+    #         final_cell = self._final_cell_in_original_frame
+    #     else:
+    #         initial_cell = self._initial_cell
+    #         final_cell = self._final_cell
 
-        diff = get_structure_diff(cells=(initial_cell, final_cell),
-                                  base_index=0,
-                                  include_base=False)
+    #     diff = get_structure_diff(cells=(initial_cell, final_cell),
+    #                               base_index=0,
+    #                               include_base=False)
 
-        return diff
+    #     return diff
