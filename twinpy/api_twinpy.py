@@ -7,10 +7,13 @@ This module provides API for twinpy.
 
 from pprint import pprint
 import numpy as np
+from copy import deepcopy
+from phonolammps import Phonolammps
 from aiida.orm import load_node
 from matplotlib import pyplot as plt
 from twinpy.file_io import write_poscar
-from twinpy.properties.hexagonal import get_wyckoff_from_hcp
+from twinpy.properties.hexagonal import (get_wyckoff_from_hcp,
+                                         get_hcp_atom_positions)
 from twinpy.structure.shear import get_shear
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
@@ -20,6 +23,16 @@ from twinpy.interfaces.aiida.twinboundary \
 from twinpy.interfaces.aiida.twinboundary_shear \
         import AiidaTwinBoudnaryShearWorkChain
 from twinpy.interfaces.aiida.base import load_aiida_profile
+from twinpy.interfaces.lammps import (get_lammps_relax,
+                                      get_phonon_from_phonolammps,
+                                      get_relax_analyzer_from_lammps_static,
+                                      get_phonon_analyzer_from_lammps_static)
+from twinpy.analysis.relax_analyzer import RelaxAnalyzer
+from twinpy.analysis.phonon_analyzer import PhononAnalyzer
+from twinpy.analysis.twinboundary_analyzer import TwinBoundaryAnalyzer
+
+
+
 
 load_aiida_profile()
 
@@ -306,52 +319,69 @@ class Twinpy():
     def set_twinboundary_analyzer_from_lammps(
             self,
             pair_style:str,
-            lammps_input:str,
             supercell_matrix,
-            primitive_matrix=None,
             pair_coeff:str=None,
             pot_file:str=None,
-            is_relax_lattice:bool=True,
+            is_relax_lattice:bool=False,
             move_atoms_into_unitcell:bool=True,
-            is_standardize:bool=True,
-            to_primitive:bool=True,
-            no_idealize:bool=False,
-            symprec:float=1e-5,
+            no_standardize:bool=False,
+            hexagonal_relax_analyzer:RelaxAnalyzer=None,
+            hexagonal_phonon_analyzer:PhononAnalyzer=None,
             ):
         """
         Set twinboundary_analyzer from lammps.
         """
-        from twinpy.interfaces.lammps import (get_relax_analyzer_from_lammps,
-                                              get_phonon_analyzer_from_lammps)
-        from twinpy.analysis.twinboundary_analyzer import TwinBoundaryAnalyzer
+        def _get_phonon_analyzer(cell,
+                                 original_cell,
+                                 is_rlx_lat,
+                                 no_std,
+                                 sup_mat):
+            lmp_stc = get_lammps_relax(
+                          cell=_cell,
+                          pair_style=pair_style,
+                          pair_coeff=pair_coeff,
+                          pot_file=pot_file,
+                          is_relax_lattice=is_rlx_lat,
+                          run_lammps=True,
+                          )
+            rlx_analyzer = get_relax_analyzer_from_lammps_static(
+                               lammps_static=lmp_stc,
+                               original_cell=original_cell,
+                               no_standardize=True,
+                               )
+            ph_lammps_input = lmp_stc.get_lammps_input_for_phonolammps()
+            ph_lmp = Phonolammps(lammps_input=ph_lammps_input,
+                                 supercell_matrix=sup_mat,
+                                 primitive_matrix=np.identity(3))
+            phonon = get_phonon_from_phonolammps(ph_lmp)
+            ph_analyzer = PhononAnalyzer(phonon=phonon,
+                                         relax_analyzer=rlx_analyzer)
+            return ph_analyzer
+
+        primitive_matrix = np.identity(3)
         std = self.get_twinboundary_standardize(
                 get_lattice=False,
                 move_atoms_into_unitcell=move_atoms_into_unitcell)
-        if is_standardize:
-            cell = std.get_standardized_cell(to_primitive=to_primitive,
-                                             no_idealize=no_idealize,
-                                             symprec=symprec,
-                                             get_sort_list=False)
+
+        if no_standardize:
+            _original_cell = None
+            _cell = std.cell
         else:
-            cell = self._twinboundary.get_cell_for_export(
-                    get_lattice=False,
-                    move_atoms_into_unitcell=move_atoms_into_unitcell,
-                    )
-        rlx_analyzer = get_relax_analyzer_from_lammps(cell=cell,
-                                                      pair_style=pair_style,
-                                                      pair_coeff=pair_coeff,
-                                                      pot_file=pot_file,
-                                                      is_relax_lattice=is_relax_lattice,
-                                                      )
-        rlx_cell = rlx_analyzer.get_final_cell()
-        ph_analyzer = get_phonon_analyzer_from_lammps(
-                lammps_input=lammps_input,
-                supercell_matrix=supercell_matrix,
-                primitive_matrix=primitive_matrix,
-                relax_analyzer=rlx_analyzer,
-                )
+            _original_cell = std.cell
+            _cell = std.get_standardized_cell(to_primitive=False,
+                                              no_idealize=False,
+                                              no_sort=True)
+        ph_analyzer = _get_phonon_analyzer(
+                          cell=_cell,
+                          original_cell=_original_cell,
+                          is_rlx_lat=is_relax_lattice,
+                          no_std=no_standardize,
+                          sup_mat=supercell_matrix,
+                          )
         tb_analyzer = TwinBoundaryAnalyzer(twinboundary_structure=self._twinboundary,
                                            twinboundary_phonon_analyzer=ph_analyzer,
+                                           hexagonal_relax_analyzer=hexagonal_relax_analyzer,
+                                           hexagonal_phonon_analyzer=hexagonal_phonon_analyzer,
                                            )
         self._twinboundary_analyzer = tb_analyzer
 
@@ -528,30 +558,6 @@ class Twinpy():
         phonon_analyzer = self._twinboundary_analyzer.phonon_analyzer
         recip_high_sym = phonon_analyzer.get_reciprocal_high_symmetry_points()
         pprint(recip_high_sym)
-
-    def run_lammps_relax(self):
-        """
-        Run lammps relax.
-
-        Args:
-            arg1 (str): description
-            arg2 (3x3 numpy array): description
-
-        Returns:
-            dict: description
-
-        Raises:
-            ValueError: description
-
-        Examples:
-            description
-
-            >>> print_test ("test", "message")
-              test message
-
-        Note:
-            description
-        """
 
 
 def get_twinpy_from_cell(cell:tuple,

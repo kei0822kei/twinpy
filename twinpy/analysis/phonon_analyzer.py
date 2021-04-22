@@ -12,9 +12,12 @@ from phonopy.phonon.band_structure import (
         BandStructure)
 from twinpy.interfaces.phonopy import get_cell_from_phonopy_structure
 from twinpy.common.kpoints import Kpoints
-from twinpy.common.band_path import get_seekpath
+from twinpy.common.band_path import (get_seekpath,
+                                     get_labels_band_paths_from_seekpath)
 from twinpy.structure.base import check_same_cells
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
+from twinpy.plot.band_structure import BandPlot
+from twinpy.plot.dos import TotalDosPlot
 
 
 class PhononAnalyzer():
@@ -36,8 +39,11 @@ class PhononAnalyzer():
         self._relax_analyzer = None
         if relax_analyzer is not None:
             self.set_relax_analyzer(relax_analyzer)
-            self._rotation_matrix = \
-                    self._relax_analyzer._standardize.rotation_matrix
+            if relax_analyzer.no_standardize:
+                self._rotation_matrix = np.identity(3)
+            else:
+                self._rotation_matrix = \
+                        self._relax_analyzer._standardize.rotation_matrix
         self._primitive_cell = None
         self._set_primitive_cell()
         self._reciprocal_lattice = None
@@ -61,6 +67,10 @@ class PhononAnalyzer():
     def primitive_cell(self):
         """
         Primitive cell.
+
+        Note:
+        Remind this is user defined primitive cell.
+        Therefore, this is not necessarily true primitive cell.
         """
         return self._primitive_cell
 
@@ -454,3 +464,16 @@ class PhononAnalyzer():
             matrix = _matrix
 
         return matrix
+
+    def plot_band_dos_auto(self, figsize=(8,6)):
+        """
+        Plot band structure and dos using seekpath.
+        """
+        self.run_mesh()
+        ds = self.get_total_dos()
+        dp = TotalDosPlot(ds, flip_xy=True)
+        labels, band_paths = \
+            get_labels_band_paths_from_seekpath(self.primitive_cell)
+        bs = self.get_band_structure(band_paths=band_paths, labels=labels)
+        bp = BandPlot(band_structure=bs)
+        bp.plot_band_structure(dosplot=dp, figsize=figsize)
