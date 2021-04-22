@@ -26,7 +26,9 @@ from twinpy.interfaces.aiida.base import load_aiida_profile
 from twinpy.interfaces.lammps import (get_lammps_relax,
                                       get_phonon_from_phonolammps,
                                       get_relax_analyzer_from_lammps_static,
-                                      get_phonon_analyzer_from_lammps_static)
+                                      get_phonon_analyzer_from_lammps_static,
+                                      get_twinboundary_analyzer_from_lammps,
+                                      )
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 from twinpy.analysis.phonon_analyzer import PhononAnalyzer
 from twinpy.analysis.twinboundary_analyzer import TwinBoundaryAnalyzer
@@ -331,59 +333,19 @@ class Twinpy():
         """
         Set twinboundary_analyzer from lammps.
         """
-        def _get_phonon_analyzer(cell,
-                                 original_cell,
-                                 is_rlx_lat,
-                                 no_std,
-                                 sup_mat):
-            lmp_stc = get_lammps_relax(
-                          cell=_cell,
+        tb_analyzer = get_twinboundary_analyzer_from_lammps(
+                          twinboundary_structure=self._twinboundary,
                           pair_style=pair_style,
+                          supercell_matrix=supercell_matrix,
                           pair_coeff=pair_coeff,
                           pot_file=pot_file,
-                          is_relax_lattice=is_rlx_lat,
-                          run_lammps=True,
+                          is_relax_lattice=is_relax_lattice,
+                          move_atoms_into_unitcell=move_atoms_into_unitcell,
+                          no_standardize=no_standardize,
+                          hexagonal_relax_analyzer=hexagonal_relax_analyzer,
+                          hexagonal_phonon_analyzer=hexagonal_phonon_analyzer,
                           )
-            rlx_analyzer = get_relax_analyzer_from_lammps_static(
-                               lammps_static=lmp_stc,
-                               original_cell=original_cell,
-                               no_standardize=True,
-                               )
-            ph_lammps_input = lmp_stc.get_lammps_input_for_phonolammps()
-            ph_lmp = Phonolammps(lammps_input=ph_lammps_input,
-                                 supercell_matrix=sup_mat,
-                                 primitive_matrix=np.identity(3))
-            phonon = get_phonon_from_phonolammps(ph_lmp)
-            ph_analyzer = PhononAnalyzer(phonon=phonon,
-                                         relax_analyzer=rlx_analyzer)
-            return ph_analyzer
-
-        primitive_matrix = np.identity(3)
-        std = self.get_twinboundary_standardize(
-                get_lattice=False,
-                move_atoms_into_unitcell=move_atoms_into_unitcell)
-
-        if no_standardize:
-            _original_cell = None
-            _cell = std.cell
-        else:
-            _original_cell = std.cell
-            _cell = std.get_standardized_cell(to_primitive=False,
-                                              no_idealize=False,
-                                              no_sort=True)
-        ph_analyzer = _get_phonon_analyzer(
-                          cell=_cell,
-                          original_cell=_original_cell,
-                          is_rlx_lat=is_relax_lattice,
-                          no_std=no_standardize,
-                          sup_mat=supercell_matrix,
-                          )
-        tb_analyzer = TwinBoundaryAnalyzer(twinboundary_structure=self._twinboundary,
-                                           twinboundary_phonon_analyzer=ph_analyzer,
-                                           hexagonal_relax_analyzer=hexagonal_relax_analyzer,
-                                           hexagonal_phonon_analyzer=hexagonal_phonon_analyzer,
-                                           )
-        self._twinboundary_analyzer = tb_analyzer
+        self.set_twinboundary_analyzer(tb_analyzer)
 
     def set_twinboundary_shear_analyzer(self, twinboundary_shear_analyzer):
         """
