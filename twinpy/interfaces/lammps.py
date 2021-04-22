@@ -117,6 +117,36 @@ def get_phonon_analyzer_from_lammps_static(
     return ph_analyzer
 
 
+def get_phonon_analyzer_from_lammps(cell,
+                                    pair_style:str,
+                                    supercell_matrix,
+                                    pair_coeff:str=None,
+                                    pot_file:str=None,
+                                    is_relax_lattice:bool=True,
+                                    ):
+    lmp_stc = get_lammps_relax(
+                  cell=cell,
+                  pair_style=pair_style,
+                  pair_coeff=pair_coeff,
+                  pot_file=pot_file,
+                  is_relax_lattice=is_relax_lattice,
+                  run_lammps=True,
+                  )
+    rlx_analyzer = get_relax_analyzer_from_lammps_static(
+                       lammps_static=lmp_stc,
+                       original_cell=None,
+                       no_standardize=True,
+                       )
+    ph_lammps_input = lmp_stc.get_lammps_input_for_phonolammps()
+    ph_lmp = Phonolammps(lammps_input=ph_lammps_input,
+                         supercell_matrix=supercell_matrix,
+                         primitive_matrix=np.identity(3))
+    phonon = get_phonon_from_phonolammps(ph_lmp)
+    ph_analyzer = PhononAnalyzer(phonon=phonon,
+                                 relax_analyzer=rlx_analyzer)
+    return ph_analyzer
+
+
 def get_twinboundary_analyzer_from_lammps(
         twinboundary_structure,
         pair_style:str,
@@ -132,54 +162,21 @@ def get_twinboundary_analyzer_from_lammps(
     """
     Set twinboundary_analyzer from lammps.
     """
-    def _get_phonon_analyzer(cell,
-                             original_cell,
-                             is_rlx_lat,
-                             no_std,
-                             sup_mat):
-        lmp_stc = get_lammps_relax(
-                      cell=_cell,
-                      pair_style=pair_style,
-                      pair_coeff=pair_coeff,
-                      pot_file=pot_file,
-                      is_relax_lattice=is_rlx_lat,
-                      run_lammps=True,
-                      )
-        rlx_analyzer = get_relax_analyzer_from_lammps_static(
-                           lammps_static=lmp_stc,
-                           original_cell=original_cell,
-                           no_standardize=True,
-                           )
-        ph_lammps_input = lmp_stc.get_lammps_input_for_phonolammps()
-        ph_lmp = Phonolammps(lammps_input=ph_lammps_input,
-                             supercell_matrix=sup_mat,
-                             primitive_matrix=np.identity(3))
-        phonon = get_phonon_from_phonolammps(ph_lmp)
-        ph_analyzer = PhononAnalyzer(phonon=phonon,
-                                     relax_analyzer=rlx_analyzer)
-        return ph_analyzer
+    if not no_standardize:
+        raise RuntimeError("Currently no_standardize=False is not supported.")
 
     primitive_matrix = np.identity(3)
     cell = twinboundary_structure.get_cell_for_export(
             get_lattice=False,
             move_atoms_into_unitcell=move_atoms_into_unitcell,
             )
-    std = StandardizeCell(cell)
-
-    if no_standardize:
-        _original_cell = None
-        _cell = std.cell
-    else:
-        _original_cell = std.cell
-        _cell = std.get_standardized_cell(to_primitive=False,
-                                          no_idealize=False,
-                                          no_sort=True)
-    ph_analyzer = _get_phonon_analyzer(
-                      cell=_cell,
-                      original_cell=_original_cell,
-                      is_rlx_lat=is_relax_lattice,
-                      no_std=no_standardize,
-                      sup_mat=supercell_matrix,
+    ph_analyzer = get_phonon_analyzer_from_lammps(
+                      cell=cell,
+                      pair_style=pair_style,
+                      supercell_matrix=supercell_matrix,
+                      pair_coeff=pair_coeff,
+                      pot_file=pot_file,
+                      is_relax_lattice=is_relax_lattice,
                       )
     tb_analyzer = TwinBoundaryAnalyzer(
                       twinboundary_structure=twinboundary_structure,
@@ -187,7 +184,33 @@ def get_twinboundary_analyzer_from_lammps(
                       hexagonal_relax_analyzer=hexagonal_relax_analyzer,
                       hexagonal_phonon_analyzer=hexagonal_phonon_analyzer,
                       )
+
     return tb_analyzer
+
+
+def get_twinboundary_shear_analyzer_from_lammps(
+        twinboundary_structure,
+        pair_style:str,
+        supercell_matrix,
+        shear_strain_ratios:list,
+        pair_coeff:str=None,
+        pot_file:str=None,
+        is_relax_lattice:bool=True,
+        move_atoms_into_unitcell:bool=True,
+        no_standardize:bool=True,
+        hexagonal_relax_analyzer:RelaxAnalyzer=None,
+        hexagonal_phonon_analyzer:PhononAnalyzer=None,
+        ):
+    if 0. in shear_strain_ratios:
+        raise RuntimeError("Input shear_strain_ratios does not have 0., "
+                           + "which means no strain cell.")
+    if not no_standardize:
+        raise RuntimeError("Currently no_standardize=False is not supported.")
+
+    phonon_analyzers = []
+    # for i, ratio in shear_strain_ratios:
+
+
 
 
 def get_phonon_from_phonolammps(phonolammps) -> Phonopy:
