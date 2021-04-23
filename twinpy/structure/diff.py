@@ -46,7 +46,7 @@ def get_structure_diff(cells:list,
 
     cart_posi_diffs = []
     for cell, cart_posi in zip(cells, cart_posis):
-        lattice = Lattice(lattice=cell[0])
+        lattice = CrystalLattice(lattice=cell[0])
         diff = lattice.get_diff(first_coords=base_cart_posi,
                                 second_coords=cart_posi,
                                 is_cartesian=True,
