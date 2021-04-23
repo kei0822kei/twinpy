@@ -8,11 +8,10 @@ import numpy as np
 from phonopy import Phonopy
 from phonolammps import Phonolammps
 from lammpkits.lammps.static import LammpsStatic
-from twinpy.structure.standardize import StandardizeCell
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 from twinpy.analysis.phonon_analyzer import PhononAnalyzer
 from twinpy.analysis.twinboundary_analyzer import TwinBoundaryAnalyzer
-
+from twinpy.analysis.shear_analyzer import TwinBoundaryShearAnalyzer
 
 
 def get_lammps_relax(cell:tuple,
@@ -122,7 +121,7 @@ def get_phonon_analyzer_from_lammps(cell,
                                     supercell_matrix,
                                     pair_coeff:str=None,
                                     pot_file:str=None,
-                                    is_relax_lattice:bool=True,
+                                    is_relax_lattice:bool=False,
                                     ):
     lmp_stc = get_lammps_relax(
                   cell=cell,
@@ -153,7 +152,7 @@ def get_twinboundary_analyzer_from_lammps(
         supercell_matrix,
         pair_coeff:str=None,
         pot_file:str=None,
-        is_relax_lattice:bool=True,
+        is_relax_lattice:bool=False,
         move_atoms_into_unitcell:bool=True,
         no_standardize:bool=True,
         hexagonal_relax_analyzer:RelaxAnalyzer=None,
@@ -165,7 +164,6 @@ def get_twinboundary_analyzer_from_lammps(
     if not no_standardize:
         raise RuntimeError("Currently no_standardize=False is not supported.")
 
-    primitive_matrix = np.identity(3)
     cell = twinboundary_structure.get_cell_for_export(
             get_lattice=False,
             move_atoms_into_unitcell=move_atoms_into_unitcell,
@@ -195,22 +193,70 @@ def get_twinboundary_shear_analyzer_from_lammps(
         shear_strain_ratios:list,
         pair_coeff:str=None,
         pot_file:str=None,
-        is_relax_lattice:bool=True,
+        is_relax_lattice:bool=False,
         move_atoms_into_unitcell:bool=True,
         no_standardize:bool=True,
         hexagonal_relax_analyzer:RelaxAnalyzer=None,
         hexagonal_phonon_analyzer:PhononAnalyzer=None,
+        is_return_twinboundary_analyzer:bool=True,
         ):
-    if 0. in shear_strain_ratios:
+    if 0. not in shear_strain_ratios:
         raise RuntimeError("Input shear_strain_ratios does not have 0., "
                            + "which means no strain cell.")
     if not no_standardize:
         raise RuntimeError("Currently no_standardize=False is not supported.")
+    if is_relax_lattice:
+        raise RuntimeError("Currently is_relax_lattice=True is not supported.")
 
     phonon_analyzers = []
-    # for i, ratio in shear_strain_ratios:
+    _atom_positions = None
+    tb_analyzer = None
+    for i, ratio in enumerate(shear_strain_ratios):
+        if i == 0:
+            _cell = twinboundary_structure.get_cell_for_export(
+                        get_lattice=False,
+                        move_atoms_into_unitcell=move_atoms_into_unitcell)
+        else:
+            _cell = tb_analyzer.get_shear_cell(
+                        shear_strain_ratio=ratio,
+                        atom_positions=_atom_positions,
+                        is_standardize=False,
+                        )
+        ph_analyzer = get_phonon_analyzer_from_lammps(
+                cell=_cell,
+                pair_style=pair_style,
+                supercell_matrix=supercell_matrix,
+                pair_coeff=pair_coeff,
+                pot_file=pot_file,
+                is_relax_lattice=is_relax_lattice,
+                )
+        if i == 0:
+            tb_analyzer = get_twinboundary_analyzer_from_lammps(
+                    twinboundary_structure=twinboundary_structure,
+                    pair_style=pair_style,
+                    supercell_matrix=supercell_matrix,
+                    pair_coeff=pair_coeff,
+                    pot_file=pot_file,
+                    is_relax_lattice=is_relax_lattice,
+                    move_atoms_into_unitcell=move_atoms_into_unitcell,
+                    no_standardize=no_standardize,
+                    hexagonal_relax_analyzer=hexagonal_relax_analyzer,
+                    hexagonal_phonon_analyzer=hexagonal_phonon_analyzer,
+                    )
+        _atom_positions = ph_analyzer.primitive_cell[1]
+        phonon_analyzers.append(ph_analyzer)
 
+    layer_indices = tb_analyzer.get_layer_indeces()
+    tb_shr_analyzer = TwinBoundaryShearAnalyzer(
+            shear_strain_ratios=shear_strain_ratios,
+            layer_indices=layer_indices,
+            phonon_analyzers=phonon_analyzers,
+            )
 
+    if is_return_twinboundary_analyzer:
+        return (tb_analyzer, tb_shr_analyzer)
+
+    return tb_shr_analyzer
 
 
 def get_phonon_from_phonolammps(phonolammps) -> Phonopy:
