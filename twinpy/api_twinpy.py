@@ -322,12 +322,13 @@ class Twinpy():
     def set_twinboundary_analyzer_from_lammps(
             self,
             pair_style:str,
-            supercell_matrix,
             pair_coeff:str=None,
             pot_file:str=None,
             is_relax_lattice:bool=False,
             move_atoms_into_unitcell:bool=True,
             no_standardize:bool=True,
+            is_run_phonon:bool=True,
+            supercell_matrix:np.array=np.eye(3),
             hexagonal_relax_analyzer:RelaxAnalyzer=None,
             hexagonal_phonon_analyzer:PhononAnalyzer=None,
             ):
@@ -337,12 +338,13 @@ class Twinpy():
         tb_analyzer = get_twinboundary_analyzer_from_lammps(
                           twinboundary_structure=self._twinboundary,
                           pair_style=pair_style,
-                          supercell_matrix=supercell_matrix,
                           pair_coeff=pair_coeff,
                           pot_file=pot_file,
                           is_relax_lattice=is_relax_lattice,
                           move_atoms_into_unitcell=move_atoms_into_unitcell,
                           no_standardize=no_standardize,
+                          is_run_phonon=is_run_phonon,
+                          supercell_matrix=supercell_matrix,
                           hexagonal_relax_analyzer=hexagonal_relax_analyzer,
                           hexagonal_phonon_analyzer=hexagonal_phonon_analyzer,
                           )

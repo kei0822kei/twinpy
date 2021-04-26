@@ -40,7 +40,7 @@ def get_lammps_relax(cell:tuple,
     else:
         lmp_stc.add_potential_from_database(pair_style=pair_style,
                                             pot_file=pot_file)
-    lmp_stc.add_thermo(thermo=100)
+    lmp_stc.add_thermo(thermo=10)
     lmp_stc.add_variables(add_energy=True,
                           add_stress=True)
     lmp_stc.add_relax_settings(is_relax_lattice=is_relax_lattice)
@@ -149,12 +149,13 @@ def get_phonon_analyzer_from_lammps(cell,
 def get_twinboundary_analyzer_from_lammps(
         twinboundary_structure,
         pair_style:str,
-        supercell_matrix,
         pair_coeff:str=None,
         pot_file:str=None,
         is_relax_lattice:bool=False,
         move_atoms_into_unitcell:bool=True,
         no_standardize:bool=True,
+        is_run_phonon:bool=True,
+        supercell_matrix:np.array=np.eye(3),
         hexagonal_relax_analyzer:RelaxAnalyzer=None,
         hexagonal_phonon_analyzer:PhononAnalyzer=None,
         ):
@@ -168,16 +169,33 @@ def get_twinboundary_analyzer_from_lammps(
             get_lattice=False,
             move_atoms_into_unitcell=move_atoms_into_unitcell,
             )
-    ph_analyzer = get_phonon_analyzer_from_lammps(
-                      cell=cell,
-                      pair_style=pair_style,
-                      supercell_matrix=supercell_matrix,
-                      pair_coeff=pair_coeff,
-                      pot_file=pot_file,
-                      is_relax_lattice=is_relax_lattice,
-                      )
+    if is_run_phonon:
+        rlx_analyzer = None
+        ph_analyzer = get_phonon_analyzer_from_lammps(
+                          cell=cell,
+                          pair_style=pair_style,
+                          supercell_matrix=supercell_matrix,
+                          pair_coeff=pair_coeff,
+                          pot_file=pot_file,
+                          is_relax_lattice=is_relax_lattice,
+                          )
+    else:
+        lmp_stc = get_lammps_relax(
+                cell=cell,
+                pair_style=pair_style,
+                pair_coeff=pair_coeff,
+                pot_file=pot_file,
+                is_relax_lattice=is_relax_lattice,
+                )
+        rlx_analyzer = get_relax_analyzer_from_lammps_static(
+                          lammps_static=lmp_stc,
+                          original_cell=None,
+                          no_standardize=no_standardize,
+                          )
+        ph_analyzer = None
     tb_analyzer = TwinBoundaryAnalyzer(
                       twinboundary_structure=twinboundary_structure,
+                      twinboundary_relax_analyzer=rlx_analyzer,
                       twinboundary_phonon_analyzer=ph_analyzer,
                       hexagonal_relax_analyzer=hexagonal_relax_analyzer,
                       hexagonal_phonon_analyzer=hexagonal_phonon_analyzer,

@@ -75,6 +75,7 @@ class RelaxAnalyzer():
         """
         if self._no_standardize:
             self._original_cell = self._initial_cell
+            self._set_final_cell_in_original_frame()
 
         elif original_cell:
             if not len(original_cell[2]) == len(self._initial_cell[2]):
@@ -93,8 +94,7 @@ class RelaxAnalyzer():
             check_same_cells(self._initial_cell, std_conv_cell)
             self._original_cell = original_cell
             self._standardize = std
-
-        self._set_final_cell_in_original_frame()
+            self._set_final_cell_in_original_frame()
 
     def _set_final_cell_in_original_frame(self):
         """
