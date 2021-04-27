@@ -414,12 +414,13 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
 
         relax_pks = None
         static_pk = None
-        if 'relax' not in \
+        if 'nsw' not in \
                 load_node(vasp_pks[-1][0]).inputs.parameters.get_dict().keys():
             static_pk = vasp_pks[-1][0]
             relax_pks = [ pk[0] for pk in vasp_pks[:-1] ]
         else:
-            warnings.warn("Could not find final static_pk calculation.")
+            warnings.warn("Could not find final static_pk calculation in {}.".
+                    format(self._pk))
             relax_pks = [ pk[0] for pk in vasp_pks ]
         return (relax_pks, static_pk)
 

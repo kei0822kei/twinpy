@@ -4,6 +4,7 @@
 Aiida interface for twinpy.
 """
 
+import numpy as np
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.orm import (load_node,
                        Node,
@@ -75,10 +76,12 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
             project=['id'],
             with_incoming='wf')
         cf_pks = [ q[0] for q in qb.all() ]
+        shear_ratios = [ load_node(q[0]).inputs.shear_strain_ratio.value for q in qb.all() ]
+        orders = list(np.argsort(shear_ratios))
         orig_pks = []
         input_pks = []
-        for pk in cf_pks:
-            cf = load_node(pk)
+        for ix in orders:
+            cf = load_node(cf_pks[ix])
             orig_pks.append(cf.outputs.twinboundary_shear_structure_orig.pk)
             input_pks.append(cf.outputs.twinboundary_shear_structure.pk)
 

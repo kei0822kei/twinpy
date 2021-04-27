@@ -228,7 +228,7 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         aiida_relax = self.get_aiida_relax(
                 additional_relax_pks=additional_relax_pks)
         relax_analyzer = aiida_relax.get_relax_analyzer(
-                             original_cell=original_cell)
+                             original_cell=aiida_relax.initial_cell)
 
         if twinboundary_phonon_pk is not None:
             aiida_phonopy = AiidaPhonopyWorkChain(

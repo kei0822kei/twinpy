@@ -234,7 +234,7 @@ class TwinBoundaryAnalyzer():
 
     def get_twinboundary_shear_analyzer(self,
                                         shear_strain_ratios:list,
-                                        relax_analyzers:list=None,
+                                        shear_relax_analyzers:list=None,
                                         shear_phonon_analyzers:list=None,
                                         ):
         """
@@ -245,12 +245,15 @@ class TwinBoundaryAnalyzer():
                                            phonon analyzers.
             shear_strain_ratios: Shear shear_strain_ratios.
         """
+        assert len(shear_relax_analyzers) == len(shear_strain_ratios)
+        _relax_analyzers = [self.phonon_analyzer.relax_analyzer]
+        _relax_analyzers.extend(shear_relax_analyzers)
+
         if shear_phonon_analyzers is None:
-            _relax_analyzers = [self.phonon_analyzer.relax_analyzer]
-            _relax_analyzers.extend(relax_analyzers)
             phonon_analyzers = None
         else:
-            _relax_analyzers = None
+            assert len(shear_relax_analyzers) == len(shear_phonon_analyzers)
+            _relax_analyzers = shear_relax_analyzers
             phonon_analyzers = [self.phonon_analyzer]
             phonon_analyzers.extend(shear_phonon_analyzers)
         strain_ratios = [0.]
@@ -293,18 +296,23 @@ class TwinBoundaryAnalyzer():
         relax_analyzers = [ relax.get_relax_analyzer(
                                     original_cell=original_cells[i])
                                     for i, relax in enumerate(aiida_relaxes[:ix]) ]
+        _relax_analyzers = relax_analyzers
+
         if shear_phonon_pks is None:
             phonon_analyzers = None
-            _relax_analyzers = relax_analyzers
         else:
-            aiida_phonons = [ AiidaPhonopyWorkChain(load_node(pk))
-                                  for pk in shear_phonon_pks ]
-            phonon_analyzers = [ phonon.get_phonon_analyzer(
-                                         relax_analyzer=relax_analyzers[i])
-                                   for i, phonon in enumerate(aiida_phonons) ]
-            _relax_analyzers = None
+            phonon_analyzers = []
+            for rlx_analyzer, ph_pk in zip(relax_analyzers, shear_phonon_pks):
+                if ph_pk is None:
+                    phonon_analyzers.append(None)
+                else:
+                    aiida_phonon = AiidaPhonopyWorkChain(load_node(ph_pk))
+                    ph_analyzer = aiida_phonon.get_phonon_analyzer(
+                            relax_analyzer=rlx_analyzer)
+                    phonon_analyzers.append(ph_analyzer)
+
         twinboundary_shear_analyzer = self.get_twinboundary_shear_analyzer(
-                relax_analyzers=_relax_analyzers,
+                shear_relax_analyzers=_relax_analyzers,
                 shear_phonon_analyzers=phonon_analyzers,
                 shear_strain_ratios=shear_strain_ratios)
 
