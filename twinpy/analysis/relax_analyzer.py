@@ -46,6 +46,7 @@ class RelaxAnalyzer():
         self._final_cell = final_cell
         self._final_cell_in_original_frame = None
         self._standardize = None
+        self._original_cell = None
         self.set_original_cell(original_cell=original_cell)
         self._forces = forces
         self._stress = stress

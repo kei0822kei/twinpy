@@ -243,7 +243,8 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         if hexagonal_relax_pk:
             aiida_hex_relax = AiidaRelaxWorkChain(
                                   load_node(hexagonal_relax_pk))
-            hex_relax_analyzer = aiida_hex_relax.get_relax_analyzer()
+            hex_relax_analyzer = aiida_hex_relax.get_relax_analyzer(
+                                     no_standardize=True)
             if hexagonal_phonon_pk:
                 aiida_hex_phonopy = AiidaPhonopyWorkChain(
                                         load_node(hexagonal_phonon_pk))

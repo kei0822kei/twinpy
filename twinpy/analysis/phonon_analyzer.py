@@ -43,7 +43,7 @@ class PhononAnalyzer():
             if relax_analyzer.no_standardize:
                 self._rotation_matrix = np.identity(3)
             else:
-                if self.relax_analyzer.standardize:
+                if relax_analyzer.standardize:
                     self._rotation_matrix = \
                             self.relax_analyzer.standardize.rotation_matrix
                 else:
@@ -86,9 +86,8 @@ class PhononAnalyzer():
         """
         self._reciprocal_lattice = np.linalg.inv(self._primitive_cell[0]).T
         if self._relax_analyzer is not None:
-            self._original_reciprocal_lattice = \
-                    np.dot(self._rotation_matrix,
-                           self._reciprocal_lattice.T).T
+            self._original_reciprocal_lattice = np.linalg.inv(
+                    self._relax_analyzer.original_cell[0])
 
     @property
     def reciprocal_lattice(self):
