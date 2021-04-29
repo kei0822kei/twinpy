@@ -253,7 +253,6 @@ class TwinBoundaryAnalyzer():
             phonon_analyzers = None
         else:
             assert len(shear_relax_analyzers) == len(shear_phonon_analyzers)
-            _relax_analyzers = shear_relax_analyzers
             phonon_analyzers = [self.phonon_analyzer]
             phonon_analyzers.extend(shear_phonon_analyzers)
         strain_ratios = [0.]

@@ -41,10 +41,9 @@ class _BaseShearAnalyzer():
             self._phonon_idxes = []
         else:
             rlx_analyzers = []
-            for rlx_analyzer, ph_analyzer in zip(relax_analyzers,
-                                                 phonon_analyzers):
+            for i, ph_analyzer in enumerate(phonon_analyzers):
                 if ph_analyzer is None:
-                    rlx_analyzers.append(rlx_analyzer)
+                    rlx_analyzers.append(relax_analyzers[i])
                 else:
                     rlx_analyzers.append(ph_analyzer.relax_analyzer)
             self._relax_analyzers = rlx_analyzers
