@@ -4,6 +4,7 @@
 Aiida interface for twinpy.
 """
 
+import warnings
 import numpy as np
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.orm import (load_node,
@@ -196,16 +197,23 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
         if self._twinboundary_analyzer is None:
             raise RuntimeError("Please set twinboundary_analyzer before.")
 
+        assert len(self._shear_strain_ratios) == len(shear_phonon_pks), \
+          "Length of shear_phonon_pks does not match with shear_strain_ratios."
+
         tb_anal = self._twinboundary_analyzer
         shr_rlx_pks = \
                 [ aiida_rlx.pk for aiida_rlx in self._shear_aiida_relaxes ]
-        ratios = self.shear_strain_ratios
+        ratios = self._shear_strain_ratios
+
+        if len(shr_rlx_pks) != len(ratios):
+            warnings.warn("Some RelaxWorkChain has not finished normally. "
+                          +"They are ignored.")
 
         tb_shear_analyzer = \
             tb_anal.get_twinboundary_shear_analyzer_from_relax_pks(
                 shear_relax_pks=shr_rlx_pks,
-                shear_strain_ratios=ratios,
-                shear_phonon_pks=shear_phonon_pks,
+                shear_strain_ratios=ratios[:len(shr_rlx_pks)],
+                shear_phonon_pks=shear_phonon_pks[:len(shr_rlx_pks)],
                 )
         return tb_shear_analyzer
 

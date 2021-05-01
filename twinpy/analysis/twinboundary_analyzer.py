@@ -245,14 +245,13 @@ class TwinBoundaryAnalyzer():
                                            phonon analyzers.
             shear_strain_ratios: Shear shear_strain_ratios.
         """
-        assert len(shear_relax_analyzers) == len(shear_strain_ratios)
         _relax_analyzers = [self.phonon_analyzer.relax_analyzer]
         _relax_analyzers.extend(shear_relax_analyzers)
 
         if shear_phonon_analyzers is None:
             phonon_analyzers = None
         else:
-            assert len(shear_relax_analyzers) == len(shear_phonon_analyzers)
+            assert len(shear_strain_ratios) == len(shear_phonon_analyzers)
             phonon_analyzers = [self.phonon_analyzer]
             phonon_analyzers.extend(shear_phonon_analyzers)
         strain_ratios = [0.]
@@ -281,8 +280,8 @@ class TwinBoundaryAnalyzer():
             idx = len(aiida_rlxes) - 1
             for i, aiida_rlx in enumerate(aiida_rlxes):
                 if not aiida_rlx.process_state == 'finished':
-                    warnings.warn("{}th RelaxWorkChain has not finished ",
-                                  "yet.".format(i))
+                    warnings.warn(
+                        "{}th RelaxWorkChain has not finished yet.".format(i))
                     idx = i - 1
             return idx
 
@@ -312,8 +311,8 @@ class TwinBoundaryAnalyzer():
 
         twinboundary_shear_analyzer = self.get_twinboundary_shear_analyzer(
                 shear_relax_analyzers=_relax_analyzers,
-                shear_phonon_analyzers=phonon_analyzers,
-                shear_strain_ratios=shear_strain_ratios)
+                shear_phonon_analyzers=phonon_analyzers[:ix],
+                shear_strain_ratios=shear_strain_ratios[:ix])
 
         return twinboundary_shear_analyzer
 
