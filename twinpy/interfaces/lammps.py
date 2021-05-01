@@ -52,7 +52,9 @@ def get_lammps_relax(cell:tuple,
 
 def get_relax_analyzer_from_lammps_static(lammps_static:LammpsStatic,
                                           original_cell:tuple=None,
-                                          no_standardize:bool=False):
+                                          no_standardize:bool=False,
+                                          move_atoms_into_unitcell:bool=True,
+                                          ):
     """
     Get relax analyzer from lammps.
 
@@ -67,7 +69,11 @@ def get_relax_analyzer_from_lammps_static(lammps_static:LammpsStatic,
     if not lammps_static.is_run_finished:
         lammps_static.run_lammps()
     initial_cell = lammps_static.get_initial_cell()
-    final_cell = lammps_static.get_final_cell()
+    lattice, frac_coords, symbols = lammps_static.get_final_cell()
+    if move_atoms_into_unitcell:
+        frac_coords = np.round(frac_coords, decimals=6)
+        frac_coords %= 1.
+    final_cell = (lattice, frac_coords, symbols)
     forces = lammps_static.get_forces()
     energy = lammps_static.get_energy()
     rlx_analyzer = RelaxAnalyzer(
