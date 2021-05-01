@@ -4,6 +4,7 @@
 Aiida interface for twinpy.
 """
 
+import numpy as np
 from aiida.cmdline.utils.decorators import with_dbenv
 from aiida.orm import (load_node,
                        Node,
@@ -75,15 +76,17 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
             project=['id'],
             with_incoming='wf')
         cf_pks = [ q[0] for q in qb.all() ]
+        shear_ratios = [ load_node(q[0]).inputs.shear_strain_ratio.value for q in qb.all() ]
+        orders = list(np.argsort(shear_ratios))
         orig_pks = []
         input_pks = []
-        for pk in cf_pks:
-            cf = load_node(pk)
+        for ix in orders:
+            cf = load_node(cf_pks[ix])
             orig_pks.append(cf.outputs.twinboundary_shear_structure_orig.pk)
             input_pks.append(cf.outputs.twinboundary_shear_structure.pk)
 
         rlx_pks = []
-        for aiida_rlx, i_struct_pk in zip(self.shear_aiida_relaxes, input_pks):
+        for aiida_rlx, i_struct_pk in zip(self._shear_aiida_relaxes, input_pks):
             pks = aiida_rlx.get_pks()
             assert pks['initial_structure_pk'] == i_struct_pk, \
                     "Input structure does not match."
@@ -119,8 +122,10 @@ class AiidaTwinBoudnaryShearWorkChain(_WorkChain):
         rlx_wf = WorkflowFactory('vasp.relax')
         qb = QueryBuilder()
         qb.append(Node, filters={'id':{'==': self._pk}}, tag='wf')
-        qb.append(rlx_wf, with_incoming='wf', project=['id'])
-        rlx_pks = [ q[0] for q in qb.all() ]
+        qb.append(rlx_wf, with_incoming='wf', project=['id', 'label'])
+        qb_all = qb.all()
+        qb_all.sort(key=lambda qb_all: qb_all[1])
+        rlx_pks = [ q[0] for q in qb_all ]
         self._shear_aiida_relaxes = [ AiidaRelaxWorkChain(load_node(pk))
                                          for pk in rlx_pks ]
 

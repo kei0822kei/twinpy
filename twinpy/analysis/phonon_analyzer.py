@@ -5,6 +5,7 @@
 Analize phonopy calculation.
 """
 from copy import deepcopy
+import warnings
 import numpy as np
 from phonopy import Phonopy
 from phonopy.phonon.band_structure import (
@@ -42,8 +43,13 @@ class PhononAnalyzer():
             if relax_analyzer.no_standardize:
                 self._rotation_matrix = np.identity(3)
             else:
-                self._rotation_matrix = \
-                        self._relax_analyzer._standardize.rotation_matrix
+                if relax_analyzer.standardize:
+                    self._rotation_matrix = \
+                            self.relax_analyzer.standardize.rotation_matrix
+                else:
+                    warnings.warn("standardize is not set in relax_analyzer."
+                                  +" set np.identity(3) automatically.")
+                    self._rotation_matrix = np.identity(3)
         self._primitive_cell = None
         self._set_primitive_cell()
         self._reciprocal_lattice = None
@@ -80,9 +86,8 @@ class PhononAnalyzer():
         """
         self._reciprocal_lattice = np.linalg.inv(self._primitive_cell[0]).T
         if self._relax_analyzer is not None:
-            self._original_reciprocal_lattice = \
-                    np.dot(self._rotation_matrix,
-                           self._reciprocal_lattice.T).T
+            self._original_reciprocal_lattice = np.linalg.inv(
+                    self._relax_analyzer.original_cell[0])
 
     @property
     def reciprocal_lattice(self):
@@ -124,7 +129,7 @@ class PhononAnalyzer():
                 self._phonon.get_primitive())
         if not check_same_cells(first_cell=relax_cell,
                                 second_cell=unitcell):
-            raise RuntimeError("phonon unitcell does not "
+            raise RuntimeError("Phonon unitcell does not "
                                "the same as relax cell.")
         self._relax_analyzer = relax_analyzer
 
@@ -469,6 +474,7 @@ class PhononAnalyzer():
         """
         Plot band structure and dos using seekpath.
         """
+        from matplotlib import pyplot as plt
         self.run_mesh()
         ds = self.get_total_dos()
         dp = TotalDosPlot(ds, flip_xy=True)
@@ -477,3 +483,4 @@ class PhononAnalyzer():
         bs = self.get_band_structure(band_paths=band_paths, labels=labels)
         bp = BandPlot(band_structure=bs)
         bp.plot_band_structure(dosplot=dp, figsize=figsize)
+        plt.show()
