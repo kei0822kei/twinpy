@@ -295,6 +295,8 @@ def get_phonon_from_phonolammps(phonolammps) -> Phonopy:
     supercell_matrix = phonolammps.get_supercell_matrix()
     phonon = Phonopy(unitcell=unitcell,
                      supercell_matrix=supercell_matrix)
-    phonon.set_force_constants(force_constants)
+    dataset = phonolammps.get_force_constants(include_data_set=True)[1]
+    phonon.dataset = dataset
+    phonon.produce_force_constants()
 
     return phonon
