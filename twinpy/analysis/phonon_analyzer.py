@@ -127,9 +127,13 @@ class PhononAnalyzer():
         relax_cell = relax_analyzer.final_cell
         unitcell = get_cell_from_phonopy_structure(
                 self._phonon.get_primitive())
-        check_same_cells(first_cell=relax_cell,
-                         second_cell=unitcell,
-                         raise_error=True)
+        is_same = check_same_cells(first_cell=relax_cell,
+                                   second_cell=unitcell,
+                                   # raise_error=True)
+                                   raise_error=False)
+        if not is_same:
+            warnings.warn(
+            "Relax cell and Phonon primitive cell does not correspond.")
         self._relax_analyzer = relax_analyzer
 
     @property

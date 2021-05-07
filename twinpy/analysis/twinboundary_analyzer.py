@@ -260,7 +260,7 @@ class TwinBoundaryAnalyzer():
                 relax_analyzers=_relax_analyzers,
                 phonon_analyzers=phonon_analyzers,
                 shear_strain_ratios=strain_ratios,
-                layer_indices=self.get_layer_indeces())
+                layer_indices=self.get_layer_indices())
         return twinboundary_shear_analyzer
 
     def get_twinboundary_shear_analyzer_from_relax_pks(self,
@@ -329,7 +329,7 @@ class TwinBoundaryAnalyzer():
         initial_cell = self._relax_analyzer.original_cell
         final_cell = self._relax_analyzer.final_cell_in_original_frame
         cells = [ initial_cell, final_cell ]
-        layer_indices = self.get_layer_indeces()
+        layer_indices = self.get_layer_indices()
         atm_envs = [ _get_atomic_environment(cell, layer_indices)
                          for cell in cells ]
         return atm_envs
@@ -412,7 +412,7 @@ class TwinBoundaryAnalyzer():
                            label=direction,
                            )
 
-    def get_layer_indeces(self):
+    def get_layer_indices(self):
         """
         Get layzer indices.
 
