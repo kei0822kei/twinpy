@@ -82,6 +82,29 @@ def get_number_of_layers(twinmode:str) -> int:
     return layers
 
 
+def get_number_of_atoms_per_layer(twinmode:str) -> int:
+    """
+    Get the number of atoms per layer.
+
+    Args:
+        twinmode: Choose from '10-12', '10-11', '11-22' or '11-21'
+                  (which are supported).
+
+    Returns:
+        int: The number of layes.
+    """
+    check_supported_twinmode(twinmode)
+    if twinmode == '10-12':
+        num = 2
+    elif twinmode == '10-11':
+        num = 2
+    elif twinmode == '11-22':
+        num = 2
+    elif twinmode == '11-21':
+        num = 4
+    return num
+
+
 def get_twin_indices_by_Yoo() -> dict:
     """
     Get twin indices Yoo showed in his paper.
@@ -183,6 +206,7 @@ class TwinIndices():
         self._crylat = CrystalLattice(self._lattice)
         self._twinmode = twinmode
         self._layers = get_number_of_layers(twinmode)
+        self._atom_num_per_layer = get_number_of_atoms_per_layer(twinmode)
         self._wyckoff = wyckoff
         self._indices_Yoo = self._get_indices_Yoo()
         self._indices = deepcopy(self._indices_Yoo)
@@ -211,6 +235,13 @@ class TwinIndices():
         Number of layers.
         """
         return self._layers
+
+    @property
+    def atom_num_per_layer(self):
+        """
+        Number of atoms per layer.
+        """
+        return self._atom_num_per_layer
 
     @property
     def wyckoff(self):

@@ -7,10 +7,13 @@ This module provides API for twinpy.
 
 from pprint import pprint
 import numpy as np
+from copy import deepcopy
+from phonolammps import Phonolammps
 from aiida.orm import load_node
 from matplotlib import pyplot as plt
 from twinpy.file_io import write_poscar
-from twinpy.properties.hexagonal import get_wyckoff_from_hcp
+from twinpy.properties.hexagonal import (get_wyckoff_from_hcp,
+                                         get_hcp_atom_positions)
 from twinpy.structure.shear import get_shear
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
@@ -20,6 +23,19 @@ from twinpy.interfaces.aiida.twinboundary \
 from twinpy.interfaces.aiida.twinboundary_shear \
         import AiidaTwinBoudnaryShearWorkChain
 from twinpy.interfaces.aiida.base import load_aiida_profile
+from twinpy.interfaces.lammps import (get_lammps_relax,
+                                      get_phonon_from_phonolammps,
+                                      get_relax_analyzer_from_lammps_static,
+                                      get_phonon_analyzer_from_lammps_static,
+                                      get_twinboundary_analyzer_from_lammps,
+                                      get_twinboundary_shear_analyzer_from_lammps,
+                                      )
+from twinpy.analysis.relax_analyzer import RelaxAnalyzer
+from twinpy.analysis.phonon_analyzer import PhononAnalyzer
+from twinpy.analysis.twinboundary_analyzer import TwinBoundaryAnalyzer
+
+
+
 
 load_aiida_profile()
 
@@ -303,12 +319,81 @@ class Twinpy():
         """
         self._twinboundary_analyzer = twinboundary_analyzer
 
+    def set_twinboundary_analyzer_from_lammps(
+            self,
+            pair_style:str,
+            pair_coeff:str=None,
+            pot_file:str=None,
+            is_relax_lattice:bool=False,
+            is_relax_z:bool=False,
+            move_atoms_into_unitcell:bool=True,
+            no_standardize:bool=True,
+            is_run_phonon:bool=True,
+            supercell_matrix:np.array=np.eye(3),
+            hexagonal_relax_analyzer:RelaxAnalyzer=None,
+            hexagonal_phonon_analyzer:PhononAnalyzer=None,
+            ):
+        """
+        Set twinboundary_analyzer from lammps.
+        """
+        tb_analyzer = get_twinboundary_analyzer_from_lammps(
+                          twinboundary_structure=self._twinboundary,
+                          pair_style=pair_style,
+                          pair_coeff=pair_coeff,
+                          pot_file=pot_file,
+                          is_relax_lattice=is_relax_lattice,
+                          is_relax_z=is_relax_z,
+                          move_atoms_into_unitcell=move_atoms_into_unitcell,
+                          no_standardize=no_standardize,
+                          is_run_phonon=is_run_phonon,
+                          supercell_matrix=supercell_matrix,
+                          hexagonal_relax_analyzer=hexagonal_relax_analyzer,
+                          hexagonal_phonon_analyzer=hexagonal_phonon_analyzer,
+                          )
+        self.set_twinboundary_analyzer(tb_analyzer)
+
     def set_twinboundary_shear_analyzer(self, twinboundary_shear_analyzer):
         """
         Set twinboundary_shear_analyzer.
         """
         self._twinboundary_shear_analyzer = \
                 twinboundary_shear_analyzer
+
+    def set_twinboundary_shear_analyzer_from_lammps(
+            self,
+            pair_style:str,
+            supercell_matrix,
+            shear_strain_ratios:list,
+            pair_coeff:str=None,
+            pot_file:str=None,
+            is_relax_lattice:bool=False,
+            is_relax_z:bool=False,
+            move_atoms_into_unitcell:bool=True,
+            no_standardize:bool=True,
+            hexagonal_relax_analyzer:RelaxAnalyzer=None,
+            hexagonal_phonon_analyzer:PhononAnalyzer=None,
+            ):
+        """
+        Set twinboundary_analyzer from lammps.
+        """
+        tb_analyzer, tb_shr_analyzer = \
+                get_twinboundary_shear_analyzer_from_lammps(
+                    twinboundary_structure=self._twinboundary,
+                    pair_style=pair_style,
+                    supercell_matrix=supercell_matrix,
+                    shear_strain_ratios=shear_strain_ratios,
+                    pair_coeff=pair_coeff,
+                    pot_file=pot_file,
+                    is_relax_lattice=is_relax_lattice,
+                    is_relax_z=is_relax_z,
+                    move_atoms_into_unitcell=move_atoms_into_unitcell,
+                    no_standardize=no_standardize,
+                    hexagonal_relax_analyzer=hexagonal_relax_analyzer,
+                    hexagonal_phonon_analyzer=hexagonal_phonon_analyzer,
+                    is_return_twinboundary_analyzer=True,
+                    )
+        self.set_twinboundary_analyzer(tb_analyzer)
+        self.set_twinboundary_shear_analyzer(tb_shr_analyzer)
 
     @property
     def twinboundary_analyzer(self):

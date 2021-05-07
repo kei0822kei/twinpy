@@ -53,7 +53,7 @@ def get_axes_distances(band_structure:BandStructure) -> list:
     widths = []
     for distance, path_connection in zip(band_structure.get_distances(),
                                          band_structure.path_connections):
-        if not path_connection:
+        if path_connection:
             continue
 
         width = distance[-1] - min_distance
@@ -134,11 +134,11 @@ class BandPlot():
         iter_labels = iter(labels)
         labels_qpoints = []
         # for i in range(len(path_connections)):
-        for freq, dis, conn in zip(frequences, distances, path_connections):
+        for freq, ds, conn in zip(frequences, distances, path_connections):
             if labels_qpoints == []:
                 labels_qpoints = [(iter_labels.__next__(), 0.)]
             freqs.append(freq)
-            dis.extend(dis)
+            dis.extend(ds)
             labels_qpoints.append((iter_labels.__next__(), dis[-1]-dis[0]))
 
             if conn:

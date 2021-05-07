@@ -149,7 +149,7 @@ class TwinBoundaryStructure(_BaseTwinStructure):
                   * e_b
         return lat
 
-    def get_twinboudnary_lattice(self,
+    def get_twinboundary_lattice(self,
                                  layers,
                                  delta,
                                  xshift:float=0.,
@@ -229,7 +229,7 @@ class TwinBoundaryStructure(_BaseTwinStructure):
                                       crop_p_frac_points+p_shift,
                                       crop_t_tb_frac_points+t_shift,
                                       crop_t_frac_points+t_shift])
-
+        scaled_positions = scaled_positions[np.argsort(scaled_positions[:,2])]
         symbols = ['white_tb'] * len(crop_p_tb_frac_points) \
                 + ['white'] * len(crop_p_frac_points) \
                 + ['black_tb'] * len(crop_t_tb_frac_points) \
@@ -263,7 +263,7 @@ class TwinBoundaryStructure(_BaseTwinStructure):
         Note:
             The structure built is set self.output_structure.
         """
-        tb_frame, lat_points, dichs = self.get_twinboudnary_lattice(
+        tb_frame, lat_points, dichs = self.get_twinboundary_lattice(
                 layers=layers, delta=delta, xshift=xshift, yshift=yshift)
 
         W = self._dichromatic_operation
@@ -417,7 +417,6 @@ def plot_nearest_atomic_distance_of_twinboundary(
 
     X, Y = np.meshgrid(x, y)
     shape = X.shape
-    print(shape)
     Z = np.zeros(shape)
 
     for i in range(shape[0]):

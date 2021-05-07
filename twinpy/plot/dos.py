@@ -151,6 +151,17 @@ class TotalDosPlot(_DosPlot):
         """
         return self._total_dos
 
+    def get_imaginary_states(self, get_ratio:bool=False):
+        dos = self._total_dos.dos
+        freq = self._total_dos.frequency_points
+        interval = freq[1] - freq[0]
+        zero_idx = np.where(freq<0)[0][-1] + 1
+        if get_ratio:
+            img = np.sum(dos[:zero_idx]) / np.sum(dos) * interval
+        else:
+            img = np.sum(dos[:zero_idx]) * interval
+        return img
+
     def plot_total_dos(self, ax, label:str=None, is_cumulative=False, c='r', linestyle='-',
                        alpha=1., linewidth=1.5, multi=1.):
         """
@@ -389,13 +400,15 @@ class TotalDosesPlot():
         """
         self._linestyles = linestyles
 
-    def plot_total_doses(self, ax):
+    def plot_total_doses(self, ax, is_cumulative:bool=False):
         for i, dosplot in enumerate(self._dosplots):
             dosplot.plot_total_dos(ax,
                                    c=self._cs[i],
                                    linestyle=self._linestyles[i],
                                    alpha=self._alphas[i],
-                                   linewidth=self._linewidths[i])
+                                   linewidth=self._linewidths[i],
+                                   is_cumulative=is_cumulative,
+                                   )
             if i == len(self._dosplots)-1:
                 dosplot.plot_vline(ax)
                 dosplot.plot_xlabel(ax)

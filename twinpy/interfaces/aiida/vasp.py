@@ -262,13 +262,16 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
                  'final_structure_pk': self._final_structure_pk,
                }
 
-    def get_relax_analyzer(self, original_cell:tuple=None):
+    def get_relax_analyzer(self,
+                           original_cell:tuple=None,
+                           no_standardize:bool=False) -> RelaxAnalyzer:
         """
         Get RelaxAnalyzer class object.
 
         Args:
-            original_cell (tuple): Original cell whose standardized cell
-                                   is initail_cell.
+            original_cell: Original cell whose standardized cell
+                           is initail_cell.
+            no_standardize: Please see docstring of RelaxAnalyzer.
 
         Returns:
             RelaxAnalyzer: RelaxAnalyzer class object.
@@ -278,7 +281,8 @@ class AiidaVaspWorkChain(_AiidaVaspWorkChain):
                                  original_cell=original_cell,
                                  forces=self._forces,
                                  stress=self._stress,
-                                 energy=self._energy)
+                                 energy=self._energy,
+                                 no_standardize=no_standardize)
         return analyzer
 
     def plot_energy_convergence(self):
@@ -410,12 +414,13 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
 
         relax_pks = None
         static_pk = None
-        if 'relax' not in \
+        if 'nsw' not in \
                 load_node(vasp_pks[-1][0]).inputs.parameters.get_dict().keys():
             static_pk = vasp_pks[-1][0]
             relax_pks = [ pk[0] for pk in vasp_pks[:-1] ]
         else:
-            warnings.warn("Could not find final static_pk calculation.")
+            warnings.warn("Could not find final static_pk calculation in {}.".
+                    format(self._pk))
             relax_pks = [ pk[0] for pk in vasp_pks ]
         return (relax_pks, static_pk)
 
@@ -456,13 +461,16 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
               }
         return pks
 
-    def get_relax_analyzer(self, original_cell:tuple=None):
+    def get_relax_analyzer(self,
+                           original_cell:tuple=None,
+                           no_standardize:bool=False) -> RelaxAnalyzer:
         """
         Get RelaxAnalyzer class object.
 
         Args:
-            original_cell (tuple): Original cell whose standardized cell
-                                   is initail_cell.
+            original_cell: Original cell whose standardized cell
+                           is initail_cell.
+            no_standardize: Please see docstring of RelaxAnalyzer.
 
         Returns:
             RelaxAnalyzer: RelaxAnalyzer class object.
@@ -472,7 +480,9 @@ class AiidaRelaxWorkChain(_AiidaVaspWorkChain):
                                  original_cell=original_cell,
                                  forces=self._forces,
                                  stress=self._stress,
-                                 energy=self._energy)
+                                 energy=self._energy,
+                                 no_standardize=no_standardize,
+                                 )
         return analyzer
 
     def get_description(self):
@@ -655,13 +665,23 @@ class AiidaRelaxCollection():
             }
         return pks
 
-    def get_relax_analyzer(self, original_cell:tuple=None):
+    def get_description(self):
+        """
+        Print description for first RelaxWorkChain.
+        """
+        print("# Print description for first RelaxWorkChain.")
+        self._aiida_relaxes[0].get_description()
+
+    def get_relax_analyzer(self,
+                           original_cell:tuple=None,
+                           no_standardize:bool=False) -> RelaxAnalyzer:
         """
         Get RelaxAnalyzer class object.
 
         Args:
-            original_cell (tuple): Original cell whose standardized cell
-                                   is initail_cell.
+            original_cell: Original cell whose standardized cell
+                           is initail_cell.
+            no_standardize: Please see docstring of RelaxAnalyzer.
         """
         pks = self.get_pks()
         if pks['final_structure_pk'] is None:
@@ -688,6 +708,7 @@ class AiidaRelaxCollection():
                 forces=forces,
                 stress=stress,
                 energy=energy,
+                no_standardize=no_standardize,
                 )
         return relax_analyzer
 
@@ -696,13 +717,11 @@ class AiidaRelaxCollection():
         Get RelaxPlot class objects.
         """
         relax_plots = []
-        for relax in self._aiida_relaxes:
-            relax_plots.append(relax.get_relaxplot())
-
         start_step = 1
-        for relax_plot in relax_plots:
-            relax_plot.set_steps(start_step=start_step)
-            start_step = relax_plot.relax_data['steps'][-1]
+        for relax in self._aiida_relaxes:
+            rlxplot = relax.get_relaxplot(start_step=start_step)
+            relax_plots.append(rlxplot)
+            start_step = rlxplot.vasp_final_steps[-1] + 1
 
         return relax_plots
 

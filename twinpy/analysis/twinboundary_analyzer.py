@@ -32,6 +32,7 @@ class TwinBoundaryAnalyzer():
            twinboundary_relax_analyzer:RelaxAnalyzer=None,
            twinboundary_phonon_analyzer:PhononAnalyzer=None,
            hexagonal_phonon_analyzer:PhononAnalyzer=None,
+           hexagonal_relax_analyzer:RelaxAnalyzer=None,
            ):
         """
         Args:
@@ -46,7 +47,8 @@ class TwinBoundaryAnalyzer():
                             twinboundary_phonon_analyzer)
         self._hexagonal_relax_analyzer = None
         self._hexagonal_phonon_analyzer = None
-        self._set_hexagonal_analyzers(hexagonal_phonon_analyzer)
+        self._set_hexagonal_analyzers(hexagonal_relax_analyzer,
+                                      hexagonal_phonon_analyzer)
         self._standardize = None
         self._set_standardize()
 
@@ -72,13 +74,15 @@ class TwinBoundaryAnalyzer():
             self._relax_analyzer = phonon_analyzer.relax_analyzer
             self._phonon_analyzer = phonon_analyzer
 
-    def _set_hexagonal_analyzers(self, hex_phonon_analyzer):
+    def _set_hexagonal_analyzers(self, hex_relax_analyzer, hex_phonon_analyzer):
         """
         Set hexagonal analyzers.
         """
         if hex_phonon_analyzer is not None:
             self._hexagonal_relax_analyzer = hex_phonon_analyzer.relax_analyzer
             self._hexagonal_phonon_analyzer = hex_phonon_analyzer
+        else:
+            self._hexagonal_relax_analyzer = hex_relax_analyzer
 
     def _set_standardize(self):
         """
@@ -230,7 +234,7 @@ class TwinBoundaryAnalyzer():
 
     def get_twinboundary_shear_analyzer(self,
                                         shear_strain_ratios:list,
-                                        relax_analyzers:list=None,
+                                        shear_relax_analyzers:list=None,
                                         shear_phonon_analyzers:list=None,
                                         ):
         """
@@ -241,12 +245,13 @@ class TwinBoundaryAnalyzer():
                                            phonon analyzers.
             shear_strain_ratios: Shear shear_strain_ratios.
         """
+        _relax_analyzers = [self.phonon_analyzer.relax_analyzer]
+        _relax_analyzers.extend(shear_relax_analyzers)
+
         if shear_phonon_analyzers is None:
-            _relax_analyzers = [self.phonon_analyzer.relax_analyzer]
-            _relax_analyzers.extend(relax_analyzers)
             phonon_analyzers = None
         else:
-            _relax_analyzers = None
+            assert len(shear_strain_ratios) == len(shear_phonon_analyzers)
             phonon_analyzers = [self.phonon_analyzer]
             phonon_analyzers.extend(shear_phonon_analyzers)
         strain_ratios = [0.]
@@ -255,7 +260,7 @@ class TwinBoundaryAnalyzer():
                 relax_analyzers=_relax_analyzers,
                 phonon_analyzers=phonon_analyzers,
                 shear_strain_ratios=strain_ratios,
-                layer_indices=self.get_layer_indeces())
+                layer_indices=self.get_layer_indices())
         return twinboundary_shear_analyzer
 
     def get_twinboundary_shear_analyzer_from_relax_pks(self,
@@ -275,8 +280,8 @@ class TwinBoundaryAnalyzer():
             idx = len(aiida_rlxes) - 1
             for i, aiida_rlx in enumerate(aiida_rlxes):
                 if not aiida_rlx.process_state == 'finished':
-                    warnings.warn("{}th RelaxWorkChain has not finished ",
-                                  "yet.".format(i))
+                    warnings.warn(
+                        "{}th RelaxWorkChain has not finished yet.".format(i))
                     idx = i - 1
             return idx
 
@@ -289,20 +294,25 @@ class TwinBoundaryAnalyzer():
         relax_analyzers = [ relax.get_relax_analyzer(
                                     original_cell=original_cells[i])
                                     for i, relax in enumerate(aiida_relaxes[:ix]) ]
+        _relax_analyzers = relax_analyzers
+
         if shear_phonon_pks is None:
             phonon_analyzers = None
-            _relax_analyzers = relax_analyzers
         else:
-            aiida_phonons = [ AiidaPhonopyWorkChain(load_node(pk))
-                                  for pk in shear_phonon_pks ]
-            phonon_analyzers = [ phonon.get_phonon_analyzer(
-                                         relax_analyzer=relax_analyzers[i])
-                                   for i, phonon in enumerate(aiida_phonons) ]
-            _relax_analyzers = None
+            phonon_analyzers = []
+            for rlx_analyzer, ph_pk in zip(relax_analyzers, shear_phonon_pks):
+                if ph_pk is None:
+                    phonon_analyzers.append(None)
+                else:
+                    aiida_phonon = AiidaPhonopyWorkChain(load_node(ph_pk))
+                    ph_analyzer = aiida_phonon.get_phonon_analyzer(
+                            relax_analyzer=rlx_analyzer)
+                    phonon_analyzers.append(ph_analyzer)
+
         twinboundary_shear_analyzer = self.get_twinboundary_shear_analyzer(
-                relax_analyzers=_relax_analyzers,
-                shear_phonon_analyzers=phonon_analyzers,
-                shear_strain_ratios=shear_strain_ratios)
+                shear_relax_analyzers=_relax_analyzers,
+                shear_phonon_analyzers=phonon_analyzers[:ix],
+                shear_strain_ratios=shear_strain_ratios[:ix])
 
         return twinboundary_shear_analyzer
 
@@ -319,7 +329,7 @@ class TwinBoundaryAnalyzer():
         initial_cell = self._relax_analyzer.original_cell
         final_cell = self._relax_analyzer.final_cell_in_original_frame
         cells = [ initial_cell, final_cell ]
-        layer_indices = self.get_layer_indeces()
+        layer_indices = self.get_layer_indices()
         atm_envs = [ _get_atomic_environment(cell, layer_indices)
                          for cell in cells ]
         return atm_envs
@@ -402,15 +412,18 @@ class TwinBoundaryAnalyzer():
                            label=direction,
                            )
 
-    def get_layer_indeces(self):
+    def get_layer_indices(self):
         """
         Get layzer indices.
 
         Returns:
             list: Layer indices.
         """
-        orig_atoms = self._relax_analyzer.original_cell[1]
-        sort_indices = np.argsort(orig_atoms[:,2])
-        layer_indices = sort_indices.reshape(int(len(sort_indices)/2), 2)
+        orig_atoms_num = len(self._relax_analyzer.original_cell[1])
+        atoms_num_per_layer = self._twinboundary_structure.indices.atom_num_per_layer
+        layer_indices = np.array([ i for i in range(orig_atoms_num) ])
+        layer_indices = layer_indices.reshape(
+                int(orig_atoms_num/atoms_num_per_layer),
+                    atoms_num_per_layer)
 
         return layer_indices

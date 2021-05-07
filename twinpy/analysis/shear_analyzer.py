@@ -24,6 +24,7 @@ class _BaseShearAnalyzer():
                  ):
         self._relax_analyzers = None
         self._phonon_analyzers = None
+        self._phonon_idxes = None
         self._set_analyzers(relax_analyzers,
                             phonon_analyzers)
 
@@ -37,11 +38,18 @@ class _BaseShearAnalyzer():
 
         if phonon_analyzers is None:
             self._relax_analyzers = relax_analyzers
+            self._phonon_idxes = []
         else:
-            self._relax_analyzers = \
-                    [ phonon_analyzer.relax_analyzer
-                          for phonon_analyzer in phonon_analyzers]
+            rlx_analyzers = []
+            for i, ph_analyzer in enumerate(phonon_analyzers):
+                if ph_analyzer is None:
+                    rlx_analyzers.append(relax_analyzers[i])
+                else:
+                    rlx_analyzers.append(ph_analyzer.relax_analyzer)
+            self._relax_analyzers = rlx_analyzers
             self._phonon_analyzers = phonon_analyzers
+            self._phonon_idxes = [ i for i in range(len(phonon_analyzers))
+                                     if phonon_analyzers[i] is not None ]
 
     @property
     def relax_analyzers(self):
@@ -96,7 +104,8 @@ class _BaseShearAnalyzer():
                 output_is_cart=True,
                 )
         band_paths_for_all = []
-        for pha in self._phonon_analyzers:
+        for ix in self._phonon_idxes:
+            pha = self._phonon_analyzers[ix]
             bps = pha.get_band_paths_from_original_to_primitive(
                     band_paths=bps_orig_cart,
                     input_is_cart=True,
@@ -130,12 +139,13 @@ class _BaseShearAnalyzer():
         band_paths_for_all = self.get_band_paths(
                 base_band_paths=base_band_paths)
         band_structures = []
-        for i, phonon_analyzer in enumerate(self._phonon_analyzers):
+        for i, ix in enumerate(self._phonon_idxes):
+            pha = self._phonon_analyzers[ix]
             # if i == 0:
             #     lbs = labels
             # else:
             #     lbs = None
-            band_structure = phonon_analyzer.get_band_structure(
+            band_structure = pha.get_band_structure(
                     band_paths=band_paths_for_all[i],
                     # labels=lbs,
                     labels=labels,
@@ -163,13 +173,14 @@ class _BaseShearAnalyzer():
             dry_run (bool): If True, show sampling mesh information
                             and not run.
         """
-        for phonon in self._phonon_analyzers:
-            phonon.run_mesh(interval=interval,
-                            is_store=is_store,
-                            dry_run=dry_run,
-                            is_eigenvectors=is_eigenvectors,
-                            is_gamma_center=is_gamma_center,
-                            verbose=verbose)
+        for i, ix in enumerate(self._phonon_idxes):
+            pha = self._phonon_analyzers[ix]
+            pha.run_mesh(interval=interval,
+                         is_store=is_store,
+                         dry_run=dry_run,
+                         is_eigenvectors=is_eigenvectors,
+                         is_gamma_center=is_gamma_center,
+                         verbose=verbose)
 
     def get_total_doses(self,
                         is_store:bool=True,
@@ -182,8 +193,9 @@ class _BaseShearAnalyzer():
         Get total doses.
         """
         tdoses = []
-        for phonon in self._phonon_analyzers:
-            tdos = phonon.get_total_dos(
+        for i, ix in enumerate(self._phonon_idxes):
+            pha = self._phonon_analyzers[ix]
+            tdos = pha.get_total_dos(
                     is_store=is_store,
                     sigma=sigma,
                     freq_min=freq_min,
@@ -207,8 +219,9 @@ class _BaseShearAnalyzer():
         Get projected doses.
         """
         pdoses = []
-        for phonon in self._phonon_analyzers:
-            pdos = phonon.get_projected_dos(
+        for i, ix in enumerate(self._phonon_idxes):
+            pha = self._phonon_analyzers[ix]
+            pdos = pha.get_projected_dos(
                     is_store=is_store,
                     sigma=sigma,
                     freq_min=freq_min,

@@ -48,6 +48,8 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         super().__init__(node=node)
         self._twinboundary_parameters = None
         self._cells = None
+        self._sub_processes = None
+        self._set_sub_processes()
         self._structure_pks = None
         self._set_twinboundary()
         self._twinboundary_structure = None
@@ -58,16 +60,18 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         Set twinboundary from vasp.
         """
+        sub_prc = self._sub_processes
         tb_parameters = self._node.outputs.twinboundary_parameters.get_dict()
         aiida_hex_structure = self._node.inputs.structure
-        aiida_tb_structure = self._node.called[0].outputs.twinboundary
+        aiida_tb_structure = \
+                sub_prc['get_twinboundary_structure'].outputs.twinboundary
         aiida_tb_orig_structure = \
-                self._node.called[0].outputs.twinboundary_orig
+                sub_prc['get_twinboundary_structure'].outputs.twinboundary_orig
         aiida_tb_rlx_structure = \
-                self._node.called[-1].outputs.relax__structure
+                sub_prc['RelaxWorkChain'].outputs.relax__structure
 
         round_cells = []
-        for aiida_structure in [ aiida_tb_orig_structure,
+        for aiida_structure in [ aiida_tb_structure,
                                  aiida_tb_orig_structure,
                                  aiida_tb_rlx_structure ]:
             cell = get_cell_from_aiida(aiida_structure)
@@ -104,6 +108,16 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         cells.
         """
         return self._cells
+
+    def _set_sub_processes(self):
+        """
+        Set subprocesses.
+        """
+        sub_nodes = self._node.called
+        dic = {}
+        for node in sub_nodes:
+            dic[node.process_label] = node
+        self._sub_processes = dic
 
     @property
     def structure_pks(self):
@@ -157,10 +171,14 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         """
         Get pks.
         """
-        relax_pk = self._node.called[-1].pk
         pks = {}
+        for key in self._sub_processes:
+            if key == 'RelaxWorkChain':
+                label = 'relax_pk'
+            else:
+                label = key + '_pk'
+            pks[label] = self._sub_processes[key].pk
         pks['twinboundary_pk'] = self._pk
-        pks['relax_pk'] = relax_pk
         return pks
 
     def get_aiida_relax(
@@ -220,22 +238,24 @@ class AiidaTwinBoudnaryRelaxWorkChain(_WorkChain):
         else:
             phonon_analyzer = None
 
+        hex_relax_analyzer = None
         hex_phonon_analyzer = None
-        if hexagonal_relax_pk is not None and hexagonal_phonon_pk is not None:
+        if hexagonal_relax_pk:
             aiida_hex_relax = AiidaRelaxWorkChain(
                                   load_node(hexagonal_relax_pk))
-            hex_relax_analyzer = aiida_hex_relax.get_relax_analyzer()
-            if hexagonal_phonon_pk is not None:
+            hex_relax_analyzer = aiida_hex_relax.get_relax_analyzer(
+                                     no_standardize=True)
+            if hexagonal_phonon_pk:
                 aiida_hex_phonopy = AiidaPhonopyWorkChain(
                                         load_node(hexagonal_phonon_pk))
                 hex_phonon_analyzer = aiida_hex_phonopy.get_phonon_analyzer(
                         relax_analyzer=hex_relax_analyzer)
-        else:
-            hex_phonon_analyzer = None
+
         twinboundary_analyzer = TwinBoundaryAnalyzer(
                 twinboundary_structure=twinboundary_structure,
                 twinboundary_relax_analyzer=relax_analyzer,
                 twinboundary_phonon_analyzer=phonon_analyzer,
+                hexagonal_relax_analyzer=hex_relax_analyzer,
                 hexagonal_phonon_analyzer=hex_phonon_analyzer,
                 )
         return twinboundary_analyzer

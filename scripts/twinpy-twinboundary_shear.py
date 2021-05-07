@@ -1,13 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
-Deals with twinpy twinboundary.
+Get twinpy strucuture
 """
 
 import argparse
-from matplotlib import pyplot as plt
 from twinpy.api_twinpy import Twinpy
-from twinpy.file_io import write_poscar
 
 
 # argparse
@@ -27,21 +26,28 @@ def get_argparse():
                         help="Hexagonal relax pk.")
     parser.add_argument('--hexagonal_phonon_pk', type=int, default=None,
                         help="AiidaPhonopy pk for relax hexagonal structure.")
+    parser.add_argument('--shear_relax_pks', type=str, default=None,
+                        help="Twinboundary shear relax pks.")
+    parser.add_argument('--shear_phonon_pks', type=str, default=None,
+                        help="Twinboundary shear phonon pks.")
+    parser.add_argument('--shear_strain_ratios', type=str, default=None,
+                        help="Twinboundary shear strain ratios.")
 
-    # plot configuration
-    parser.add_argument('--plot_plane_diff', action='store_true',
-                        help="Plot plane interval.")
+    # write shear cells
+    parser.add_argument('--write_shear_cells', action='store_true',
+                        help="Get shear cells")
+    parser.add_argument('--is_original_frame', action='store_true',
+                        help="Original frame.")
+    parser.add_argument('--is_relax', action='store_true',
+                        help="Relax.")
+    parser.add_argument('--file_header', type=str, default='',
+                        help="File header.")
 
     # plot band structure
     parser.add_argument('--plot_band', action='store_true',
                         help="Plot band structure")
     parser.add_argument('--show_band_points', action='store_true',
                         help="Show reciprocal high symmetry points.")
-
-    # export
-    parser.add_argument('--write_cell_in_original_frame', action='store_true',
-                        help="Write out relax cell in original frame.")
-
     args = parser.parse_args()
 
     return args
@@ -52,10 +58,15 @@ def main(twinboundary_relax_pk:int,
          twinboundary_phonon_pk:int=None,
          hexagonal_relax_pk:int=None,
          hexagonal_phonon_pk:int=None,
-         plot_plane_diff:bool=False,
+         shear_relax_pks:list=None,
+         shear_phonon_pks:list=None,
+         shear_strain_ratios:list=None,
+         write_shear_cells:bool=False,
+         is_original_frame:bool=False,
+         is_relax:bool=False,
+         file_header:str='',
          plot_band:bool=False,
          show_band_points:bool=False,
-         write_cell_in_original_frame:bool=False,
          ):
 
     twinpy = Twinpy.initialize_from_aiida_twinboundary(
@@ -66,11 +77,24 @@ def main(twinboundary_relax_pk:int,
                  hexagonal_phonon_pk=hexagonal_phonon_pk,
                  )
 
-    # plot plane interval
-    if plot_plane_diff:
-        fig = twinpy.twinboundary_analyzer.plot_plane_diff()
-        plt.show()
+    if shear_relax_pks is not None:
+        twinpy.set_twinboundary_shear_analyzer(
+                shear_relax_pks=shear_relax_pks,
+                shear_phonon_pks=shear_phonon_pks,
+                shear_strain_ratios=shear_strain_ratios,
+                )
 
+    # write shear cells
+    if write_shear_cells:
+        print("write shear cells:")
+        print("    is_original_frame:{}".format(is_original_frame))
+        print("    is_relax:{}".format(is_relax))
+        print("    file_header:{}".format(file_header))
+        twinpy.write_twinboundary_shear_cells(
+                is_original_frame=is_original_frame,
+                is_relax=is_relax,
+                header=file_header,
+                )
 
     # show band points
     if show_band_points:
@@ -80,13 +104,6 @@ def main(twinboundary_relax_pk:int,
     if plot_band:
         twinpy.plot_twinboundary_shear_bandstructure()
 
-    # write out relax cell in original frame
-    if write_cell_in_original_frame:
-        rlx_analyzer = twinpy.twinboundary_analyzer.relax_analyzer
-        rlx_cell_orig = rlx_analyzer.final_cell_in_original_frame
-        write_poscar(cell=rlx_cell_orig,
-                     filename='rlx_cell_orig.poscar')
-
 
 if __name__ == '__main__':
     args = get_argparse()
@@ -95,13 +112,33 @@ if __name__ == '__main__':
     else:
         additional_relax_pks = None
 
+    if args.shear_relax_pks is not None:
+        shear_relax_pks = list(map(int, args.shear_relax_pks.split()))
+    else:
+        shear_relax_pks = None
+
+    if args.shear_phonon_pks is not None:
+        shear_phonon_pks = list(map(int, args.shear_phonon_pks.split()))
+    else:
+        shear_phonon_pks = None
+
+    if args.shear_strain_ratios:
+        shear_strain_ratios = list(map(float, args.shear_strain_ratios.split()))
+    else:
+        shear_strain_ratios = None
+
     main(twinboundary_relax_pk=args.twinboundary_relax_pk,
          additional_relax_pks=additional_relax_pks,
          twinboundary_phonon_pk=args.twinboundary_phonon_pk,
          hexagonal_relax_pk=args.hexagonal_relax_pk,
          hexagonal_phonon_pk=args.hexagonal_phonon_pk,
-         plot_plane_diff=args.plot_plane_diff,
+         shear_relax_pks=shear_relax_pks,
+         shear_phonon_pks=shear_phonon_pks,
+         shear_strain_ratios=shear_strain_ratios,
+         write_shear_cells=args.write_shear_cells,
+         is_original_frame=args.is_original_frame,
+         is_relax=args.is_relax,
+         file_header=args.file_header,
          plot_band=args.plot_band,
          show_band_points=args.show_band_points,
-         write_cell_in_original_frame=args.write_cell_in_original_frame,
          )

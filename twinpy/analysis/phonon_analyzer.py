@@ -5,16 +5,20 @@
 Analize phonopy calculation.
 """
 from copy import deepcopy
+import warnings
 import numpy as np
 from phonopy import Phonopy
 from phonopy.phonon.band_structure import (
         get_band_qpoints_and_path_connections,
         BandStructure)
 from twinpy.interfaces.phonopy import get_cell_from_phonopy_structure
-# from twinpy.common.kpoints import get_mesh_offset_from_direct_lattice
-from twinpy.common.band_path import get_seekpath
+from twinpy.common.kpoints import Kpoints
+from twinpy.common.band_path import (get_seekpath,
+                                     get_labels_band_paths_from_seekpath)
 from twinpy.structure.base import check_same_cells
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
+from twinpy.plot.band_structure import BandPlot
+from twinpy.plot.dos import TotalDosPlot
 
 
 class PhononAnalyzer():
@@ -36,8 +40,16 @@ class PhononAnalyzer():
         self._relax_analyzer = None
         if relax_analyzer is not None:
             self.set_relax_analyzer(relax_analyzer)
-            self._rotation_matrix = \
-                    self._relax_analyzer._standardize.rotation_matrix
+            if relax_analyzer.no_standardize:
+                self._rotation_matrix = np.identity(3)
+            else:
+                if relax_analyzer.standardize:
+                    self._rotation_matrix = \
+                            self.relax_analyzer.standardize.rotation_matrix
+                else:
+                    warnings.warn("standardize is not set in relax_analyzer."
+                                  +" set np.identity(3) automatically.")
+                    self._rotation_matrix = np.identity(3)
         self._primitive_cell = None
         self._set_primitive_cell()
         self._reciprocal_lattice = None
@@ -61,6 +73,10 @@ class PhononAnalyzer():
     def primitive_cell(self):
         """
         Primitive cell.
+
+        Note:
+        Remind this is user defined primitive cell.
+        Therefore, this is not necessarily true primitive cell.
         """
         return self._primitive_cell
 
@@ -70,9 +86,8 @@ class PhononAnalyzer():
         """
         self._reciprocal_lattice = np.linalg.inv(self._primitive_cell[0]).T
         if self._relax_analyzer is not None:
-            self._original_reciprocal_lattice = \
-                    np.dot(self._rotation_matrix,
-                           self._reciprocal_lattice.T).T
+            self._original_reciprocal_lattice = np.linalg.inv(
+                    self._relax_analyzer.original_cell[0])
 
     @property
     def reciprocal_lattice(self):
@@ -112,10 +127,13 @@ class PhononAnalyzer():
         relax_cell = relax_analyzer.final_cell
         unitcell = get_cell_from_phonopy_structure(
                 self._phonon.get_primitive())
-        if not check_same_cells(first_cell=relax_cell,
-                                second_cell=unitcell):
-            raise RuntimeError("phonon unitcell does not "
-                               "the same as relax cell.")
+        is_same = check_same_cells(first_cell=relax_cell,
+                                   second_cell=unitcell,
+                                   # raise_error=True)
+                                   raise_error=False)
+        if not is_same:
+            warnings.warn(
+            "Relax cell and Phonon primitive cell does not correspond.")
         self._relax_analyzer = relax_analyzer
 
     @property
@@ -290,55 +308,53 @@ class PhononAnalyzer():
 
         return band_structure
 
-    # def run_mesh(self,
-    #              interval:float=0.1,
-    #              is_store:bool=True,
-    #              get_phonon:bool=False,
-    #              dry_run:bool=False,
-    #              is_eigenvectors:bool=False,
-    #              is_gamma_center:bool=True,
-    #              verbose:bool=True):
-    #     """
-    #     Run mesh for both hexagonal and twinboundary phonon.
+    def run_mesh(self,
+                 interval:float=0.1,
+                 is_store:bool=True,
+                 get_phonon:bool=False,
+                 dry_run:bool=False,
+                 is_eigenvectors:bool=False,
+                 is_gamma_center:bool=True,
+                 verbose:bool=True):
+        """
+        Run mesh for both hexagonal and twinboundary phonon.
 
-    #     Args:
-    #         interval (float): mesh interval
-    #         is_store (bool): If True, result is stored in self._phonon.
-    #         get_phonon (bool): If True, return Phonopy class obejct,
-    #                            which is independent from self._phonon.
-    #         dry_run (bool): If True, show sampling mesh information
-    #                         and not run.
+        Args:
+            interval (float): mesh interval
+            is_store (bool): If True, result is stored in self._phonon.
+            get_phonon (bool): If True, return Phonopy class obejct,
+                               which is independent from self._phonon.
+            dry_run (bool): If True, show sampling mesh information
+                            and not run.
 
-    #     Todo:
-    #         Fix get_phonon because currenly cannot get thermal_displacement_matrices for gottern phonon object.
-    #     """
-    #     kpt = get_mesh_offset_from_direct_lattice(
-    #             lattice=self._primitive_cell[0],
-    #             interval=interval,
-    #             )
-    #     if dry_run:
-    #         print("# interval: {}".format(interval))
-    #         print("# sampling mesh: {}".format(kpt['mesh']))
-    #         print("# dry_run is evoked.")
+        Todo:
+            Fix get_phonon because currenly cannot get thermal_displacement_matrices for gottern phonon object.
+        """
+        kpt = Kpoints(lattice=self._primitive_cell[0])
+        mesh = kpt.get_mesh_from_interval(interval=interval)
+        if dry_run:
+            print("# interval: {}".format(interval))
+            print("# sampling mesh: {}".format(mesh))
+            print("# dry_run is evoked.")
 
-    #     else:
-    #         if verbose:
-    #             print("run mesh with {}".format(kpt['mesh']))
-    #         if is_store:
-    #             _phonon = self._phonon
-    #         else:
-    #             _phonon = deepcopy(self._phonon)
-    #         _phonon.set_mesh(
-    #                 mesh=kpt['mesh'],
-    #                 shift=None,
-    #                 is_time_reversal=True,
-    #                 is_mesh_symmetry=False,  # necessary for calc ellipsoid
-    #                 is_eigenvectors=is_eigenvectors,
-    #                 is_gamma_center=is_gamma_center,
-    #                 run_immediately=True)
+        else:
+            if verbose:
+                print("run mesh with {}".format(mesh))
+            if is_store:
+                _phonon = self._phonon
+            else:
+                _phonon = deepcopy(self._phonon)
+            _phonon.set_mesh(
+                    mesh=mesh,
+                    shift=None,
+                    is_time_reversal=True,
+                    is_mesh_symmetry=False,  # necessary for calc ellipsoid
+                    is_eigenvectors=is_eigenvectors,
+                    is_gamma_center=is_gamma_center,
+                    run_immediately=True)
 
-    #     if get_phonon:
-    #         return _phonon
+        if get_phonon:
+            return _phonon
 
     def get_total_dos(self,
                       is_store:bool=True,
@@ -456,3 +472,18 @@ class PhononAnalyzer():
             matrix = _matrix
 
         return matrix
+
+    def plot_band_dos_auto(self, figsize=(8,6)):
+        """
+        Plot band structure and dos using seekpath.
+        """
+        from matplotlib import pyplot as plt
+        self.run_mesh()
+        ds = self.get_total_dos()
+        dp = TotalDosPlot(ds, flip_xy=True)
+        labels, band_paths = \
+            get_labels_band_paths_from_seekpath(self.primitive_cell)
+        bs = self.get_band_structure(band_paths=band_paths, labels=labels)
+        bp = BandPlot(band_structure=bs)
+        bp.plot_band_structure(dosplot=dp, figsize=figsize)
+        plt.show()

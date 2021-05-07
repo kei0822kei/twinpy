@@ -9,7 +9,6 @@ because this also can be used in the case lammps is used.
 
 import numpy as np
 from twinpy.structure.base import check_same_cells
-from twinpy.structure.diff import get_structure_diff
 from twinpy.structure.standardize import StandardizeCell
 
 
@@ -26,21 +25,28 @@ class RelaxAnalyzer():
            forces:np.array=None,
            stress:np.array=None,
            energy:float=None,
+           no_standardize:bool=False,
            ):
         """
         Args:
-            initial_cell (tuple): Initial cell for vasp.
-            final_cell (tuple): Final cell of vasp
-            original_cell (tuple): Original cell whose standardized cell
-                                   is initail_cell.
-            forces (np.array): Forces acting on atoms in the final cell.
-            stress (np.array): Forces acting on the final cell.
+            initial_cell: Initial cell for vasp.
+            final_cell: Final cell of vasp
+            original_cell: Original cell whose standardized cell
+                           is initail_cell.
+            forces: Forces acting on atoms in the final cell.
+            stress: Forces acting on the final cell.
+            no_standardize: If no_standardize is True,
+                            RelaxAnalyzer considers initial_cell is
+                            conventional standardized cell,
+                            otherwise initial_cell is considered original cell
+                            and set original_cell=initial_cell automatically.
         """
+        self._no_standardize = no_standardize
         self._initial_cell = initial_cell
         self._final_cell = final_cell
-        self._original_cell = None
         self._final_cell_in_original_frame = None
         self._standardize = None
+        self._original_cell = None
         self.set_original_cell(original_cell=original_cell)
         self._forces = forces
         self._stress = stress
@@ -65,33 +71,31 @@ class RelaxAnalyzer():
         Set original cell.
 
         Args:
-            original_cell (tuple): Original cell whose standardized cell
-                                   is initail_cell.
+            original_cell: Original cell whose standardized cell
+                           is initail_cell.
         """
-        if original_cell is None:
-            _original_cell = self._initial_cell
-        else:
+        if self._no_standardize:
+            self._original_cell = self._initial_cell
+            self._set_final_cell_in_original_frame()
+
+        elif original_cell:
             if not len(original_cell[2]) == len(self._initial_cell[2]):
                 raise RuntimeError(
                         "The number of atoms changes between "
                         "original cell and initial cell, "
                         "which is not supported.")
-            _original_cell = original_cell
-
-        std = StandardizeCell(cell=_original_cell)
-        primitive_cell = std.get_standardized_cell(
-                to_primitive=True,
-                no_idealize=False,
-                symprec=1e-5,
-                get_sort_list=False)
-        ### future edit because relaxed structure step by step
-        # if not check_same_cells(first_cell=primitive_cell,
-        #                         second_cell=self._initial_cell):
-        #     raise RuntimeError("Standardized original cell does not "
-        #                        "the same as initial cell.")
-        self._original_cell = _original_cell
-        self._standardize = std
-        self._set_final_cell_in_original_frame()
+            std = StandardizeCell(cell=original_cell)
+            std_conv_cell = std.get_standardized_cell(
+                                to_primitive=False,
+                                no_idealize=False,
+                                symprec=1e-5,
+                                no_sort=True,
+                                get_sort_list=False,
+                                )
+            check_same_cells(self._initial_cell, std_conv_cell)
+            self._original_cell = original_cell
+            self._standardize = std
+            self._set_final_cell_in_original_frame()
 
     def _set_final_cell_in_original_frame(self):
         """
@@ -99,7 +103,7 @@ class RelaxAnalyzer():
 
         Note:
             For variable definitions in this definition,
-            see Eq.(1.8) and Eq.(1.17) in Crystal Structure documention.
+            see Eq.(1.8) and Eq.(1.17) in Crystal Structure documentation.
             Note that by crystal body rotation, fractional
             coordinate of atom positions are not changed.
         """
@@ -132,26 +136,28 @@ class RelaxAnalyzer():
             orig_atoms = np.round(X.T, decimals=8) % 1.
             return orig_atoms
 
-        lattice = self._final_cell[0]
-        conv_to_prim_matrix = \
-            self._standardize.conventional_to_primitive_matrix
-        transformation_matrix = \
-            self._standardize.transformation_matrix
-        origin_shift = self._standardize.origin_shift
-        orig_lattice =__get_original_lattice(
-                lattice=lattice,
-                conv_to_prim_matrix=conv_to_prim_matrix,
-                rotation_matrix=self._standardize.rotation_matrix,
-                transformation_matrix=transformation_matrix)
-        scaled_positions = __get_final_atoms_in_original_frame(
-                prim_atoms=self._final_cell[1],
-                conv_to_prim_matrix=conv_to_prim_matrix,
-                transformation_matrix=transformation_matrix,
-                origin_shift=origin_shift,
-                )
-        symbols = self._original_cell[2]
-
-        final_orig_cell = (orig_lattice, scaled_positions, symbols)
+        if self._no_standardize:
+            final_orig_cell = self._final_cell
+        else:
+            lattice = self._final_cell[0]
+            conv_to_prim_matrix = \
+                self._standardize.conventional_to_primitive_matrix
+            transformation_matrix = \
+                self._standardize.transformation_matrix
+            origin_shift = self._standardize.origin_shift
+            orig_lattice = __get_original_lattice(
+                    lattice=lattice,
+                    conv_to_prim_matrix=conv_to_prim_matrix,
+                    rotation_matrix=self._standardize.rotation_matrix,
+                    transformation_matrix=transformation_matrix)
+            scaled_positions = __get_final_atoms_in_original_frame(
+                    prim_atoms=self._final_cell[1],
+                    conv_to_prim_matrix=conv_to_prim_matrix,
+                    transformation_matrix=transformation_matrix,
+                    origin_shift=origin_shift,
+                    )
+            symbols = self._original_cell[2]
+            final_orig_cell = (orig_lattice, scaled_positions, symbols)
 
         self._final_cell_in_original_frame = final_orig_cell
 
@@ -208,28 +214,36 @@ class RelaxAnalyzer():
         """
         return self._energy
 
-    def get_diff(self,
-                 is_original_frame:bool=False):
+    @property
+    def no_standardize(self):
         """
-        Get structure diffs between initial cell and final cell.
-
-        Args:
-            is_original_frame (bool): If True, get diff in original frame.
-
-        Notes:
-            When you use is_original_frame=True, you have to set
-            original_cell before running this function.
+        Whether initial_cell is conventional standardized or not.
         """
-        if is_original_frame:
-            self._check_original_cell_is_set()
-            initial_cell = self._original_cell
-            final_cell = self._final_cell_in_original_frame
-        else:
-            initial_cell = self._initial_cell
-            final_cell = self._final_cell
+        return self._no_standardize
 
-        diff = get_structure_diff(cells=(initial_cell, final_cell),
-                                  base_index=0,
-                                  include_base=False)
+    # def get_diff(self,
+    #              is_original_frame:bool=False):
+    #     """
+    #     Get structure diffs between initial cell and final cell.
 
-        return diff
+    #     Args:
+    #         is_original_frame (bool): If True, get diff in original frame.
+
+    #     Notes:
+    #         When you use is_original_frame=True, you have to set
+    #         original_cell before running this function.
+    #     """
+    #     from twinpy.structure.diff import get_structure_diff
+    #     if is_original_frame:
+    #         self._check_original_cell_is_set()
+    #         initial_cell = self._original_cell
+    #         final_cell = self._final_cell_in_original_frame
+    #     else:
+    #         initial_cell = self._initial_cell
+    #         final_cell = self._final_cell
+
+    #     diff = get_structure_diff(cells=(initial_cell, final_cell),
+    #                               base_index=0,
+    #                               include_base=False)
+
+    #     return diff
