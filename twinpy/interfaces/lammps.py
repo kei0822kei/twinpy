@@ -19,6 +19,7 @@ def get_lammps_relax(cell:tuple,
                      pair_coeff:str=None,
                      pot_file:str=None,
                      is_relax_lattice:bool=True,
+                     is_relax_z:bool=False,
                      run_lammps:bool=True) -> LammpsStatic:
     """
     Get lammpkits before run_lammps is called.
@@ -43,7 +44,10 @@ def get_lammps_relax(cell:tuple,
     lmp_stc.add_thermo(thermo=10)
     lmp_stc.add_variables(add_energy=True,
                           add_stress=True)
-    lmp_stc.add_relax_settings(is_relax_lattice=is_relax_lattice)
+    lmp_stc.add_relax_settings(
+            is_relax_lattice=is_relax_lattice,
+            is_relax_z=is_relax_z,
+            )
     if run_lammps:
         lmp_stc.run_lammps()
 
@@ -128,6 +132,7 @@ def get_phonon_analyzer_from_lammps(cell,
                                     pair_coeff:str=None,
                                     pot_file:str=None,
                                     is_relax_lattice:bool=False,
+                                    is_relax_z:bool=False,
                                     ):
     lmp_stc = get_lammps_relax(
                   cell=cell,
@@ -135,6 +140,7 @@ def get_phonon_analyzer_from_lammps(cell,
                   pair_coeff=pair_coeff,
                   pot_file=pot_file,
                   is_relax_lattice=is_relax_lattice,
+                  is_relax_z=is_relax_z,
                   run_lammps=True,
                   )
     rlx_analyzer = get_relax_analyzer_from_lammps_static(
@@ -158,6 +164,7 @@ def get_twinboundary_analyzer_from_lammps(
         pair_coeff:str=None,
         pot_file:str=None,
         is_relax_lattice:bool=False,
+        is_relax_z:bool=False,
         move_atoms_into_unitcell:bool=True,
         no_standardize:bool=True,
         is_run_phonon:bool=True,
@@ -184,6 +191,7 @@ def get_twinboundary_analyzer_from_lammps(
                           pair_coeff=pair_coeff,
                           pot_file=pot_file,
                           is_relax_lattice=is_relax_lattice,
+                          is_relax_z=is_relax_z,
                           )
     else:
         lmp_stc = get_lammps_relax(
@@ -192,6 +200,7 @@ def get_twinboundary_analyzer_from_lammps(
                 pair_coeff=pair_coeff,
                 pot_file=pot_file,
                 is_relax_lattice=is_relax_lattice,
+                is_relax_z=is_relax_z,
                 )
         rlx_analyzer = get_relax_analyzer_from_lammps_static(
                           lammps_static=lmp_stc,
@@ -218,6 +227,7 @@ def get_twinboundary_shear_analyzer_from_lammps(
         pair_coeff:str=None,
         pot_file:str=None,
         is_relax_lattice:bool=False,
+        is_relax_z:bool=False,
         move_atoms_into_unitcell:bool=True,
         no_standardize:bool=True,
         hexagonal_relax_analyzer:RelaxAnalyzer=None,
@@ -229,8 +239,8 @@ def get_twinboundary_shear_analyzer_from_lammps(
                            + "which means no strain cell.")
     if not no_standardize:
         raise RuntimeError("Currently no_standardize=False is not supported.")
-    if is_relax_lattice:
-        raise RuntimeError("Currently is_relax_lattice=True is not supported.")
+    # if is_relax_lattice:
+    #     raise RuntimeError("Currently is_relax_lattice=True is not supported.")
 
     phonon_analyzers = []
     _atom_positions = None
@@ -253,6 +263,7 @@ def get_twinboundary_shear_analyzer_from_lammps(
                 pair_coeff=pair_coeff,
                 pot_file=pot_file,
                 is_relax_lattice=is_relax_lattice,
+                is_relax_z=is_relax_z,
                 )
         if i == 0:
             tb_analyzer = get_twinboundary_analyzer_from_lammps(
@@ -262,6 +273,7 @@ def get_twinboundary_shear_analyzer_from_lammps(
                     pair_coeff=pair_coeff,
                     pot_file=pot_file,
                     is_relax_lattice=is_relax_lattice,
+                    is_relax_z=is_relax_z,
                     move_atoms_into_unitcell=move_atoms_into_unitcell,
                     no_standardize=no_standardize,
                     hexagonal_relax_analyzer=hexagonal_relax_analyzer,
@@ -270,7 +282,7 @@ def get_twinboundary_shear_analyzer_from_lammps(
         _atom_positions = ph_analyzer.primitive_cell[1]
         phonon_analyzers.append(ph_analyzer)
 
-    layer_indices = tb_analyzer.get_layer_indeces()
+    layer_indices = tb_analyzer.get_layer_indices()
     tb_shr_analyzer = TwinBoundaryShearAnalyzer(
             shear_strain_ratios=shear_strain_ratios,
             layer_indices=layer_indices,
