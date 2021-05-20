@@ -27,6 +27,7 @@ class AiidaPhonopyWorkChain(_WorkChain):
     def __init__(
             self,
             node:Node,
+            is_nac:bool=True,
             ):
         """
         Args:
@@ -46,6 +47,9 @@ class AiidaPhonopyWorkChain(_WorkChain):
         self._set_structures()
         self._force_sets = None
         self._set_force_sets()
+        self._nac_params = None
+        if 'nac_params' in self._node.outputs and is_nac:
+            self._set_nac_params()
 
     def _set_structures(self):
         """
@@ -122,6 +126,25 @@ class AiidaPhonopyWorkChain(_WorkChain):
         """
         return self._force_sets
 
+    def _set_nac_params(self):
+        """
+        Set nac params.
+        """
+        borns = self._node.outputs.nac_params.get_array('born_charges')
+        epsilon = self._node.outputs.nac_params.get_array('epsilon')
+        nac_params = {'born': borns,
+                      'factor': 14.399652,
+                      'dielectric': epsilon}
+        self._nac_params = nac_params
+
+    @property
+    def nac_params(self):
+        """
+        Nac params.
+        """
+        return self._nac_params
+
+
     def get_pks(self) -> dict:
         """
         Get pks.
@@ -144,7 +167,9 @@ class AiidaPhonopyWorkChain(_WorkChain):
         phonon = Phonopy(
                 get_phonopy_structure(self._unitcell),
                 supercell_matrix=self._phonon_setting_info['supercell_matrix'],
-                primitive_matrix=self._phonon_setting_info['primitive_matrix'])
+                primitive_matrix=self._phonon_setting_info['primitive_matrix'],
+                nac_params=self._nac_params,
+                )
         phonon.set_displacement_dataset(
                 self._phonon_setting_info['displacement_dataset'])
         phonon.set_forces(self._force_sets)
