@@ -23,8 +23,9 @@ class Disconnection():
         """
         Init.
         """
-        if twinboundary.twinmode != '10-12':
-            raise RuntimeError("Only support 10-12 twinmode.")
-
         _check_support_twinmode(twinboundary)
 
+    def _check_support_twinmode(self, twinmode):
+        """
+        Check support twinmode.
+        """

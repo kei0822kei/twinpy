@@ -28,10 +28,14 @@ class AiidaPhonopyWorkChain(_WorkChain):
             self,
             node:Node,
             is_nac:bool=True,
+            external_nac_node:int=None,
             ):
         """
         Args:
             node: Aiida Node.
+            external_nac_node: If is_nac=True and external_nac_node is
+                               specified, nac params are gotten from
+                               external_nac_node.
         """
         process_class = 'PhonopyWorkChain'
         check_process_class(node, process_class)
@@ -48,7 +52,9 @@ class AiidaPhonopyWorkChain(_WorkChain):
         self._force_sets = None
         self._set_force_sets()
         self._nac_params = None
-        if 'nac_params' in self._node.outputs and is_nac:
+        if external_nac_node:
+            self._set_nac_params_from_external(external_nac_node)
+        elif 'nac_params' in self._node.outputs and is_nac:
             self._set_nac_params()
 
     def _set_structures(self):
@@ -125,6 +131,27 @@ class AiidaPhonopyWorkChain(_WorkChain):
         Output force sets.
         """
         return self._force_sets
+
+    def _set_nac_params_from_external(self, nac_node):
+        """
+        Set nac params from external nac node.
+        """
+        from aiida_phonopy.common.utils import get_nac_params
+        from aiida.orm import Float
+        params = get_nac_params(
+            born_charges=nac_node.outputs.born_charges,
+            epsilon=nac_node.outputs.dielectrics,
+            nac_structure=nac_node.inputs.structure,
+            symmetry_tolerance=Float(1e-5),
+            )
+        # borns = nac_node.outputs.born_charges.get_array('born_charges')
+        # epsilon = nac_node.outputs.dielectrics.get_array('epsilon')
+        borns = params.get_array('born_charges')
+        epsilon = params.get_array('epsilon')
+        nac_params = {'born': borns,
+                      'factor': 14.399652,
+                      'dielectric': epsilon}
+        self._nac_params = nac_params
 
     def _set_nac_params(self):
         """
