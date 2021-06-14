@@ -323,6 +323,21 @@ class TwinBoundaryStructure(_BaseTwinStructure):
         self._layers = layers
         self._delta = delta
 
+    def get_translation_vectors(self) -> tuple:
+        """
+        Get translation vectors for white and black lattices.
+
+        Return:
+            tuple: (white_tl_vec, black_tl_vec).
+        """
+        tl_vecs = []
+        lps = self._output_structure['lattice_points']
+        w_tl_vec = lps['white'][0] - lps['white'][1]
+        b_tl_vec = lps['black'][1] - lps['black'][0]
+        tl_vecs = (w_tl_vec, b_tl_vec)
+
+        return tl_vecs
+
 
 def get_twinboundary(lattice:np.array,
                      symbol:str,
