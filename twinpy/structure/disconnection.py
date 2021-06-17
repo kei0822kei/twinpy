@@ -20,6 +20,7 @@ class Disconnection():
            self,
            twinboundary:TwinBoundaryStructure,
            b_replicate:int,
+           make_tb_flat:bool=True,
            ):
         """
         Init.
@@ -38,7 +39,7 @@ class Disconnection():
         self._burg_vec = None
         self._set_burgers_vector()
         self._atoms_from_lattice_points = None
-        self._set_atoms_from_lattice_points()
+        self._set_atoms_from_lattice_points(make_tb_flat)
         self._output_structure = None
 
     def _check_support_twinmode(self):
@@ -60,7 +61,7 @@ class Disconnection():
         lat = lat_orig * np.array([1, self._b_replicate, 1])
         self._lattice = lat
 
-    def _set_atoms_from_lattice_points(self):
+    def _set_atoms_from_lattice_points(self, make_tb_flat):
         """
         Set atoms from lattice points.
         """
@@ -68,8 +69,17 @@ class Disconnection():
         b_rep = self._b_replicate
         for key in atoms:
             atoms[key] /= np.array([1., b_rep, 1.])
-        atoms['white_left'] = atoms['white'][1].reshape(1,3)
-        atoms['black_right'] = atoms['black'][1].reshape(1,3)
+        atoms['white_left'] = \
+            atoms['white'][np.argsort(atoms['white'][:,1])][0].reshape(1,3)
+        atoms['black_right'] = \
+            atoms['black'][np.argsort(atoms['black'][:,1])][0].reshape(1,3)
+        # atoms['black_right'] = atoms['black'][1].reshape(1,3)
+        # from pprint import pprint
+        # pprint(atoms)
+        if not make_tb_flat:
+            atoms['white_tb'] = atoms['white']
+            atoms['black_tb'] = atoms['black']
+        # pprint(atoms)
         self._atoms_from_lattice_points = atoms
 
     def _set_burgers_vector(self):
