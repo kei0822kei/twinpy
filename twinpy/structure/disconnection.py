@@ -8,6 +8,7 @@ from copy import deepcopy
 import numpy as np
 from matplotlib import pyplot as plt
 from twinpy.structure.base import get_atom_positions_from_lattice_points
+from twinpy.structure.lattice import CrystalLattice
 from twinpy.structure.twinboundary import TwinBoundaryStructure
 
 
@@ -21,6 +22,7 @@ class Disconnection():
            twinboundary:TwinBoundaryStructure,
            b_replicate:int,
            make_tb_flat:bool=True,
+           shear_strain_ratio:float=0.,
            ):
         """
         Init.
@@ -33,7 +35,8 @@ class Disconnection():
         self._check_support_twinmode()
         self._b_replicate = b_replicate
         self._lattice = None
-        self._set_lattice()
+        self._shear_strain_ratio = shear_strain_ratio
+        self._set_lattice(self._shear_strain_ratio)
         self._w_tl_vec, self._b_tl_vec \
                 = self._twinboundary.get_translation_vectors()
         self._burg_vec = None
@@ -53,13 +56,16 @@ class Disconnection():
         if tm not in ['10-12']:
             raise RuntimeError("twinmode: %s is not supported" % tm)
 
-    def _set_lattice(self):
+    def _set_lattice(self, shear_strain_ratio:float):
         """
         Set lattice.
         """
-        lat_orig = self._twinboundary.output_structure['lattice']
-        lat = lat_orig * np.array([1, self._b_replicate, 1])
-        self._lattice = lat
+        orig_lat = self._twinboundary.output_structure['lattice']
+        shr_lat = self._twinboundary._get_shear_twinboundary_lattice(
+                        tb_lattice=orig_lat,
+                        shear_strain_ratio=shear_strain_ratio)
+        sup_lat = shr_lat * np.array([1, self._b_replicate, 1])
+        self._lattice = sup_lat
 
     def _set_atoms_from_lattice_points(self, make_tb_flat):
         """
@@ -95,6 +101,7 @@ class Disconnection():
     def run(self,
             step_start:int,
             step_range:int,
+            use_Rodney_shear_strain:bool=False,
             ):
         """
         Create disconnection induced structure.
@@ -184,6 +191,13 @@ class Disconnection():
             points_right_ = np.array(points_right) / np.array([1., b_rep, 1]) % 1
             return (_sort_arr(np.array(points_)),
                     _sort_arr(np.array(points_right_)))
+
+        def set_shear_strain_ratio_Rodney(self):
+            """
+            Set shear strain ratio based on Rodney.
+            """
+            self._set_lattice(shear_strain_ratio=0.)  # initialize
+            crylat = CrystalLattice(lattice=self._lattice)
 
         black_tb = _get_black_tb_points()
         white_tb = _get_white_tb_points()
