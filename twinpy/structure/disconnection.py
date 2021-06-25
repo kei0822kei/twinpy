@@ -192,12 +192,21 @@ class Disconnection():
             return (_sort_arr(np.array(points_)),
                     _sort_arr(np.array(points_right_)))
 
-        def set_shear_strain_ratio_Rodney(self):
+        def _set_shear_strain_ratio_Rodney():
             """
             Set shear strain ratio based on Rodney.
             """
             self._set_lattice(shear_strain_ratio=0.)  # initialize
             crylat = CrystalLattice(lattice=self._lattice)
+            _, b, c = crylat.abc
+            l = b / self._b_replicate * step_range
+            burg = self._burg_vec[1]
+            s = burg * l / (2 * b * c)
+            self._shear_strain_ratio = s
+            self._set_lattice(self._shear_strain_ratio)
+
+        if use_Rodney_shear_strain:
+            _set_shear_strain_ratio_Rodney()
 
         black_tb = _get_black_tb_points()
         white_tb = _get_white_tb_points()
