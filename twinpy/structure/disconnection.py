@@ -30,6 +30,8 @@ class Disconnection():
         Args:
             twinboundary: TwinBoundaryStructure class object.
             b_replicate: Replicate number for b axis.
+            make_tb_flat: If True, make twin boundary flat.
+            shear_strain_ratio: Shear strain ratio.
         """
         self._twinboundary = twinboundary
         self._check_support_twinmode()
@@ -59,6 +61,9 @@ class Disconnection():
     def _set_lattice(self, shear_strain_ratio:float):
         """
         Set lattice.
+
+        Args:
+            shear_strain_ratio: Shear strain ratio.
         """
         orig_lat = self._twinboundary.output_structure['lattice']
         shr_lat = self._twinboundary._get_shear_twinboundary_lattice(
@@ -70,6 +75,9 @@ class Disconnection():
     def _set_atoms_from_lattice_points(self, make_tb_flat):
         """
         Set atoms from lattice points.
+
+        Args:
+            make_tb_flat: If True, make twin boundary flat.
         """
         atoms = self._twinboundary.output_structure['atoms_from_lattice_points']
         b_rep = self._b_replicate
@@ -79,13 +87,11 @@ class Disconnection():
             atoms['white'][np.argsort(atoms['white'][:,1])][0].reshape(1,3)
         atoms['black_right'] = \
             atoms['black'][np.argsort(atoms['black'][:,1])][0].reshape(1,3)
-        # atoms['black_right'] = atoms['black'][1].reshape(1,3)
-        # from pprint import pprint
-        # pprint(atoms)
+
         if not make_tb_flat:
             atoms['white_tb'] = atoms['white']
             atoms['black_tb'] = atoms['black']
-        # pprint(atoms)
+
         self._atoms_from_lattice_points = atoms
 
     def _set_burgers_vector(self):
@@ -109,6 +115,8 @@ class Disconnection():
         Args:
             step_start: Step start index.
             step_range: Step range.
+            use_Rodney_shear_strain: If True, calculate shear strain ratio by
+                                     Rodney and reset lattice.
         """
         def _sort_arr(arr):
             sort_arr = arr[np.argsort(arr[:,1])]
@@ -140,6 +148,7 @@ class Disconnection():
                     points.append(np.array([0., float(i), 0.5]))
                 else:
                     points.append(np.array([0., float(i), 0.5]))
+
             return np.array(points) / np.array([1., b_rep, 1]) % 1
 
         def _get_white_points(b_tb):
@@ -164,6 +173,7 @@ class Disconnection():
                         points.append(pt+w_vec*(j+1))
             points_ = np.array(points) / np.array([1., b_rep, 1]) % 1
             points_left_ = np.array(points_left) / np.array([1., b_rep, 1]) % 1
+
             return (_sort_arr(np.array(points_)),
                     _sort_arr(np.array(points_left_)))
 
@@ -189,6 +199,7 @@ class Disconnection():
                         points.append(pt+b_vec*(j+1))
             points_ = np.array(points) / np.array([1., b_rep, 1]) % 1
             points_right_ = np.array(points_right) / np.array([1., b_rep, 1]) % 1
+
             return (_sort_arr(np.array(points_)),
                     _sort_arr(np.array(points_right_)))
 
@@ -229,6 +240,9 @@ class Disconnection():
         self._output_structure = output_structure
 
     def get_cell_for_export(self):
+        """
+        Get cell for export.
+        """
         scaled_positions = []
         for key in self._output_structure['lattice_points'].keys():
             lps = self._output_structure['lattice_points'][key]
@@ -245,6 +259,12 @@ class Disconnection():
         return (lattice, scaled_positions, symbols)
 
     def show_dichromatic_lattice(self, scale=0.3):
+        """
+        Show dichromatic lattice.
+
+        Args:
+            sclae: Fig scale becomes (b_axis*scale, c_axis*scale).
+        """
         colors = ['r', 'green', 'brown', 'b', 'cyan', 'grey']
         b = self._twinboundary.output_structure['lattice'][1,1]
         c = self._twinboundary.output_structure['lattice'][2,2]
