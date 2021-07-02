@@ -7,12 +7,12 @@ from copy import deepcopy
 import warnings
 import numpy as np
 from matplotlib import pyplot as plt
-from aiida.orm import load_node
 from twinpy.structure.bonding import _get_atomic_environment
 from twinpy.structure.twinboundary import TwinBoundaryStructure
 from twinpy.structure.standardize import StandardizeCell, get_standardized_cell
 
 # future delete because error occurs when users have not aiida.
+# from aiida.orm import load_node
 # from twinpy.interfaces.aiida.vasp import AiidaRelaxWorkChain
 # from twinpy.interfaces.aiida.phonopy import AiidaPhonopyWorkChain
 
