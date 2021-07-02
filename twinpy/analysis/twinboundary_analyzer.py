@@ -7,13 +7,15 @@ from copy import deepcopy
 import warnings
 import numpy as np
 from matplotlib import pyplot as plt
-from aiida.orm import load_node
 from twinpy.structure.bonding import _get_atomic_environment
 from twinpy.structure.twinboundary import TwinBoundaryStructure
 from twinpy.structure.standardize import StandardizeCell, get_standardized_cell
 
-from twinpy.interfaces.aiida.vasp import AiidaRelaxWorkChain
-from twinpy.interfaces.aiida.phonopy import AiidaPhonopyWorkChain
+# future delete because error occurs when users have not aiida.
+# from aiida.orm import load_node
+# from twinpy.interfaces.aiida.vasp import AiidaRelaxWorkChain
+# from twinpy.interfaces.aiida.phonopy import AiidaPhonopyWorkChain
+
 from twinpy.analysis.relax_analyzer import RelaxAnalyzer
 from twinpy.analysis.phonon_analyzer import PhononAnalyzer
 from twinpy.analysis.shear_analyzer import TwinBoundaryShearAnalyzer
@@ -263,58 +265,58 @@ class TwinBoundaryAnalyzer():
                 layer_indices=self.get_layer_indices())
         return twinboundary_shear_analyzer
 
-    def get_twinboundary_shear_analyzer_from_relax_pks(self,
-                                                       shear_relax_pks:list,
-                                                       shear_strain_ratios:list,
-                                                       shear_phonon_pks:list=None,
-                                                       ):
-        """
-        Get TwinBoundaryShearAnalyzer class object from pks.
+    # def get_twinboundary_shear_analyzer_from_relax_pks(self,
+    #                                                    shear_relax_pks:list,
+    #                                                    shear_strain_ratios:list,
+    #                                                    shear_phonon_pks:list=None,
+    #                                                    ):
+    #     """
+    #     Get TwinBoundaryShearAnalyzer class object from pks.
 
-        Args:
-            shear_relax_pks: Relaxes for shear structures.
-            shear_phonon_pks: Phonon calculations for shear structures.
-            shear_strain_ratios: Shear shear_strain_ratios.
-        """
-        def _get_finished_idx(aiida_rlxes):
-            idx = len(aiida_rlxes) - 1
-            for i, aiida_rlx in enumerate(aiida_rlxes):
-                if not aiida_rlx.process_state == 'finished':
-                    warnings.warn(
-                        "{}th RelaxWorkChain has not finished yet.".format(i))
-                    idx = i - 1
-            return idx
+    #     Args:
+    #         shear_relax_pks: Relaxes for shear structures.
+    #         shear_phonon_pks: Phonon calculations for shear structures.
+    #         shear_strain_ratios: Shear shear_strain_ratios.
+    #     """
+    #     def _get_finished_idx(aiida_rlxes):
+    #         idx = len(aiida_rlxes) - 1
+    #         for i, aiida_rlx in enumerate(aiida_rlxes):
+    #             if not aiida_rlx.process_state == 'finished':
+    #                 warnings.warn(
+    #                     "{}th RelaxWorkChain has not finished yet.".format(i))
+    #                 idx = i - 1
+    #         return idx
 
-        aiida_relaxes = [ AiidaRelaxWorkChain(load_node(pk))
-                              for pk in shear_relax_pks ]
-        ix = _get_finished_idx(aiida_relaxes) + 1
-        original_cells = [ self.get_shear_cell(shear_strain_ratio=ratio,
-                                               is_standardize=False)
-                              for ratio in shear_strain_ratios][:ix]
-        relax_analyzers = [ relax.get_relax_analyzer(
-                                    original_cell=original_cells[i])
-                                    for i, relax in enumerate(aiida_relaxes[:ix]) ]
-        _relax_analyzers = relax_analyzers
+    #     aiida_relaxes = [ AiidaRelaxWorkChain(load_node(pk))
+    #                           for pk in shear_relax_pks ]
+    #     ix = _get_finished_idx(aiida_relaxes) + 1
+    #     original_cells = [ self.get_shear_cell(shear_strain_ratio=ratio,
+    #                                            is_standardize=False)
+    #                           for ratio in shear_strain_ratios][:ix]
+    #     relax_analyzers = [ relax.get_relax_analyzer(
+    #                                 original_cell=original_cells[i])
+    #                                 for i, relax in enumerate(aiida_relaxes[:ix]) ]
+    #     _relax_analyzers = relax_analyzers
 
-        if shear_phonon_pks is None:
-            phonon_analyzers = None
-        else:
-            phonon_analyzers = []
-            for rlx_analyzer, ph_pk in zip(relax_analyzers, shear_phonon_pks):
-                if ph_pk is None:
-                    phonon_analyzers.append(None)
-                else:
-                    aiida_phonon = AiidaPhonopyWorkChain(load_node(ph_pk))
-                    ph_analyzer = aiida_phonon.get_phonon_analyzer(
-                            relax_analyzer=rlx_analyzer)
-                    phonon_analyzers.append(ph_analyzer)
+    #     if shear_phonon_pks is None:
+    #         phonon_analyzers = None
+    #     else:
+    #         phonon_analyzers = []
+    #         for rlx_analyzer, ph_pk in zip(relax_analyzers, shear_phonon_pks):
+    #             if ph_pk is None:
+    #                 phonon_analyzers.append(None)
+    #             else:
+    #                 aiida_phonon = AiidaPhonopyWorkChain(load_node(ph_pk))
+    #                 ph_analyzer = aiida_phonon.get_phonon_analyzer(
+    #                         relax_analyzer=rlx_analyzer)
+    #                 phonon_analyzers.append(ph_analyzer)
 
-        twinboundary_shear_analyzer = self.get_twinboundary_shear_analyzer(
-                shear_relax_analyzers=_relax_analyzers,
-                shear_phonon_analyzers=phonon_analyzers[:ix],
-                shear_strain_ratios=shear_strain_ratios[:ix])
+    #     twinboundary_shear_analyzer = self.get_twinboundary_shear_analyzer(
+    #             shear_relax_analyzers=_relax_analyzers,
+    #             shear_phonon_analyzers=phonon_analyzers[:ix],
+    #             shear_strain_ratios=shear_strain_ratios[:ix])
 
-        return twinboundary_shear_analyzer
+    #     return twinboundary_shear_analyzer
 
     def get_atomic_environment(self) -> list:
         """
