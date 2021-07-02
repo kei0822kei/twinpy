@@ -13,7 +13,7 @@ from twinpy.properties.hexagonal import get_wyckoff_from_hcp
 from twinpy.structure.shear import get_shear
 from twinpy.structure.standardize import StandardizeCell
 from twinpy.structure.twinboundary import get_twinboundary
-from twinpy.interfaces.aiida.base import load_aiida_profile
+from twinpy.interfaces.aiida.profile import load_aiida_profile
 from twinpy.interfaces.lammps import (
         get_twinboundary_analyzer_from_lammps,
         get_twinboundary_shear_analyzer_from_lammps,
