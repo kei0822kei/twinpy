@@ -14,15 +14,20 @@ def load_aiida_profile():
     """
     Load aiida profile.
     """
-    from aiida import load_profile
-    from aiida.common.exceptions import ProfileConfigurationError
 
     try:
+        from aiida import load_profile
+        from aiida.common.exceptions import ProfileConfigurationError
         load_profile()
-    except ProfileConfigurationError:
+    except ProfileConfigurationError as err:
         err_msg = "Failed to load aiida profile. " \
                 + "Please check your aiida configuration."
-        warnings.warn(err_msg)
+        print(err_msg)
+        raise ImportError from err
+    except ImportError:
+        err_msg = "Aiida is not installed. Skip loading aiida profile."
+        print(err_msg)
+        raise
 
 
 def check_process_class(node:Node,
