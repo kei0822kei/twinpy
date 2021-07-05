@@ -178,6 +178,8 @@ class _AiidaVaspWorkChain(_WorkChain):
             print("")
             print("# max force acting on atoms")
             print(str(self.get_max_force())+"\n")
+            print("# total energy")
+            print(str(self._energy)+"\n")
 
 
 @with_dbenv()
