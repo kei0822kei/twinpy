@@ -139,14 +139,25 @@ class Disconnection():
             points = []
             for i in range(b_rep):
                 if (step_start+1) < i < (step_start+step_range+1):
+                    print(i)
+                    print("hoge")
+                    print(points[-1]+np.array([0., 1., 0.]))
                     points.append(points[-1]+np.array([0., 1., 0.]))
                 elif i == (step_start+1):
+                    print(i)
+                    print("fuga")
+                    print(points[-1] + np.array([0., 1., 0.]) - 2 * b_vec)
                     points.append(
                         points[-1] + np.array([0., 1., 0.]) - 2 * b_vec)
                 elif i == (step_start+step_range+1):
+                    print(i)
+                    print(points[-1]+np.array([0., 1., 0.]))
+                    print(np.array([0., float(i), 0.5]))
                     points.append(points[-1]+np.array([0., 1., 0.]))
                     points.append(np.array([0., float(i), 0.5]))
                 else:
+                    print(i)
+                    print(np.array([0., float(i), 0.5]))
                     points.append(np.array([0., float(i), 0.5]))
 
             return np.array(points) / np.array([1., b_rep, 1]) % 1

@@ -330,11 +330,19 @@ class TwinBoundaryStructure(_BaseTwinStructure):
         Return:
             tuple: (white_tl_vec, black_tl_vec).
         """
+        def __refine_vector(vec):
+            vec_ = np.round(vec, decimals=8)
+            vec_[0] = vec_[0] % 1
+            vec_[1] = vec_[1] % 1
+            return vec_
+
         tl_vecs = []
         lps = self._output_structure['lattice_points']
         w_tl_vec = lps['white'][0] - lps['white'][1]
         b_tl_vec = lps['black'][1] - lps['black'][0]
-        tl_vecs = (w_tl_vec, b_tl_vec)
+        w_tl_vec_ = __refine_vector(w_tl_vec)
+        b_tl_vec_ = __refine_vector(b_tl_vec)
+        tl_vecs = (w_tl_vec_, b_tl_vec_)
 
         return tl_vecs
 
